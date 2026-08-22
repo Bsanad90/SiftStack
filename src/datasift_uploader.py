@@ -55,6 +55,7 @@ async def upload_csv(
     mode: str = "add",
     list_name: str | None = None,
     existing_list: bool = False,
+    custom_tag: str = "Courthouse Data",
 ) -> dict:
     """Upload a CSV file to DataSift via the 7-step upload wizard.
 
@@ -303,12 +304,27 @@ async def upload_csv(
     # Click "Next Step" to proceed to step 2
     await _click_next_step(page, timeout=30000)
 
-    # ── Wizard Step 2: Add tags ──
-    logger.info("Wizard Step 2: Adding 'Courthouse Data' tag...")
+    # ── Wizard Step 2: Enrichment ──
+    # The wizard grew a step (Setup -> Enrichment -> Add tags -> Upload the
+    # file -> ...) since this flow was first automated. Every step below used
+    # to be one ahead of where it actually landed -- e.g. the tag-input search
+    # ran on the Enrichment screen (no such input there, logged "Tag input
+    # not found") and the file-input search then ran on the Add-tags screen,
+    # never finding a file input at all. No fields on Enrichment are required
+    # to proceed, so just click through it.
+    await page.wait_for_timeout(1000)
+    await _screenshot(page, "step_enrichment")
+    await _click_next_step(page)
+
+    # ── Wizard Step 3: Add tags ──
+    logger.info("Wizard Step 3: Adding %r tag...", custom_tag)
     await page.wait_for_timeout(1000)
     await _screenshot(page, "step2_tags")
 
-    # Add "Courthouse Data" tag via the Custom Tags input on the right side
+    # Add the custom tag via the Custom Tags input on the right side. This
+    # used to hardcode "Courthouse Data" (TN-specific); a non-TN caller's CSV
+    # Tags column was silently overridden by this step rather than actually
+    # applied, so the tag is now a parameter instead.
     try:
         tag_input = page.locator('input[placeholder*="Search or add a new tag"]')
         if await tag_input.count() > 0:
@@ -317,18 +333,18 @@ async def upload_csv(
             await page.wait_for_timeout(500)
             await tag_input.first.fill("")
             await page.wait_for_timeout(300)
-            await tag_input.first.type("Courthouse Data", delay=50)
+            await tag_input.first.type(custom_tag, delay=50)
             await page.wait_for_timeout(1500)
             await _screenshot(page, "step2_tag_typed")
 
-            # Check if "Courthouse Data" appears in autocomplete dropdown — click it
-            tag_option = page.locator('text="Courthouse Data"')
+            # Check if the tag appears in autocomplete dropdown — click it
+            tag_option = page.locator(f'text="{custom_tag}"')
             tag_count = await tag_option.count()
             if tag_count > 1:
                 # Multiple matches — click the one in the dropdown (not the input)
                 await tag_option.nth(1).click()
                 await page.wait_for_timeout(1000)
-                logger.info("Selected 'Courthouse Data' from dropdown")
+                logger.info("Selected %r from dropdown", custom_tag)
             elif tag_count == 1:
                 # Check if it's the input value or a dropdown option
                 tag_box = await tag_option.first.bounding_box()
@@ -336,12 +352,12 @@ async def upload_csv(
                     # It's below the input — it's a dropdown option
                     await tag_option.first.click()
                     await page.wait_for_timeout(1000)
-                    logger.info("Selected 'Courthouse Data' from dropdown")
+                    logger.info("Selected %r from dropdown", custom_tag)
                 else:
                     # It's the input itself — use JS to click "Add" or press Enter
                     await tag_input.first.press("Enter")
                     await page.wait_for_timeout(1000)
-                    logger.info("Added 'Courthouse Data' tag (via Enter)")
+                    logger.info("Added %r tag (via Enter)", custom_tag)
             else:
                 # No dropdown match — click "Add" via JS to create new tag
                 added = await page.evaluate('''() => {
@@ -359,15 +375,15 @@ async def upload_csv(
                 }''')
                 if added:
                     await page.wait_for_timeout(1000)
-                    logger.info("Created 'Courthouse Data' tag via Add button")
+                    logger.info("Created %r tag via Add button", custom_tag)
                 else:
                     await tag_input.first.press("Enter")
                     await page.wait_for_timeout(1000)
-                    logger.info("Added 'Courthouse Data' tag (via Enter fallback)")
+                    logger.info("Added %r tag (via Enter fallback)", custom_tag)
 
             await _screenshot(page, "step2_tag_added")
         else:
-            logger.warning("Tag input not found — 'Courthouse Data' tag NOT added")
+            logger.warning("Tag input not found — %r tag NOT added", custom_tag)
     except Exception as e:
         logger.warning("Tag addition failed: %s", e)
 

@@ -838,3 +838,11 @@ plugin-name.plugin (ZIP containing):
 │       └── references/
 └── README.md
 ```
+
+## My Defaults
+
+- **Primary county:** Montgomery County MD. Note: not currently a covered county in this codebase (which operates Knox/Blount TN plus the Columbus OH `soi_*` beta) — no scraper or config targets it yet.
+- **Daily summary channel:** WhatsApp. Note: not currently a wired notification transport — only `SLACK_WEBHOOK_URL` (Slack or Discord-compatible webhook) exists in `notify_slack` today.
+- **Preferred run time:** 06:30 America/New_York.
+- **Dispositions:** type-based DataSift lists (the auto-created per-notice-type lists — Foreclosure, Probate, Tax Sale, etc. — rather than one consolidated dispo list).
+```
