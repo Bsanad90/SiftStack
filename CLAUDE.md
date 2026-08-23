@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Currently focused on Knox and Blount counties, Tennessee. A realtor sphere-of-influence beta runs on the Columbus OH metro (the `soi_*` modules; see "Sphere of Influence Pipeline").
 
-8. **REI Skill Library:** 19 Claude Co-Work skill files (`.skill`/`.plugin` ZIPs) for distribution to DataSift community via [learn.datasift.ai/claude-skills-rei](https://learn.datasift.ai/claude-skills-rei). Skills teach Claude specific REI workflows when uploaded to Co-Work sessions or Projects.
+8. **REI Skill Library:** 22 Claude Co-Work skill files (`.skill`/`.plugin` ZIPs) for distribution to DataSift community via [learn.datasift.ai/claude-skills-rei](https://learn.datasift.ai/claude-skills-rei). Skills teach Claude specific REI workflows when uploaded to Co-Work sessions or Projects.
 
 ## Commands
 
@@ -470,6 +470,48 @@ Both write to `output/lender/<Deal_Name>/`, one folder per deal, numbered 1 thro
 
 **Gotcha:** Excel holds an exclusive lock, so a workbook open on the desktop makes `wb.save()` raise `PermissionError` and `formulas` cannot even read it. Write to a `_PENDING_` name and swap.
 
+## MDDC Trustee's Sale Pipeline (build ~1.0.46, 2026-08-22)
+
+A standalone scraping + upload pipeline for Trustee's Sale (foreclosure) public notices on `mddcpublicnotices.com`, covering Maryland, DC, and Delaware jurisdictions. `src/scripts/mddc_trustee_sale_pull.py` (pull), `mddc_browser_pipeline.py` (upload + skip-trace automation), `mddc_datasift_upload.py`, plus `live_pull.py`, `refresh_blank_structure.py`, `score_all_records.py`, `score_live_pull.py`, `score_live_pull_townhouse_condo.py`.
+
+**Fetch mechanism:** the Smart Search results grid has no CAPTCHA, so it's pulled via **Firecrawl** rather than Playwright. The `Details.aspx` full-notice detail page carries its own separate bot-gate; clearing it reliably needs a single continuous Scrapfly call rather than the current two-call approach (login, then a separate fetch), which loses ASP.NET session state between the two calls — this is why `county`, `loan_principal`, and `auction_date` are currently best-effort/blank on a chunk of rows. That's a data-availability gap pending the single-call fix, not a bug.
+
+**County coverage — verified straight from the script's own `COUNTY_CHECKBOX_INDEX`/`DEFAULT_COUNTIES` (28 checkboxes on the site, MD/DE/DC only, re-verify against a fresh `Search.aspx` pull if the site renumbers the list):** `DEFAULT_COUNTIES` = Anne Arundel, Baltimore County, Calvert, Carroll, Charles, Frederick, Montgomery, Washington DC. **There is no Virginia checkbox on this site at all** — the script's own comment states this plainly. Real VA content still surfaces incidentally (e.g. a genuine Orange County, VA trustee sale showed up under a MD-only county filter), so VA rows are kept in the output as incidental leakage rather than dropped, but this is not deliberate VA coverage. Deliberate VA coverage needs a separate public-notice source, not yet identified — the code's own instruction is to ask before guessing one.
+
+**Two gotchas fixed live:**
+- The address-extraction regex was grabbing the filing law firm's letterhead address (the first address-shaped match in the notice text) instead of the actual property address — fixed by taking the **last** match instead of the first.
+- The site's pagination runs through an ASP.NET UpdatePanel that silently no-ops on a plain click — advancing a page needs a full synthetic `MouseEvent` sequence dispatched manually, not a simple click call.
+
+**Uncommitted refinements in `mddc_browser_pipeline.py`:** a `_select_all_matching()` header-caret-dropdown workaround, because the plain header checkbox only selects the rows visible on the current page (~13), not the full result set; and a `--confirm-send` gate with a hardcoded expected-count guard before Skip Trace fires, so a short/incomplete selection can't silently get skip-traced.
+
+**Output:** `output/mddc_trustee_sale.csv`. A recent run: 200 raw rows -> 139 unique (124 MD, 8 VA leakage, 1 DC, 6 blank-state).
+
+The skill wrapper (`.claude/skills/mddc-trustee-sale-pull/SKILL.md`) is gitignored and machine-local — it is not part of the distributable `skills/manifest.json` library; it's an internal-only tool.
+
+## Account-Wide Enrichment + Scoring Audit (2026-08)
+
+A one-off but committed audit of the live DataSift account, built alongside the MDDC pipeline (`src/scripts/live_pull.py`, `refresh_blank_structure.py`, `score_all_records.py`, `score_live_pull.py`, `score_live_pull_townhouse_condo.py`, `export_still_blank.py`).
+
+**DataSift's `/api/internal/` list endpoint hard-caps offset pagination at 10,000 items** ("Can't fetch more than 10000 items!"). Worked around by recursively splitting the account's `created` date range into buckets, each queried under a `SAFE_LIMIT = 9000` ceiling and split further if still saturated. Full account hydration went through the per-record detail endpoint instead of the list endpoint (the list endpoint lacks estimated value, equity, year built, and Lists), 26,645 records total, checkpointed every 250 records to `output/live_account_pull.json`.
+
+**Structure-type coverage:** ~8,282 of 26,645 records (31%) had a blank `structure_type` after the initial pull. After running DataSift's "Enrich Property Information" and re-hydrating just those blanks with `refresh_blank_structure.py`, 2,892 records remain permanently blank, of which 2,884 (99.7%) have no APN/parcel_id at all — almost entirely apartment/condo-unit addresses, where the county assessor tracks one parcel per building rather than per unit. `export_still_blank.py` exports this residual list to `output/still_incomplete.csv` for manual review/re-enrichment.
+
+**Scoring-engine gotcha, fixed at the adapter level rather than in the engine:** `src/lead_manager.py`'s `_score_timeline()` has no floor on `days_until`, so a `tax_auction_date` far in the past scores as "hot: auction in -N days" (a 709-day-old filing scored this way in testing). `score_all_records.py`/`score_live_pull.py` withhold any date past a staleness floor from the scoring engine and surface it as a separate "Auction Note" column instead — `lead_manager.py` itself was not changed.
+
+## Phone Validator: Multi-Contact Export Detection + Reinsertion (build 1.0.45, 2026-08-23)
+
+`skills/phone-validator/scripts/validate_phones.py` and its internal twin `src/phone_validator.py` only recognized bare `Phone 1`..`Phone 30` columns, so on any export that names phones by contact instead of by flat slot, every one of those phones was silently never sent to Trestle -- no error, no warning, just zero coverage. Confirmed live: an MDDC probate "ready for dialing" export (`PR First Name`/`PR Last Name` + `PH: Phone1`..`PH: Phone5`, plus `REL1: Full Name` + `REL1: Phone 1`..`REL1: Phone 3` blocks through `REL5`) went from 0 phones extracted to 768 across 136 rows once the detector could see that layout. This is the same class of bug the FTM runbook keeps rediscovering elsewhere in this codebase: **a run that succeeds with zero data found is worse than one that fails loudly.**
+
+**Two real export layouts are now auto-detected**, and a third that doesn't match either raises an error naming the headers seen rather than proceeding with zero phones:
+- **Flat** -- DataSift's wide "Phone Enrichment" export (`Phone 1`..`Phone 30`, optionally paired with existing `Phone Tags 1`..`30`). One generic contact per row. Verified live against a real 26,643-row account export (`All Records 8.21.2026.csv`): 172,618 phone entries, 151,227 unique.
+- **Contact blocks** -- the PR/relative "ready for dialing" layout above. Each `<Prefix>: Phone N` column group becomes its own contact (`PH`, `REL1`..`REL5`), matched to its name via `PR First Name`/`PR Last Name` for `PH` or `RELn: Full Name` for each relative.
+
+**Qualification engine added** (previously the script only had score-based tiering, nothing else): litigator-risk override (`phone_is_litigator_risk == true` -> always `"Litigator Risk"`, never re-scored, never a fallback) -> invalid (`is_valid != true` -> `"Invalid"`) -> skip line type (Tollfree/Premium/Voicemail -> `"Skip - <LineType>"`; NonFixedVOIP and Landline are deliberately NOT auto-skipped, same 24%-miscategorization reasoning as before) -> the existing 5-tier activity score. `phone_tags_for_datasift.csv` now actually excludes Litigator/Invalid/Skip/Drop numbers -- the skill's own docs already claimed this but the code never enforced it until now.
+
+**Reinsertion output** (`reisift_reimport_with_phone_tags.csv`/`.xlsx`, new): every phone's tag gets written back next to the exact phone/contact it came from, never deleting or blanking anything. Flat exports merge into the existing `Phone Tags N` cell (`"Rel5.1"` -> `"Rel5.1, Dial First"`, idempotent on re-run); contact-block exports get a new `<phone column> Tag` column inserted immediately after each phone column. This exists alongside the original global `phone_tags_for_datasift.csv` upload path (tags by phone number account-wide), not instead of it -- reinsertion is for when the tag needs to stay tied to a specific contact/slot rather than blast every record that happens to share that number.
+
+`src/phone_validator.py` also reads `.xlsx` directly now (`openpyxl`, already a hard project dependency) -- the standalone community skill stays CSV-only by design (stdlib + `requests` only), so an `.xlsx` "ready for dialing" source needs Save As CSV first for that path. Caught in the process: `write_summary()` in both files was opening its output file without `encoding="utf-8"`, which crashes on Windows's default cp1252 console the moment the tier-breakdown box-drawing characters get written -- every other writer in the file already specified the encoding, this one didn't.
+
 ## FTM Foreclosure: multi-pass skip-trace + screenshot-MMS (2026-06; orchestrated from `_api`)
 
 The FTM foreclosure pipeline (consolidate -> single-family filter -> wizard upload -> phone scoring -> cadence) is orchestrated by `_api/ftm_pipeline.py`; these SiftStack scripts are its skip-trace + texting building blocks. Deep detail: the `_api` CLAUDE.md + the `reisift-tagging-and-phone-scoring` / `smrtphone-mms-screenshot-texting` memories.
@@ -648,12 +690,16 @@ DataSift's niche sequential system uses filter presets to guide records through 
 - **Lists column:** Maps `notice_type` → DataSift list name (`foreclosure` → "Foreclosure", `probate` → "Probate", `tax_sale` → "Tax Sale", `tax_delinquent` → "Tax Delinquent", `eviction` → "Eviction", `code_violation` → "Code Violation", `divorce` → "Divorce"). DataSift auto-creates lists from CSV.
 - **Tags:** Courthouse Data, notice_type, county, YYYY-MM date, deceased/living, DM confidence level, has_auction, tax_delinquent, photo_import (for photo-sourced records)
 
-### Upload Wizard (5 Steps)
+### Upload Wizard (6 Steps, build 1.0.46 2026-08-22)
+DataSift added an **Enrichment** step between Setup and Add Tags; the wizard code didn't know about it and every subsequent step/locator silently ran one step off. Fixed in `datasift_uploader.py`.
 1. **Setup:** Click "Upload File" sidebar → "Add Data" → dropdown "Uploading a new list not in DataSift yet" → enter list name → organization questions
-2. **Tags:** Skip through (tags are in CSV column)
-3. **Upload File:** Set file on `input[type="file"]`
-4. **Map Columns:** Core address fields auto-map; Tags, Lists, and enrichment columns may need manual mapping
-5. **Review + Finish Upload:** Click "Finish Upload" — processing happens in background
+2. **Enrichment:** click through (new step, no fields to fill here yet)
+3. **Tags:** Skip through — or fill from a `custom_tag` parameter (see below)
+4. **Upload File:** Set file on `input[type="file"]`
+5. **Map Columns:** Core address fields auto-map; Tags, Lists, and enrichment columns may need manual mapping
+6. **Review + Finish Upload:** Click "Finish Upload" — processing happens in background
+
+**`custom_tag` parameterization:** the Add Tags step used to type a hardcoded tag, silently overriding whatever the CSV's own Tags column already said. It's now a `custom_tag` parameter sourced from the CSV, so any upload — not just one specific pipeline's default tag — can carry its own tag through the wizard.
 
 ### Column Mapping Notes
 - Only core address fields (Property Street, City, State, ZIP) reliably auto-map
@@ -769,9 +815,9 @@ python src/extract_market_finder.py --state "Tennessee" --county "Knox,Blount" -
 # Output: JSON file in output/market_finder_{state}_{county}_{timestamp}.json
 ```
 
-## REI Skill Library (18 Skills)
+## REI Skill Library (22 Skills)
 
-Distribution-ready Claude Co-Work skill files at `Skills for REI/improved/`. Each `.skill` is a ZIP containing `SKILL.md` + `references/` folder. Plugins (`.plugin`) also include `commands/` and `.claude-plugin/plugin.json`.
+Distribution-ready Claude Co-Work skill files at top-level `skills/` and `plugins/` (source of truth: `skills/manifest.json` — 22 current entries + 2 superseded, `source_dir` per entry). Each `.skill` is a ZIP containing `SKILL.md` + `references/` folder. Plugins (`.plugin`) also include `commands/` and `.claude-plugin/plugin.json`.
 
 ### Skill Inventory
 
@@ -785,7 +831,7 @@ Distribution-ready Claude Co-Work skill files at `Skills for REI/improved/`. Eac
 | 6 | `deal-analyzer.plugin` | Deal Analysis | 9.6 | Combined comp+rehab pipeline, MAO (75%/70% rules), multi-loan financing, exit strategy comparison. Phase 3 now routes comp acquisition API-first (comp-package contract) with the bedroom-band rule (2026-07) |
 | 7 | `deep-prospecting-v5.skill` | Deal Analysis | v5 | **SmartSkip heir engine** (relatives + phones in one batch call) + mandatory obituary/web research for DOD and true relationships + Tracerfy gap-fill + Trestle tiers. ~$0.24/record, 4.9x cheaper than the retired Enformion person path. Ships the spouse-obituary trap, the unreliable-deceased-flag gotcha, and the owner-rule-on-shared-lines rule. Enformion BusinessV2 kept for entity owners only |
 | 8 | `probate-property-finder.skill` | Deal Analysis | 9.7 | Property lookup for probate decedents, 3-tier search (Tax API→Executor→People search), confidence scoring |
-| 9 | `phone-validator.skill` | Operations | 9.8 | Trestle API scoring, 5-tier dial priority, 3 tier strategies, litigator risk check, 4.75x connect rate |
+| 9 | `phone-validator.skill` | Operations | 9.8 | Trestle API scoring, 5-tier dial priority, 3 tier strategies, litigator/invalid/skip-line-type qualification, 4.75x connect rate. Auto-detects both the flat DataSift export and per-contact PR/relative "ready for dialing" layouts (2026-08); writes tags back into a reinsertable export, not just the global tag-by-phone-number CSV |
 | 10 | `sequential-presets.skill` | Operations | 9.5 | 12 niche + 9 bulk filter presets, Pendulum Theory (SMS→Call→Mail→DP), DataSift UI implementation steps |
 | 11 | `sift-sequences.skill` | CRM | 9.5 | 26 TCA sequence templates (verified against `sequence_templates.py`), UI walkthrough, HOT A01-A16 chains |
 | 12 | `sift-operations.plugin` | CRM | 9.3 | CRM operations encyclopedia, STABM routine, lead pipeline (9 statuses), task presets, team roles |
@@ -796,6 +842,9 @@ Distribution-ready Claude Co-Work skill files at `Skills for REI/improved/`. Eac
 | 17 | `closer-coach.skill` | Operations | new | Same engine, closer rubric: money conversation, three-option offer stack, objection frameworks, commitment locking, negotiation timeline reports |
 | 18 | `kpi-engine.skill` | Operations | new | Universal DataSift KPI reporting from the user's own account: activity-log pull (self-contained stdlib script, own JWT, no internal API), three distinct rates, lead counting incl new_lead statuses, funnel pacing (dials->correct->leads->appts->contracts), record-level detail mode, md/CSV/Excel/Slack outputs. Benchmarks shipped as tune-per-operation baselines; internal production version lives in Deal Room `_api/kpi-engine/` |
 | 19 | `comp-package.skill` | Deal Analysis | new | Boundary-filtered comp package: /search API pull with 41-row-cap band partitioning, condition bucketing by price/Zestimate ratio, dual-track ARV (same-bed base + labeled reconfig upside), 3-scenario rehab, MAO math, buyer targeting, Excel deliverable spec. Community-safe (own OPENWEBNINJA_API_KEY, requests-only script) |
+| 20 | `caller-reputation-monitor.skill` | Operations | new | Keeps outbound cold-calling numbers out of carrier "Spam Likely" labels: daily SmrtPhone-caller-ID health monitoring off your own call outcomes, warm-up/active/watch/rest/retire lifecycle with dial caps, HTML health dashboard, recommended dial pool, carrier registration + flag remediation walkthrough |
+| 21 | `candidate-intake.skill` | Operations | new | Aggregates job applicants from Indeed, Gmail, Facebook group posts/Messenger, or pasted text into one running scored master Google Sheet; reviews the ranked list and sends screening outreach to the best candidates. Runs through the Claude in Chrome extension, no API keys |
+| 22 | `team-hiring.skill` | Operations | new | Plans, posts for, interviews, and onboards a remote REI team (data manager, prospector, lead manager, acquisitions manager, dispo): role KPIs, hiring-geography cost arbitrage, pay bands and commission, job descriptions, KPI-anchored interview guide, first-week onboarding. Pairs with candidate-intake |
 
 ### Cross-Skill Verified Consistency
 
@@ -841,8 +890,44 @@ plugin-name.plugin (ZIP containing):
 
 ## My Defaults
 
-- **Primary county:** Montgomery County MD. Note: not currently a covered county in this codebase (which operates Knox/Blount TN plus the Columbus OH `soi_*` beta) — no scraper or config targets it yet.
+- **Main counties:** Washington DC; Montgomery, Anne Arundel, Frederick, Carroll, Calvert, Charles, and Baltimore County (not Baltimore City) in Maryland; and Fairfax, Prince William, Arlington, Stafford, and Spotsylvania Counties plus the independent city of Fredericksburg in Virginia. Coverage: the 7 MD counties + DC are already the `DEFAULT_COUNTIES` in the MDDC Trustee's Sale pipeline (`src/scripts/mddc_trustee_sale_pull.py`). The 5 VA counties + Fredericksburg City have no scraper wired up yet — `mddcpublicnotices.com` has no Virginia checkbox at all, so deliberate VA coverage needs a separate public-notice source, not yet identified.
 - **Daily summary channel:** WhatsApp. Note: not currently a wired notification transport — only `SLACK_WEBHOOK_URL` (Slack or Discord-compatible webhook) exists in `notify_slack` today.
 - **Preferred run time:** 06:30 America/New_York.
 - **Dispositions:** type-based DataSift lists (the auto-created per-notice-type lists — Foreclosure, Probate, Tax Sale, etc. — rather than one consolidated dispo list).
+
+## Target Market Research: Doors-Per-Deal (MD/DC/VA, 2026-08-22)
+
+Three comparison workbooks pulled from DataSift Community Edition's "Doors Per Deal" tool (`learn.datasift.ai/doors-per-deal-distressors`), covering exactly the 14 jurisdictions above. Basis: single-family, off-market, sold-to-investor deals, 2026-01 to 2026-06 (6 complete months). Source files: `county-compare-*.xlsx` in the parent `Galal Development` folder (outside this repo — reference research, not code). Doors/Deal = live list size / deals that list produced in-window (lower is better); Lift = baseline doors/deal / signal's doors/deal.
+
+**The finding that matters most for this codebase:** every one of the 14 jurisdictions has low-or-zero SiftMap (the paid data provider) coverage for at least Tax sale list; 12 of 14 also lack Foreclosure notices (Frederick and Carroll County MD are the only two missing just Tax sale list); several also lack Tax delinquent roll (Montgomery MD, Calvert MD, DC, Fairfax VA, Arlington VA, Stafford VA, Spotsylvania VA); Fairfax VA also lacks Probate filings. **None of the 14 have Eviction filings, Code violations, or Divorce filings in SiftMap at all.** These are proven deal-makers nationally and nobody can buy this data for these markets, so a county-direct pull (the MDDC pipeline above, plus recorder/tax/probate office pulls per the `first-market-county-data` skill's method) is not a supplement here — it is the only way in.
+
+**Headline comparison (all 14, from each workbook's Comparison sheet):**
+
+| County | FIPS | Deals(6mo) | Baseline Doors/Deal | SFR Supply | Typical Gross | Margin% | Instit.% | Regime |
+|---|---|---|---|---|---|---|---|---|
+| Baltimore County, MD | 24005 | 1,065 | 166.3 | 177,078 | $51,000 | 19.8 | 24.9 | judicial |
+| Montgomery, MD | 24031 | 556 | 332.2 | 184,700 | $52,000 | 8.9 | 8.5 | judicial |
+| Anne Arundel, MD | 24003 | 552 | 268.1 | 147,986 | $62,000 | 14.6 | 21.9 | judicial |
+| Frederick, MD | 24021 | 249 | 274.1 | 68,254 | $64,000 | 13.3 | 32.5 | judicial |
+| Carroll, MD | 24013 | 107 | 486.6 | 52,065 | $82,350 | 25.8 | 14.0 | judicial |
+| Calvert, MD | 24009 | 93 | 348.8 | 32,438 | $80,850 | 24.5 | 39.8 | judicial |
+| Charles, MD | 24017 | 206 | 243.0 | 50,056 | $102,000 | 31.4 | 46.6 | judicial |
+| District of Columbia | 11001 | 632 | 76.8 | 48,530 | $111,250 | 18.7 | 11.6 | non-judicial |
+| Prince William, VA | 51153 | 396 | 216.3 | 85,672 | $71,000 | 14.4 | 39.4 | non-judicial |
+| Fairfax, VA | 51059 | 666 | 290.7 | 193,586 | $36,000 | 5.1 | 7.8 | non-judicial |
+| Arlington, VA | 51013 | 120 | 250.7 | 30,088 | $41,000 | 4.5 | 5.0 | non-judicial |
+| Stafford, VA | 51179 | 176 | 246.2 | 43,325 | $71,000 | 17.8 | 37.5 | non-judicial |
+| Spotsylvania, VA | 51177 | 152 | 326.5 | 49,628 | $92,500 | 23.1 | 14.5 | non-judicial |
+| Fredericksburg City, VA | 51630 | 25 | 283.5 | 7,087 | $62,000 | 12.7 | 0.0 | non-judicial |
+
+**Best-performing signals per region (from each workbook's Signal Consistency sheet — held Priority 1/2 across most/all counties in that region's own comparison set):**
+- **MD 6-county set (Baltimore/Montgomery/Anne Arundel/Frederick/Carroll/Calvert):** "Absentee + Free & Clear" (Priority 1/2 in all 6, lift 2.5-4.6x, sharpest in Frederick), "Absentee" alone (all 6, lift 2-3.8x, sharpest Carroll), "Out-of-State" alone (all 6, lift 2.2-8.3x, sharpest Montgomery).
+- **Charles MD + DC:** "Absentee + Free & Clear + Out-of-State" and "Absentee + Free & Clear" both Priority 1 in both (lift up to 8.2x in Charles).
+- **VA 6-jurisdiction set (Prince William/Fairfax/Arlington/Stafford/Spotsylvania/Fredericksburg City):** "Out-of-State" alone Priority 1 in 4/6 (lift up to 21x in Prince William), "Absentee + Free & Clear" Priority 1 in 4/6 (lift up to 8.8x, sharpest Prince William).
+- **Regime note carried in every workbook:** the 7 MD jurisdictions above are judicial-foreclosure states — Notice-of-Foreclosure-based signals there should defer to Lis Pendens / Final Judgment as the trustworthy court signal instead. DC and all 6 VA jurisdictions are non-judicial.
+- **Caveat worth keeping over the raw lift numbers:** a thin-sample/high-churn stack (backed by only 25-30 deals) reads optimistic on doors/deal, since the live list is a snapshot compared against a 6-month deal window — the source sheets flag these "verify locally" rather than trusting the number outright.
+
+**National benchmark context** (identical reference table embedded in all 3 workbooks — 13 metro studies, 3,144 counties): the strongest nationally-consistent signal is "Absentee + Notice of Foreclosure" (median 6.4 doors/deal, 22.7x lift) and plain "Notice of Foreclosure" (6.8 doors/deal, 20.9x lift, held up in 28/28 counties analyzed) — both explicitly non-judicial-state signals; judicial states use Lis Pendens / Final Judgment instead.
+
+The full per-county Combined Ranking and First to Market office-contact detail (400+ rows per workbook) stays in the source xlsx files — not reproduced here.
 ```
