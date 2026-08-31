@@ -108,7 +108,7 @@ def run(live_model: bool = False) -> int:
     crm.dial_tier_checked = lambda uuid, phone: ("Dial First", True)
     crm.dial_tier = lambda uuid, phone: "Dial First"
     crm.deal_context = lambda uuid: {
-        "owner_first": "Maron", "street": "158 Old State Rd", "city": "Maryville",
+        "owner_first": "Jane", "street": "158 Old State Rd", "city": "Maryville",
         "county": "Blount", "assigned_name": "Adriana", "record_uuid": uuid,
     }
 
@@ -119,7 +119,7 @@ def run(live_model: bool = False) -> int:
             "OTHER", 0.0, "fallback", "stubbed"
         )
         respond.draft = lambda thread, context=None, intent="", intent_rationale="": respond.Reply(
-            message="Hi Maron! Sorry to bother you. Is 158 Old State Rd yours?",
+            message="Hi Jane! Sorry to bother you. Is 158 Old State Rd yours?",
             confidence=0.92, handoff=(intent == "INTERESTED"), reason="stub", ok=True,
         )
 
@@ -452,7 +452,7 @@ def run(live_model: bool = False) -> int:
         ("Sorry to hear about the probate", "names the list"),
         ("Is 158 Old State Rd, Maryville TN 37804 yours?", "zip code"),
         ("Check us out at www.example.com", "link"),
-        ("Hi Maron - I hope this message finds you well", "form letter"),
+        ("Hi Jane - I hope this message finds you well", "form letter"),
         ("I can leverage a seamless solution; call me", "AI wording"),
         ("Is it yours? Would a call work?", "two questions"),
         ("I am an AI assistant helping with this", "self-identifies"),
@@ -460,7 +460,7 @@ def run(live_model: bool = False) -> int:
         ok, _ = respond.validate(text)
         r.check(f"blocks {why}", not ok, text[:52])
     ok, problems = respond.validate(
-        "Hi Maron! Sorry to bother you. Is 158 Old State Rd yours?"
+        "Hi Jane! Sorry to bother you. Is 158 Old State Rd yours?"
     )
     r.check("passes a good message", ok, "; ".join(problems))
 
@@ -479,7 +479,7 @@ def run(live_model: bool = False) -> int:
 
     # ---- 9. the outreach touches -----------------------------------------
     print("\noutreach copy")
-    msg = touches.render(1, "158 old state rd|maron brown", "Maron",
+    msg = touches.render(1, "158 old state rd|jane doe", "Jane",
                          "158 Old State Rd", "Maryville", "Adriana")
     ok, problems = respond.validate(msg)
     r.check("touch 1 reads human", ok, "; ".join(problems) or msg[:70])

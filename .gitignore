@@ -18,6 +18,11 @@ datasift_cookies.json
 dropbox_state.json
 photo_state.json
 smrtphone_state.json
+# SmartSkip session tokens written by src/scripts/obituary_dp_batch.py (live access/refresh JWTs).
+.skiptrace_run/
+# One-off live skip-trace runs on named individuals; kept on disk, never published.
+tools/manual/test_e2e_smyth.py
+tools/manual/test_e2e_record.py
 *_state.json
 *.tmp
 *.bak

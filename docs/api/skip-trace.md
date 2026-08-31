@@ -137,11 +137,11 @@ entity self-references and commercial registered agent fronts, or you get
 ### Person search, if you use it at all
 
 **Anchor on the full street line for common names.** A name plus city and ZIP
-returned the wrong person as `persons[0]`: an Alabama "James B Key" for a
-Knoxville "James G Key". Only
+returned the wrong person as `persons[0]`: an Alabama "John B Sample" for a
+Knoxville "John Q Sample". Only
 
 ```json
-"Addresses": [{"AddressLine1": "7619 Trey Oaks Ln",
+"Addresses": [{"AddressLine1": "1234 Example Oaks Ln",
                "AddressLine2": "Knoxville, TN 37918"}]
 ```
 

@@ -38,8 +38,11 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+# The v5 skill lives in the repo's skills/ tree. The old "Skills for REI/improved"
+# path never existed on this machine, so `from parse_smartskip import parse`
+# raised ModuleNotFoundError at the one point it was needed.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]
-                       / "Skills for REI" / "improved" / "deep-prospecting-v5" / "scripts"))
+                       / "skills" / "deep-prospecting-v5" / "scripts"))
 
 TRACERFY_TRACE_URL = "https://tracerfy.com/v1/api/trace/"
 TRACERFY_QUEUE_URL = "https://tracerfy.com/v1/api/queue/"

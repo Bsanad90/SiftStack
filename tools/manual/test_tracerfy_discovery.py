@@ -18,8 +18,8 @@ if not API_KEY:
 
 # Test record
 first_name = "Eric"
-last_name = "Yopp"
-address = "1942 Tree Tops Ln"
+last_name = "Sample"
+address = "123 Example Ln"
 city = "Seymour"
 state = "TN"
 zip_code = "37865"

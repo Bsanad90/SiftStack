@@ -41,7 +41,7 @@ def clean_name(raw: str) -> tuple[str, str]:
 
     Same rules as enformion_ftm.clean_owner_name: keep only the primary owner,
     drop suffixes, middle initials and punctuation, because a co-owner string
-    like 'James G Key Jack' traces as nobody.
+    like 'John Q Sample Jack' traces as nobody.
     """
     s = " " + (raw or "").strip().lower() + " "
     cut = len(s)

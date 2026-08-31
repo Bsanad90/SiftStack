@@ -27,8 +27,8 @@ notices = [
     NoticeData(
         notice_type="foreclosure",
         county="Knox",
-        owner_name="Eric Yopp",
-        address="1942 Tree Tops Ln",
+        owner_name="Eric Sample",
+        address="123 Example Ln",
         city="Seymour",
         state="TN",
         zip="37865",

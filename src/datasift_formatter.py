@@ -221,7 +221,7 @@ def _clean_and_split_name(full_name: str) -> tuple[str, str]:
         return (parts[0], "")
     if len(parts) >= 3:
         # Strip middle initials (single letter + optional period) from between
-        # first and last name parts. "Eric J. Yopp" → "Eric Yopp"
+        # first and last name parts. "Eric J. Sample" → "Eric Sample"
         middle = parts[1:-1]
         middle = [p for p in middle if not re.match(r"^[A-Za-z]\.?$", p)]
         parts = [parts[0]] + middle + [parts[-1]]

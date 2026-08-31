@@ -21,7 +21,7 @@ class TestMiddleNames:
         assert split("Eric Lee Sharp") == ("Eric", "Sharp")
 
     def test_middle_initial_still_stripped(self):
-        assert split("Eric J. Yopp") == ("Eric", "Yopp")
+        assert split("Eric J. Sample") == ("Eric", "Sample")
 
     def test_two_middle_names(self):
         assert split("John Paul George Ringo") == ("John", "Ringo")
