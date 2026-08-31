@@ -1,0 +1,402 @@
+{
+ "generated_at": "2026-08-31T06:57:02",
+ "fips": "51179",
+ "jurisdiction": "Stafford, VA",
+ "state_abbr": "VA",
+ "source": "51179-Stafford-VA-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "Stafford County, VA",
+  "county": "Stafford",
+  "state": "VA",
+  "counties": [
+   {
+    "fips": "51179",
+    "county_name": "Stafford"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": 1803,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 1841,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 1841
+ },
+ "presets": [
+  {
+   "name": "Stafford P1-01 Free & Clear + Out-of-State",
+   "priority": 1,
+   "rank": 1,
+   "signal": "Free & Clear + Out-of-State",
+   "signals": [
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 29.3,
+   "dpd": 8.4,
+   "deals": 29,
+   "workbook_list_size": 245,
+   "typical_gross": 149500,
+   "caveat": "small live list: quick and cheap to market in full; extreme efficiency on a thin sample (29 deals): verify locally, then work the full list",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 243,
+   "measured_not_in_account": 240,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Stafford P1-02 Absentee + Free & Clear + Out-of-State",
+   "priority": 1,
+   "rank": 2,
+   "signal": "Absentee + Free & Clear + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 27.1,
+   "dpd": 9.1,
+   "deals": 27,
+   "workbook_list_size": 245,
+   "typical_gross": null,
+   "caveat": "small live list: quick and cheap to market in full",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 243,
+   "measured_not_in_account": 240,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Stafford P1-04 Out-of-State",
+   "priority": 1,
+   "rank": 4,
+   "signal": "Out-of-State",
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "lift": 10,
+   "dpd": 24.7,
+   "deals": 36,
+   "workbook_list_size": 889,
+   "typical_gross": 124000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 881,
+   "measured_not_in_account": 875,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Stafford P1-06 Absentee + Free & Clear",
+   "priority": 1,
+   "rank": 6,
+   "signal": "Absentee + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "lift": 6.2,
+   "dpd": 39.8,
+   "deals": 90,
+   "workbook_list_size": 3582,
+   "typical_gross": 182000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3572,
+   "measured_not_in_account": 3534,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Stafford P1-07 Absentee",
+   "priority": 1,
+   "rank": 7,
+   "signal": "Absentee",
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "lift": 3.8,
+   "dpd": 64.7,
+   "deals": 104,
+   "workbook_list_size": 6732,
+   "typical_gross": 80000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 6757,
+   "measured_not_in_account": 6692,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Stafford P1-08 Free & Clear",
+   "priority": 1,
+   "rank": 8,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 3.4,
+   "dpd": 72.7,
+   "deals": 118,
+   "workbook_list_size": 8579,
+   "typical_gross": 118000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 8568,
+   "measured_not_in_account": 8413,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Stafford P2-01 Tax Delinquent",
+   "priority": 2,
+   "rank": 1,
+   "signal": "Tax Delinquent",
+   "signals": [
+    "Tax Delinquent"
+   ],
+   "keys": [
+    "is_recent_deliquent"
+   ],
+   "lift": 5.5,
+   "dpd": 45,
+   "deals": 12,
+   "workbook_list_size": 540,
+   "typical_gross": 146000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_tax_lien=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_tax_lien=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_tax_lien=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 0,
+   "measured_not_in_account": 0,
+   "measure_status": "measured_zero"
+  },
+  {
+   "name": "Stafford P2-03 Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 3,
+   "signal": "Tired Landlord",
+   "signals": [
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_tired_landlord"
+   ],
+   "lift": 2.2,
+   "dpd": 112.7,
+   "deals": 16,
+   "workbook_list_size": 1803,
+   "typical_gross": 164250,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1841,
+   "measured_not_in_account": 1827,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": {
+  "name": "Stafford T2 Top ZIPs 22554",
+  "tier": "Tier 2",
+  "zips": [
+   {
+    "zip": "22554",
+    "stars": 4,
+    "deals": 57,
+    "typical_gross": 84265,
+    "dpd": 278.4,
+    "momentum": 1.44
+   }
+  ],
+  "params": [
+   "zip_codes=%5B%2222554%22%5D"
+  ],
+  "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&zip_codes=%5B%2222554%22%5D&type_single_family=true",
+  "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Stafford%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Stafford%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251179%22%2C%20%22county_name%22%3A%20%22Stafford%22%7D%5D%7D&zip_codes=%5B%2222554%22%5D&type_single_family=true&in_my_account_mode=not_in",
+  "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
+  "measured_count": 15869,
+  "measured_not_in_account": 15737,
+  "measure_status": "ok"
+ },
+ "gaps": [
+  {
+   "name": "Stafford P1-03 AI Score 90-100",
+   "priority": 1,
+   "rank": 3,
+   "signal": "AI Score 90-100",
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 24.9,
+   "dpd": 9.9,
+   "deals": 105,
+   "workbook_list_size": 1037,
+   "typical_gross": 123000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 90-100"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Stafford P1-05 Obituary",
+   "priority": 1,
+   "rank": 5,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 7.2,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 156,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  },
+  {
+   "name": "Stafford P2-02 AI Score 80-90",
+   "priority": 2,
+   "rank": 2,
+   "signal": "AI Score 80-90",
+   "signals": [
+    "AI Score 80-90"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 2.5,
+   "dpd": 98.3,
+   "deals": 15,
+   "workbook_list_size": 1474,
+   "typical_gross": 119000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 80-90"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  }
+ ],
+ "baseline_single_family": 43325,
+ "measured_at": "2026-08-31T07:00:46"
+}

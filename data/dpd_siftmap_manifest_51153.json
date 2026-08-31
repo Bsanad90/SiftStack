@@ -1,0 +1,916 @@
+{
+ "generated_at": "2026-08-31T07:57:49",
+ "fips": "51153",
+ "jurisdiction": "Prince William, VA",
+ "state_abbr": "VA",
+ "source": "51153-Prince-William-VA-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "Prince William County, VA",
+  "county": "Prince William",
+  "state": "VA",
+  "counties": [
+   {
+    "fips": "51153",
+    "county_name": "Prince William"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": 5285,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 5353,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 5353
+ },
+ "presets": [
+  {
+   "name": "Prince William P1-05 Free & Clear + Out-of-State",
+   "priority": 1,
+   "rank": 5,
+   "signal": "Free & Clear + Out-of-State",
+   "signals": [
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 49.2,
+   "dpd": 4.4,
+   "deals": 98,
+   "workbook_list_size": 427,
+   "typical_gross": 78500,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 434,
+   "measured_not_in_account": 430,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P1-06 Absentee + Free & Clear + Out-of-State",
+   "priority": 1,
+   "rank": 6,
+   "signal": "Absentee + Free & Clear + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 47,
+   "dpd": 4.6,
+   "deals": 93,
+   "workbook_list_size": 426,
+   "typical_gross": 78500,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 433,
+   "measured_not_in_account": 429,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P1-14 Out-of-State",
+   "priority": 1,
+   "rank": 14,
+   "signal": "Out-of-State",
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "lift": 21,
+   "dpd": 10.3,
+   "deals": 112,
+   "workbook_list_size": 1158,
+   "typical_gross": 59000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1159,
+   "measured_not_in_account": 1147,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P1-15 Absentee + Out-of-State",
+   "priority": 1,
+   "rank": 15,
+   "signal": "Absentee + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_oos_owners"
+   ],
+   "lift": 19,
+   "dpd": 11.4,
+   "deals": 101,
+   "workbook_list_size": 1153,
+   "typical_gross": 46750,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1154,
+   "measured_not_in_account": 1142,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P1-16 Absentee + Free & Clear",
+   "priority": 1,
+   "rank": 16,
+   "signal": "Absentee + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "lift": 8.8,
+   "dpd": 24.6,
+   "deals": 179,
+   "workbook_list_size": 4397,
+   "typical_gross": 86500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 4408,
+   "measured_not_in_account": 4313,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P1-19 Absentee",
+   "priority": 1,
+   "rank": 19,
+   "signal": "Absentee",
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "lift": 3.8,
+   "dpd": 56.9,
+   "deals": 205,
+   "workbook_list_size": 11674,
+   "typical_gross": 83000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 11695,
+   "measured_not_in_account": 11523,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P1-20 Free & Clear",
+   "priority": 1,
+   "rank": 20,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 3.6,
+   "dpd": 59.7,
+   "deals": 229,
+   "workbook_list_size": 13663,
+   "typical_gross": 81750,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 13783,
+   "measured_not_in_account": 13506,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P2-01 Out-of-State + Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 1,
+   "signal": "Out-of-State + Tired Landlord",
+   "signals": [
+    "Out-of-State",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_oos_owners",
+    "is_tired_landlord"
+   ],
+   "lift": 4.4,
+   "dpd": 49.2,
+   "deals": 11,
+   "workbook_list_size": 541,
+   "typical_gross": 59000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 539,
+   "measured_not_in_account": 534,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P2-02 Senior + Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 2,
+   "signal": "Senior + Tired Landlord",
+   "signals": [
+    "Senior",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_senior_homeowners",
+    "is_tired_landlord"
+   ],
+   "lift": 4,
+   "dpd": 54.4,
+   "deals": 12,
+   "workbook_list_size": 653,
+   "typical_gross": 124500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "extra_owner_age_min=65",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 661,
+   "measured_not_in_account": 653,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P2-03 High Equity + Out-of-State",
+   "priority": 2,
+   "rank": 3,
+   "signal": "High Equity + Out-of-State",
+   "signals": [
+    "High Equity",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_oos_owners"
+   ],
+   "lift": 3.8,
+   "dpd": 56.2,
+   "deals": 10,
+   "workbook_list_size": 562,
+   "typical_gross": 59000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_high_equity=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 557,
+   "measured_not_in_account": 552,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P2-04 Absentee + Senior",
+   "priority": 2,
+   "rank": 4,
+   "signal": "Absentee + Senior",
+   "signals": [
+    "Absentee",
+    "Senior"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_senior_homeowners"
+   ],
+   "lift": 2.8,
+   "dpd": 76.2,
+   "deals": 20,
+   "workbook_list_size": 1523,
+   "typical_gross": 111000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1523,
+   "measured_not_in_account": 1492,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P2-05 Tax Delinquent",
+   "priority": 2,
+   "rank": 5,
+   "signal": "Tax Delinquent",
+   "signals": [
+    "Tax Delinquent"
+   ],
+   "keys": [
+    "is_recent_deliquent"
+   ],
+   "lift": 2.2,
+   "dpd": 97.8,
+   "deals": 12,
+   "workbook_list_size": 1173,
+   "typical_gross": 132500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_tax_lien=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_tax_lien=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_tax_lien=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 0,
+   "measured_not_in_account": 0,
+   "measure_status": "measured_zero"
+  },
+  {
+   "name": "Prince William P2-06 Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 6,
+   "signal": "Tired Landlord",
+   "signals": [
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_tired_landlord"
+   ],
+   "lift": 2.1,
+   "dpd": 103.6,
+   "deals": 51,
+   "workbook_list_size": 5285,
+   "typical_gross": 66500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 5353,
+   "measured_not_in_account": 5291,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Prince William P2-07 High Equity + Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 7,
+   "signal": "High Equity + Tired Landlord",
+   "signals": [
+    "High Equity",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_tired_landlord"
+   ],
+   "lift": 1.5,
+   "dpd": 146.1,
+   "deals": 24,
+   "workbook_list_size": 3507,
+   "typical_gross": 54000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_high_equity=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3530,
+   "measured_not_in_account": 3494,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": {
+  "name": "Prince William T2 Top ZIPs 20169 22026 22193 20109",
+  "tier": "Tier 2",
+  "zips": [
+   {
+    "zip": "20169",
+    "stars": 4,
+    "deals": 56,
+    "typical_gross": 4000,
+    "dpd": 133.3,
+    "momentum": 5.11
+   },
+   {
+    "zip": "22026",
+    "stars": 4,
+    "deals": 54,
+    "typical_gross": 79500,
+    "dpd": 56.4,
+    "momentum": 0.76
+   },
+   {
+    "zip": "22193",
+    "stars": 5,
+    "deals": 44,
+    "typical_gross": 83000,
+    "dpd": 389.2,
+    "momentum": 1.24
+   },
+   {
+    "zip": "20109",
+    "stars": 4,
+    "deals": 41,
+    "typical_gross": 82500,
+    "dpd": 63.3,
+    "momentum": 0.77
+   }
+  ],
+  "params": [
+   "zip_codes=%5B%2220169%22%2C%20%2222026%22%2C%20%2222193%22%2C%20%2220109%22%5D"
+  ],
+  "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&zip_codes=%5B%2220169%22%2C%20%2222026%22%2C%20%2222193%22%2C%20%2220109%22%5D&type_single_family=true",
+  "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Prince%20William%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Prince%20William%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251153%22%2C%20%22county_name%22%3A%20%22Prince%20William%22%7D%5D%7D&zip_codes=%5B%2220169%22%2C%20%2222026%22%2C%20%2222193%22%2C%20%2220109%22%5D&type_single_family=true&in_my_account_mode=not_in",
+  "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
+  "measured_count": 30231,
+  "measured_not_in_account": 29935,
+  "measure_status": "ok"
+ },
+ "gaps": [
+  {
+   "name": "Prince William P1-01 Bad Credit + Out-of-State",
+   "priority": 1,
+   "rank": 1,
+   "signal": "Bad Credit + Out-of-State",
+   "signals": [
+    "Bad Credit",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_bad_credit",
+    "is_oos_owners"
+   ],
+   "lift": 196.6,
+   "dpd": 1.1,
+   "deals": 30,
+   "workbook_list_size": 33,
+   "typical_gross": 87000,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally; extreme efficiency on a thin sample (30 deals): verify locally, then work the full list",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Prince William P1-02 Absentee + Bad Credit + Free & Clear",
+   "priority": 1,
+   "rank": 2,
+   "signal": "Absentee + Bad Credit + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Bad Credit",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_bad_credit",
+    "is_free_and_clear"
+   ],
+   "lift": 74.6,
+   "dpd": 2.9,
+   "deals": 30,
+   "workbook_list_size": 86,
+   "typical_gross": null,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Prince William P1-03 Absentee + Free & Clear + Low Income",
+   "priority": 1,
+   "rank": 3,
+   "signal": "Absentee + Free & Clear + Low Income",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Low Income"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_low_income"
+   ],
+   "lift": 72.1,
+   "dpd": 3,
+   "deals": 32,
+   "workbook_list_size": 95,
+   "typical_gross": null,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Prince William P1-04 Free & Clear + Low Income + Tired Landlord (proxy)",
+   "priority": 1,
+   "rank": 4,
+   "signal": "Free & Clear + Low Income + Tired Landlord",
+   "signals": [
+    "Free & Clear",
+    "Low Income",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_low_income",
+    "is_tired_landlord"
+   ],
+   "lift": 72.1,
+   "dpd": 3,
+   "deals": 8,
+   "workbook_list_size": 24,
+   "typical_gross": null,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally; extreme efficiency on a thin sample (8 deals): verify locally, then work the full list",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Prince William P1-07 Absentee + Low Income",
+   "priority": 1,
+   "rank": 7,
+   "signal": "Absentee + Low Income",
+   "signals": [
+    "Absentee",
+    "Low Income"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_low_income"
+   ],
+   "lift": 35.5,
+   "dpd": 6.1,
+   "deals": 32,
+   "workbook_list_size": 195,
+   "typical_gross": 87000,
+   "caveat": "small live list: quick and cheap to market in full; extreme efficiency on a thin sample (32 deals): verify locally, then work the full list",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Prince William P1-08 Absentee + Bad Credit",
+   "priority": 1,
+   "rank": 8,
+   "signal": "Absentee + Bad Credit",
+   "signals": [
+    "Absentee",
+    "Bad Credit"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_bad_credit"
+   ],
+   "lift": 33.3,
+   "dpd": 6.5,
+   "deals": 30,
+   "workbook_list_size": 194,
+   "typical_gross": 87000,
+   "caveat": "small live list: quick and cheap to market in full; extreme efficiency on a thin sample (30 deals): verify locally, then work the full list",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Prince William P1-09 AI Score 90-100",
+   "priority": 1,
+   "rank": 9,
+   "signal": "AI Score 90-100",
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 31.3,
+   "dpd": 6.9,
+   "deals": 161,
+   "workbook_list_size": 1103,
+   "typical_gross": 119000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 90-100"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Prince William P1-10 Low Income + Tired Landlord (proxy)",
+   "priority": 1,
+   "rank": 10,
+   "signal": "Low Income + Tired Landlord",
+   "signals": [
+    "Low Income",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_low_income",
+    "is_tired_landlord"
+   ],
+   "lift": 30,
+   "dpd": 7.2,
+   "deals": 8,
+   "workbook_list_size": 58,
+   "typical_gross": null,
+   "caveat": "small live list: quick and cheap to market in full; extreme efficiency on a thin sample (8 deals): verify locally, then work the full list",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Prince William P1-11 Free & Clear + Low Income",
+   "priority": 1,
+   "rank": 11,
+   "signal": "Free & Clear + Low Income",
+   "signals": [
+    "Free & Clear",
+    "Low Income"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_low_income"
+   ],
+   "lift": 26.7,
+   "dpd": 8.1,
+   "deals": 41,
+   "workbook_list_size": 333,
+   "typical_gross": 131000,
+   "caveat": "extreme efficiency on a thin sample (41 deals): verify locally, then work the full list",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Prince William P1-12 Bad Credit + Free & Clear + Low Income",
+   "priority": 1,
+   "rank": 12,
+   "signal": "Bad Credit + Free & Clear + Low Income",
+   "signals": [
+    "Bad Credit",
+    "Free & Clear",
+    "Low Income"
+   ],
+   "keys": [
+    "is_bad_credit",
+    "is_free_and_clear",
+    "is_low_income"
+   ],
+   "lift": 26.7,
+   "dpd": 8.1,
+   "deals": 33,
+   "workbook_list_size": 268,
+   "typical_gross": null,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit",
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter; no SiftMap filter"
+  },
+  {
+   "name": "Prince William P1-13 Bad Credit + Free & Clear",
+   "priority": 1,
+   "rank": 13,
+   "signal": "Bad Credit + Free & Clear",
+   "signals": [
+    "Bad Credit",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_bad_credit",
+    "is_free_and_clear"
+   ],
+   "lift": 23,
+   "dpd": 9.4,
+   "deals": 33,
+   "workbook_list_size": 309,
+   "typical_gross": 131000,
+   "caveat": "extreme efficiency on a thin sample (33 deals): verify locally, then work the full list",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Prince William P1-17 Obituary",
+   "priority": 1,
+   "rank": 17,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 6.4,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 221,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  },
+  {
+   "name": "Prince William P1-18 AI Score 80-90",
+   "priority": 1,
+   "rank": 18,
+   "signal": "AI Score 80-90",
+   "signals": [
+    "AI Score 80-90"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 4.8,
+   "dpd": 44.7,
+   "deals": 48,
+   "workbook_list_size": 2144,
+   "typical_gross": 35500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 80-90"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  }
+ ],
+ "baseline_single_family": 85672,
+ "measured_at": "2026-08-31T08:03:37"
+}

@@ -1,0 +1,661 @@
+{
+ "generated_at": "2026-08-31T07:41:50",
+ "fips": "51177",
+ "jurisdiction": "Spotsylvania, VA",
+ "state_abbr": "VA",
+ "source": "51177-Spotsylvania-VA-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "Spotsylvania County, VA",
+  "county": "Spotsylvania",
+  "state": "VA",
+  "counties": [
+   {
+    "fips": "51177",
+    "county_name": "Spotsylvania"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": 2668,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 2570,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 2570
+ },
+ "presets": [
+  {
+   "name": "Spotsylvania P1-04 Absentee + Free & Clear + Senior",
+   "priority": 1,
+   "rank": 4,
+   "signal": "Absentee + Free & Clear + Senior",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Senior"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_senior_homeowners"
+   ],
+   "lift": 3.7,
+   "dpd": 87.5,
+   "deals": 20,
+   "workbook_list_size": 1751,
+   "typical_gross": 226000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1092,
+   "measured_not_in_account": 1070,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Spotsylvania P1-05 Out-of-State",
+   "priority": 1,
+   "rank": 5,
+   "signal": "Out-of-State",
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "lift": 3.5,
+   "dpd": 92.6,
+   "deals": 25,
+   "workbook_list_size": 2314,
+   "typical_gross": 124000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1116,
+   "measured_not_in_account": 1101,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Spotsylvania P1-06 Absentee + Free & Clear",
+   "priority": 1,
+   "rank": 6,
+   "signal": "Absentee + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "lift": 3.1,
+   "dpd": 104.2,
+   "deals": 67,
+   "workbook_list_size": 6982,
+   "typical_gross": 234500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3849,
+   "measured_not_in_account": 3781,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Spotsylvania P1-07 Absentee + Senior",
+   "priority": 1,
+   "rank": 7,
+   "signal": "Absentee + Senior",
+   "signals": [
+    "Absentee",
+    "Senior"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_senior_homeowners"
+   ],
+   "lift": 3.1,
+   "dpd": 105.5,
+   "deals": 23,
+   "workbook_list_size": 2426,
+   "typical_gross": 140000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1855,
+   "measured_not_in_account": 1815,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Spotsylvania P2-05 Free & Clear + Out-of-State",
+   "priority": 2,
+   "rank": 5,
+   "signal": "Free & Clear + Out-of-State",
+   "signals": [
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 3.8,
+   "dpd": 86.1,
+   "deals": 21,
+   "workbook_list_size": 1809,
+   "typical_gross": 260500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 532,
+   "measured_not_in_account": 521,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Spotsylvania P2-06 Free & Clear + Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 6,
+   "signal": "Free & Clear + Tired Landlord",
+   "signals": [
+    "Free & Clear",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_tired_landlord"
+   ],
+   "lift": 3.6,
+   "dpd": 90.8,
+   "deals": 12,
+   "workbook_list_size": 1090,
+   "typical_gross": 111500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 709,
+   "measured_not_in_account": 694,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Spotsylvania P2-07 Absentee + Free & Clear + Out-of-State",
+   "priority": 2,
+   "rank": 7,
+   "signal": "Absentee + Free & Clear + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 3.3,
+   "dpd": 100.4,
+   "deals": 18,
+   "workbook_list_size": 1808,
+   "typical_gross": 260500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 531,
+   "measured_not_in_account": 520,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Spotsylvania P2-08 Absentee + Out-of-State",
+   "priority": 2,
+   "rank": 8,
+   "signal": "Absentee + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_oos_owners"
+   ],
+   "lift": 3,
+   "dpd": 110,
+   "deals": 21,
+   "workbook_list_size": 2310,
+   "typical_gross": 146000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1112,
+   "measured_not_in_account": 1097,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Spotsylvania P2-09 Absentee",
+   "priority": 2,
+   "rank": 9,
+   "signal": "Absentee",
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "lift": 2.3,
+   "dpd": 142.2,
+   "deals": 77,
+   "workbook_list_size": 10948,
+   "typical_gross": 196500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 8277,
+   "measured_not_in_account": 8154,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Spotsylvania P2-10 Free & Clear",
+   "priority": 2,
+   "rank": 10,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 2.2,
+   "dpd": 149.6,
+   "deals": 97,
+   "workbook_list_size": 14516,
+   "typical_gross": 154000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 10688,
+   "measured_not_in_account": 10476,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Spotsylvania P2-11 Free & Clear + Senior",
+   "priority": 2,
+   "rank": 11,
+   "signal": "Free & Clear + Senior",
+   "signals": [
+    "Free & Clear",
+    "Senior"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_senior_homeowners"
+   ],
+   "lift": 2.2,
+   "dpd": 151.6,
+   "deals": 37,
+   "workbook_list_size": 5609,
+   "typical_gross": 88500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 4543,
+   "measured_not_in_account": 4421,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Spotsylvania P2-12 Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 12,
+   "signal": "Tired Landlord",
+   "signals": [
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_tired_landlord"
+   ],
+   "lift": 2.1,
+   "dpd": 156.9,
+   "deals": 17,
+   "workbook_list_size": 2668,
+   "typical_gross": 80000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2570,
+   "measured_not_in_account": 2534,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": {
+  "name": "Spotsylvania T2 Top ZIPs 22551 22553",
+  "tier": "Tier 2",
+  "zips": [
+   {
+    "zip": "22551",
+    "stars": 5,
+    "deals": 40,
+    "typical_gross": 128500,
+    "dpd": 230.7,
+    "momentum": 1.5
+   },
+   {
+    "zip": "22553",
+    "stars": 4,
+    "deals": 29,
+    "typical_gross": 81000,
+    "dpd": 272.2,
+    "momentum": 1.22
+   }
+  ],
+  "params": [
+   "zip_codes=%5B%2222551%22%2C%20%2222553%22%5D"
+  ],
+  "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&zip_codes=%5B%2222551%22%2C%20%2222553%22%5D&type_single_family=true",
+  "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Spotsylvania%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Spotsylvania%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251177%22%2C%20%22county_name%22%3A%20%22Spotsylvania%22%7D%5D%7D&zip_codes=%5B%2222551%22%2C%20%2222553%22%5D&type_single_family=true&in_my_account_mode=not_in",
+  "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
+  "measured_count": 14053,
+  "measured_not_in_account": 13842,
+  "measure_status": "ok"
+ },
+ "gaps": [
+  {
+   "name": "Spotsylvania P1-01 Obituary",
+   "priority": 1,
+   "rank": 1,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 9.6,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 178,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  },
+  {
+   "name": "Spotsylvania P1-02 AI Score 90-100",
+   "priority": 1,
+   "rank": 2,
+   "signal": "AI Score 90-100",
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 9.2,
+   "dpd": 35.5,
+   "deals": 46,
+   "workbook_list_size": 1635,
+   "typical_gross": 221000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 90-100"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Spotsylvania P1-03 Low Income",
+   "priority": 1,
+   "rank": 3,
+   "signal": "Low Income",
+   "signals": [
+    "Low Income"
+   ],
+   "keys": [
+    "is_low_income"
+   ],
+   "lift": 5.2,
+   "dpd": 63.1,
+   "deals": 23,
+   "workbook_list_size": 1451,
+   "typical_gross": 293500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Spotsylvania P2-01 Free & Clear + Low Income",
+   "priority": 2,
+   "rank": 1,
+   "signal": "Free & Clear + Low Income",
+   "signals": [
+    "Free & Clear",
+    "Low Income"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_low_income"
+   ],
+   "lift": 7.5,
+   "dpd": 43.7,
+   "deals": 20,
+   "workbook_list_size": 874,
+   "typical_gross": 314000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Spotsylvania P2-02 Absentee + Free & Clear + Low Income",
+   "priority": 2,
+   "rank": 2,
+   "signal": "Absentee + Free & Clear + Low Income",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Low Income"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_low_income"
+   ],
+   "lift": 7.3,
+   "dpd": 44.9,
+   "deals": 16,
+   "workbook_list_size": 719,
+   "typical_gross": 314000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Spotsylvania P2-03 Absentee + Low Income",
+   "priority": 2,
+   "rank": 3,
+   "signal": "Absentee + Low Income",
+   "signals": [
+    "Absentee",
+    "Low Income"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_low_income"
+   ],
+   "lift": 6.9,
+   "dpd": 47.1,
+   "deals": 17,
+   "workbook_list_size": 801,
+   "typical_gross": 300500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Spotsylvania P2-04 AI Score 80-90",
+   "priority": 2,
+   "rank": 4,
+   "signal": "AI Score 80-90",
+   "signals": [
+    "AI Score 80-90"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 4.1,
+   "dpd": 78.7,
+   "deals": 19,
+   "workbook_list_size": 1496,
+   "typical_gross": 278000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 80-90"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  }
+ ],
+ "baseline_single_family": 47615,
+ "measured_at": "2026-08-31T07:46:59"
+}
