@@ -44,7 +44,7 @@ SOURCE_CSV = ROOT / "output" / "mddc_trustee_sale.csv"
 TRANSFORMED_CSV = ROOT / "output" / "mddc_datasift_upload_transformed.csv"
 
 LIST_NAME = "Foreclosure"
-BATCH_TAG = "Claude first batch 8.22"
+BATCH_TAG = "FTM"  # entry tag for the 05 FTM - CALL / 06 FTM - MAIL preset lanes (was "Claude first batch 8.22")
 
 
 def build_notes(row: dict) -> str:

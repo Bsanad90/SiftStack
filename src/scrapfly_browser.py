@@ -206,6 +206,14 @@ def is_configured() -> bool:
 
 
 def _main(argv=None):
+    # Windows consoles default to cp1252; a rendered county page with a curly quote or an
+    # em dash then raises UnicodeEncodeError on the final print and the whole fetch (already
+    # paid for) is lost. Three research agents hit this on 2026-08-28. Replace, never crash.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
     ap = argparse.ArgumentParser(description="Fetch a Cloudflare/JS-gated URL via Scrapfly ASP")
     ap.add_argument("url")
     ap.add_argument("--no-residential", action="store_true", help="use datacenter proxies")
