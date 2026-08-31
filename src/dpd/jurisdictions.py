@@ -27,6 +27,7 @@ each absence is annotated - an absence is a research finding, not a TODO:
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 
 
@@ -187,18 +188,92 @@ JURISDICTIONS: list[Jurisdiction] = [
     ),
 ]
 
-BY_KEY = {j.key: j for j in JURISDICTIONS}
-BY_FIPS = {j.fips: j for j in JURISDICTIONS}
-BY_NAME = {j.name.lower(): j for j in JURISDICTIONS}
+# ---------------------------------------------------------------- Tennessee
+# NOT part of the doors-per-deal footprint, and deliberately NOT in JURISDICTIONS:
+# six scripts iterate that list as "the 14 target jurisdictions" and would report
+# these two as coverage gaps (dpd_notice_publication_report line 92 especially).
+# They live here so `resolve()` and the BY_* maps can find them, which is what the
+# Knox/Blount legacy pipelines (manage-sold, the TN FTM pull) actually need.
+TN_JURISDICTIONS: list[Jurisdiction] = [
+    Jurisdiction(
+        key="knox_tn", name="Knox, TN",
+        state="Tennessee", state_abbr="TN", fips="47093",
+        foreclosure_regime="non-judicial",
+        market_finder_label="Knox",
+        notes={"scope": "legacy TN footprint, not a doors-per-deal target",
+               "mddc": "Maryland/DC site has no Tennessee at all",
+               "va_notices": "publicnoticevirginia.com is Virginia-only",
+               "md_sources": "Register of Wills / Land Records / SDAT are Maryland-only",
+               "tn_notices": "covered by tnpublicnotice.com via the TN FTM pipeline, "
+                             "which uses its own saved-search names rather than an id"},
+    ),
+    Jurisdiction(
+        key="blount_tn", name="Blount, TN",
+        state="Tennessee", state_abbr="TN", fips="47009",
+        foreclosure_regime="non-judicial",
+        market_finder_label="Blount",
+        notes={"scope": "legacy TN footprint, not a doors-per-deal target",
+               "mddc": "Maryland/DC site has no Tennessee at all",
+               "va_notices": "publicnoticevirginia.com is Virginia-only",
+               "md_sources": "Register of Wills / Land Records / SDAT are Maryland-only",
+               "tn_notices": "covered by tnpublicnotice.com via the TN FTM pipeline"},
+    ),
+]
+
+# Lookups span every jurisdiction any pipeline in this repo can be pointed at, so a
+# name resolves once and the same FIPS reaches SiftMap regardless of which pipeline
+# asked. JURISDICTIONS itself stays the 14 doors-per-deal targets.
+ALL_JURISDICTIONS: list[Jurisdiction] = JURISDICTIONS + TN_JURISDICTIONS
+
+BY_KEY = {j.key: j for j in ALL_JURISDICTIONS}
+BY_FIPS = {j.fips: j for j in ALL_JURISDICTIONS}
+BY_NAME = {j.name.lower(): j for j in ALL_JURISDICTIONS}
+
+
+def _bare_name_aliases() -> dict[str, Jurisdiction]:
+    """Map the names a human or a CLI actually types onto jurisdictions.
+
+    Two forms beyond the canonical display name, because `main.py` passes
+    `--counties` through `.title()` and nobody types the ", MD" suffix:
+
+        "Baltimore County"  -> Baltimore County, MD   (name minus state suffix)
+        "Fairfax County"    -> Fairfax, VA            (name plus "County")
+
+    Every generated key is asserted unique below rather than assumed. A
+    collision here would be a wrong-county bug, so it fails at import.
+    """
+    out: dict[str, Jurisdiction] = {}
+    for j in ALL_JURISDICTIONS:
+        bare = j.name.rsplit(",", 1)[0].strip()
+        forms = [bare]
+        # "Baltimore County" already says County; "Fredericksburg City" is a real
+        # distinct place and must never grow a "County" form.
+        if not bare.endswith(("County", "City")):
+            forms.append(f"{bare} County")
+        for form in forms:
+            key = form.lower()
+            if key in BY_NAME:
+                continue  # the canonical name wins
+            assert key not in out, f"ambiguous jurisdiction alias {form!r}"
+            out[key] = j
+    return out
+
+
+BY_BARE_NAME = _bare_name_aliases()
 
 
 def resolve(text: str) -> Jurisdiction | None:
     """Resolve a jurisdiction from any of the names the pipelines use.
 
-    Accepts the canonical key, the display name, the FIPS code, the Market
-    Finder label, or the raw CRM county string. Deliberately exact per field
-    rather than fuzzy: "Baltimore" and "Baltimore City" are different places,
-    and a substring match is how the wrong county gets pulled.
+    Accepts the canonical key, the display name, the display name without its
+    state suffix ("Baltimore County"), that name plus an explicit "County"
+    ("Fairfax County"), the FIPS code, the Market Finder label, or the raw CRM
+    county string. Deliberately exact per field rather than fuzzy: "Baltimore"
+    and "Baltimore City" are different places, "Fairfax" and "Fairfax City" are
+    different places, and a substring match is how the wrong county gets pulled.
+
+    Returns None on a miss. Callers must treat that as an error and stop -- a
+    caller that substitutes a default FIPS silently queries the wrong county.
     """
     t = (text or "").strip()
     if not t:
@@ -210,14 +285,56 @@ def resolve(text: str) -> Jurisdiction | None:
         return BY_FIPS[t]
     if low in BY_NAME:
         return BY_NAME[low]
-    for j in JURISDICTIONS:
+    if low in BY_BARE_NAME:
+        return BY_BARE_NAME[low]
+    for j in ALL_JURISDICTIONS:
         if j.opportunities_raw and j.opportunities_raw.lower() == low:
             return j
     # Market Finder labels are ambiguous across states ("Frederick" exists in
-    # both MD and VA nationally), so they only resolve within our 14.
-    hits = [j for j in JURISDICTIONS
+    # both MD and VA nationally), so they only resolve within our own set.
+    hits = [j for j in ALL_JURISDICTIONS
             if j.market_finder_label and j.market_finder_label.lower() == low]
     return hits[0] if len(hits) == 1 else None
+
+
+def county_label(j: Jurisdiction) -> str:
+    """The short county name the DataSift UI uses: no state suffix, no "County".
+
+    "Baltimore County, MD" -> "Baltimore";  "Montgomery, MD" -> "Montgomery";
+    "Fredericksburg City, VA" -> "Fredericksburg City" (an independent city, so
+    "City" is part of the name and is kept).
+    """
+    bare = j.name.rsplit(",", 1)[0].strip()
+    if bare.endswith(" County"):
+        bare = bare[: -len(" County")].strip()
+    return bare
+
+
+def location_param(j: Jurisdiction) -> str:
+    """Build SiftMap's `location` JSON for a whole-county search.
+
+    The shape is copied verbatim from `dpd_siftmap_discover.location_param`,
+    which ran live across all 14 jurisdictions while 152 SiftMap presets were
+    built and verified. Two things about it that look wrong and are not:
+
+      * `title` is cosmetic. It is what the search box displays, and DC renders
+        as the nonsense "District of Columbia County, DC". `counties[].fips` is
+        what actually drives the query, so leave the title alone.
+      * `county` carries the SHORT county name, not the display name, matching
+        what the UI puts there itself. "Baltimore County, MD" must send
+        "Baltimore" -- sending "Baltimore County" yields the doubled title
+        "Baltimore County County, MD" and a county_name the proven payload never
+        used. A trailing "City" is NOT stripped: "Fredericksburg City" is the
+        real name of a distinct independent city.
+    """
+    short = county_label(j)
+    return json.dumps({
+        "searchType": "county",
+        "title": f"{short} County, {j.state_abbr}",
+        "county": short,
+        "state": j.state_abbr,
+        "counties": [{"fips": j.fips, "county_name": short}],
+    })
 
 
 def with_source(attr: str) -> list[Jurisdiction]:

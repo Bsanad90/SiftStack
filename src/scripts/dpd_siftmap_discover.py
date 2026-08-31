@@ -49,6 +49,7 @@ from datasift_core import (  # noqa: E402
     get_credentials,
     login,
 )
+from dpd.siftmap import result_count  # noqa: E402
 
 logger = logging.getLogger("dpd_siftmap_discover")
 
@@ -139,16 +140,12 @@ async def _clean_map(page) -> None:
 
 
 async def _result_count(page) -> int | None:
-    """Read the '<N> Properties' figure off the map."""
-    txt = await page.evaluate(
-        """() => {
-        const hit = [...document.querySelectorAll('*')].find(
-            el => el.children.length === 0 && /[\\d,]+\\s*Propert/i.test(el.textContent || ''));
-        return hit ? hit.textContent.trim() : '';
-    }"""
-    )
-    m = re.search(r"([\d,]+)\s*Propert", txt or "", re.I)
-    return int(m.group(1).replace(",", "")) if m else None
+    """Read the '<N> Properties' figure off the map.
+
+    Kept as a thin alias: the implementation moved to `dpd.siftmap` so that
+    `manage-sold` reads the count exactly the way this script does.
+    """
+    return await result_count(page)
 
 
 async def _open_presets(page) -> bool:

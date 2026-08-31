@@ -50,6 +50,21 @@ async def main():
         default=None,
         help="Tag date YYYY-MM (default: current month)",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Read each county-month's matched count and stop. Imports nothing, "
+             "tags nothing. Use this to confirm the counties resolve -- with no "
+             "--counties the run now covers all 14 jurisdictions and a live run "
+             "imports every sold property in each county-month.",
+    )
+    parser.add_argument(
+        "--account-scope",
+        choices=["in", "not_in"],
+        default=None,
+        help="SiftMap in_my_account_mode. Omit for the importing behaviour; "
+             "'in' tags only records already held.",
+    )
     args = parser.parse_args()
 
     # Setup logging
@@ -75,6 +90,8 @@ async def main():
         min_sale_price=args.min_sale_price,
         sold_tag_date=args.sold_tag_date,
         headless=False,
+        dry_run=args.dry_run,
+        account_scope=args.account_scope,
     )
 
     print("\n" + "=" * 60)

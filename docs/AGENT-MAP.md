@@ -1412,21 +1412,25 @@ Builds the 26 TCA sequence templates via drag and drop.
 
 Tags sold properties so they drop out of active marketing.
 
-**Trigger.** manage-sold --months-back 12
+**Trigger.** manage-sold --dry-run, then manage-sold (default --months-back 1, monthly)
 
 **Does.**
 
-- Searches by city, not county
-- Adds records with tags
-- Sold Property Cleanup sequence fires on the tag
+- Resolves each county through `dpd.jurisdictions`, then filters SiftMap by county FIPS in the URL rather than driving the calendar UI
+- One sweep per county per month, first to last day, so each record is tagged with the month it actually sold
+- Select Max, then Add Records to Account: every sold property in the window is imported, which is also what builds the sold-comp and cash-buyer dataset
+- Stamps `Recently Sold` plus `Sold YYYY-MM`; the Sold Property Cleanup sequence maps that tag onto status `Already Sold`, which every preset already excludes
+- Checkpoints each (fips, month) pair so an interrupted run resumes instead of restarting
 
-**Human checkpoint.** None. Runs unattended.
+**Human checkpoint.** A `--dry-run` pass first, to confirm the counties resolved. The live run imports records, so it needs an explicit go.
 
-**Outputs.** Tagged sold records
+**Outputs.** Imported and tagged sold records; a checkpoint at `output/manage_sold_state.json`
 
-**Touches.** Playwright, SiftMap
+**Touches.** Playwright, SiftMap, `dpd.jurisdictions`, `dpd.siftmap`
 
-> **The trap this exists to avoid.** Known limitation, stated out loud: SiftMap filters set values visually but do not trigger a React re-query, so only the 3 to 5 sidebar-visible properties get added per run.
+> **The trap this exists to avoid.** The county lookup used to be a private two-entry dict resolved with `.get(county, "47093")`. Every jurisdiction outside Knox and Blount missed it and silently queried **Knox County, Tennessee**, tagged the results as the county that was asked for, and reported success. A wrong default is worse than a crash: `resolve()` now raises on an unknown county, because guessing one means importing the wrong place.
+
+> **Superseded note.** This entry previously said the tagger "searches by city, not county" and warned that only 3 to 5 sidebar-visible properties are added per run. Both described an earlier version; the URL filter plus Select Max fixed the second, and the first was never true of the FIPS-based code.
 
 ### Market Intelligence
 

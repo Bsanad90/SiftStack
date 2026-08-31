@@ -282,7 +282,8 @@ async def create_tag(page, name: str) -> dict:
     return {"tag": name, "status": "clicked_create"}
 
 
-async def run(commit: bool, headless: bool, do_discover: bool) -> int:
+async def run(commit: bool, headless: bool, do_discover: bool,
+              tags: list[tuple[str, str]] | None = None) -> int:
     email, password = get_credentials()
     out = {"ran_at": datetime.now().isoformat(timespec="seconds"), "commit": commit}
 
@@ -327,14 +328,14 @@ async def run(commit: bool, headless: bool, do_discover: bool) -> int:
         out["baseline_tag_count"] = len(base)
 
         rows = []
-        for name, gates in ENTRY_TAGS:
+        for name, gates in (tags or ENTRY_TAGS):
             exists = await _tag_exists(page, name) or (name in base)
             rows.append({"tag": name, "gates": gates,
                          "status": "already_exists" if exists else "missing"})
             await _clear_search(page)
         out["results"] = rows
 
-        print("\n=== ENTRY TAGS ===")
+        print("\n=== TAGS ===")
         print(f"  folder {FOLDER!r} open; Phase 0 baseline holds {len(base)} tags\n")
         for r in rows:
             print(f"  {r['tag']:14s} {r['status']:16s} {r['gates']}")
@@ -392,8 +393,16 @@ def main() -> int:
     ap.add_argument("--discover", action="store_true",
                     help="read-only: dump the page's controls and exit")
     ap.add_argument("--headless", action="store_true")
+    ap.add_argument("--names", type=str, default=None,
+                    help="comma-separated tag names to create instead of the entry "
+                         "tags, e.g. --names 'Recently Sold'. Same guarantee: only "
+                         "creates what is missing, never renames or deletes.")
     a = ap.parse_args()
-    return asyncio.run(run(a.commit, a.headless, a.discover))
+    tags = None
+    if a.names:
+        tags = [(n.strip(), "requested via --names")
+                for n in a.names.split(",") if n.strip()]
+    return asyncio.run(run(a.commit, a.headless, a.discover, tags))
 
 
 if __name__ == "__main__":

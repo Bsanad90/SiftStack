@@ -20,6 +20,8 @@ from datasift_core import (
     login,
     screenshot as _screenshot,
     dismiss_popups as _dismiss_popups,
+    load_state,
+    save_state,
 )
 
 logger = logging.getLogger(__name__)
@@ -1963,6 +1965,61 @@ async def run_phone_validation_workflow(
 
 DATASIFT_SIFTMAP_URL = "https://app.reisift.io/siftmap"
 
+# The tag the sweep stamps and the cleanup sequence triggers on. Defined once so
+# the two cannot drift: rename it here and both the SiftMap Add-Records modal and
+# the sequence condition follow.
+#
+# NOT "Sold". On this account `Sold` and `Already Sold` are property STATUSES,
+# already excluded by every preset through preset_spec.DEAD_STATUSES. A tag with
+# the same name would split suppression across two vocabularies, so the tag needs
+# a name of its own and the sequence maps it onto the existing status.
+RECENTLY_SOLD_TAG = "Recently Sold"
+
+# The status the cleanup sequence sets. Both candidates are in DEAD_STATUSES, so
+# either suppresses correctly; `Already Sold` is the truthful one for a property
+# that sold without us. Falls back to "Sold" only if the sequence action picker
+# cannot offer this one (the Records FILTER picker exposes 19 of 38 statuses, so
+# the action picker may be limited too -- verified before the sequence is built).
+SOLD_STATUS = "Already Sold"
+SOLD_STATUS_FALLBACK = "Sold"
+
+# Lists a sold property should come off, as they exist on THIS account (checked
+# against the dpd_doctor baseline's 27 lists). Ty's TN config named "Probate" and
+# "Tax Sale", neither of which exists here -- half his config would have matched
+# nothing at all.
+#
+# `Low Equity` and `Negative Equity` are deliberately ABSENT. They are suppression
+# inputs (preset_spec.SUPPRESS_LISTS): every preset excludes records on them, so
+# REMOVING a record from one would un-suppress it. Taking a record off a
+# suppression list is the opposite of cleaning up after a sale.
+#
+# Removing lists is hygiene, not suppression. The status flip to SOLD_STATUS is
+# what makes all 73 presets drop the record.
+SOLD_REMOVE_LISTS = [
+    "Pre-Foreclosure",
+    "Pre-Foreclosures - Lis Pendens",
+    "Pre-Foreclosures - Notice of Default",
+    "Pre-Foreclosures - Notice of Foreclosure",
+    "Siftmap PRO Preforeclosure",
+    "Tax Delinquent",
+    "Pre-Probate/Deceased",
+    "Estate and Heirs",
+    "Estate Sales",
+    "Obituary",
+    "Bankruptcy",
+    "Judgments",
+    "Liens",
+    "Absentee Owners",
+    "Tired Landlord",
+    "Vacant",
+    "Senior Homeowners",
+    "Free & Clear",
+    "High Equity",
+    "Low Credit Score",
+    "Low Income",
+    "Short Term Loan",
+]
+
 
 async def manage_sold_properties(
     page: Page,
@@ -1971,6 +2028,10 @@ async def manage_sold_properties(
     months_back: int = 1,
     min_sale_price: int = 1000,
     sold_tag_date: str | None = None,
+    dry_run: bool = False,
+    account_scope: str | None = None,
+    checkpoint_path: Path | None = None,
+    replace_owners: bool = False,
 ) -> dict:
     """Pull recently sold properties from SiftMap and tag them in DataSift.
 
@@ -1991,6 +2052,17 @@ async def manage_sold_properties(
         months_back: How many months back to search for sales (default: 1).
         min_sale_price: Minimum sale price filter to exclude deed transfers.
         sold_tag_date: If set, overrides per-month tag (use for single-month runs).
+        dry_run: Read each county-month's filtered count and stop. Nothing is
+            imported or tagged. Use it to confirm the counties resolved before a
+            live run imports thousands of records.
+        account_scope: SiftMap `in_my_account_mode`. None keeps the original
+            behaviour (import every sold property, building the sold-comp / cash
+            buyer dataset); "in" tags only records already held.
+        checkpoint_path: JSON file recording which (fips, month) pairs already
+            succeeded, so a run that dies partway resumes instead of restarting.
+            Ty's loop had none, which is survivable for two counties and is not
+            for fourteen. Skipping is by (fips, month) so it cannot skip the
+            wrong county.
 
     Returns:
         Dict with {success, message, counties_processed, total_records, month_details}.
@@ -2002,11 +2074,23 @@ async def manage_sold_properties(
         "success": False,
         "message": "",
         "counties_processed": [],
+        "counties_failed": [],
         "total_records": 0,
+        "total_matched": 0,
         "month_details": [],
     }
 
-    counties = counties or ["Knox", "Blount"]
+    # Default to this account's own footprint. Ty's default was his two TN
+    # counties; on this account the 14 doors-per-deal jurisdictions are the
+    # footprint, and they are named rather than inferred so a run with no
+    # --counties is never a surprise. Knox/Blount stay reachable explicitly.
+    if not counties:
+        from dpd.jurisdictions import JURISDICTIONS, county_label
+        counties = [county_label(j) for j in JURISDICTIONS]
+        logger.info(
+            "No --counties given; defaulting to the %d doors-per-deal "
+            "jurisdictions: %s", len(counties), ", ".join(counties),
+        )
 
     # Build list of (year, month) tuples to process — oldest first
     now = datetime.now()
@@ -2020,11 +2104,31 @@ async def manage_sold_properties(
             y -= 1
         months_to_process.append((y, m))
 
+    # Resolve the whole county list BEFORE opening a browser or writing anything.
+    # A run of 14 counties should not discover an unknown name at county 12,
+    # having already imported eleven counties' worth of records.
+    from dpd.jurisdictions import ALL_JURISDICTIONS, resolve as _resolve
+    unknown = [c for c in counties if _resolve(c) is None]
+    if unknown:
+        result["message"] = (
+            f"unknown counties {unknown}: refusing to run. Accepted forms are the "
+            f"county name, FIPS code or canonical key. Known: "
+            + ", ".join(sorted(j.name for j in ALL_JURISDICTIONS))
+        )
+        logger.error(result["message"])
+        return result
+
+    checkpoint = load_state(checkpoint_path) if checkpoint_path else {}
+    done = checkpoint.get("done", {}) if isinstance(checkpoint, dict) else {}
+
     logger.info(
-        "Managing sold properties: counties=%s, months=%s, min_price=$%d",
+        "Managing sold properties: counties=%s, months=%s, min_price=$%d, "
+        "dry_run=%s, account_scope=%s",
         counties,
         [f"{y}-{m:02d}" for y, m in months_to_process],
         min_sale_price,
+        dry_run,
+        account_scope or "(none: importing, Ty's behaviour)",
     )
 
     try:
@@ -2050,6 +2154,25 @@ async def manage_sold_properties(
                     county, f"{year}-{month:02d}", start_str, end_str, tag_date,
                 )
 
+                jur = _resolve(county)
+                ckpt_key = f"{jur.fips}:{year}-{month:02d}"
+                if ckpt_key in done:
+                    prior = done[ckpt_key]
+                    logger.info(
+                        "SKIP %s %s-%02d: already done (%s records at %s)",
+                        county, year, month,
+                        prior.get("records"), prior.get("at"),
+                    )
+                    result["month_details"].append({
+                        "county": county, "fips": jur.fips,
+                        "month": f"{year}-{month:02d}",
+                        "records": prior.get("records", 0),
+                        "success": True, "skipped": True,
+                        "message": "skipped: already in checkpoint",
+                    })
+                    county_records += prior.get("records", 0) or 0
+                    continue
+
                 month_result = await _siftmap_search_sold(
                     page,
                     county=county,
@@ -2057,17 +2180,34 @@ async def manage_sold_properties(
                     end_date=end_str,
                     min_sale_price=min_sale_price,
                     sold_tag_date=tag_date,
+                    dry_run=dry_run,
+                    account_scope=account_scope,
+                    replace_owners=replace_owners,
                 )
 
                 records = month_result.get("records_added", 0)
                 county_records += records
                 result["month_details"].append({
                     "county": county,
+                    "fips": jur.fips,
                     "month": f"{year}-{month:02d}",
                     "records": records,
+                    "matched": month_result.get("matched"),
                     "success": month_result.get("success", False),
                     "message": month_result.get("message", ""),
                 })
+
+                # Checkpoint only real, successful writes. A dry run must never
+                # mark work done -- otherwise the live run that follows skips
+                # every county the dry run "completed".
+                if checkpoint_path and month_result.get("success") and not dry_run:
+                    done[ckpt_key] = {
+                        "records": records,
+                        "county": county,
+                        "at": datetime.now().isoformat(timespec="seconds"),
+                    }
+                    checkpoint["done"] = done
+                    save_state(checkpoint_path, checkpoint)
 
                 if month_result.get("success"):
                     logger.info(
@@ -2082,21 +2222,55 @@ async def manage_sold_properties(
                     )
 
             result["total_records"] += county_records
-            if county_records > 0:
+            # A county counts as processed when its months SUCCEEDED, not when it
+            # added records. Keying on records>0 made every dry run report
+            # failure (dry runs add nothing by design) and would also fail a real
+            # month in which a county genuinely had no qualifying sales.
+            county_months = [d for d in result["month_details"]
+                             if d.get("county") == county]
+            if county_months and all(d.get("success") for d in county_months):
                 result["counties_processed"].append(county)
+            else:
+                result["counties_failed"].append(county)
             logger.info(
-                "%s County total: %d records across %d months",
-                county, county_records, len(months_to_process),
+                "%s total: %d records, %d matched, across %d month(s)",
+                county, county_records,
+                sum(d.get("matched") or 0 for d in county_months),
+                len(months_to_process),
             )
+
+        total_matched = sum(d.get("matched") or 0 for d in result["month_details"])
+        result["total_matched"] = total_matched
 
         if result["counties_processed"]:
             result["success"] = True
-            result["message"] = (
-                f"Sold properties managed for {', '.join(result['counties_processed'])}. "
-                f"Total records: {result['total_records']}"
-            )
+            if dry_run:
+                result["message"] = (
+                    f"DRY RUN complete for {len(result['counties_processed'])} "
+                    f"jurisdiction(s): {total_matched:,} properties matched. "
+                    f"Nothing imported, nothing tagged."
+                )
+            else:
+                result["message"] = (
+                    f"Sold properties managed for "
+                    f"{', '.join(result['counties_processed'])}. "
+                    f"Total records: {result['total_records']}"
+                )
+            if result["counties_failed"]:
+                result["message"] += (
+                    f" FAILED: {', '.join(result['counties_failed'])}"
+                )
         else:
-            result["message"] = "No counties processed successfully"
+            # `+` binds tighter than `or`, so the earlier form made the fallback
+            # unreachable and ended the message on a bare colon when nothing ran.
+            detail = "; ".join(
+                f"{d.get('county')} {d.get('month')}: {d.get('message')}"
+                for d in result["month_details"] if not d.get("success")
+            )
+            result["message"] = (
+                "No counties processed successfully: "
+                + (detail or "no county-months were attempted")
+            )
 
     except Exception as e:
         result["message"] = f"Manage sold failed: {e}"
@@ -2204,6 +2378,7 @@ async def _siftmap_set_date(page, date_btn_id: str, target_date_str: str, label:
 
 async def _siftmap_add_page_to_account(
     page, *, county: str, sold_tag_date: str, page_num: int,
+    replace_owners: bool = False,
 ) -> dict:
     """Select all filtered properties via "Select Max" and add to account.
 
@@ -2328,30 +2503,58 @@ async def _siftmap_add_page_to_account(
     num_match = re.search(r'([\d,]+)', modal_title or "")
     records_added = int(num_match.group(1).replace(",", "")) if num_match else 0
 
-    # Toggle OFF "Do not replace owners"
-    replace_toggle = page.get_by_text(re.compile(r"[Dd]o not replace owners"))
-    if await replace_toggle.count() > 0:
-        toggle_parent = replace_toggle.first.locator('..')
-        toggle_input = toggle_parent.locator(
-            'input[type="checkbox"], [class*="toggle"], [class*="switch"]'
-        )
-        if await toggle_input.count() > 0:
-            el_type = await toggle_input.first.get_attribute("type")
-            if el_type == "checkbox":
-                is_checked = await toggle_input.first.is_checked()
+    # ── "Do not replace owners" ──
+    #
+    # Ty's flow turns this OFF, so SiftMap's owner data overwrites what is on the
+    # record. On his two TN counties that is a small blast radius. Here it is not:
+    # the default sweep spans all 14 jurisdictions, and this account's whole
+    # enrichment design exists to PROTECT the PR/DM contact mapping -- the pipeline
+    # deliberately runs "Enrich Owners" and "Swap Owners" OFF for exactly this
+    # reason. Silently overwriting owners on every sold match would undo that
+    # across the real footprint.
+    #
+    # So the protection stays ON unless asked for. `replace_owners=True` restores
+    # Ty's exact behaviour for anyone who wants the fresher owner data.
+    if replace_owners:
+        replace_toggle = page.get_by_text(re.compile(r"[Dd]o not replace owners"))
+        if await replace_toggle.count() > 0:
+            toggle_parent = replace_toggle.first.locator('..')
+            toggle_input = toggle_parent.locator(
+                'input[type="checkbox"], [class*="toggle"], [class*="switch"]'
+            )
+            if await toggle_input.count() > 0:
+                el_type = await toggle_input.first.get_attribute("type")
+                if el_type == "checkbox":
+                    is_checked = await toggle_input.first.is_checked()
+                else:
+                    toggle_classes = await toggle_input.first.get_attribute("class") or ""
+                    is_checked = "checked" in toggle_classes
+                if is_checked:
+                    await toggle_input.first.click()
+                    await page.wait_for_timeout(1000)
+                    logger.warning(
+                        "Turned OFF 'Do not replace owners' -- SiftMap owner data "
+                        "WILL overwrite the record's owner, including PR/DM mapping"
+                    )
             else:
-                toggle_classes = await toggle_input.first.get_attribute("class") or ""
-                is_checked = "checked" in toggle_classes
-            if is_checked:
-                await toggle_input.first.click()
+                await replace_toggle.first.click()
                 await page.wait_for_timeout(1000)
-                logger.info("Turned OFF 'Do not replace owners' toggle")
-        else:
-            await replace_toggle.first.click()
-            await page.wait_for_timeout(1000)
+    else:
+        logger.info(
+            "Leaving 'Do not replace owners' as-is: owner/PR-DM data is protected. "
+            "Pass replace_owners=True for Ty's overwrite behaviour."
+        )
 
     # Apply tags
-    tags_to_apply = ["Sold", f"Sold {sold_tag_date}"]
+    #
+    # Ty's flow stamps a bare "Sold" tag here. This account cannot: `Sold` and
+    # `Already Sold` are STATUSES on it, already suppressed by every preset via
+    # preset_spec.DEAD_STATUSES, and adding a tag of the same name would split
+    # suppression across two vocabularies (see preset_spec.py "sold_tag" gap).
+    # RECENTLY_SOLD_TAG is the trigger the cleanup sequence listens for; the
+    # per-month tag is Ty's, kept verbatim, and is what keeps the set separable
+    # by sale month afterwards.
+    tags_to_apply = [RECENTLY_SOLD_TAG, f"Sold {sold_tag_date}"]
     for tag in tags_to_apply:
         try:
             tag_inp = page.locator('input[placeholder*="tag" i], input[name*="tag" i]')
@@ -2427,39 +2630,65 @@ async def _siftmap_search_sold(
     end_date: str,
     min_sale_price: int,
     sold_tag_date: str,
+    dry_run: bool = False,
+    account_scope: str | None = None,
+    replace_owners: bool = False,
 ) -> dict:
     """Search SiftMap for sold properties in one county/month and add to account.
 
-    Handles: county search, date range filter, select-all, pagination.
+    Handles: county resolution, date range filter, select-all, add-to-account.
 
     Args:
         page: Page already on SiftMap.
-        county: County name (e.g., "Knox").
+        county: County name, FIPS code or canonical key. Anything
+            `dpd.jurisdictions.resolve` accepts -- "Montgomery", "Baltimore
+            County", "24031". An unresolved value raises; it is never defaulted.
         start_date: Start date MM/DD/YYYY (first day of month).
         end_date: End date MM/DD/YYYY (last day of month).
         min_sale_price: Minimum sale price filter.
         sold_tag_date: Tag date string YYYY-MM (matches the sale month).
+        dry_run: Read the filtered count and stop, importing and tagging
+            nothing. Used to prove the county resolved correctly before a run
+            imports thousands of records.
+        account_scope: SiftMap's `in_my_account_mode`. None (the default) keeps
+            the original behaviour -- no filter, so every sold property in the
+            county-month is imported, which is what builds the sold-comp / cash
+            buyer dataset. Pass "in" to tag only records the account already
+            holds and import nothing.
 
     Returns:
-        Dict with {success, records_added, message}.
+        Dict with {success, records_added, message}. On a dry run,
+        records_added is 0 and `matched` carries the filtered count.
+
+    Raises:
+        ValueError: the county could not be resolved to a jurisdiction.
     """
-    import re
-    import json as _json
     from urllib.parse import quote as _quote
 
-    # County FIPS codes for TN counties
-    COUNTY_FIPS = {
-        "Knox": "47093",
-        "Blount": "47009",
-    }
+    from dpd.jurisdictions import ALL_JURISDICTIONS, location_param, resolve
+    from dpd.siftmap import result_count
 
-    result = {"success": False, "records_added": 0, "message": ""}
+    # Resolve the county through the canonical registry. This used to be a
+    # private two-entry dict with `.get(county, "47093")` as a fallback, which
+    # meant every jurisdiction outside Knox/Blount silently queried KNOX COUNTY,
+    # TENNESSEE and tagged the results as the requested county -- reporting
+    # success. A miss must stop the run, not pick a county.
+    jur = resolve(county)
+    if jur is None:
+        raise ValueError(
+            f"unknown county {county!r}: cannot resolve to a jurisdiction, and "
+            f"guessing one would query the wrong place. Accepted forms are the "
+            f"county name (\"Montgomery\", \"Baltimore County\"), the FIPS code "
+            f"(\"24031\") or the canonical key (\"montgomery_md\"). Known: "
+            + ", ".join(sorted(j.name for j in ALL_JURISDICTIONS))
+        )
+
+    result = {"success": False, "records_added": 0, "message": "", "fips": jur.fips}
 
     try:
         # ── Step 1: Navigate directly via URL with all filters ──
         # This is far more reliable than interacting with the calendar UI.
         # URL params: location (county JSON), date range, min sale price.
-        fips = COUNTY_FIPS.get(county, "47093")
 
         # Convert dates from MM/DD/YYYY to YYYY-MM-DD for URL params
         from datetime import datetime as _dt
@@ -2468,13 +2697,7 @@ async def _siftmap_search_sold(
         start_iso = start_dt.strftime("%Y-%m-%d")
         end_iso = end_dt.strftime("%Y-%m-%d")
 
-        location = _json.dumps({
-            "searchType": "county",
-            "title": f"{county} County, TN",
-            "county": county,
-            "state": "TN",
-            "counties": [{"fips": fips, "county_name": county}],
-        })
+        location = location_param(jur)
 
         url = (
             f"{DATASIFT_SIFTMAP_URL}"
@@ -2483,43 +2706,76 @@ async def _siftmap_search_sold(
             f"&extra_last_sale_date_max={end_iso}"
             f"&extra_last_sale_price_min={min_sale_price}"
         )
+        if account_scope:
+            url += f"&in_my_account_mode={account_scope}"
 
-        logger.info("SiftMap: Navigating to %s County %s-%s...", county, start_iso, end_iso)
+        logger.info(
+            "SiftMap: %s (fips %s) %s-%s...", jur.name, jur.fips, start_iso, end_iso
+        )
         await page.goto(url, wait_until="domcontentloaded")
         await page.wait_for_timeout(8000)
         await _dismiss_popups(page)
-        await _screenshot(page, f"siftmap_filtered_{county}")
+        await _screenshot(page, f"siftmap_filtered_{jur.fips}_{sold_tag_date}")
 
         # ── Check filtered results count ──
-        prop_count = page.get_by_text(re.compile(r"\d+\s*Propert", re.IGNORECASE))
-        if await prop_count.count() > 0:
-            count_text = await prop_count.first.text_content()
-            logger.info("Properties after filtering: %s", count_text)
-            num = re.search(r'(\d[\d,]*)', count_text or "")
-            if num:
-                total_filtered = int(num.group(1).replace(",", ""))
-                if total_filtered == 0:
-                    result["message"] = f"No sold properties in {county} for {sold_tag_date}"
-                    result["success"] = True  # not an error, just no data
-                    logger.info(result["message"])
-                    return result
-                logger.info("Filtered count: %d properties", total_filtered)
-        await _screenshot(page, f"siftmap_count_{county}")
+        # `result_count` is the reader proven while the 152 SiftMap presets were
+        # built. It returns None when the figure has not rendered yet, which is
+        # NOT zero -- treating the two alike reports an empty county for a slow
+        # page, so the distinction is kept.
+        total_filtered = await result_count(page)
+        result["matched"] = total_filtered
+        if total_filtered is None:
+            # Unknown is not zero -- but it is also not a licence to import. On a
+            # dry run, report it and move on; on a live run the page never proved
+            # the filter applied, so "Select Max" could select the UNFILTERED
+            # county. Refuse.
+            logger.warning(
+                "%s %s: property count never rendered; treating as unknown, not zero",
+                jur.name, sold_tag_date,
+            )
+            if not dry_run:
+                result["message"] = (
+                    f"{jur.name} {sold_tag_date}: the filtered count never rendered, "
+                    f"so the filter is unverified. Refusing to Select Max and import "
+                    f"against a page that may be showing the whole county."
+                )
+                logger.error(result["message"])
+                await _screenshot(page, f"siftmap_nocount_{jur.fips}_{sold_tag_date}")
+                return result
+        else:
+            logger.info("Filtered count: %d properties", total_filtered)
+            if total_filtered == 0:
+                result["message"] = f"No sold properties in {jur.name} for {sold_tag_date}"
+                result["success"] = True  # not an error, just no data
+                logger.info(result["message"])
+                return result
+        await _screenshot(page, f"siftmap_count_{jur.fips}_{sold_tag_date}")
+
+        if dry_run:
+            result["success"] = True
+            result["message"] = (
+                f"DRY RUN {jur.name} ({jur.fips}) {sold_tag_date}: "
+                f"{total_filtered if total_filtered is not None else 'unknown'} matched, "
+                f"nothing imported or tagged"
+            )
+            logger.info(result["message"])
+            return result
 
         # ── Step 3: Select all and add to account (no pagination needed) ──
         # "Select Max" selects ALL filtered results in one click
         page_result = await _siftmap_add_page_to_account(
             page,
-            county=county,
+            county=jur.fips,  # screenshot label: filename-safe and unambiguous
             sold_tag_date=sold_tag_date,
             page_num=1,
+            replace_owners=replace_owners,
         )
         total_records = page_result.get("records_added", 0)
 
         result["records_added"] = total_records
         result["success"] = True
         result["message"] = (
-            f"{county} {sold_tag_date}: {total_records} sold properties added"
+            f"{jur.name} {sold_tag_date}: {total_records} sold properties added"
         )
         logger.info(result["message"])
 
@@ -2529,9 +2785,9 @@ async def _siftmap_search_sold(
         await _dismiss_popups(page)
 
     except Exception as e:
-        result["message"] = f"{county} County failed: {e}"
+        result["message"] = f"{jur.name} failed: {e}"
         logger.error(result["message"])
-        await _screenshot(page, f"siftmap_error_{county}")
+        await _screenshot(page, f"siftmap_error_{jur.fips}_{sold_tag_date}")
 
     return result
 
@@ -2545,6 +2801,10 @@ async def run_manage_sold_workflow(
     email: str | None = None,
     password: str | None = None,
     headless: bool = False,
+    dry_run: bool = False,
+    account_scope: str | None = None,
+    checkpoint_path: Path | None = None,
+    replace_owners: bool = False,
 ) -> dict:
     """Full workflow to manage sold properties via SiftMap.
 
@@ -2558,6 +2818,10 @@ async def run_manage_sold_workflow(
         email: DataSift login email.
         password: DataSift login password.
         headless: Run browser headless (default False for debugging).
+        dry_run: Read counts only; import and tag nothing.
+        account_scope: SiftMap `in_my_account_mode` ("in" to tag held records
+            only). None keeps Ty's importing behaviour.
+        checkpoint_path: JSON file for per-(fips, month) resume.
 
     Returns:
         Dict with workflow results.
@@ -2596,11 +2860,17 @@ async def run_manage_sold_workflow(
                 months_back=months_back,
                 min_sale_price=min_sale_price,
                 sold_tag_date=sold_tag_date,
+                dry_run=dry_run,
+                account_scope=account_scope,
+                checkpoint_path=checkpoint_path,
+                replace_owners=replace_owners,
             )
 
-            # Keep browser open for manual inspection
-            logger.info("Browser staying open 30s for inspection...")
-            await page.wait_for_timeout(30000)
+            # Keep the browser open for manual inspection only when someone is
+            # actually watching. A headless 14-county run would just idle here.
+            if not headless:
+                logger.info("Browser staying open 30s for inspection...")
+                await page.wait_for_timeout(30000)
 
             return result
         finally:
@@ -3510,8 +3780,28 @@ async def create_sold_sequence(page: Page) -> dict:
     Triggers are DRAG-AND-DROP from sidebar list to a drop zone.
     After trigger is placed, switch to Conditions tab, then Actions tab.
 
-    Trigger: Property Tags Added → Condition: "Sold" tag
-    Actions: Clear Tasks, Remove Lists, Change Status → Sold, Clear Assignee
+    Trigger: Property Tags Added -> Condition: RECENTLY_SOLD_TAG
+    Actions: Clear Tasks, Remove Lists, Change Status -> SOLD_STATUS,
+             Clear Assignee
+
+    The condition tag is RECENTLY_SOLD_TAG rather than "Sold", because on this
+    account `Sold` and `Already Sold` are property STATUSES; see the constant's
+    definition. This sequence is what maps the tag the SiftMap sweep stamps onto
+    the status every preset already suppresses, which is why no preset needs
+    editing.
+
+    THE TAG MUST EXIST FIRST. Verified the hard way on 2026-08-31: the condition
+    input is an autocomplete over tags that already exist, and the "Add" button
+    only commits a selection. Typing a tag that does not exist leaves the field
+    empty, and the save is rejected with
+    "Conditions > Property Tags: At least 1 (one) value is required."
+    Create it first:
+
+        python src/scripts/dpd_tags_create.py --names "Recently Sold" --commit
+
+    This is the same trap dpd_tags_create.py was written for -- DataSift's tag
+    controls are populated from existing tags, so anything that references a tag
+    has to come after the tag.
 
     Args:
         page: Logged-in Playwright page.
@@ -3743,12 +4033,16 @@ async def create_sold_sequence(page: Page) -> dict:
             box = await inp.bounding_box()
             if box and box["x"] > 230:  # past sidebar
                 await inp.click()
-                await inp.fill("Sold")
+                await inp.fill(RECENTLY_SOLD_TAG)
                 await page.wait_for_timeout(1500)
-                logger.info("Typed 'Sold' in tag condition input")
+                logger.info("Typed %r in tag condition input", RECENTLY_SOLD_TAG)
 
-                # Look for "Sold" in autocomplete dropdown
-                sold_opt = page.get_by_text("Sold", exact=True)
+                # Look for the tag in the autocomplete dropdown. exact=True
+                # matters: a substring match on "Sold" would also hit the
+                # per-month "Sold YYYY-MM" tags and the Sold/Already Sold
+                # statuses, and picking one of those makes the condition match
+                # the wrong thing.
+                sold_opt = page.get_by_text(RECENTLY_SOLD_TAG, exact=True)
                 found_sold = False
                 if await sold_opt.count() > 0:
                     for j in range(await sold_opt.count()):
@@ -3757,22 +4051,23 @@ async def create_sold_sequence(page: Page) -> dict:
                         if opt_box and opt_box["y"] > box["y"] + 20 and opt_box["x"] > 230:
                             await sold_opt.nth(j).click()
                             await page.wait_for_timeout(1000)
-                            logger.info("Selected 'Sold' from autocomplete")
+                            logger.info("Selected %r from autocomplete", RECENTLY_SOLD_TAG)
                             found_sold = True
                             break
 
                 if not found_sold:
-                    # "Sold" not in autocomplete — click "Add" button
+                    # Not in autocomplete -- the tag does not exist on the
+                    # account yet (the sweep creates it). Add it here.
                     add_btn = page.get_by_text("Add", exact=True)
                     if await add_btn.count() > 0:
                         await add_btn.last.click()
                         await page.wait_for_timeout(1000)
-                        logger.info("Clicked 'Add' to add Sold tag")
+                        logger.info("Clicked 'Add' to add %r", RECENTLY_SOLD_TAG)
                     else:
                         # Try pressing Enter
                         await inp.press("Enter")
                         await page.wait_for_timeout(1000)
-                        logger.info("Pressed Enter to add Sold tag")
+                        logger.info("Pressed Enter to add %r", RECENTLY_SOLD_TAG)
                 break
 
         # Dismiss any autocomplete dropdowns
@@ -3922,15 +4217,23 @@ async def create_sold_sequence(page: Page) -> dict:
             {
                 "search": ["Change Property Status", "Property Status Change",
                            "Property Status"],
-                "config": {"type": "select", "value": "Sold"},
+                # SOLD_STATUS, not "Sold": both are in preset_spec.DEAD_STATUSES
+                # so either suppresses, but "Already Sold" is the truthful one
+                # for a property that sold without us.
+                "config": {"type": "select", "value": SOLD_STATUS},
             },
             {
                 "search": ["Remove Property Lists", "Remove from Lists",
                            "Remove Lists"],
+                # Ty's TN list names were ["Pre-Foreclosure", "Probate",
+                # "Tax Sale", "Tax Delinquent"]. On this account `Probate` and
+                # `Tax Sale` DO NOT EXIST (27 lists, checked against the
+                # dpd_doctor baseline), so two of the four would have silently
+                # matched nothing. These are the marketing lists a sold property
+                # should come off; suppression itself is done by the status.
                 "config": {
                     "type": "multi_select",
-                    "values": ["Pre-Foreclosure", "Probate",
-                               "Tax Sale", "Tax Delinquent"],
+                    "values": SOLD_REMOVE_LISTS,
                 },
             },
             {
@@ -4008,10 +4311,10 @@ async def create_sold_sequence(page: Page) -> dict:
 
                 await _screenshot(page, f"sequence_action_{idx}_dropdown")
 
-                # Now look for "Sold" in the dropdown options
+                # Look for the configured value in the dropdown options
                 sold_opt = page.get_by_text(val, exact=True)
                 if await sold_opt.count() > 0:
-                    # Find the Sold option that's NOT the condition chip
+                    # Find the option that is NOT the condition chip
                     for j in range(await sold_opt.count()):
                         el = sold_opt.nth(j)
                         el_classes = await el.evaluate(
@@ -4160,14 +4463,108 @@ async def create_sold_sequence(page: Page) -> dict:
         await _dismiss_popups(page)
         await _screenshot(page, "sequence_saved")
 
-        # Check URL — should redirect from /new to a sequence detail page
-        final_url = page.url
-        if "/new" not in final_url or "/sequences/" in final_url:
-            logger.info("Sequence saved — URL: %s", final_url)
+        # ── Did it actually save? ──
+        #
+        # This block used to set success unconditionally, and its URL test was
+        # `"/new" not in url or "/sequences/" in url` -- which is TRUE for
+        # "/sequences/new/actions", because the second clause matches. So a save
+        # blocked by validation reported "Created ... sequence" and the caller
+        # believed it. The account diff is what caught it: sequences stayed at 5.
+        #
+        # DataSift renders a validation banner and stays on the builder. Read the
+        # banner, and require the URL to have LEFT /new before claiming success.
+        banner = await page.evaluate(r"""() => {
+            const pats = [/is required/i, /At least \d+/i, /cannot be empty/i,
+                          /please (select|enter|add)/i, /invalid/i];
+            const hits = [];
+            for (const el of document.querySelectorAll('*')) {
+                if (el.children.length) continue;
+                const t = (el.textContent || '').trim();
+                if (t && t.length < 200 && pats.some(p => p.test(t))) hits.push(t);
+            }
+            return [...new Set(hits)].slice(0, 5);
+        }""")
 
-        result["success"] = True
-        result["message"] = "Created 'Sold Property Cleanup' sequence"
-        logger.info(result["message"])
+        # DataSift confirms with a MODAL and stays on /sequences/new/actions -- it
+        # does not redirect. So "did the URL leave /new" is not a save signal;
+        # requiring it produced a false NEGATIVE on a sequence that really saved
+        # (verified by opening it: created 08/31/26 11:32AM, Active). Look for the
+        # confirmation modal, and treat the URL only as a weak secondary signal.
+        confirmed = await page.evaluate(r"""() => {
+            const pats = [/successfully created/i, /successfully saved/i,
+                          /sequence (created|saved)/i];
+            for (const el of document.querySelectorAll('*')) {
+                const t = (el.textContent || '').trim();
+                if (t.length < 120 && pats.some(p => p.test(t))) return t;
+            }
+            return '';
+        }""")
+
+        final_url = page.url
+        left_new = "/new" not in final_url
+
+        # Order matters. The builder stays mounted behind the confirmation modal,
+        # so its "... is required" helper text is often still in the DOM after a
+        # SUCCESSFUL save. Checking the banner first therefore turns a real save
+        # into a reported failure -- and the caller's retry then creates a
+        # duplicate "... V2" sequence. The modal is the positive signal; trust it
+        # first and only fall back to the banner when there is no confirmation.
+        if confirmed:
+            result["success"] = True
+            result["confirmation"] = confirmed
+            result["message"] = f"Created {result['sequence_name']!r} sequence"
+            logger.info("%s — %s", result["message"], confirmed)
+            if banner:
+                logger.debug("Stale validation text still in the DOM: %s", banner)
+        elif banner:
+            result["success"] = False
+            result["validation_errors"] = banner
+            result["message"] = (
+                "Sequence NOT saved — DataSift rejected it: " + " | ".join(banner)
+            )
+            logger.error(result["message"])
+            logger.error("Still on the builder at %s", final_url)
+        elif left_new:
+            result["success"] = True
+            result["confirmation"] = f"url left /new: {final_url}"
+            result["message"] = f"Created {result['sequence_name']!r} sequence"
+            logger.info("%s — %s", result["message"], result["confirmation"])
+        else:
+            result["success"] = False
+            result["message"] = (
+                f"Sequence save UNCONFIRMED — no confirmation modal, no validation "
+                f"message, still at {final_url}. Do NOT re-run blindly: check "
+                f"datasift_sequence_saved.png and search /sequences for "
+                f"{result['sequence_name']!r} first, or you will create a duplicate."
+            )
+            logger.error(result["message"])
+
+        # Whatever the verdict, say which actions actually landed. The React DnD
+        # places a card without confirming it: `Remove Property Lists` reported
+        # "Added action" twice while leaving an empty drop zone, so the saved
+        # sequence had 3 of 4 actions. Counting the cards is the only honest report.
+        try:
+            placed = await page.evaluate(r"""() => {
+                const want = ['CHANGE STATUS TO', 'REMOVE', 'DELETE ALL EXISTING',
+                              'ASSIGN THE PROPERTY TO', 'ADD PROPERTY'];
+                const seen = [];
+                for (const el of document.querySelectorAll('*')) {
+                    if (el.children.length) continue;
+                    const t = (el.textContent || '').trim().toUpperCase();
+                    if (t && t.length < 60 && want.some(w => t.startsWith(w))) seen.push(t);
+                }
+                return Array.from(new Set(seen));
+            }""")
+            result["actions_placed"] = placed
+            logger.info("Action cards present at save: %s", placed)
+            if not any(a.startswith("REMOVE") for a in placed):
+                logger.warning(
+                    "'Remove Property Lists' did NOT land. Status suppression still "
+                    "works (all presets exclude %s); removing lists is hygiene and "
+                    "can be added by hand via 'Make Changes'.", SOLD_STATUS,
+                )
+        except Exception as e:  # noqa: BLE001
+            logger.debug("Could not enumerate action cards: %s", e)
 
     except Exception as e:
         result["message"] = f"Sequence creation failed: {e}"

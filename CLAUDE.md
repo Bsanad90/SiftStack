@@ -53,9 +53,15 @@ python src/main.py manage-presets --add-sold-exclusion            # add Sold exc
 python src/main.py manage-presets --create-sold-sequence          # create Sold cleanup sequence
 python src/main.py manage-presets --all                           # discovery + update + sequence
 
-# SiftMap sold property tagging
-python src/main.py manage-sold --months-back 12                   # tag sold properties (last 12 months)
-python src/main.py manage-sold --counties Knox --min-sale-price 5000
+# SiftMap sold property tagging (imports + tags sold properties, monthly)
+# ALWAYS dry-run first: with no --counties this covers all 14 jurisdictions, and a
+# live run IMPORTS every sold property in each county-month (~7.9K/month across 14).
+python src/main.py manage-sold --dry-run                          # counts only, writes nothing
+python src/main.py manage-sold --counties Montgomery --dry-run     # one county, prove it resolves
+python src/main.py manage-sold                                    # live, last month, all 14
+python src/main.py manage-sold --counties "Baltimore County,Fairfax" --min-sale-price 5000
+python src/main.py manage-sold --sold-account-scope in            # tag held records only, import nothing
+python src/main.py manage-sold --counties Knox,Blount             # the legacy TN footprint
 
 # Courthouse photo import (build 1.0.28+)
 python src/main.py photo-import --folder ./photos --photo-county Knox --photo-type probate
@@ -178,6 +184,101 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
   `trace --pay-id <pay-id: in Claude memory, smartskip trap note>`. → [history](docs/history/prospecting.md)
 - **SMS agent** — deployed on Fly, API transport verified. Autonomy ladder controlled by
   `SMS_AGENT_PHASE`. → [history](docs/history/sms-and-coaching.md)
+- **manage-sold (SiftMap sold sweep)** — CODE DONE + SUPPRESSION WIRED 2026-08-31. **No sweep
+  has run; no records imported.** Ported from Ty's Knox/Blount flow to all 14 jurisdictions:
+  cadence, per-month `Sold YYYY-MM` tags, `--min-sale-price 1000` and the record-importing
+  behaviour are his, unchanged. Three things are not: counties resolve through
+  `dpd.jurisdictions` and **raise** instead of falling back to Knox's `47093` (the old
+  `.get(county, "47093")` silently queried Knoxville for every MD/DC/VA county); the tag is
+  `Recently Sold`, not `Sold`, which is a status here; and a per-(fips, month) checkpoint lets a
+  14-county run resume. Offline verification passes
+  (`python tools/manual/test_manage_sold_url.py`).
+  **Done live:** the `Recently Sold` property tag exists (`dpd_tags_create.py --names`, now
+  supports arbitrary names), and the **`Sold Property Cleanup` sequence is live and Active** in
+  the Transactions folder — trigger *tag added* → condition `Recently Sold` → **Change Status to
+  `Already Sold`** + Delete All Property Tasks + Clear Assignee. Because every preset excludes
+  `Already Sold` via `DEAD_STATUSES`, suppression needs no preset edit. `Already Sold` IS
+  selectable in the sequence action picker, so `SOLD_STATUS_FALLBACK` was not needed.
+  **Two gaps, stated rather than hidden:** (1) `Remove Property Lists` never landed — the React
+  DnD reported "Added action" twice while leaving an empty drop zone, so the sequence has 3 of 4
+  actions. Status suppression is unaffected; removing lists is hygiene and can be added by hand
+  via "Make Changes". (2) **`dpd_doctor` under-reports sequences** — it read `sequences
+  unchanged (5)` after the sequence was demonstrably created, because it does not expand the
+  folder chevrons on `/sequences`. Do not trust `--verify` for sequences; search `/sequences`
+  by name instead. The earlier "5 sequences, all Basem's" baseline is suspect for the same
+  reason.
+  **Traps learned:** the sequence condition input is an autocomplete over EXISTING tags — typing
+  a tag that does not exist leaves the field empty and the save is rejected, so the tag must be
+  created first. And DataSift confirms a save with a MODAL while staying on
+  `/sequences/new/actions`; the old code both claimed success unconditionally and tested the URL
+  with `"/new" not in url or "/sequences/" in url`, which is always true there. Both fixed —
+  the save now reads the confirmation modal and the validation banner, and reports which action
+  cards actually landed.
+  **Dry run PASSED live 2026-08-31** (`--counties Montgomery --months-back 1 --dry-run`):
+  resolved to fips 24031, window 2026-07-01..07-31, **992 properties matched**, nothing
+  imported or tagged, no checkpoint written, exit 0. The screenshot
+  (`datasift_siftmap_filtered_24031_2026-07.png`) shows Potomac / Montgomery Village /
+  Poolesville and rows in Cabin John MD 20818, Beallsville MD 20839 — Montgomery County, NOT
+  Knoxville. 992 against the ~1,152/month Market Finder predicts is good corroboration. Rows
+  include Condominium Unit and Townhouse, confirming there is no single-family filter: the
+  sweep takes every property type. One defect found and fixed by this run — county success was
+  keyed on `records > 0`, so every dry run reported "No counties processed successfully" and
+  exited 1; it now keys on the month results, and the offline suite has a regression check.
+  **Next:** dry-run all 14 headless, then a live sweep on the smallest county.
+- **Sold backlog suppression (`src/scripts/sold_backlog.py`) — BUILT, AUDITED, PARKED
+  2026-08-31 pending a write path.** The sweep above catches what sells from now on; this
+  catches what already sold while we kept marketing it. Audit (read-only, from the 26,645-record
+  hydration) selects **1,559 records** that sold on/after 2024-08-31 and are STILL in an active
+  status: 1,123 already mailed, all of them on a list, 643 sitting in "No Answer" on the dialer.
+  MD 941 / VA 488 / DC 127. Price bands $100k+ 905, blank-or-$0 635, $20k-100k 11, under-$20k 8.
+  (Was 1,668 until a code review caught the status bug below.)
+  Reviewable CSV at `output/sold_backlog_<ts>.csv`, sorted review-first (blank/$0 price and 2024
+  sales lead, being the likeliest false positives — `last_sold` means the property changed hands,
+  which can equally mean the CURRENT owner just bought it). Every row carries `prior_status`;
+  every write run snapshots prior tags to a backup with `--undo` to restore.
+  **Browser path VALIDATED except the tag click (2026-08-31).** `src/scripts/sold_backlog_upload.py`
+  drives Upload File -> **Update Data -> "Tagging existing properties"**, which is the right
+  surface: the wizard's own Data Requirements for that option are Property Street / City / State /
+  ZIP Code and NOTHING else, so the file carries no owner column and cannot overwrite PR/DM
+  mapping, and it updates existing records rather than creating any. Proven in a dry run on one
+  row: the option sticks, the file uploads, **all four address columns auto-map with the real
+  values**, and the Review step is reached. Nothing was ever submitted.
+  **The one blocker is applying the tag**, and both routes are unproven:
+  (a) the Add-tags step's input refuses automation — Playwright `.type()` leaves it empty and the
+  dropdown unfiltered, and React's native-value-setter pattern sets the DOM value (readback
+  confirms `Recently Sold`) but React clears it and never filters. (b) The CSV's Tags column
+  **does not auto-map** at step 4 (the known Tags/Lists behaviour), so mapping it needs the React
+  DnD.
+  **Three false successes were caught by screenshots in this flow, all now fixed to fail loudly:**
+  the tag helper reported success on an empty input; the chip check matched `Recently Sold` in the
+  open SUGGESTION LIST rather than a committed chip (it is a real account tag now, so it appears
+  as an option); and the script would have proceeded to Review and Finish having tagged nothing.
+  It now refuses to continue unless the tag is verifiably committed.
+  **RUNBOOK — one human pass, ~2 minutes, no code needed.** This is a one-off backlog clear, not a
+  recurring job, so hand-running the wizard is cheaper than automating two hostile React controls:
+  Records -> Upload File -> **Update Data** -> "Tagging existing properties" -> Next ->
+  **Add tags: type `Recently Sold` and click Add** -> Next -> upload
+  `output/sold_backlog_wizard_20260831T163705.csv` -> Next -> the four address columns auto-map; **drag the
+  `Tags` column onto the `Tags` target** to also land each row's `Sold YYYY-MM` -> Next -> Finish.
+  Then confirm on one record that the status flipped to `Already Sold` (the sequence does that) and
+  that it left two presets.
+  **Why the API route is parked, not disproven:** the one-record write probe was stopped by the local permission classifier, so
+  **Code review 2026-08-31 caught a silent selection bug:** the account stores some statuses as
+  display labels ("No Answer") and others snake_cased ("not_interested", "under_contract",
+  "dnc"), while `preset_spec.DEAD_STATUSES` holds only the display forms. A plain lowercase
+  compare therefore MISSED the snake_cased dead statuses, and 109 already-dead records --
+  107 of them `not_interested` -- were selected as "still active" and would have been re-tagged
+  and flipped. `sold_backlog._status_key()` now normalises underscores and hyphens before
+  comparing. Anything else comparing a live status against `DEAD_STATUSES` has the same hazard.
+  **Related finding:** a record read live carried the list `Probate`, which is NOT among the 27
+  lists `dpd_doctor` captured — so its LIST capture under-reports as well as its sequence capture.
+  `datasift_uploader.SOLD_REMOVE_LISTS` was built from that baseline and is therefore probably
+  missing real lists. Not blocking (status does the suppression, lists are hygiene), but do not
+  treat those 22 names as the full set. A live sweep **imports** ~7.9K records/month across the 14 (measured from
+  `output/dpd_market_finder/*.json`), so it needs an explicit go. Separately, 1,689 records
+  already in the account sold in the last 24 months and are still active (1,214 already mailed,
+  651 on the dialer) — now that the tag and sequence exist, stamping `Recently Sold` on those
+  by address suppresses them with no browser and no imports.
 
 ## Local working files
 
@@ -263,7 +364,8 @@ DataSift.ai (formerly REISift) is the CRM where scraped records land for niche s
 - `src/datasift_uploader.py` — Playwright login + upload wizard + enrich + skip trace + preset management + sequence builder + SiftMap sold workflow
 - `tools/manual/test_datasift_upload.py` — Headed browser test (upload + enrich + skip trace)
 - `tools/manual/test_manage_presets.py` — Headed browser test (preset discovery + sold exclusion + sequence creation)
-- `tools/manual/test_manage_sold.py` — Headed browser test (SiftMap sold property tagging)
+- `tools/manual/test_manage_sold.py` — Headed browser test (SiftMap sold property tagging; `--dry-run` to count without writing)
+- `tools/manual/test_manage_sold_url.py` — Offline check of county resolution + URL construction (no browser, no account). Run after any change to the sold sweep.
 
 ### CSV Column Structure (42 columns)
 - **Core auto-mapped (11):** Property Street/City/State/ZIP, Owner First/Last Name, Mailing Street/City/State/ZIP, Tags
@@ -272,7 +374,9 @@ DataSift.ai (formerly REISift) is the CRM where scraped records land for niche s
 - **Custom fields (16):** Notice Type, County, Date Added, Owner Deceased, Date of Death, Decedent Name, Decision Maker, DM Relationship, DM Confidence, DM 2/3 Name/Relationship, Obituary URL, Source URL, Notice Screenshot
 
 ### Niche Sequential Marketing
-DataSift's niche sequential system uses filter presets to guide records through SMS → Call → Mail → Deep Prospecting phases. Two preset folders: "00 Niche Sequential Marketing" (12 presets, courthouse data) and "01. Bulk Sequential Marketing" (9 presets, bulk data). All 21 presets exclude Sold status (build 1.0.23). A "Sold Property Cleanup" sequence in the Transactions folder auto-fires on "Sold" tag to change status, remove from lists, clear tasks, and clear assignee.
+DataSift's niche sequential system uses filter presets to guide records through SMS → Call → Mail → Deep Prospecting phases. Two preset folders: "00 Niche Sequential Marketing" (12 presets, courthouse data) and "01. Bulk Sequential Marketing" (9 presets, bulk data). All 21 presets exclude Sold status (build 1.0.23). A "Sold Property Cleanup" sequence in the Transactions folder auto-fires on the recently-sold tag to change status, remove from lists, clear tasks, and clear assignee.
+
+> **This paragraph describes Ty's TN setup, not necessarily this account.** The `dpd_doctor` baseline reads no `Sold` among this account's 340 property tags and no "Sold Property Cleanup" among its 5 sequences — both artifacts the code would have created — so treat the 21 presets and the sequence as unverified here until `dpd_doctor.py` says otherwise. This account's own suppression runs through the 73 DPD presets, which exclude the `Sold` / `Already Sold` **statuses** via `preset_spec.DEAD_STATUSES`. That is why the sold sweep stamps `Recently Sold` (a tag) and the sequence maps it onto `Already Sold` (a status): a same-named tag would split suppression across two vocabularies.
 
 - **"Courthouse Data" tag:** Every record gets this tag — signals first-to-market county data (prioritized over bulk data in filter presets)
 - **Lists column:** Maps `notice_type` → DataSift list name (`foreclosure` → "Foreclosure", `probate` → "Probate", `tax_sale` → "Tax Sale", `tax_delinquent` → "Tax Delinquent", `eviction` → "Eviction", `code_violation` → "Code Violation", `divorce` → "Divorce"). DataSift auto-creates lists from CSV.
@@ -375,7 +479,7 @@ Hard-won patterns from build 1.0.22-1.0.23 (SiftMap, preset management, sequence
 - Duplicate name handling: detect error toast "different sequence title", retry with " V2" suffix
 - Actions tab: navigate via "Set the Following Actions" button or URL (`/sequences/new/actions`)
 - Autocomplete inputs: after each selection, `fill("")` + Escape to dismiss dropdown before next entry
-- "Sold Property Cleanup" sequence exists in Transactions folder (build 1.0.23): Trigger (Property Tags Added) → Condition (Sold) → Actions (Status→Sold, Remove Lists, Clear Tasks, Clear Assignee)
+- "Sold Property Cleanup" sequence (build 1.0.23): Trigger (Property Tags Added) → Condition (`Recently Sold`, from `datasift_uploader.RECENTLY_SOLD_TAG`) → Actions (Status→`Already Sold` per `SOLD_STATUS`, Remove Lists, Clear Tasks, Clear Assignee). **Not present on this account as of the last `dpd_doctor` capture** — build it before running the sold sweep, or the tag lands with nothing listening. Confirm `Already Sold` is offered by the sequence *action* status picker: the Records *filter* picker exposes only 19 of 38 statuses, and `SOLD_STATUS_FALLBACK` exists for that case.
 
 **SiftMap Automation**
 - Search by city (NOT county): Knox → "Knoxville, TN", Blount → "Maryville, TN"
@@ -509,7 +613,7 @@ Full build narrative, including every panel trap and the inverted-preset post-mo
 2. ~~Make the daily DC foreclosure feed reach the FTM lane~~ **DONE 2026-08-28 (code only):** `mddc_datasift_upload.BATCH_TAG = "FTM"`. The next MDDC upload — on Basem's go — lands in `05 FTM - CALL` / `06 FTM - MAIL`.
 3. **Run the two free VA pulls — CODE FIXED 2026-08-28, FINAL RUN NOT COMPLETED (session paused mid-run on Basem's instruction).** Three real fixes landed: multi-county postback cancellation (one county per Firecrawl call), Firecrawl budget on heavy windows (adaptive date-window split), and a wrong pager id that had limited every earlier run to page 1. **Next session, run:** `python -u src/scripts/va_trustee_sale_pull.py --popular-search 6 --days 60 --max-pages 3 --out output/va_estate_claims.csv` then the same with `--popular-search 8 --out output/va_tax_deeds.csv` (detached, ~15–25 min each; exit 3 = Firecrawl gave up on a 7-day window, re-run), then `python src/scripts/data_extraction_test_build.py --md-json output/md_row_review_08-26-2026.json --va-estate-claims output/va_estate_claims.csv --va-tax-deeds output/va_tax_deeds.csv` to add the VA tabs to the review workbook. The CSVs currently on disk are from the BROKEN pre-fix run (statewide, page 1 only) — do not review them. Nothing goes to the account until Basem has checked the workbook.
 4. **The DC pull (Phase 4) — ONLY on Basem's explicit go.** Described under "What the next (pull) run would do" in [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md). Until it runs, every one of the 73 presets loads empty for DC.
-5. ~~The other 13 jurisdictions~~ **DONE 2026-08-31:** all 13 built and verified via `src/scripts/dpd_siftmap_build_all.py` (sequential per-county driver, halts on first defect, resume-aware) — 152 presets saved, every one reloading to its exact measured count, 72 inexpressible rows routed to FTM, 8 measured-zero rows kept. Fixes that made it survivable: `saved_filter_names` now exhausts "Show more" (was capped at 4 clicks — fatal at 200+ rows), `reload_check` retries an empty popover once (transient mid-session failure seen on Anne Arundel). QA reports in `output/dpd_qa_report_<fips>.md`. Still open from the old item: the six counties outside the nine-county scope (Calvert, Carroll, Charles, Stafford, Spotsylvania, Fredericksburg City) need `COUNTY_SCOPE` widened — a delete-and-rebuild of all 73 Records presets (~2.7 h) — before *pulled* records from them show in the Records presets; defer until a pull for those counties is actually approved.
+5. ~~The other 13 jurisdictions~~ **DONE 2026-08-31:** all 13 built and verified via `src/scripts/dpd_siftmap_build_all.py` (sequential per-county driver, halts on first defect, resume-aware) — 152 presets saved, every one reloading to its exact measured count, 72 inexpressible rows routed to FTM, 8 measured-zero rows kept. Fixes that made it survivable: `saved_filter_names` now exhausts "Show more" (was capped at 4 clicks — fatal at 200+ rows), `reload_check` retries an empty popover once (transient mid-session failure seen on Anne Arundel). **Correction 2026-08-31: exhausting "Show more" is not the same as seeing every filter.** `saved_filter_names` reads the SiftMap **Presets popover**, and that popover tops out around 100 rows; the account actually holds **180 saved filters across 18 pages** (measured on the management page). The complete list is under **Configure → `/siftmap/presets/account`** (10 per page, already known to the code as `PRESETS_ACCOUNT_URL`, which is what `--delete-name` drives). Consequence: any presence/skip check built on `saved_filter_names` is working from a partial list — and `dpd_siftmap_presets.py --commit` uses it exactly that way, so it can re-save a name that already exists, which its own comment calls a hard stop. Read the management page, not the popover, when the question is "does this filter exist". QA reports in `output/dpd_qa_report_<fips>.md`. **County split DONE 2026-08-31 (Basem's design: pull all 14, call the core 9, mail everywhere):** the 30 MAIL presets now carry all 15 counties (`COUNTY_SCOPE_MAIL`), added IN PLACE via `dpd_presets_create.py --widen-counties` — load row (JS click on the title, from a FRESH /records navigation per preset), `set_tokens` the 6 new counties, Save (overwrite), then verify the STORE (counties 9→15, every other stored field byte-equal; the panel's exclusion render lies on load but Save does not serialize the lie — proven by the `--widen-smoke` gate). CALL / Deep Prospecting / Reactivation stay at 9. `dpd_presets_verify.py` exits 0: 73/73, 0 defects.
 6. Sign-ups when Basem is ready (DC Recorder of Deeds free registration; a real `CAPTCHA_API_KEY`; DOB eRecords) — the ordered list is in `output/dpd_dc_ftm_investigation.md`.
 
 **Standing constraints:** create no Lists (reuse what exists; a SiftMap pull applies *tags* in the Add-Records modal, not lists); `.env` browser auth for every WRITE (presets/folders/SiftMap have no write API, and this account's internal API 403s on writes) — internal-API READS are fine and are how `dpd_presets_verify.py` checks the store; Priority 1/2 are stamped at pull time so they arrive with the property; FTM is stamped by the daily Register of Wills / MDDC / VA pulls; never click `Add Records to Account` and never tick the Save Filters PRO auto-add checkbox without an explicit go.

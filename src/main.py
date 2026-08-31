@@ -1099,24 +1099,51 @@ def _run_manage_presets(args) -> None:
 
 def _run_manage_sold(args) -> None:
     """Run the SiftMap sold properties management workflow."""
+    from pathlib import Path
+
     from datasift_uploader import run_manage_sold_workflow
 
-    # Parse counties if provided, otherwise use default (Knox, Blount)
+    # Parse counties if provided; omitted means the account's own footprint
+    # (the 14 doors-per-deal jurisdictions), chosen inside the workflow.
+    #
+    # `.title()` is kept for backwards compatibility, and is safe because
+    # `dpd.jurisdictions.resolve` matches case-insensitively and accepts the
+    # title-cased forms ("District Of Columbia", "Baltimore County"). A name it
+    # cannot resolve stops the run rather than defaulting to a county.
     counties = None
     if args.counties and args.counties.lower() != "all":
         counties = [c.strip().title() for c in args.counties.split(",")]
+
+    dry_run = getattr(args, "dry_run", False)
+    checkpoint = getattr(args, "sold_checkpoint", None)
 
     result = asyncio.run(run_manage_sold_workflow(
         counties=counties,
         months_back=getattr(args, "months_back", 1),
         min_sale_price=getattr(args, "min_sale_price", 1000),
         sold_tag_date=getattr(args, "sold_tag_date", None),
+        dry_run=dry_run,
+        account_scope=getattr(args, "sold_account_scope", None),
+        checkpoint_path=Path(checkpoint) if checkpoint else None,
+        replace_owners=getattr(args, "replace_owners", False),
     ))
 
     if result.get("success"):
-        logging.info("Manage sold: %s", result.get("message", "OK"))
+        logging.info("Manage sold%s: %s",
+                     " (DRY RUN)" if dry_run else "", result.get("message", "OK"))
         logging.info("  Counties: %s", ", ".join(result.get("counties_processed", [])))
+        if result.get("counties_failed"):
+            logging.warning("  FAILED: %s", ", ".join(result["counties_failed"]))
+        logging.info("  Total matched: %s", f"{result.get('total_matched', 0):,}")
         logging.info("  Total records: %d", result.get("total_records", 0))
+        for d in result.get("month_details", []):
+            logging.info(
+                "    %-24s %s  matched=%-8s records=%-7s %s",
+                d.get("county"), d.get("month"),
+                d.get("matched") if d.get("matched") is not None else "?",
+                d.get("records", 0),
+                "SKIPPED" if d.get("skipped") else ("ok" if d.get("success") else "FAILED"),
+            )
     else:
         logging.error("Manage sold failed: %s", result.get("message"))
         sys.exit(1)
@@ -1465,6 +1492,31 @@ def cli_main() -> None:
         default=None,
         help="Tag date in YYYY-MM format (manage-sold mode, default: current month)",
     )
+    parser.add_argument(
+        "--sold-account-scope",
+        type=str,
+        choices=["in", "not_in"],
+        default=None,
+        help="manage-sold mode: SiftMap in_my_account_mode. Omit (default) to "
+             "import every sold property in the county-month, which also builds "
+             "the sold-comp/cash-buyer dataset. 'in' tags only records the "
+             "account already holds and imports nothing.",
+    )
+    parser.add_argument(
+        "--replace-owners",
+        action="store_true",
+        help="manage-sold mode: turn OFF DataSift's 'Do not replace owners' so "
+             "SiftMap owner data overwrites the record's owner. This is Ty's "
+             "behaviour, but it overwrites PR/DM contact mapping across the whole "
+             "footprint, so it is OFF by default here.",
+    )
+    parser.add_argument(
+        "--sold-checkpoint",
+        type=str,
+        default="output/manage_sold_state.json",
+        help="manage-sold mode: JSON file recording which (fips, month) pairs "
+             "succeeded, so an interrupted run resumes. Pass '' to disable.",
+    )
 
     # Manage presets arguments
     parser.add_argument(
@@ -1550,7 +1602,10 @@ def cli_main() -> None:
                                  "deep-prospecting", "default", "all"],
                         help="Sequence folder to create (setup-sequences mode)")
     parser.add_argument("--dry-run", action="store_true",
-                        help="Preview changes without creating (setup-sequences/niche-sequential)")
+                        help="Preview without writing. setup-sequences/niche-sequential: "
+                             "preview changes. manage-sold: read each county-month's "
+                             "matched count and stop, importing and tagging nothing "
+                             "(run this first to confirm the counties resolve).")
 
     # Niche sequential
     parser.add_argument("--channel", type=str, default="sms",

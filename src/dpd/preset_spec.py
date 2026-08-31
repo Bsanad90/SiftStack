@@ -42,12 +42,19 @@ ENTRY = {
 # The six-part stack from the plan maps onto the Records panel as FIVE parts, and the
 # missing one is worth stating rather than quietly dropping:
 #   1  done/dead statuses      -> DEAD_STATUSES below
-#   2  recently-sold TAG       -> DOES NOT EXIST on this account. There is no `Sold` tag
-#                                 among the 340 property tags; `Sold` and `Already Sold`
-#                                 are STATUSES and are excluded by part 1. The separate
-#                                 recently-sold tag is a Phase 4 item (manage_sold_
-#                                 properties pointed at the 14 counties) and until it is
-#                                 written, part 2 is covered only as far as part 1 reaches.
+#   2  recently-sold TAG       -> COVERED WITHOUT A PRESET CHANGE, via status. There is
+#                                 still no `Sold` tag among the property tags, and there
+#                                 must not be: `Sold` and `Already Sold` are STATUSES and
+#                                 a same-named tag would split suppression across two
+#                                 vocabularies. Instead `manage_sold_properties` (now
+#                                 pointed at all 14 jurisdictions) stamps
+#                                 datasift_uploader.RECENTLY_SOLD_TAG and the
+#                                 "Sold Property Cleanup" sequence maps that tag onto
+#                                 SOLD_STATUS ("Already Sold"), which part 1 already
+#                                 excludes. These presets therefore need no edit for
+#                                 part 2; what they need is the sweep to keep running.
+#                                 The per-month "Sold YYYY-MM" companion tag is an audit
+#                                 trail of WHEN each record sold, not a filter input.
 #   3  low / negative equity   -> SUPPRESS_LISTS below
 #   4  dead neighbourhoods     -> NOT a Records filter at all. The panel has no
 #                                 neighbourhood block; this is a PULL-side suppression and
@@ -288,9 +295,9 @@ def main() -> int:
           f"lists {SUPPRESS_LISTS}, structure {STRUCTURE['prefer']} "
           f"(blank {STRUCTURE['blank']})")
     print(f"  CALL and DEEP presets additionally exclude {SUPPRESS_TAGS_CALL}")
-    print("\n  GAP: suppression part 2 (recently-sold TAG) has no tag on this account. "
-          "`Sold` and `Already Sold` are statuses and are covered by part 1; the "
-          "separate tag is a Phase 4 item.")
+    print("\n  OK: suppression part 2 (recently sold) is covered through STATUS, "
+          "not a preset edit: manage-sold stamps the `Recently Sold` tag and the "
+          "cleanup sequence sets status `Already Sold`, which part 1 excludes.")
     print("  N/A: suppression part 4 (dead neighbourhoods) is not a Records filter. "
           "It is applied at pull time in the SiftMap tier configs.")
     return 0
