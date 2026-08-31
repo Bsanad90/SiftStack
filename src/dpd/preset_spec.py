@@ -164,6 +164,21 @@ COUNTY_SCOPE = [
     "Prince William",        # VA 51153
 ]
 
+# MAIL presets cover all 14 DPD jurisdictions (Basem, 2026-08-31: pull everything,
+# call only the core 9, mail everywhere). The six extra strings follow the picker's
+# convention (bare county name; independent cities carry " City") and match the
+# spelling on 4,300+ records already in the account. The saved filter named
+# "Obituaries in 15 Counties" is NOT a source -- its location param holds only the
+# same 9 as "Obituary 9 Counties" despite the name (read 2026-08-31).
+COUNTY_SCOPE_MAIL = COUNTY_SCOPE + [
+    "Calvert",               # MD 24009
+    "Carroll",               # MD 24013
+    "Charles",               # MD 24017 (NOT "Charles City", which is a VA county)
+    "Stafford",              # VA 51179
+    "Spotsylvania",          # VA 51177
+    "Fredericksburg City",   # VA 51630 (independent city, like Alexandria City)
+]
+
 # (folder, label, entry scope, channel, stages)
 _FOLDER_PLAN = [
     ("01 HOTTEST - CALL", "Hottest", "HOTTEST", "call", CALL_STAGES),
@@ -222,7 +237,7 @@ def build() -> list[dict]:
                 "tags_any": tags_any,
                 "tags_any_2": tags_any_2,
                 "tags_none": tags_none,
-                "counties": list(COUNTY_SCOPE),
+                "counties": list(COUNTY_SCOPE_MAIL if channel == "mail" else COUNTY_SCOPE),
                 "suppression": sup,
                 "note": blocks.get("scope_note"),
             })

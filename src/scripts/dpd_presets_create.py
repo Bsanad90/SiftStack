@@ -47,11 +47,12 @@ from dpd.block_map import (  # noqa: E402
     BLOCK, GAPS, MODE_EXCLUDE, PARAM_FOR, PARAM_SUPPRESSION, PLACEHOLDER,
     STATUS_NOT_SELECTABLE, TAG_BUDGET_TRIMS,
 )
-from dpd.preset_spec import PRESETS  # noqa: E402
+from dpd.preset_spec import COUNTY_SCOPE, COUNTY_SCOPE_MAIL, PRESETS  # noqa: E402
 
 BASE = "https://app.reisift.io"
 SEARCH = "#RecordsFilters__Filter_Blocks__Search"
 OUT = ROOT / "output" / "dpd_presets_create.json"
+OUT_WIDEN = ROOT / "output" / "dpd_presets_widen.json"
 
 # ------------------------------------------------------------------ panel bits
 
@@ -1148,6 +1149,222 @@ async def _folder_value(page) -> str | None:
     }""")
 
 
+# ------------------------------------------------------- county widening (edit in place)
+# Basem 2026-08-31: MAIL presets cover all 14 DPD jurisdictions, CALL stays on the core 9.
+# ADD counties to the loaded preset and Save (overwrite) -- never delete-and-rebuild.
+# The panel renders a loaded preset's exclusions as "Include" (render bug; the store is
+# right), so the panel is only trusted for CHIP VALUES here; every save is verified
+# against the stored definition over the internal API (reads are allowed on this account).
+
+_widen_api = None
+
+
+def _store_rows(folder: str) -> list[dict]:
+    """All stored preset rows in one folder, via the internal API (read-only)."""
+    global _widen_api
+    from datasift_api_upload import Api
+    if _widen_api is None:
+        _widen_api = Api()
+    folders = _widen_api.call("/api/internal/filter-preset-folder/"
+                              "?offset=0&limit=999&ordering=title&type=properties")
+    by_title = {r["title"]: r["uuid"] for r in folders.get("results") or []}
+    u = by_title.get(folder)
+    if not u:
+        return []
+    r = _widen_api.call(f"/api/internal/filter-preset-folder/{u}/filter-preset/"
+                        "?offset=0&limit=999&ordering=title&type=properties")
+    return r.get("results") or []
+
+
+def _store_fetch(folder: str, name: str) -> dict | None:
+    for s in _store_rows(folder):
+        if _present(name, [s.get("title") or ""]):
+            return s
+    return None
+
+
+def _store_counties(row: dict) -> tuple[list[str], bool]:
+    f = (row.get("filters") or {}).get("must") or {}
+    cs = f.get("any_county") or []
+    return (sorted((c.get("title") or "") for c in cs),
+            any(c.get("isNegative") for c in cs))
+
+
+def _filters_minus_county(row: dict) -> dict:
+    import copy
+    f = copy.deepcopy(row.get("filters") or {})
+    if isinstance(f.get("must"), dict):
+        f["must"].pop("any_county", None)
+    return f
+
+
+async def _county_chips(page) -> list[str] | None:
+    blocks = await page.evaluate(_PANEL_DUMP)
+    if isinstance(blocks, dict):
+        return None
+    b = next((x for x in blocks if x["block"] == "PROPERTY COUNTY"), None)
+    return None if b is None else list(b["chips"])
+
+
+# Prefix-tolerant row finder: the list UI truncates titles and a row's innerText can
+# carry extra lines, so exact equality misses real rows (and every miss toggled the
+# folder shut again, 2026-08-31). Matches on first lines, prefix in either direction.
+_FIND_ROW_JS = """(text) => {
+    const b = document.querySelector('[class*="PresetsBelowBody"]');
+    if (!b) return null;
+    for (const el of b.querySelectorAll('[class*="CollapsibleFolderPresetTitle"]')) {
+        const t = (el.innerText || '').trim().split('\\n')[0].trim();
+        if (!t) continue;
+        if (!(t === text || t.startsWith(text) || text.startsWith(t))) continue;
+        el.scrollIntoView({block: 'center'});
+        const r = el.getBoundingClientRect();
+        return {x: r.x + r.width / 2, y: r.y + r.height / 2, t};
+    }
+    return null;
+}"""
+
+
+async def _ensure_folder_open(page, folder: str, display: str) -> bool:
+    """Make `display`'s row visible: if it isn't, click the folder title once."""
+    for attempt in range(2):
+        pt = await page.evaluate(_FIND_ROW_JS, display)
+        if pt:
+            return True
+        res = await page.evaluate(
+            """(name) => {
+            const b = document.querySelector('[class*="PresetsBelowBody"]');
+            if (!b) return null;
+            let lab = null;
+            for (const el of b.querySelectorAll('*')) {
+                const t = (el.innerText || '').trim().split('\\n')[0].trim();
+                if (t !== name) continue;
+                if (!lab || el.getBoundingClientRect().width
+                            < lab.getBoundingClientRect().width) lab = el;
+            }
+            if (!lab) return null;
+            lab.scrollIntoView({block: 'center'});
+            const r = lab.getBoundingClientRect();
+            return {x: r.x + r.width / 2, y: r.y + r.height / 2};
+        }""", folder)
+        if not res:
+            return False
+        await page.mouse.click(res["x"], res["y"])
+        await page.wait_for_timeout(1800)
+    return bool(await page.evaluate(_FIND_ROW_JS, display))
+
+
+async def save_overwrite(page) -> tuple[bool, str]:
+    """Click Save on the action bar (overwrites the LOADED preset), confirm any dialog.
+    The caller MUST verify the store afterward -- the panel's render is not trusted."""
+    if not await bar_click(page, "Save"):
+        return False, "Save not found on the action bar"
+    await page.wait_for_timeout(1500)
+    for label in ("Overwrite", "Save Preset", "Confirm", "Yes"):
+        pt = await page.evaluate(_MENU_ITEM_JS, label)
+        if pt:
+            await page.mouse.click(pt["x"], pt["y"])
+            await page.wait_for_timeout(1200)
+            return True, f"Save + confirmed via {label!r}"
+    return True, "Save clicked; no confirm dialog appeared"
+
+
+async def widen_one(page, spec: dict, display: str) -> dict:
+    """Load `display`, add the missing counties from spec['counties'], Save, verify store."""
+    row = {"folder": spec["folder"], "name": spec["name"], "display": display}
+    want = sorted(spec["counties"])
+
+    snap = _store_fetch(spec["folder"], spec["name"])
+    if snap is None:
+        row["status"] = "store row not found before edit"
+        return row
+    snap_counties, _neg = _store_counties(snap)
+    if snap_counties == want:
+        row["status"] = "already_widened"
+        return row
+    snap_rest = _filters_minus_county(snap)
+
+    # Start from a FRESH page every time: after Clear (or a previous Save) the panel sits
+    # in its empty state with the Filter Presets section collapsed and the folder list not
+    # rendered at all (screenshot 2026-08-31), so nothing below can find a row. The smoke
+    # gate passed on exactly this fresh-navigation state chain.
+    await page.goto(f"{BASE}/records", wait_until="domcontentloaded")
+    await page.wait_for_timeout(5000)
+    await dismiss_popups(page)
+    if not await open_panel(page):
+        row["status"] = "filter panel would not open"
+        return row
+    row["presets_section"] = await expand_presets_section(page)
+    if not await _ensure_folder_open(page, spec["folder"], display):
+        row["status"] = "row not visible and folder would not expand"
+        return row
+
+    # Loading = a JS click on the row's TITLE element (the uploader's proven pattern;
+    # a coordinate mouse click at the title's centre did not load, 2026-08-31).
+    _LOAD_ROW_JS = """(text) => {
+        const b = document.querySelector('[class*="PresetsBelowBody"]');
+        if (!b) return false;
+        for (const el of b.querySelectorAll('[class*="CollapsibleFolderPresetTitle"]')) {
+            const t = (el.innerText || '').trim().split('\\n')[0].trim();
+            if (!t) continue;
+            if (!(t === text || t.startsWith(text) || text.startsWith(t))) continue;
+            el.scrollIntoView({block: 'center'});
+            el.click();
+            return true;
+        }
+        return false;
+    }"""
+    chips = None
+    for attempt in range(2):
+        if not await page.evaluate(_LOAD_ROW_JS, display):
+            row["status"] = "row title element not found for the load click"
+            return row
+        await page.wait_for_timeout(4000)
+        chips = await _county_chips(page)
+        if chips:
+            break
+    if not chips:
+        row["status"] = "load failed: no PROPERTY COUNTY block after the row click"
+        return row
+    row["chips_before"] = chips
+    missing = [c for c in spec["counties"] if c not in chips]
+    if missing:
+        missed = await set_tokens(page, "county", missing)
+        if missed:
+            row["status"] = f"picker missed {missed}"
+            return row
+    chips2 = await _county_chips(page) or []
+    row["chips_after"] = chips2
+    if sorted(chips2) != want:
+        row["status"] = f"chips after add are {sorted(chips2)}, wanted {want}"
+        return row
+
+    ok, why = await save_overwrite(page)
+    row["save"] = why
+    if not ok:
+        row["status"] = "save failed"
+        return row
+
+    # The load-bearing check: the STORE, not the panel.
+    after = _store_fetch(spec["folder"], spec["name"])
+    if after is None:
+        row["status"] = "store row VANISHED after save"
+        return row
+    got, neg = _store_counties(after)
+    if got != want:
+        row["status"] = f"store counties {got} != wanted {want}"
+        return row
+    if neg:
+        row["status"] = "a stored county is NEGATIVE"
+        return row
+    if _filters_minus_county(after) != snap_rest:
+        row["status"] = "NON-COUNTY FILTERS CHANGED on save (render-bug serialization?)"
+        row["store_before"] = snap_rest
+        row["store_after"] = _filters_minus_county(after)
+        return row
+    row["status"] = "widened"
+    return row
+
+
 _PANEL_DUMP = """() => {
     // SCOPED TO THE PANEL AND ITS BLOCK CONTAINERS, never by x-coordinate. The first
     // version windowed the page by y between ALL-CAPS leaves at x>=950 -- and the grid
@@ -1454,6 +1671,9 @@ async def run(mode: str, only: list[str], headless: bool, limit: int) -> int:
     out = {"ran_at": datetime.now().isoformat(timespec="seconds"), "mode": mode,
            "gaps": GAPS, "results": []}
     targets = [p for p in PRESETS if not only or p["folder"] in only]
+    if mode == "widen":
+        # Widening is MAIL-only; filter BEFORE the limit so --limit 1 hits a mail preset.
+        targets = [p for p in targets if p["channel"] == "mail"]
     if limit:
         targets = targets[:limit]
 
@@ -1515,6 +1735,88 @@ async def run(mode: str, only: list[str], headless: bool, limit: int) -> int:
             OUT.write_text(json.dumps(out, indent=1), encoding="utf-8")
             print(f"\nWrote {OUT}")
             return 0
+
+        if mode == "widen_smoke":
+            # Phase B0 gate: prove on a throwaway that Save-overwrite adds counties
+            # WITHOUT serializing the panel's lying "Include" render over the stored
+            # exclusions. Create a ZZ miniature of a real MAIL preset with the 9-county
+            # scope, snapshot the store, widen it to 15, diff the store.
+            stamp = datetime.now().strftime("%H%M%S")
+            base = next(p for p in PRESETS if p["channel"] == "mail")
+            name = f"ZZ WIDEN SMOKE {stamp}"
+            spec9 = {**base, "name": name, "counties": list(COUNTY_SCOPE)}
+            print(f"\nWIDEN SMOKE: creating {name!r} in {spec9['folder']} (9 counties)")
+            await bar_click(page, "Clear")
+            await page.wait_for_timeout(1000)
+            applied, failed_blocks = await build_blocks(page, spec9)
+            if failed_blocks:
+                print(f"  creation failed: {failed_blocks}")
+                return 4
+            mism = await audit_panel(page, spec9)
+            if mism:
+                print(f"  creation audit failed: {mism[:4]}")
+                return 4
+            ok, why = await save_new(page, name, spec9["folder"])
+            print(f"  save_new: {why}")
+            if not ok:
+                return 4
+            await page.wait_for_timeout(2000)
+            spec15 = {**spec9, "counties": list(COUNTY_SCOPE_MAIL)}
+            # Read back from a FRESH load, never from the page that just wrote it --
+            # the presets list does not re-render the new row in place (same rule as
+            # the commit mode's read-back).
+            await page.goto(f"{BASE}/records", wait_until="domcontentloaded")
+            await page.wait_for_timeout(5000)
+            await dismiss_popups(page)
+            await open_panel(page)
+            await expand_presets_section(page)
+            rows_zz = await _junk_rows(page, spec9["folder"])
+            display = next((r["text"] for r in rows_zz if _present(name, [r["text"]])), None)
+            if not display:
+                print(f"  ZZ row not found after save; rows seen: {[r['text'] for r in rows_zz]}")
+                return 4
+            row = await widen_one(page, spec15, display)
+            out["results"].append(row)
+            print(f"  widen: {row['status']}  ({row.get('save', '')})")
+            gate_ok = row["status"] == "widened"
+            # Clean up the ZZ preset regardless of the verdict.
+            dj = await delete_junk(page, spec9["folder"], dry=False)
+            print(f"  cleanup: {dj['log']}")
+            out["gate"] = "PASS" if gate_ok else "FAIL"
+            OUT_WIDEN.parent.mkdir(parents=True, exist_ok=True)
+            OUT_WIDEN.write_text(json.dumps(out, indent=1), encoding="utf-8")
+            print(f"\nWIDEN SMOKE GATE: {out['gate']}")
+            return 0 if gate_ok else 5
+
+        if mode == "widen":
+            # targets is already MAIL-only (filtered before the limit above).
+            assert all(p["channel"] == "mail" for p in targets)
+            print(f"\n{len(targets)} MAIL presets to widen")
+            done = 0
+            for i, spec in enumerate(targets, 1):
+                display = next((n.split("\n")[0].strip()
+                                for n in existing.get(spec["folder"], [])
+                                if _present(spec["name"], [n.split("\n")[0].strip()])), None)
+                if not display:
+                    print(f"  [{i:>2}] {spec['name'][:44]:46s} NOT PRESENT in folder read")
+                    out["stopped_on"] = spec["name"]
+                    break
+                row = await widen_one(page, spec, display)
+                out["results"].append(row)
+                print(f"  [{i:>2}/{len(targets)}] {spec['name'][:44]:46s} {row['status']}")
+                if row["status"] not in ("widened", "already_widened"):
+                    out["stopped_on"] = spec["name"]
+                    try:
+                        await page.screenshot(path=str(ROOT / "output" / "dpd_widen_failure.png"))
+                    except Exception:  # noqa: BLE001
+                        pass
+                    break
+                done += 1
+            out["widened"] = done
+            OUT_WIDEN.parent.mkdir(parents=True, exist_ok=True)
+            OUT_WIDEN.write_text(json.dumps(out, indent=1), encoding="utf-8")
+            print(f"\n  widened/confirmed {done} of {len(targets)}; wrote {OUT_WIDEN}")
+            return 1 if out.get("stopped_on") else 0
 
         if mode == "smoke":
             stamp = datetime.now().strftime("%H%M%S")
@@ -1621,6 +1923,12 @@ def main() -> int:
                          "(in addition to the ZZ rule); each is confirmed against the dialog")
     ap.add_argument("--smoke-test", action="store_true",
                     help="build ONE throwaway preset and read it back")
+    ap.add_argument("--widen-smoke", action="store_true",
+                    help="Phase B0 gate: create a ZZ throwaway, widen its counties in "
+                         "place, verify the store, delete it")
+    ap.add_argument("--widen-counties", action="store_true",
+                    help="ADD the extra MAIL counties to the existing MAIL presets in "
+                         "place (Save overwrite); verifies each save against the store")
     ap.add_argument("--commit", action="store_true", help="build the presets")
     ap.add_argument("--only", default="", help="comma-separated folder names")
     ap.add_argument("--limit", type=int, default=0)
@@ -1631,6 +1939,8 @@ def main() -> int:
     mode = ("discover_delete" if a.discover_delete else
             "delete_junk_dry" if a.delete_junk_dry else
             "delete_junk" if a.delete_junk else
+            "widen_smoke" if a.widen_smoke else
+            "widen" if a.widen_counties else
             "smoke" if a.smoke_test else "commit" if a.commit else "read")
     only = [s.strip() for s in a.only.split(",") if s.strip()]
     return asyncio.run(run(mode, only, a.headless, a.limit))
