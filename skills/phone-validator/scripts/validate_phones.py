@@ -5,9 +5,19 @@ Phone Validator & Tagger
 Validates phone numbers via Trestle's phone_intel API, assigns tier-based
 phone tags, and produces DataSift/REISift-ready CSVs for upload.
 
-Designed to work directly with the DataSift "Phone Enrichment" export format,
-which uses a wide layout: Phone 1 through Phone 30, each with associated
-Phone Type N, Phone Status N, Phone Tags N, and Phone Is Connected N columns.
+Two REISift/DataSift export layouts are auto-detected:
+  - the flat "Phone Enrichment" export -- Phone 1 through Phone 30, each with
+    associated Phone Type N, Phone Status N, Phone Tags N, Phone Is Connected N
+    columns.
+  - a per-contact "ready for dialing" export, e.g. "PR First Name"/"PR Last Name"
+    + "PH: Phone1".."PH: Phone5", plus repeating "REL1: Full Name" + "REL1: Phone
+    1".."REL1: Phone 3" contact blocks (REL2..REL5, ...). Every phone in every
+    contact block gets validated -- none of these columns match a bare "Phone N"
+    pattern, so a detector that only looked for that would silently skip every
+    relative's number.
+
+This script is CSV-only (stdlib + requests, no extra dependencies). If your
+source is an .xlsx "ready for dialing" workbook, save it as CSV first.
 
 Usage:
     # Step 1: Estimate cost (always do this first)
@@ -26,6 +36,7 @@ import sys
 import time
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
@@ -48,6 +59,13 @@ DEFAULT_TIERS = {
 
 # Cost per API call (Trestle phone_intel pricing)
 COST_PER_PHONE = 0.015
+LITIGATOR_ADDON_COST = 0.005  # +$0.005/phone when --add-litigator is passed
+
+# Line types that are never personal numbers -- removed regardless of activity
+# score. Deliberately does NOT include NonFixedVOIP or Landline -- 24% of
+# numbers Sift labels "Landline" are actually FixedVOIP/NonFixedVOIP and
+# textable, so those are still scored by activity like any other number.
+SKIP_LINE_TYPES = {"tollfree", "premium", "voicemail"}
 
 # Trestle API config
 TRESTLE_ENDPOINT = "https://api.trestleiq.com/3.0/phone_intel"
@@ -139,7 +157,89 @@ def build_tag(tier: str) -> str:
     return tier
 
 
-# ─── CSV Detection & Reading ────────────────────────────────────────────────
+# ─── Qualification Engine ────────────────────────────────────────────────────
+#
+# Applied to every Trestle response before assigning a tag: litigator override,
+# then invalid, then non-personal line types, then activity-score tier.
+
+def evaluate_phone(data: dict, tiers: dict, litigator_checked: bool = False) -> dict:
+    """Qualify one Trestle phone_intel response.
+
+    Returns {"tag": str, "code": str, "keep": bool}. "keep" is False for
+    litigator-risk, invalid, and skip-line-type numbers, and for whichever tier
+    is named "Drop" in `tiers` -- those are still tagged (never silently
+    dropped), just excluded from the dial-tier upload CSV.
+    """
+    if litigator_checked:
+        litigator_checks = (data.get("add_ons") or {}).get("litigator_checks") or {}
+        if litigator_checks.get("phone.is_litigator_risk") is True:
+            return {"tag": "Litigator Risk", "code": "LITIGATOR", "keep": False}
+
+    if data.get("is_valid") is not True:
+        return {"tag": "Invalid", "code": "INVALID", "keep": False}
+
+    line_type = (data.get("line_type") or "").strip()
+    if line_type.lower() in SKIP_LINE_TYPES:
+        return {"tag": f"Skip - {line_type}", "code": "SKIP_LINE_TYPE", "keep": False}
+
+    tier = assign_tier(data.get("activity_score"), tiers)
+    is_drop = tier == "Drop"
+    return {"tag": tier, "code": "LOW_ACTIVITY" if is_drop else "KEEP", "keep": not is_drop}
+
+
+# ─── Export Format Detection ─────────────────────────────────────────────────
+#
+# Two real layouts are recognized:
+#   Format A ("flat"): DataSift's wide "Phone Enrichment" export -- Phone 1..30,
+#     optionally paired with existing Phone Tags 1..30 columns. One generic
+#     contact per row.
+#   Format B ("contact_blocks"): a per-contact "ready for dialing" export, e.g.
+#     "PR First Name"/"PR Last Name" + "PH: Phone1".."PH: Phone5", plus
+#     repeating "REL1: Full Name" + "REL1: Phone 1".."REL1: Phone 3" blocks
+#     (REL2..REL5, ...). No pre-existing tag columns -- reinsertion creates one
+#     per phone column.
+#   Format C ("single"): one generic "Phone"/"Phone Number" column.
+# If none of these match, raise loudly rather than silently processing zero
+# phones -- a run that "succeeds" with no data is worse than one that fails.
+
+_PHONE_N_RE = re.compile(r"^phone[\s_]?(\d+)$", re.IGNORECASE)
+_METADATA_RE = re.compile(r"^phone\s*(type|status|tags?|is\s*connected)\s*\d*$", re.IGNORECASE)
+_BLOCK_PHONE_RE = re.compile(r"^([A-Za-z0-9]+)\s*:\s*phone\s*(\d+)$", re.IGNORECASE)
+
+_GENERIC_PHONE_NAMES = (
+    "phone", "phone_number", "phone number", "phonenumber",
+    "mobile", "cell", "landline", "home phone", "work phone",
+    "contact phone", "primary phone",
+)
+
+
+@dataclass
+class ContactBlock:
+    """One named contact's phone slots within a row (e.g. the PR, or Relative 3)."""
+    prefix: str
+    phone_columns: list = field(default_factory=list)
+    # phone_column -> existing tag column header, or None if one needs to be created
+    tag_columns: dict = field(default_factory=dict)
+    name_columns: list = field(default_factory=list)
+
+
+@dataclass
+class ExportFormat:
+    kind: str  # "flat" | "contact_blocks" | "single"
+    contacts: list = field(default_factory=list)  # list[ContactBlock]
+
+
+@dataclass
+class PhoneEntry:
+    """One phone number found in one contact block of one row."""
+    row_index: int
+    raw: str
+    cleaned: str
+    phone_column: str
+    contact_prefix: str
+    contact_name: str
+    tag_column: object  # existing header (flat) -- None means "synthesize one"
+
 
 def detect_phone_columns(headers: list) -> list:
     """
@@ -152,34 +252,143 @@ def detect_phone_columns(headers: list) -> list:
     'Phone Tags N', and 'Phone Is Connected N'.
     """
     found = []
-    # Metadata suffixes to exclude — these are per-phone metadata columns, not phone numbers
-    metadata_patterns = re.compile(
-        r"phone\s*(type|status|tags?|is\s*connected)\s*\d*",
-        re.IGNORECASE
-    )
-
     for header in headers:
         lower = header.strip().lower()
-
-        # Skip metadata columns
-        if metadata_patterns.match(lower):
+        if _METADATA_RE.match(lower):
             continue
-
-        # Match numbered phone columns: "Phone 1", "Phone 2", ..., "Phone 30"
-        if re.match(r"^phone[\s_]?\d+$", lower):
+        if _PHONE_N_RE.match(lower):
             found.append(header)
-            continue
-
-        # Match generic phone column names
-        if lower in (
-            "phone", "phone_number", "phone number", "phonenumber",
-            "mobile", "cell", "landline", "home phone", "work phone",
-            "contact phone", "primary phone",
-        ):
-            found.append(header)
-            continue
-
     return found
+
+
+def detect_export_format(headers: list, phone_column: str = None) -> ExportFormat:
+    """Auto-detect which of the real export layouts this header row is.
+
+    Raises ValueError (naming the headers seen) if none match -- callers should
+    treat that as fatal rather than proceeding with zero phones found.
+    """
+    header_by_lower = {h.strip().lower(): h for h in headers}
+
+    if phone_column:
+        return ExportFormat(
+            kind="single",
+            contacts=[ContactBlock(prefix="Property", phone_columns=[phone_column],
+                                    tag_columns={phone_column: None})],
+        )
+
+    # ---- Format A: flat "Phone N" (+ optional "Phone Tags N") ----
+    flat_cols = detect_phone_columns(headers)
+    if flat_cols:
+        def _slot(h):
+            m = _PHONE_N_RE.match(h.strip().lower())
+            return int(m.group(1)) if m else 0
+
+        flat_cols = sorted(flat_cols, key=_slot)
+        tag_cols = {}
+        for h in flat_cols:
+            slot = _slot(h)
+            tag_cols[h] = (
+                header_by_lower.get(f"phone tags {slot}")
+                or header_by_lower.get(f"phone tag {slot}")
+            )
+        block = ContactBlock(prefix="Property", phone_columns=flat_cols, tag_columns=tag_cols)
+        return ExportFormat(kind="flat", contacts=[block])
+
+    # ---- Format B: "<Prefix>: Phone N" contact blocks ----
+    blocks_by_prefix = {}
+    for h in headers:
+        m = _BLOCK_PHONE_RE.match(h.strip())
+        if m:
+            prefix, slot = m.group(1).upper(), int(m.group(2))
+            blocks_by_prefix.setdefault(prefix, []).append((slot, h))
+
+    if blocks_by_prefix:
+        contacts = []
+        for prefix, slots in blocks_by_prefix.items():
+            slots.sort(key=lambda t: t[0])
+            phone_cols = [h for _, h in slots]
+
+            name_cols = []
+            full_name_header = header_by_lower.get(f"{prefix.lower()}: full name")
+            if full_name_header:
+                name_cols.append(full_name_header)
+            elif prefix == "PH":
+                # PR's own phone block -- name lives in separate PR First/Last
+                # Name columns, not a "PH: Full Name" column.
+                for candidate in ("pr first name", "pr last name"):
+                    if candidate in header_by_lower:
+                        name_cols.append(header_by_lower[candidate])
+
+            contacts.append(ContactBlock(
+                prefix=prefix, phone_columns=phone_cols, tag_columns={}, name_columns=name_cols,
+            ))
+
+        def _contact_sort_key(c):
+            if c.prefix == "PH":
+                return (0, 0)
+            m = re.match(r"^REL(\d+)$", c.prefix)
+            if m:
+                return (1, int(m.group(1)))
+            return (2, c.prefix)
+
+        contacts.sort(key=_contact_sort_key)
+        return ExportFormat(kind="contact_blocks", contacts=contacts)
+
+    # ---- Format C: single generic phone column ----
+    for h in headers:
+        if h.strip().lower() in _GENERIC_PHONE_NAMES:
+            block = ContactBlock(prefix="Property", phone_columns=[h], tag_columns={h: None})
+            return ExportFormat(kind="single", contacts=[block])
+
+    preview = headers[:25]
+    raise ValueError(
+        "Could not identify a phone column structure in this file. Expected one of: "
+        "'Phone 1'..'Phone 30' (DataSift export), '<Label>: Phone N' contact blocks "
+        "(e.g. 'PH: Phone1', 'REL1: Phone 1'), or a single 'Phone'/'Phone Number' column. "
+        f"Headers found: {preview}{' ...' if len(headers) > len(preview) else ''}"
+    )
+
+
+def extract_phone_entries(rows: list, export_format: ExportFormat) -> list:
+    """Pull every phone out of every contact block of every row, tied back to
+    exactly which row/column/contact it came from (for reinsertion later).
+    """
+    entries = []
+    for row_index, row in enumerate(rows):
+        for contact in export_format.contacts:
+            name_parts = [v for col in contact.name_columns if (v := (row.get(col) or "").strip())]
+            contact_name = " ".join(name_parts).strip() or contact.prefix
+
+            for phone_col in contact.phone_columns:
+                raw = (row.get(phone_col) or "").strip()
+                if not raw:
+                    continue
+                cleaned = clean_phone(raw)
+                if not cleaned:
+                    continue
+                entries.append(PhoneEntry(
+                    row_index=row_index,
+                    raw=raw,
+                    cleaned=cleaned,
+                    phone_column=phone_col,
+                    contact_prefix=contact.prefix,
+                    contact_name=contact_name,
+                    tag_column=(contact.tag_columns or {}).get(phone_col),
+                ))
+    return entries
+
+
+# ─── CSV Detection & Reading ────────────────────────────────────────────────
+
+def load_csv_rows(filepath: str) -> tuple:
+    """Load a CSV export into (headers, rows) -- rows are dicts keyed by the
+    exact source header text.
+    """
+    with open(filepath, "r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        headers = reader.fieldnames or []
+        rows = [dict(r) for r in reader]
+    return headers, rows
 
 
 def read_phones_from_csv(filepath: str, phone_column: str = None) -> tuple:
@@ -192,44 +401,28 @@ def read_phones_from_csv(filepath: str, phone_column: str = None) -> tuple:
             - unique_count: number of unique cleaned phone numbers
             - total_entries: total phone entries found (before dedup)
     """
-    phones = []
-    seen = set()
+    headers, rows = load_csv_rows(filepath)
+    try:
+        export_format = detect_export_format(headers, phone_column=phone_column)
+    except ValueError as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)
 
-    with open(filepath, "r", encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        headers = reader.fieldnames or []
+    entries = extract_phone_entries(rows, export_format)
 
-        if phone_column:
-            columns = [phone_column]
-        else:
-            columns = detect_phone_columns(headers)
+    if not os.environ.get("PHONE_VALIDATOR_QUIET"):
+        print(f"Detected export format '{export_format.kind}' "
+              f"({len(export_format.contacts)} contact block(s): "
+              f"{', '.join(c.prefix for c in export_format.contacts)})")
 
-        if not columns:
-            print(f"ERROR: No phone columns detected in headers: {headers[:20]}...")
-            print("Hint: Name your phone column 'Phone', 'Phone Number', or 'Phone 1'")
-            sys.exit(1)
-
-        if not os.environ.get("PHONE_VALIDATOR_QUIET"):
-            print(f"Detected {len(columns)} phone column(s): {columns[0]}", end="")
-            if len(columns) > 1:
-                print(f" through {columns[-1]}", end="")
-            print()
-
-        for row in reader:
-            for col in columns:
-                raw = row.get(col, "").strip()
-                if raw:
-                    cleaned = clean_phone(raw)
-                    if cleaned:
-                        phones.append((raw, cleaned))
-                        seen.add(cleaned)
-
-    return phones, len(seen), len(phones)
+    phones = [(e.raw, e.cleaned) for e in entries]
+    unique = {e.cleaned for e in entries}
+    return phones, len(unique), len(entries)
 
 
 # ─── Cost Estimation ────────────────────────────────────────────────────────
 
-def estimate_cost(filepath: str, phone_column: str = None) -> dict:
+def estimate_cost(filepath: str, phone_column: str = None, add_litigator: bool = False) -> dict:
     """
     Parse the CSV to count unique phones and estimate Trestle API cost.
 
@@ -237,14 +430,16 @@ def estimate_cost(filepath: str, phone_column: str = None) -> dict:
     """
     phones, unique_count, total_entries = read_phones_from_csv(filepath, phone_column)
 
-    cost = unique_count * COST_PER_PHONE
+    cost_per_phone = COST_PER_PHONE + (LITIGATOR_ADDON_COST if add_litigator else 0)
+    cost = unique_count * cost_per_phone
 
     result = {
         "input_file": os.path.basename(filepath),
         "total_entries": total_entries,
         "unique_phones": unique_count,
         "duplicates_saved": total_entries - unique_count,
-        "cost_per_phone": COST_PER_PHONE,
+        "cost_per_phone": cost_per_phone,
+        "add_litigator": add_litigator,
         "estimated_cost": round(cost, 2),
     }
 
@@ -261,14 +456,17 @@ def print_estimate(est: dict):
     print(f"  Total phone entries: {est['total_entries']:,}")
     print(f"  Unique phones:       {est['unique_phones']:,}")
     print(f"  Duplicates saved:    {est['duplicates_saved']:,}")
-    print(f"  Cost per phone:      ${est['cost_per_phone']:.3f}")
-    print(f"  ─────────────────────────────────")
+    if est.get("add_litigator"):
+        print(f"  Cost per phone:      ${est['cost_per_phone']:.3f} (base $0.015 + litigator add-on $0.005)")
+    else:
+        print(f"  Cost per phone:      ${est['cost_per_phone']:.3f}")
+    print("  -----------------------------------------")
     print(f"  ESTIMATED COST:      ${est['estimated_cost']:.2f}")
     print("=" * 50)
     print()
 
 
-# ─── Main Processing ─────────────────────────────────────────────────────────
+# --- Main Processing --------------------------------------------------------
 
 def process_phones(
     phones: list,
@@ -289,7 +487,7 @@ def process_phones(
     print(f"\nProcessing {total} unique phone numbers...")
 
     if dry_run:
-        print("DRY RUN — generating template without API calls")
+        print("DRY RUN - generating template without API calls")
         results = []
         for phone in unique_phones:
             results.append({
@@ -301,6 +499,8 @@ def process_phones(
                 "is_prepaid": None,
                 "assigned_tag": "Unscored",
                 "is_litigator_risk": None,
+                "keep": True,
+                "qualification_code": "DRY_RUN",
             })
         return results, []
 
@@ -338,8 +538,7 @@ def process_phones(
 
                 score = data.get("activity_score")
                 line_type = data.get("line_type")
-                tier = assign_tier(score, tiers)
-                tag = build_tag(tier)
+                decision = evaluate_phone(data, tiers, litigator_checked=add_litigator)
 
                 litigator_risk = None
                 if add_litigator and data.get("add_ons", {}).get("litigator_checks"):
@@ -354,8 +553,10 @@ def process_phones(
                     "carrier": data.get("carrier"),
                     "is_valid": data.get("is_valid"),
                     "is_prepaid": data.get("is_prepaid"),
-                    "assigned_tag": tag,
+                    "assigned_tag": decision["tag"],
                     "is_litigator_risk": litigator_risk,
+                    "keep": decision["keep"],
+                    "qualification_code": decision["code"],
                 })
 
                 # Progress indicator
@@ -373,13 +574,19 @@ def process_phones(
 # ─── Output Writers ──────────────────────────────────────────────────────────
 
 def write_datasift_csv(results: list, output_dir: str) -> str:
-    """Write the DataSift-ready phone tags CSV (Phone Number + Phone Tag)."""
+    """Write the DataSift-ready phone tags CSV (Phone Number + Phone Tag).
+
+    Only phones the qualification engine marked "keep" are included --
+    litigator-risk, invalid, skip-line-type, and Drop-tier numbers are
+    excluded (they're still visible, tagged, in validation_results.csv and in
+    the reinserted export).
+    """
     filepath = os.path.join(output_dir, "phone_tags_for_datasift.csv")
     with open(filepath, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["Phone Number", "Phone Tag"])
         for r in results:
-            if r.get("is_valid") is not False:  # Skip invalid numbers
+            if r.get("keep"):
                 writer.writerow([r["phone_number"], r["assigned_tag"]])
     return filepath
 
@@ -390,6 +597,7 @@ def write_detailed_csv(results: list, output_dir: str) -> str:
     fieldnames = [
         "phone_number", "activity_score", "line_type", "carrier",
         "is_valid", "is_prepaid", "assigned_tag", "is_litigator_risk",
+        "keep", "qualification_code",
     ]
     with open(filepath, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -433,7 +641,7 @@ def write_summary(results: list, errors: list, tiers: dict, output_dir: str) -> 
         bucket = (s // 10) * 10
         buckets[bucket] += 1
 
-    with open(filepath, "w") as f:
+    with open(filepath, "w", encoding="utf-8") as f:
         f.write("=" * 60 + "\n")
         f.write("PHONE VALIDATION SUMMARY\n")
         f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -475,9 +683,81 @@ def write_summary(results: list, errors: list, tiers: dict, output_dir: str) -> 
         f.write("6. Map 'Phone Tag' → Phone Tag\n")
         f.write("7. Complete the upload\n\n")
         f.write("Tags will apply to ALL records sharing each phone number.\n")
-        f.write("When sending to a dialer, send ONE tier at a time.\n")
+        f.write("When sending to a dialer, send ONE tier at a time.\n\n")
+        f.write("For per-slot tags instead (tag stays tied to the exact phone/contact\n")
+        f.write("it came from, e.g. a specific relative), re-import\n")
+        f.write("reisift_reimport_with_phone_tags.csv via Add Data → Update existing\n")
+        f.write("records instead.\n")
 
     return filepath
+
+
+def write_reinserted_csv(
+    headers: list,
+    rows: list,
+    export_format: ExportFormat,
+    phone_entries: list,
+    results_by_phone: dict,
+    output_path: str,
+) -> str:
+    """Write a copy of the source CSV with each phone's qualification tag
+    written back next to the phone it came from. Never deletes or blanks a
+    phone cell -- rejected numbers (Invalid / Litigator Risk / Skip - X /
+    Drop) are tagged in place too, same as kept ones.
+
+    Flat exports (Format A) merge into the existing "Phone Tags N" cell,
+    comma-appended to whatever's already there. Contact-block exports
+    (Format B) get a new "<phone column> Tag" column inserted right after
+    each phone column that doesn't already have one.
+    """
+    out_headers = list(headers)
+    tag_col_for_phone_col = {}
+
+    for contact in export_format.contacts:
+        for phone_col in contact.phone_columns:
+            existing = (contact.tag_columns or {}).get(phone_col)
+            if existing:
+                tag_col_for_phone_col[phone_col] = existing
+                continue
+            new_col = f"{phone_col} Tag"
+            tag_col_for_phone_col[phone_col] = new_col
+            if new_col not in out_headers:
+                insert_at = out_headers.index(phone_col) + 1
+                out_headers.insert(insert_at, new_col)
+
+    out_rows = [dict(r) for r in rows]
+
+    for entry in phone_entries:
+        result = results_by_phone.get(entry.cleaned)
+        if not result:
+            continue
+        tag_col = tag_col_for_phone_col.get(entry.phone_column)
+        if not tag_col:
+            continue
+
+        row = out_rows[entry.row_index]
+        new_tag = result["assigned_tag"]
+        existing_value = (row.get(tag_col) or "").strip()
+
+        if existing_value:
+            existing_tags = [t.strip() for t in existing_value.split(",") if t.strip()]
+            if new_tag not in existing_tags:
+                existing_tags.append(new_tag)
+            row[tag_col] = ", ".join(existing_tags)
+        else:
+            row[tag_col] = new_tag
+
+    for row in out_rows:
+        for h in out_headers:
+            row.setdefault(h, "")
+
+    with open(output_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=out_headers)
+        writer.writeheader()
+        for row in out_rows:
+            writer.writerow({h: row.get(h, "") for h in out_headers})
+
+    return output_path
 
 
 # ─── CLI ─────────────────────────────────────────────────────────────────────
@@ -505,7 +785,7 @@ def parse_args():
     parser.add_argument("--delay", type=float, default=0.1,
                         help="Seconds to wait between batches")
     parser.add_argument("--phone-column", type=str, default=None,
-                        help="Override phone column name")
+                        help="Override phone column name (skips export-format auto-detection)")
     parser.add_argument("--add-litigator", action="store_true",
                         help="Include litigator risk check")
     parser.add_argument("--full-report", action="store_true",
@@ -523,11 +803,11 @@ def main():
         print(f"ERROR: Input file not found: {args.input}")
         sys.exit(1)
 
-    # ─── Estimate mode ───────────────────────────────────────────────
+    # --- Estimate mode -------------------------------------------------
     if args.estimate or args.estimate_json:
         if args.estimate_json:
             os.environ["PHONE_VALIDATOR_QUIET"] = "1"
-        est = estimate_cost(args.input, args.phone_column)
+        est = estimate_cost(args.input, args.phone_column, args.add_litigator)
         if args.estimate_json:
             print(json.dumps(est, indent=2))
         else:
@@ -566,12 +846,27 @@ def main():
 
     # Read phones
     print(f"Reading phones from: {args.input}")
-    phones, unique_count, total_entries = read_phones_from_csv(args.input, args.phone_column)
+    headers, rows = load_csv_rows(args.input)
+    try:
+        export_format = detect_export_format(headers, args.phone_column)
+    except ValueError as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)
+
+    phone_entries = extract_phone_entries(rows, export_format)
+    print(f"Detected export format '{export_format.kind}' "
+          f"({len(export_format.contacts)} contact block(s): "
+          f"{', '.join(c.prefix for c in export_format.contacts)})")
+
+    phones = [(e.raw, e.cleaned) for e in phone_entries]
     if not phones:
         print("ERROR: No valid phone numbers found in the input file.")
         sys.exit(1)
+    unique_count = len({e.cleaned for e in phone_entries})
+    total_entries = len(phone_entries)
     print(f"Found {total_entries} phone entries ({unique_count} unique)")
-    print(f"Estimated cost: ${unique_count * COST_PER_PHONE:.2f} ({unique_count} x ${COST_PER_PHONE})")
+    _cost_per_phone = COST_PER_PHONE + (LITIGATOR_ADDON_COST if args.add_litigator else 0)
+    print(f"Estimated cost: ${unique_count * _cost_per_phone:.2f} ({unique_count} x ${_cost_per_phone:.3f})")
 
     # Process
     results, errors = process_phones(
@@ -583,44 +878,52 @@ def main():
         delay=args.delay,
         dry_run=args.dry_run,
     )
+    results_by_phone = {r["phone_number"]: r for r in results}
 
     # Write outputs
     print(f"\nWriting outputs to: {args.output}")
     tag_file = write_datasift_csv(results, args.output)
-    print(f"  ✓ DataSift phone tags: {tag_file}")
+    print(f"  [OK] DataSift phone tags: {tag_file}")
 
     detail_file = write_detailed_csv(results, args.output)
-    print(f"  ✓ Detailed results:    {detail_file}")
+    print(f"  [OK] Detailed results:    {detail_file}")
 
     if errors:
         err_file = write_errors_csv(errors, args.output)
-        print(f"  ✓ Errors log:          {err_file}")
+        print(f"  [OK] Errors log:          {err_file}")
 
     summary_file = write_summary(results, errors, tiers, args.output)
-    print(f"  ✓ Summary:             {summary_file}")
+    print(f"  [OK] Summary:             {summary_file}")
+
+    reinserted_file = write_reinserted_csv(
+        headers, rows, export_format, phone_entries, results_by_phone,
+        os.path.join(args.output, "reisift_reimport_with_phone_tags.csv"),
+    )
+    print(f"  [OK] Reinserted export:   {reinserted_file}")
 
     # Optional XLSX report
     if args.full_report:
         try:
             from generate_report import create_xlsx_report
             report_file = create_xlsx_report(results, errors, tiers, args.output)
-            print(f"  ✓ XLSX report:         {report_file}")
+            print(f"  [OK] XLSX report:         {report_file}")
         except ImportError:
-            print("  ⚠ XLSX report skipped (openpyxl not installed)")
+            print("  [WARN] XLSX report skipped (openpyxl not installed)")
 
     # Print quick summary
     tag_counts = Counter(r["assigned_tag"] for r in results)
-    print(f"\n{'─' * 40}")
+    print(f"\n{'-' * 40}")
     print(f"RESULTS: {len(results)} scored, {len(errors)} errors")
-    print(f"{'─' * 40}")
+    print(f"{'-' * 40}")
     for tag_name in tiers.keys():
         count = tag_counts.get(tag_name, 0)
         print(f"  {tag_name:20s}  {count:5d}")
     for tag_name in sorted(tag_counts.keys()):
         if tag_name not in tiers:
             print(f"  {tag_name:20s}  {tag_counts[tag_name]:5d}")
-    print(f"{'─' * 40}")
-    print(f"\nUpload '{os.path.basename(tag_file)}' to DataSift → Update Data → Tag phones by phone number")
+    print(f"{'-' * 40}")
+    print(f"\nUpload '{os.path.basename(tag_file)}' to DataSift -> Update Data -> Tag phones by phone number")
+    print(f"...or re-import '{os.path.basename(reinserted_file)}' via Add Data -> Update existing records")
     print("Done!")
 
 

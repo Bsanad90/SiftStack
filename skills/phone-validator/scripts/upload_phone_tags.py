@@ -66,12 +66,17 @@ async def upload_phone_tags(
         await wait_for_spa(page, 5000)
         await dismiss_popups(page)
 
-        # Click "Upload File" in sidebar
-        upload_link = page.locator(
-            'a:has-text("Upload File"), '
-            'text="Upload File", '
-            '[class*="upload" i]:has-text("Upload")'
-        )
+        # Click "Upload File" in sidebar. `text=` is its own Playwright selector
+        # engine and cannot be comma-mixed into one CSS selector string with
+        # `:has-text()` selectors (raises "Unexpected token '=' while parsing
+        # css selector") -- try it standalone first, matching the working
+        # pattern in src/datasift_uploader.py, then fall back to CSS-only.
+        upload_link = page.locator('text="Upload File"')
+        if await upload_link.count() == 0:
+            upload_link = page.locator(
+                'a:has-text("Upload File"), '
+                '[class*="upload" i]:has-text("Upload")'
+            )
         if await upload_link.count() > 0:
             await upload_link.first.click()
             await page.wait_for_timeout(2000)
@@ -165,11 +170,14 @@ async def upload_phone_tags(
             await page.wait_for_timeout(2000)
             await dismiss_popups(page)
 
-            # Check for finish/completion
+            # Check for finish/completion. Deliberately NOT matching a generic
+            # "Complete" -- has-text() substring-matches, so it was catching an
+            # unrelated "Incomplete" toggle button on the mapping/review step
+            # (a Clean/Incomplete filter, not the submit button) and hanging
+            # trying to click something no one could see was wrong.
             finish_btn = page.locator(
                 'button:has-text("Finish Upload"), '
-                'button:has-text("Finish"), '
-                'button:has-text("Complete")'
+                'button:has-text("Finish")'
             )
             if await finish_btn.count() > 0:
                 await finish_btn.first.click()

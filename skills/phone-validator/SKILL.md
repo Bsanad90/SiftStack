@@ -137,8 +137,8 @@ Replace `SKILL_DIR` with the actual path to this skill's directory. If you uploa
 | `--custom-tiers` | — | JSON string defining custom tier boundaries (see below) |
 | `--batch-size` | `10` | Concurrent API requests (respect Trestle's rate limits) |
 | `--delay` | `0.1` | Seconds between batches |
-| `--phone-column` | auto-detect | Override phone column name |
-| `--add-litigator` | `false` | Include litigator risk check (uses Trestle add-on) |
+| `--phone-column` | auto-detect | Override phone column name (skips export-format auto-detection entirely — use only for a single generic `Phone` column) |
+| `--add-litigator` | `false` | Include litigator risk check (uses Trestle add-on, enables the litigator-override qualification rule) |
 | `--full-report` | `false` | Generate a detailed XLSX report alongside the tag CSV |
 
 ### Step 5: Understand the Output
@@ -146,17 +146,20 @@ Replace `SKILL_DIR` with the actual path to this skill's directory. If you uploa
 The script produces these files in the output directory. See the "Output Files"
 section below for sample data and detailed column descriptions.
 
-1. **`phone_tags_for_datasift.csv`** — Two-column CSV for DataSift upload (Phone Number + Phone Tag)
-2. **`validation_results.csv`** — Full API results with activity score, line type, carrier, tier, litigator flag
+1. **`phone_tags_for_datasift.csv`** — Two-column CSV for DataSift upload (Phone Number + Phone Tag). Only phones the qualification engine marked "keep" are included — Litigator Risk, Invalid, Skip-line-type, and Drop-tier numbers are left out of this file (they're still visible, tagged, in the other two).
+2. **`validation_results.csv`** — Full API results with activity score, line type, carrier, tier, litigator flag, plus `keep` and `qualification_code`
 3. **`summary.txt`** — Human-readable tier counts, score distribution, line type breakdown
 4. **`errors.csv`** — Any phones that failed all retries
-5. **`validation_report.xlsx`** — (if --full-report) Excel workbook with charts
+5. **`reisift_reimport_with_phone_tags.csv`** — a full copy of your input file with every phone's tag written back next to the phone it came from (see "Re-import Workflow" below)
+6. **`validation_report.xlsx`** — (if --full-report) Excel workbook with charts
 
-## Input Format: DataSift Phone Enrichment Export
+## Input Format: Two REISift/DataSift Export Layouts
 
-The script is built to work directly with DataSift's "Phone Enrichment" CSV export format.
-This is a wide-format file where each record (property/contact) can have up to 30 phone
-numbers, each with associated metadata columns:
+The script auto-detects which layout your file uses — you don't need to tell it.
+
+**Layout A — DataSift's "Phone Enrichment" export.** A wide-format file where each
+record (property/contact) can have up to 30 phone numbers, each with associated
+metadata columns:
 
 ```
 Phone 1, Phone Type 1, Phone Status 1, Phone Tags 1, Phone Is Connected 1,
@@ -165,16 +168,40 @@ Phone 2, Phone Type 2, Phone Status 2, Phone Tags 2, Phone Is Connected 2,
 Phone 30, Phone Type 30, Phone Status 30, Phone Tags 30, Phone Is Connected 30
 ```
 
-The script automatically detects all `Phone N` columns (1-30) and ignores the metadata
-columns (`Phone Type N`, `Phone Status N`, `Phone Tags N`, `Phone Is Connected N`).
-It then extracts every phone number across all columns and rows, deduplicates them,
-and sends only unique numbers to the API.
+The script detects all `Phone N` columns (1-30), ignores the metadata columns
+(`Phone Type N`, `Phone Status N`, `Phone Tags N`, `Phone Is Connected N`), pairs each
+`Phone N` with its `Phone Tags N` if one exists, extracts every phone number across all
+columns and rows, deduplicates them, and sends only unique numbers to the API. The
+existing Phone Type values from skip tracing (MOBILE, LANDLINE, etc.) are left
+untouched — this skill only adds phone tags, it does not modify the type or status
+fields.
 
-The existing Phone Type values from skip tracing (MOBILE, LANDLINE, etc.) are left
-untouched — this skill only adds phone tags, it does not modify the type or status fields.
+**Layout B — a per-contact "ready for dialing" export.** Common on probate/heir
+workflows where a PR (personal representative) and several candidate relatives each
+have their own name and phone slots on the same row, e.g.:
 
-The script also works with simpler CSV formats that just have a `Phone` or `Phone Number`
-column.
+```
+PR First Name, PR Last Name, PH: Phone1, PH: Phone2, ..., PH: Phone5,
+REL1: Full Name, REL1: Phone 1, REL1: Phone 2, REL1: Phone 3,
+REL2: Full Name, REL2: Phone 1, REL2: Phone 2, REL2: Phone 3,
+... (REL3, REL4, REL5, or however many the export carries)
+```
+
+The script recognizes any `<Label>: Phone N` column pattern, groups phones by their
+contact block (`PH`, `REL1`, `REL2`, ...), and pairs `PH`'s phones with the `PR First
+Name`/`PR Last Name` columns and each `RELn`'s phones with its own `RELn: Full Name`
+column. **This is the layout that was silently dropping every relative's and PR's
+phone before this was fixed** — none of `PH: Phone1`, `REL1: Phone 2`, etc. match a
+bare `Phone N` pattern, so a detector that only looked for that never found them.
+
+If neither layout is recognized (and no generic `Phone`/`Phone Number` column exists
+either), the script exits with an error naming the headers it saw, rather than
+silently proceeding with zero phones found.
+
+The script is CSV-only. If your source is an `.xlsx` "ready for dialing" workbook,
+save it as CSV first (`File → Save As → CSV`) — the internal pipeline version of this
+tool (`src/phone_validator.py` in the main SiftStack repo) reads `.xlsx` directly if
+you have access to that.
 
 ## Line Type Context
 
@@ -194,6 +221,51 @@ A key insight from our research: 24% of numbers that Sift labels as "Landline" a
 FixedVOIP or NonFixedVOIP when checked against Trestle. These are textable numbers being
 miscategorized — the detailed `validation_results.csv` output surfaces this with the
 `line_type` column so you can identify which "Landline" numbers are actually textable.
+
+## Qualification Rules (Applied Before Tiering)
+
+Every phone goes through these checks, in order, before it gets a tier tag:
+
+1. **Litigator risk** (only when `--add-litigator` is passed) — `phone_is_litigator_risk
+   == true` always tags `"Litigator Risk"` and is excluded from the dial-tier upload CSV,
+   regardless of activity score. Never re-scored, never treated as a fallback number.
+2. **Invalid** — `phone_is_valid != true` tags `"Invalid"` and is excluded.
+3. **Skip line type** — `Tollfree`, `Premium`, or `Voicemail` tags `"Skip - <LineType>"`
+   and is excluded. `NonFixedVOIP` and `Landline` are **not** auto-skipped — they're
+   scored by activity like any other number, per the 24% miscategorization finding above.
+4. **Activity tier** — everything else falls through to the normal 5-tier score-based
+   tagging. Whichever tier is named `"Drop"` (the bottom bucket, 0-20 by default) is
+   tagged but excluded from the dial-tier upload CSV the same way.
+
+Excluded numbers are never deleted or blanked anywhere — they're still tagged in
+`validation_results.csv` and in the reinserted export, just left out of
+`phone_tags_for_datasift.csv` so a dialer send never includes them.
+
+## Re-import Workflow (Per-Slot Tags)
+
+`phone_tags_for_datasift.csv` + "Tag phones by phone number" applies a tag to every
+DataSift record that shares that phone number — fine for most cases, but it means a
+number reused across an unrelated record picks up the tag too, and it can't say
+*which contact* on a multi-contact row (which relative, or the PR) a tag belongs to.
+
+For that, re-import `reisift_reimport_with_phone_tags.csv` instead — it's your original
+export with each phone's tag written back into the exact cell it came from:
+
+- **Flat exports**: merged into the existing `Phone Tags N` cell (e.g. `"Rel5.1"` →
+  `"Rel5.1, Dial First"`). Safe to re-run — it won't double-append the same tag.
+- **Contact-block exports** (PR/relative layout): a new `<phone column> Tag` column is
+  inserted right next to each phone column (e.g. `REL3: Phone 2 Tag` right after
+  `REL3: Phone 2`), since there's no pre-existing tag cell to merge into.
+
+To re-import:
+
+1. Log into your DataSift/REISift account
+2. Go to **Upload** → select **Add Data** → **"Uploading a new list not in DataSift
+   yet"** or the update-existing-records path for your list
+3. Upload `reisift_reimport_with_phone_tags.csv`
+4. Map the new/merged tag column(s) to the corresponding `Phone Tags N` field for
+   each phone slot
+5. Complete the upload
 
 ## DataSift Upload Workflow
 
@@ -423,13 +495,14 @@ mean a bad lead.
 ### validation_results.csv — Sample Output
 
 ```csv
-phone_number,activity_score,line_type,carrier,is_valid,is_prepaid,assigned_tag,is_litigator_risk
-8651234567,94,Mobile,T-Mobile USA Inc.,True,False,Dial First,False
-8659876543,72,Landline,AT&T Tennessee,True,False,Dial Second,
-8653456789,55,FixedVOIP,Comcast Phone of Tennessee,True,False,Dial Third,
-8657654321,31,NonFixedVOIP,Google (Grand Central) LLC,True,True,Dial Fourth,
-8652223333,8,Mobile,Sprint Spectrum LP,True,False,Drop,
-8650001111,,,,False,,,
+phone_number,activity_score,line_type,carrier,is_valid,is_prepaid,assigned_tag,is_litigator_risk,keep,qualification_code
+8651234567,94,Mobile,T-Mobile USA Inc.,True,False,Dial First,False,True,KEEP
+8659876543,72,Landline,AT&T Tennessee,True,False,Dial Second,,True,KEEP
+8653456789,55,FixedVOIP,Comcast Phone of Tennessee,True,False,Dial Third,,True,KEEP
+8657654321,31,NonFixedVOIP,Google (Grand Central) LLC,True,True,Dial Fourth,,True,KEEP
+8652223333,8,Mobile,Sprint Spectrum LP,True,False,Drop,,False,LOW_ACTIVITY
+8654443333,,Tollfree,,True,False,Skip - Tollfree,,False,SKIP_LINE_TYPE
+8650001111,,,,False,,Invalid,,False,INVALID
 ```
 
 Notes on the sample:
@@ -438,7 +511,12 @@ Notes on the sample:
   to find mismatches.
 - Row 4: NonFixedVOIP (Google Voice) + prepaid = still Dial Fourth based on score 31.
   The prepaid flag does not affect tier assignment.
-- Row 6: Invalid phone format — no API call made, all fields empty except phone_number.
+- Row 6: `Drop` tier — tagged, but `keep=False` so it never reaches
+  `phone_tags_for_datasift.csv`.
+- Row 7: Tollfree — never a personal number, always excluded regardless of score.
+- Row 8: Failed Trestle's `is_valid` check — excluded, never format-invalid (numbers
+  that fail the 10-digit format check never reach the API at all, so they never
+  appear in this file in the first place).
 - `is_litigator_risk` column is empty when `--add-litigator` was not used.
 
 ### phone_tags_for_datasift.csv
@@ -453,7 +531,14 @@ Phone Number,Phone Tag
 8657654321,Dial Fourth
 ```
 
-Invalid phones and Drop-tier phones are excluded from this file.
+Invalid, Litigator Risk, Skip-line-type, and Drop-tier phones are excluded from this file.
+
+### reisift_reimport_with_phone_tags.csv
+
+A full copy of your input file — every original column preserved — with each phone's
+tag written back into the exact cell/slot it came from. See "Re-import Workflow" above.
+Unlike `phone_tags_for_datasift.csv`, this includes ALL phones, tagged in place,
+including the excluded ones.
 
 ### summary.txt
 

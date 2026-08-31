@@ -60,9 +60,11 @@ async def _click_next(page):
     return False
 
 
-async def _fill_setup(page, list_name, existing_list=False):
+async def _fill_setup(page, list_name, existing_list=False, has_phones=False):
     """Fill the Setup step. If existing_list, select 'Adding properties to an existing
-    list' and pick the list named `list_name`; else create a new list named `list_name`."""
+    list' and pick the list named `list_name`; else create a new list named `list_name`.
+    has_phones answers "DOES DATA CONTAIN PHONE NUMBERS?" (default No, the FTM shape);
+    a deep-prospecting reload that carries Phone 1..N must answer Yes."""
     b = page.locator('text="Add Data"')
     if await b.count() > 0:
         await b.first.click()
@@ -96,7 +98,7 @@ async def _fill_setup(page, list_name, existing_list=False):
         if await ph.count() > 0:
             await ph.first.click()
             await page.wait_for_timeout(400)
-            n = page.locator('text="No"')
+            n = page.locator('text="Yes"' if has_phones else 'text="No"')
             if await n.count() > 0:
                 await n.first.click()
             await page.wait_for_timeout(400)
@@ -188,9 +190,11 @@ async def open_upload_wizard(page):
     return True
 
 
-async def upload_csv_v2(page, csv_path, list_name, tags, *, do_finish=False, existing_list=False, shot_base=None):
+async def upload_csv_v2(page, csv_path, list_name, tags, *, do_finish=False, existing_list=False,
+                        shot_base=None, has_phones=False):
     """Drive the wizard for one CSV + uniform tag set. Returns a result dict.
-    existing_list=True selects an EXISTING list named `list_name` instead of creating one."""
+    existing_list=True selects an EXISTING list named `list_name` instead of creating one.
+    has_phones=True answers the Setup step's phone-numbers question with Yes."""
     csv_path = Path(csv_path)
     result = {
         "success": False, "finished": False, "list_name": list_name,
@@ -235,7 +239,7 @@ async def upload_csv_v2(page, csv_path, list_name, tags, *, do_finish=False, exi
 
         if (not setup_done) and await setup_marker.count() > 0:
             logger.info("Setup: list=%r (existing=%s)", list_name, existing_list)
-            await _fill_setup(page, list_name, existing_list=existing_list)
+            await _fill_setup(page, list_name, existing_list=existing_list, has_phones=has_phones)
             await _shot(page, shot_base, "setup")
             setup_done = True
             await _click_next(page)
@@ -383,7 +387,8 @@ async def run_phone_tag_upload(csv_path, *, do_finish=False, headless=True, shot
         return await upload_phone_tags(page, csv_path, do_finish=do_finish, shot_base=shot_base)
 
 
-async def run_upload(csv_path, list_name, tags, *, do_finish=False, existing_list=False, headless=True, shot_base=None):
+async def run_upload(csv_path, list_name, tags, *, do_finish=False, existing_list=False, headless=True,
+                     shot_base=None, has_phones=False):
     """Open a browser, log into DataSift (DATASIFT_EMAIL), and run the wizard."""
     import config
     from datasift_core import create_browser, login
@@ -395,4 +400,5 @@ async def run_upload(csv_path, list_name, tags, *, do_finish=False, existing_lis
         if not await open_upload_wizard(page):
             return {"success": False, "message": "Could not open the upload wizard"}
         return await upload_csv_v2(page, csv_path, list_name, tags,
-                                   do_finish=do_finish, existing_list=existing_list, shot_base=shot_base)
+                                   do_finish=do_finish, existing_list=existing_list, shot_base=shot_base,
+                                   has_phones=has_phones)
