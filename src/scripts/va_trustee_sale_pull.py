@@ -185,6 +185,39 @@ ADDRESS_FALLBACK_RE = re.compile(
     re.I,
 )
 
+# A trustee's sale notice states the SUBJECT PROPERTY in its headline, on the
+# first line, immediately after "TRUSTEE'S SALE" -- verified live 2026-08-31
+# against a real Fairfax notice ("TRUSTEE'S SALE 2098 GOLF COURSE DRIVE
+# RESTON, VA 20191"). This is the ONLY authoritative property address in the
+# notice, and it must be preferred over every other address in the body:
+#
+#   * the courthouse appears later as the AUCTION VENUE ("...at the front of
+#     the Fairfax County Circuit Court (Fairfax County Judicial Center, 4110
+#     Chain Bridge Road)")
+#   * the trustee's law firm appears near the end as its own letterhead
+#     ("101 North Lynnhaven Road, Suite 104, Virginia Beach, Virginia 23452")
+#
+# Both are real, deliverable, USPS-confirmable addresses -- so no amount of
+# address VALIDATION catches them. Only anchoring on the headline does.
+#
+# Note the headline has NO comma between street and city ("DRIVE RESTON"),
+# which is exactly why ADDRESS_RE misses it; the street/city split is done
+# on the last street-suffix token, same technique as ADDRESS_FALLBACK_RE.
+# The title varies more than "TRUSTEE'S SALE". Measured against 139 real MDDC
+# notices 2026-08-31: singular possessive is only 25/139, while the dominant
+# form is the PLURAL "SUBSTITUTE TRUSTEES' SALE" (51 ASCII apostrophe + 18
+# curly U+2019 = 69), and the broad alternation below reaches 114/139 (82%).
+# A pattern requiring \s+ straight after the S silently misses every plural,
+# because the apostrophe sits between the S and the space. The curly variant
+# has bitten this codebase before (a SiftMap delete-dialog matcher, same day),
+# so both apostrophes are always spelled out.
+TRUSTEE_HEADLINE_RE = re.compile(
+    "TRUSTEES?['’]?S?['’]?" + r"\s+SALE\s+(?:OF\s+)?"
+    r"([0-9][A-Za-z0-9 .,#\-']{4,70}?)\s*,?\s*"
+    rf"({STATE_ALT})\s*(\d{{5}})",
+    re.I,
+)
+
 try:
     from md_register_of_wills_pull import STREET_SUFFIXES  # noqa: E402
 except ImportError:  # running as a script with a different sys.path setup
@@ -303,7 +336,7 @@ NOTICE_TYPE_RULES = [
     # phrasing rarely appears.
     ("probate", re.compile(r"notice to creditors|letters testamentary|personal representative|estate of|"
                            r"estate claim|64\.2-5\d\d|show\s+cause\s+against|administrat(?:or|rix)\s+of|"
-                           r"execut(?:or|rix)\s+of|deceased", re.I)),
+                           r"execut(?:or|rix)\s+of|deceased", re.I)),
 ]
 
 
@@ -365,9 +398,71 @@ def parse_loan_principal(text: str):
     return m.group(1) if m else ""
 
 
-def parse_auction_date(text: str):
-    m = AUCTION_DATE_RE.search(text)
-    return m.group(1) if m else ""
+_MONTHS = ("January|February|March|April|May|June|July|August|September|"
+           "October|November|December")
+_ANY_DATE_RE = re.compile(rf"({_MONTHS})\s+(\d{{1,2}}),?\s+(\d{{4}})", re.I)
+# Words that mark a date as the DEED's date, never the sale's.
+_DEED_DATE_CONTEXT_RE = re.compile(
+    r"(recorded|dated|deed\s+of\s+trust|instrument|book|modified|assigned)"
+    r"[^.]{0,40}$", re.I)
+# Sale language that legitimately precedes the auction date.
+_SALE_CONTEXT_RE = re.compile(
+    r"(offer\s+for\s+sale|will\s+sell|public\s+auction|auction\s+sale|"
+    r"date\s+of\s+sale|sale\s+date|sell\s+at\s+public)", re.I)
+_AUCTION_PUB_FORMATS = ("%A, %B %d, %Y", "%B %d, %Y", "%m/%d/%Y", "%Y-%m-%d")
+
+
+def parse_auction_date(text: str, published: str = ""):
+    """The SALE date, or "" -- never the Deed of Trust's recording date.
+
+    AUCTION_DATE_RE alone matched the FIRST "on <date>" in the notice, which is
+    almost always the deed's recording date: "In execution of the Deed of Trust
+    dated August 18, 2021 and recorded on September 2, 2021". Measured on a
+    live 5-county pull 2026-08-31: 17 of 18 extracted auction dates were deed
+    dates, several years in the past. A stale auction date is worse than a
+    blank one -- it misprices the marketing window and reads as a sale that
+    already happened.
+
+    Two guards:
+      1. a date whose immediately preceding words are deed language
+         (recorded/dated/instrument/book) is rejected outright;
+      2. the sale of a property cannot predate the notice advertising it, so
+         any candidate earlier than `published` is rejected. Same spirit as
+         obituary_enricher's MAX_DOD_GAP_YEARS sanity check.
+
+    Prefers a candidate that follows sale language ("will offer for sale ...
+    on September 28, 2026"); falls back to the earliest surviving future date.
+    """
+    from datetime import datetime as _dt
+
+    def _parse_pub(raw):
+        raw = (raw or "").strip()
+        for fmt in _AUCTION_PUB_FORMATS:
+            try:
+                return _dt.strptime(raw, fmt)
+            except ValueError:
+                continue
+        return None
+
+    pub = _parse_pub(published)
+    preferred, fallback = [], []
+    for m in _ANY_DATE_RE.finditer(text):
+        raw = f"{m.group(1)} {m.group(2)}, {m.group(3)}"
+        try:
+            when = _dt.strptime(raw, "%B %d, %Y")
+        except ValueError:
+            continue
+        before = text[max(0, m.start() - 60):m.start()]
+        if _DEED_DATE_CONTEXT_RE.search(before):
+            continue
+        if pub and when.date() < pub.date():
+            continue
+        (preferred if _SALE_CONTEXT_RE.search(before) else fallback).append((when, raw))
+
+    for bucket in (preferred, fallback):
+        if bucket:
+            return min(bucket)[1]
+    return ""
 
 
 def parse_county_mention(text: str):
@@ -428,14 +523,81 @@ def _normalize_state(raw: str) -> str:
     return STATE_NAMES.get(raw.strip().upper(), raw.strip().upper())
 
 
+def _split_street_city(blob: str):
+    """Split a "street + city" blob into (street, city).
+
+    A COMMA wins when present: "1476 Vineyard Ct Unit# 105XA, Crofton" must
+    split at the comma, giving street="1476 Vineyard Ct Unit# 105XA". The
+    suffix-token method below would instead cut at "Ct" and produce
+    street="1476 Vineyard Ct", city="Unit# 105XA Crofton" -- dropping the unit
+    number, which on a condo means the WRONG PROPERTY, and corrupting the
+    city. Found 2026-08-31 against real MDDC data.
+
+    Only when there is no comma (VA's headline form, "2098 GOLF COURSE DRIVE
+    RESTON") does it fall back to splitting on the last street-suffix token.
+    Returns None if neither method yields both halves.
+    """
+    blob = " ".join(blob.split())
+    if "," in blob:
+        street, _, city = blob.rpartition(",")
+        street, city = street.strip(), city.strip()
+        if street and city:
+            return street, city
+        return None
+
+    tokens = [t.rstrip(",") for t in blob.split()]
+    split_idx = None
+    for i, tok in enumerate(tokens):
+        if tok.upper().rstrip(".") in STREET_SUFFIXES:
+            split_idx = i
+    if split_idx is None:
+        return None
+    street = " ".join(tokens[: split_idx + 1]).strip()
+    city = " ".join(tokens[split_idx + 1 :]).strip()
+    if not street or not city:
+        return None
+    return street, city
+
+
+def parse_trustee_headline_address(text: str):
+    """The property address from the TRUSTEE'S SALE headline, or None.
+
+    Preferred over parse_address() for trustee's sale notices -- see the
+    TRUSTEE_HEADLINE_RE comment for why every other address in the body is
+    the wrong building.
+    """
+    m = TRUSTEE_HEADLINE_RE.search(text)
+    if not m:
+        return None
+    blob, state, zip5 = m.groups()
+    split = _split_street_city(" ".join(blob.split()))
+    if not split:
+        return None
+    street, city = split
+    return {
+        "street": street,
+        "city": city.title(),
+        "state": _normalize_state(state),
+        "zip": zip5,
+    }
+
+
 def parse_address(text: str):
     """Return the SUBJECT PROPERTY address, not the law firm's letterhead.
+
+    The TRUSTEE'S SALE headline is tried FIRST: on a trustee's sale notice it
+    is the only authoritative property address, and both the "last match"
+    heuristic below and plain address validation pick the wrong building.
 
     Same fix as the MDDC script: these notices open with the filing firm's
     own office address (which frequently also matches the address pattern)
     and name the actual property later. Taking the LAST regex match returns
     the property; taking the first returns the firm's office.
     """
+    headline = parse_trustee_headline_address(text)
+    if headline:
+        return headline
+
     matches = list(ADDRESS_RE.finditer(text))
     if matches:
         street, city, state, zip5 = matches[-1].groups()
@@ -891,6 +1053,35 @@ def _solve_turnstile(url: str, sitekey: str, captcha_api_key: str) -> str | None
         return None
 
 
+def scrapfly_preflight(scrapfly_key: str) -> tuple[bool, str]:
+    """Cheap health check BEFORE any 2Captcha spend.
+
+    fetch_full_text() pays for a Turnstile solve first and only then calls
+    Scrapfly, so a quota-exhausted or invalid Scrapfly key burns one captcha
+    solve per row for nothing (observed 2026-08-31: an entire run billed
+    solves against ERR::SCRAPE::QUOTA_LIMIT_REACHED). One trivial scrape up
+    front turns that into a single clear abort.
+    """
+    from scrapfly import ScrapeConfig, ScrapflyClient
+
+    try:
+        client = ScrapflyClient(key=scrapfly_key)
+        resp = client.scrape(ScrapeConfig(
+            url="https://httpbin.org/html", render_js=False,
+            raise_on_upstream_error=False,
+        ))
+        sr = resp.scrape_result or {}
+        err = sr.get("error")
+        if err:
+            code = err.get("code") if isinstance(err, dict) else str(err)
+            return False, str(code)
+        if not (sr.get("content") or ""):
+            return False, "empty response from Scrapfly on control scrape"
+        return True, "ok"
+    except Exception as exc:
+        return False, f"{type(exc).__name__}: {exc}"
+
+
 def fetch_full_text(popular_search_value: str, counties: list, days: int, view_index: int, *,
                      captcha_api_key: str, scrapfly_key: str, session: str = "va_fulltext",
                      date_from: str = "", date_to: str = "") -> dict:
@@ -971,8 +1162,10 @@ def fetch_full_text(popular_search_value: str, counties: list, days: int, view_i
         return {"ok": False, "error": f"{type(exc).__name__}: {exc}", "html": ""}
 
     content = ""
+    upstream = None
     try:
         content = resp.scrape_result.get("content", "") or ""
+        upstream = resp.scrape_result.get("error")
     except Exception:
         pass
 
@@ -980,6 +1173,18 @@ def fetch_full_text(popular_search_value: str, counties: list, days: int, view_i
         return {"ok": True, "html": content}
     if any(m in content for m in _GATE_MARKERS):
         return {"ok": False, "error": "gate_not_cleared", "html": content}
+
+    # Scrapfly reports quota/billing/proxy failures in scrape_result["error"]
+    # while returning EMPTY content. Those used to fall through to
+    # "unknown_page_state", which reads like a parsing problem and hid a
+    # plain "out of quota" behind 26 identical mystery failures.
+    if upstream:
+        code = ""
+        if isinstance(upstream, dict):
+            code = upstream.get("code") or upstream.get("message") or ""
+        return {"ok": False, "error": f"scrapfly: {code or upstream}", "html": content}
+    if not content:
+        return {"ok": False, "error": "empty_response_no_upstream_error", "html": ""}
     return {"ok": False, "error": "unknown_page_state", "html": content}
 
 
@@ -1055,7 +1260,7 @@ def parse_grid_html(html: str, popular_search_value: str) -> list:
                 # "courthouse became the subject property" lesson in CLAUDE.md).
                 "county": parse_county_mention(notice_text),
                 "loan_principal": parse_loan_principal(notice_text),
-                "auction_date": parse_auction_date(notice_text),
+                "auction_date": parse_auction_date(notice_text, published),
                 "popular_search": POPULAR_SEARCHES.get(popular_search_value, popular_search_value),
                 "notice_text_snippet": notice_text[:2000],
                 # Populated by main() via fetch_full_text() when --full-text is
@@ -1129,20 +1334,73 @@ def dedupe(rows: list) -> list:
 
     So an addressless row falls back to the notice text itself, which is what actually
     distinguishes one estate from another.
+
+    An ADDRESSED row's key deliberately EXCLUDES date_published, and the most
+    recent publication wins. Foreclosure notices republish weekly by law (a
+    real notice read "Run: August 31, September 7, 2026"), so keeping the date
+    in the key let one property survive once per publication date: measured
+    2026-08-31 on a live 5-county pull, 34 of 137 output rows -- 25% -- were
+    republications of a property already in the set (1421 PRINCE STREET
+    appeared 3x on three consecutive days). This matches the project-wide rule
+    in CLAUDE.md: same property across multiple notices collapses, keeping the
+    most recent.
+
+    The ADDRESSLESS path keeps date_published exactly as before -- that is the
+    10-rows-to-1 trap in the paragraph above and must not be touched.
+
+    Caveat: a property re-noticed with a NEW auction date also collapses to
+    the most recent row. That is the intended reading (the latest notice is
+    the authoritative one), but it means auction_date must be taken from the
+    surviving row, not aggregated across the collapsed ones.
     """
+    from datetime import datetime as _dt
+
+    _PUB_FORMATS = ("%A, %B %d, %Y", "%B %d, %Y", "%m/%d/%Y", "%Y-%m-%d")
+
+    def _pub_key(raw: str):
+        raw = (raw or "").strip()
+        for fmt in _PUB_FORMATS:
+            try:
+                return _dt.strptime(raw, fmt)
+            except ValueError:
+                continue
+        return _dt.min
+
     seen = set()
     out = []
+    at_index = {}
     for r in rows:
         if r.get("notice_id"):
             key = ("id", r["notice_id"])
+        elif r["street"].strip() and r.get("notice_type") == "foreclosure":
+            # Dateless collapse ONLY for foreclosures, exactly as this
+            # docstring's own rule says: address-keying "is right for
+            # Foreclosures, and catastrophic for the other Popular Searches."
+            # On a foreclosure a street IS the identity, so weekly
+            # republications of the same property collapse to the newest.
+            # Two measurements taken while writing this, both on live data:
+            #   * city-only rows keyed as ("addr","","fairfax") collapsed
+            #     Estate Claims 26 -> 7
+            #   * even street-bearing Estate Claims rows collapsed 26 -> 24,
+            #     because every one of them has the COURTHOUSE parsed into
+            #     street, so two unrelated estates share an address
+            # Restricting to foreclosure removes both failure modes; the other
+            # searches keep their original date-inclusive behaviour untouched.
+            key = ("addr", r["street"].strip().lower(), r["city"].strip().lower())
         elif r["street"] or r["city"]:
             key = ("addr", r["street"].lower(), r["city"].lower(), r["date_published"])
         else:
             body = (r.get("notice_text_snippet") or "").strip().lower()
             key = ("text", r["date_published"], body[:400])
         if key in seen:
+            # Republication of a property we already kept: keep the newer one.
+            if key[0] == "addr":
+                i = at_index[key]
+                if _pub_key(r["date_published"]) > _pub_key(out[i]["date_published"]):
+                    out[i] = r
             continue
         seen.add(key)
+        at_index[key] = len(out)
         out.append(r)
     return out
 
@@ -1162,6 +1420,12 @@ def main():
                      help="Pages per search (newest-first). Each page costs one Firecrawl "
                           "action round-trip.")
     ap.add_argument("--out", default="output/va_trustee_sale.csv")
+    ap.add_argument("--standardize", action="store_true",
+                    help="Run Smarty USPS standardization over the scraped rows "
+                         "(adds std_* / rdi / vacant / lat-lon columns). Needs "
+                         "SMARTY_AUTH_ID and SMARTY_AUTH_TOKEN in .env. rdi="
+                         "Commercial is the courthouse/office tell. Original "
+                         "scraped columns are never overwritten.")
     ap.add_argument("--list-searches", action="store_true",
                      help="Print the live Popular Searches categories and exit. No login needed.")
     ap.add_argument("--list-counties", action="store_true",
@@ -1273,6 +1537,17 @@ def main():
         print(f"  resolved county by ZIP geocode for {geocoded} row(s) that had no free-text county mention")
 
     if args.full_text:
+        # Verify Scrapfly is healthy BEFORE the loop: each iteration pays for a
+        # 2Captcha solve before it ever reaches Scrapfly, so a dead key or an
+        # exhausted quota would otherwise bill one solve per row for nothing.
+        ok, why = scrapfly_preflight(creds["scrapfly_key"])
+        if not ok:
+            print(f"  --full-text ABORTED before any 2Captcha spend: Scrapfly unusable ({why})")
+            print("     Fix the Scrapfly account/quota and re-run. The CSV below is "
+                  "snippet-only and its addresses are NOT subject properties.")
+            args.full_text = False
+
+    if args.full_text:
         batch = rows[: args.full_text_limit]
         print(f"  --full-text: fetching full notice text for {len(batch)} of {len(rows)} row(s) "
               f"(each redoes the full search + one 2Captcha solve, expect ~30-90s/row)...")
@@ -1299,6 +1574,28 @@ def main():
     fieldnames = ["notice_id", "publication", "date_published", "notice_type", "street", "city", "state", "zip",
                   "county", "loan_principal", "auction_date",
                   "popular_search", "notice_text_snippet", "full_text"]
+
+    if args.standardize:
+        # src/ is not on sys.path when these scripts run standalone (only
+        # src/scripts/ is, via the STREET_SUFFIXES import block above).
+        import sys as _sys
+        _src_dir = str(ROOT / "src")
+        if _src_dir not in _sys.path:
+            _sys.path.insert(0, _src_dir)
+        from notice_row_adapter import ENRICHED_COLUMNS, standardize_rows
+
+        env = dotenv_values(str(ENV_PATH))
+        stats = standardize_rows(
+            rows,
+            env.get("SMARTY_AUTH_ID", ""),
+            env.get("SMARTY_AUTH_TOKEN", ""),
+            default_state="VA",
+            expected_states={"VA"},
+        )
+        print(f"  Smarty: {stats['standardized']}/{stats['rows']} USPS-confirmed, "
+              f"{stats['commercial']} commercial (likely courthouse/office, not a "
+              f"subject property), {stats['vacant']} flagged vacant")
+        fieldnames = fieldnames + ENRICHED_COLUMNS
     with out_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()

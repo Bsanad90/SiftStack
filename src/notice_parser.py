@@ -37,7 +37,10 @@ class NoticeData:
     auction_date: str = ""     # Scheduled sale/auction date (YYYY-MM-DD)
     address: str = ""
     city: str = ""
-    state: str = "TN"
+    state: str = ""            # USPS abbrev. No default: this dataclass is shared by
+                               # the TN, MD/DC and VA pipelines, and a "TN" default
+                               # silently stamped Tennessee on out-of-state records
+                               # (and made Smarty reject every correct match).
     zip: str = ""
     owner_name: str = ""
     notice_type: str = ""      # foreclosure | tax_sale | tax_lien | probate
@@ -785,6 +788,7 @@ async def parse_notice_page(
         county=county,
         notice_type=notice_type,
         source_url=page.url,
+        state="TN",  # this parser only ever reads tnpublicnotice.com
     )
 
     # Get the full page text (includes both metadata labels and notice body)
@@ -825,7 +829,8 @@ async def parse_notice_html(
     language" — a silent total loss. So this path gets the same PDF fallback the
     Playwright path has, sourced from the HTML string.
     """
-    notice = NoticeData(county=county, notice_type=notice_type, source_url=source_url)
+    notice = NoticeData(county=county, notice_type=notice_type,
+                        source_url=source_url, state="TN")
     full_text = _html_to_text(html)
     notice_content = _extract_notice_content(full_text)
 

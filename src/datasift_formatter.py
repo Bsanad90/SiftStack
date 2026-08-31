@@ -759,7 +759,8 @@ def _build_row(notice: NoticeData, notes_override: str | None = None) -> dict:
         # ── Core auto-mapped ──
         "Property Street Address": notice.address,
         "Property City": notice.city,
-        "Property State": notice.state or "TN",
+        "Property State": notice.state,  # no TN fallback: fabricating a state on an
+                                        # out-of-state record corrupts the address
         "Property ZIP Code": notice.zip,
         "Owner First Name": contact["first"],
         "Owner Last Name": contact["last"],

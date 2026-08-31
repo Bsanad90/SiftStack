@@ -33,7 +33,14 @@ def _build_client(auth_id: str, auth_token: str):
 
 
 def _build_lastline(notice: NoticeData) -> str:
-    """Build a 'city, state zip' lastline string from notice fields."""
+    """Build a 'city, state zip' lastline string from notice fields.
+
+    Returns "" when the notice carries no city/state/zip. Deliberately does
+    NOT fall back to a default state: a street with an invented lastline
+    matches an arbitrary address in that state, which is exactly the
+    "a guess that's wrong is worse than a blank field" failure mode. No
+    lastline means Smarty returns no candidate, which is the honest result.
+    """
     parts = []
     if notice.city:
         parts.append(notice.city)
@@ -42,13 +49,14 @@ def _build_lastline(notice: NoticeData) -> str:
     lastline = ", ".join(parts)
     if notice.zip:
         lastline += " " + notice.zip if lastline else notice.zip
-    return lastline or "TN"
+    return lastline
 
 
 def standardize_addresses(
     notices: list[NoticeData],
     auth_id: str,
     auth_token: str,
+    expected_states: set[str] | None = None,
 ) -> list[NoticeData]:
     """Standardize addresses in-place via Smarty US Street API.
 
@@ -56,6 +64,11 @@ def standardize_addresses(
         notices: List of NoticeData (modified in-place).
         auth_id: Smarty auth-id credential.
         auth_token: Smarty auth-token credential.
+        expected_states: Optional set of USPS state abbreviations this run is
+            allowed to produce (e.g. {"MD", "DC", "VA"}). When None, the
+            returned state is instead checked against each notice's own input
+            state, so a cross-state mismatch is still rejected without
+            hardcoding a footprint.
 
     Returns:
         The same list (modified in-place) for chaining convenience.
@@ -65,16 +78,45 @@ def standardize_addresses(
         logger.info("Smarty credentials not configured -- skipping address standardization")
         return notices
 
-    # Filter to notices that have an address worth standardizing
-    eligible = [(i, n) for i, n in enumerate(notices) if n.address.strip()]
+    allowed_states = (
+        {st.strip().upper() for st in expected_states if st and st.strip()}
+        if expected_states
+        else None
+    )
+
+    # Filter to notices worth standardizing. A lastline is required: Smarty
+    # bills per lookup, and a street with no city/state/zip cannot resolve to
+    # a single candidate, so sending it only spends money to get no match.
+    eligible = []
+    no_address = 0
+    no_lastline = 0
+    for i, n in enumerate(notices):
+        if not n.address.strip():
+            no_address += 1
+            continue
+        # A city or ZIP is required, not merely a state: Smarty cannot resolve
+        # a street against a bare state, so a lastline of just "VA" passes a
+        # non-empty check while guaranteeing a billed no-match.
+        if not ((n.city or "").strip() or (n.zip or "").strip()):
+            no_lastline += 1
+            continue
+        eligible.append((i, n))
+
     if not eligible:
-        logger.info("No notices with addresses to standardize")
+        logger.info(
+            "No notices eligible for standardization (%d no address, "
+            "%d no city or ZIP)",
+            no_address,
+            no_lastline,
+        )
         return notices
 
     logger.info(
-        "Standardizing %d addresses via Smarty (%d skipped -- no address)",
+        "Standardizing %d addresses via Smarty (%d skipped -- no address, "
+        "%d skipped -- no city or ZIP to resolve against)",
         len(eligible),
-        len(notices) - len(eligible),
+        no_address,
+        no_lastline,
     )
 
     try:
@@ -125,15 +167,33 @@ def standardize_addresses(
             metadata = candidate.metadata
             analysis = candidate.analysis
 
-            # Safety: reject non-TN results (bad match on out-of-state address)
-            if components and components.state_abbreviation and components.state_abbreviation != "TN":
-                logger.warning(
-                    "Smarty returned %s for '%s' -- keeping original",
-                    components.state_abbreviation,
-                    notice.address,
-                )
-                failed += 1
-                continue
+            # Safety: reject a cross-state match (Smarty resolved the street to
+            # a different state than we asked for). Checked against the run's
+            # allowed footprint when given, otherwise against the notice's own
+            # input state -- never against a hardcoded state, which silently
+            # discarded every non-TN row once the footprint grew past TN.
+            returned_state = (
+                (components.state_abbreviation or "").strip().upper()
+                if components
+                else ""
+            )
+            if returned_state:
+                if allowed_states is not None:
+                    ok = returned_state in allowed_states
+                else:
+                    input_state = (notice.state or "").strip().upper()
+                    ok = (not input_state) or returned_state == input_state
+                if not ok:
+                    logger.warning(
+                        "Smarty returned %s for '%s' (expected %s) -- keeping original",
+                        returned_state,
+                        notice.address,
+                        ",".join(sorted(allowed_states))
+                        if allowed_states is not None
+                        else ((notice.state or "").strip().upper() or "?"),
+                    )
+                    failed += 1
+                    continue
 
             # Overwrite address with standardized version
             if candidate.delivery_line_1:
@@ -218,6 +278,7 @@ def retry_with_geocoded_city(
     notices: list[NoticeData],
     auth_id: str,
     auth_token: str,
+    expected_states: set[str] | None = None,
 ) -> None:
     """Retry Smarty for failed lookups using reverse-geocoded city/ZIP.
 
@@ -225,8 +286,17 @@ def retry_with_geocoded_city(
     reverse geocodes the lat/lon via Nominatim to get the correct city/ZIP,
     then retries Smarty with the corrected lastline.
 
+    expected_states behaves as in standardize_addresses(): the allowed USPS
+    footprint for this run, or None to check each notice against its own
+    input state.
+
     Updates notices in-place.
     """
+    allowed_states = (
+        {st.strip().upper() for st in expected_states if st and st.strip()}
+        if expected_states
+        else None
+    )
     # Find candidates: have address + lat/lon but Smarty didn't match (no zip)
     candidates = [
         (i, n) for i, n in enumerate(notices)
@@ -318,9 +388,28 @@ def retry_with_geocoded_city(
             metadata = candidate.metadata
             analysis = candidate.analysis
 
-            if components and components.state_abbreviation and components.state_abbreviation != "TN":
-                failed += 1
-                continue
+            # Same cross-state guard as standardize_addresses(). This copy used
+            # to reject silently; it now logs, so a footprint mismatch is
+            # visible instead of just inflating the failure count.
+            returned_state = (
+                (components.state_abbreviation or "").strip().upper()
+                if components
+                else ""
+            )
+            if returned_state:
+                if allowed_states is not None:
+                    ok = returned_state in allowed_states
+                else:
+                    input_state = (notice.state or "").strip().upper()
+                    ok = (not input_state) or returned_state == input_state
+                if not ok:
+                    logger.warning(
+                        "Smarty retry returned %s for '%s' -- keeping original",
+                        returned_state,
+                        notice.address,
+                    )
+                    failed += 1
+                    continue
 
             if candidate.delivery_line_1:
                 notice.address = candidate.delivery_line_1

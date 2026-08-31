@@ -779,6 +779,11 @@ def main():
                           "reliable now; each page costs one Firecrawl action round-trip, so a broad "
                           "search 60-80 pages deep still needs multiple runs or a higher value here.")
     ap.add_argument("--out", default="output/mddc_trustee_sale.csv")
+    ap.add_argument("--standardize", action="store_true",
+                    help="Run Smarty USPS standardization over the scraped rows "
+                         "(adds std_* / rdi / vacant / lat-lon columns). Needs "
+                         "SMARTY_AUTH_ID and SMARTY_AUTH_TOKEN in .env. Original "
+                         "scraped columns are never overwritten.")
     ap.add_argument("--list-searches", action="store_true",
                      help="Log in, print every Saved Search on the account (value + label), "
                           "flag any --saved-searches id that no longer matches the live "
@@ -881,6 +886,30 @@ def main():
     fieldnames = ["notice_id", "publication", "date_published", "notice_type", "street", "city", "state", "zip",
                   "county", "loan_principal", "auction_date",
                   "saved_search", "notice_text_snippet", "source_url"]
+
+    if args.standardize:
+        # src/ is not on sys.path when these scripts run standalone (only
+        # src/scripts/ is, via the STREET_SUFFIXES import block above).
+        import sys as _sys
+        _src_dir = str(ROOT / "src")
+        if _src_dir not in _sys.path:
+            _sys.path.insert(0, _src_dir)
+        from notice_row_adapter import ENRICHED_COLUMNS, standardize_rows
+
+        env = dotenv_values(str(ENV_PATH))
+        # This footprint is MD counties plus DC; the adapter resolves DC per row
+        # from the county, so no single default_state is passed.
+        stats = standardize_rows(
+            rows,
+            env.get("SMARTY_AUTH_ID", ""),
+            env.get("SMARTY_AUTH_TOKEN", ""),
+            default_state="MD",
+            expected_states={"MD", "DC"},
+        )
+        print(f"  Smarty: {stats['standardized']}/{stats['rows']} USPS-confirmed, "
+              f"{stats['commercial']} commercial (likely courthouse/office, not a "
+              f"subject property), {stats['vacant']} flagged vacant")
+        fieldnames = fieldnames + ENRICHED_COLUMNS
     with out_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
