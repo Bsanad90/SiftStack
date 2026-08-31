@@ -1,0 +1,3856 @@
+{
+ "generated_at": "2026-08-28T02:24:06",
+ "source_rows": 139,
+ "canonical_types": {
+  "probate": "Probate / estates / unknown heirs",
+  "foreclosure": "Foreclosure (first public signal)",
+  "tax_sale": "Tax sale / delinquent tax auction",
+  "tax_delinquent": "Tax delinquency roll (pre-sale)",
+  "code_violation": "Code violations",
+  "condemnation": "Condemned / unsafe / demolition",
+  "eviction": "Evictions (multiple-eviction landlords)",
+  "lien_deed_index": "Recorder lien & deed index (incl. lis pendens)",
+  "divorce": "Divorce filings"
+ },
+ "live_coverage": {
+  "scrapers": {
+   "mddc_trustee_sale_pull": {
+    "site": "mddcpublicnotices.com",
+    "types": [
+     "foreclosure"
+    ],
+    "runs_today": [
+     "Anne Arundel",
+     "Baltimore County",
+     "Calvert",
+     "Carroll",
+     "Charles",
+     "Frederick",
+     "Montgomery",
+     "Washington DC"
+    ],
+    "reachable": [
+     "Allegany",
+     "Anne Arundel",
+     "Baltimore City",
+     "Baltimore County",
+     "Calvert",
+     "Caroline",
+     "Carroll",
+     "Cecil",
+     "Charles",
+     "Dorchester",
+     "Frederick",
+     "Garrett",
+     "Harford",
+     "Howard",
+     "Kent",
+     "Kent (DE)",
+     "Montgomery",
+     "New Castle",
+     "Prince George's",
+     "Queen Anne's",
+     "Somerset",
+     "St. Marys",
+     "Sussex",
+     "Talbot",
+     "Washington",
+     "Washington DC",
+     "Wicomico",
+     "Worcester"
+    ],
+    "note": "no Virginia checkbox exists on this site at all"
+   },
+   "va_trustee_sale_pull": {
+    "site": "publicnoticevirginia.com (public Quick Search, no login)",
+    "types": [
+     "foreclosure",
+     "probate",
+     "tax_sale"
+    ],
+    "type_map": {
+     "foreclosure": "--popular-search 4 (Foreclosures)",
+     "probate": "--popular-search 6 (Estate Claims)",
+     "tax_sale": "--popular-search 8 (Tax Deeds)"
+    },
+    "runs_today": [
+     "Arlington",
+     "Fairfax",
+     "Prince William",
+     "Spotsylvania",
+     "Stafford"
+    ],
+    "reachable": [
+     "Arlington",
+     "Fairfax",
+     "Prince William",
+     "Spotsylvania",
+     "Stafford"
+    ],
+    "categories_available": {
+     "3": "Assessments",
+     "4": "Foreclosures",
+     "6": "Estate Claims",
+     "7": "Truth in Taxation",
+     "8": "Tax Deeds",
+     "9": "Schedule of Meetings",
+     "10": "Annual Treasurer's Report",
+     "14": "Prevailing Wage Notices",
+     "15": "Water",
+     "16": "Virginia Marine Resources Commission"
+    },
+    "note": "only Foreclosures has actually been run; Estate Claims and Tax Deeds are existing code needing new runs, not new scrapers"
+   },
+   "md_register_of_wills_pull": {
+    "site": "registers.maryland.gov",
+    "types": [
+     "probate"
+    ],
+    "runs_today": [
+     "Anne Arundel",
+     "Baltimore County",
+     "Calvert",
+     "Carroll",
+     "Charles",
+     "Frederick",
+     "Montgomery"
+    ],
+    "reachable": [
+     "Allegany",
+     "Anne Arundel",
+     "Baltimore City",
+     "Baltimore County",
+     "Calvert",
+     "Caroline",
+     "Carroll",
+     "Cecil",
+     "Charles",
+     "Dorchester",
+     "Frederick",
+     "Garrett",
+     "Harford",
+     "Howard",
+     "Kent",
+     "Montgomery",
+     "Prince George's",
+     "Queen Anne's",
+     "Somerset",
+     "St. Mary's",
+     "Talbot",
+     "Washington",
+     "Wicomico",
+     "Worcester"
+    ],
+    "note": "Maryland only; DC probate is a separate court system with no scraper"
+   }
+  },
+  "errors": []
+ },
+ "registry": {
+  "baltimore_county_md": [
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Register of Wills for Baltimore County - Alexis Burrell-Rohde, Register of Wills for Baltimore County",
+    "phone": "410-887-6680 (Main Number), 410-887-2893 (New Proceedings Division)",
+    "url": "https://registers.maryland.gov/main/baltimore.html",
+    "address": "County Courts Building, 401 Bosley Avenue, Room 500, Towson, Maryland 21204",
+    "foia": "Click Here (Email link on website)",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "The office encourages calling before visiting to ensure all required documents are prepared. Online estate search is available statewide via https://registers.maryland.gov/main/search.html. Filings cannot be accepted via email. Original wills can be mailed for safekeeping with a $5 fee. Drop box available for submissions, with last pickup at 3:30 p.m. Copies can be requested online or by phone."
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (Judicial/Nonjudicial)",
+    "priority": "Pull first (A)",
+    "office": "Circuit Court for Baltimore County, Clerk's Office",
+    "phone": "410-887-2139 (Circuit Court), 410-887-3497 (Central Assignment Office)",
+    "url": "https://www.baltimorecountymd.gov/departments/circuit/daily-docket",
+    "address": "401 Bosley Avenue, Towson, Maryland 21204",
+    "foia": "baltcocc@mdcourts.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "The online Daily Docket includes all scheduled events for Civil, Criminal, and Domestic cases, updated between 4 and 4:30 p.m. each day for the next day's docket. Foreclosure complaints (judicial foreclosures) would appear here. For nonjudicial foreclosures, check the Recorder/Register of Deeds for Notice of Trustee Sale filings. Information is subject to change; verify courtroom assignments on monitors at the courthouse. No direct search for 'foreclosure' on the daily docket, requires manual review of civil cases."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court, Land Records Division",
+    "phone": "410-887-2650 (Baltimore County Land Records), 410-887-3088 (Circuit Court Land Records Office)",
+    "url": "https://landrec.msa.maryland.gov/",
+    "address": "401 Bosley Avenue, Towson, Maryland 21204",
+    "foia": "",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Maryland Land Records (MDLandRec) is the digital repository for land records, including deeds, mortgages, and various liens (mechanic's, IRS & state tax, HOA, child-support, lis pendens). Requires account creation for full access. Tax and child-support liens are indexed against the person, requiring name-matching to the assessor roll. The site provides a search guide and contact for helpdesk."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Office of Budget and Finance, Taxpayer Services",
+    "phone": "410-887-5616 (Tax Sale Information), 410-887-3313 (Office of Budget and Finance)",
+    "url": "https://www.baltimorecountymd.gov/departments/budfin/taxpayer-services/tax-sale",
+    "address": "400 Washington Avenue, Room 150, Towson, Maryland 21204",
+    "foia": "financeinfo@baltimorecountymd.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Annually (list updated weekly prior to sale)",
+    "verified": "Verified",
+    "notes": "Baltimore County conducts an annual tax sale for properties with unpaid real property taxes. The notice of advertisement is published weekly for four weeks prior to the sale. The list is updated on Thursdays. Property owners have six months from the sale date to redeem the property. Penalties and fees apply to delinquent accounts. Past winning bidder reports are available on the website."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Office of Budget and Finance, Taxpayer Services",
+    "phone": "410-887-3313",
+    "url": "https://www.baltimorecountymd.gov/departments/budfin/taxpayer-services/late-unpaid-taxes",
+    "address": "400 Washington Avenue, Room 150, Towson, Maryland 21204",
+    "foia": "financeinfo@baltimorecountymd.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Annually (delinquent notices mailed in February)",
+    "verified": "Verified",
+    "notes": "Delinquent notices are mailed in February to all taxpayers with unpaid accounts. Any unpaid balances past December 31 are considered delinquent and subject to interest and penalties. The full pre-sale roll is not directly published online as a single list, but the tax sale list serves as the pre-auction delinquent roll. Individual property tax payment status can be checked via the PropertyTaxPayment system (mytax.baltimorecountymd.gov)."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (each incorporated city)",
+    "priority": "Pull first (A)",
+    "office": "N/A (Baltimore County handles county-wide property taxes)",
+    "phone": "",
+    "url": "",
+    "address": "",
+    "foia": "",
+    "access": "Unrated",
+    "access_raw": "",
+    "updates": "",
+    "verified": "Verified",
+    "notes": "Baltimore County handles property taxes for the entire county, including incorporated areas. There is no separate 'city tax delinquency' list for individual incorporated cities within Baltimore County. Baltimore City (a separate jurisdiction) has its own tax sale and delinquency process."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Department of Permits, Approvals and Inspections (PAI), Code Enforcement Division",
+    "phone": "410-887-3950 (Code Enforcement)",
+    "url": "https://www.baltimorecountymd.gov/departments/pai/code-enforcement",
+    "address": "111 W. Chesapeake Avenue, Towson, Maryland 21204",
+    "foia": "pai@baltimorecountymd.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing",
+    "verified": "Verified",
+    "notes": "PAI handles code enforcement for all of Baltimore County. The website provides information on how to report a violation and common violations. An online portal for searching specific code violations by address is not readily apparent from the main page, suggesting a records request or direct inquiry may be needed for detailed lists. They use an online complaint form for reporting."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City",
+    "priority": "Pull next (B)",
+    "office": "N/A (Baltimore County handles code enforcement for all areas)",
+    "phone": "",
+    "url": "",
+    "address": "",
+    "foia": "",
+    "access": "Unrated",
+    "access_raw": "",
+    "updates": "",
+    "verified": "Verify locally",
+    "notes": "Baltimore County's Department of Permits, Approvals and Inspections (PAI) handles code enforcement for all areas within Baltimore County, including incorporated towns. There is no separate city-level code violation system for individual incorporated cities within the county."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Department of Permits, Approvals and Inspections (PAI), Code Enforcement Division",
+    "phone": "410-887-3950 (Code Enforcement)",
+    "url": "https://www.baltimorecountymd.gov/departments/pai/code-enforcement",
+    "address": "111 W. Chesapeake Avenue, Towson, Maryland 21204",
+    "foia": "pai@baltimorecountymd.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing",
+    "verified": "Verify locally",
+    "notes": "Information regarding condemned, unsafe structures, or demolition orders would fall under the purview of Code Enforcement. While the website details general code enforcement, a specific public list or database for condemned/unsafe structures is not explicitly provided. A public records request or direct contact with the department would likely be necessary to obtain such a list."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "District Court of Maryland for Baltimore County, Clerk's Office",
+    "phone": "410-512-2000 (District Court Main Number)",
+    "url": "https://www.mdcourts.gov/district/baltimore",
+    "address": "120 E. Chesapeake Avenue, Towson, Maryland 21204 (Towson District Court)",
+    "foia": "",
+    "access": "Hard",
+    "access_raw": "Hard",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Eviction (failure to pay rent, tenant holding over) cases are heard in the District Court. To identify 'multiple-eviction landlords,' one would need to access the court's electronic docket (Maryland Judiciary Case Search) and search by plaintiff name. This requires knowing landlord names or performing broad searches and filtering. The public portal does not easily allow for bulk data extraction or searching for patterns like multiple filings by a single entity."
+   }
+  ],
+  "montgomery_md": [
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Register of Wills for Montgomery County",
+    "phone": "240-777-9600 (Main Number), 240-777-9620 (New Proceedings Division)",
+    "url": "https://registers.maryland.gov/main/montgomery.html",
+    "address": "50 Maryland Avenue North Tower 3220, Rockville, Maryland 20850",
+    "foia": "Click Here (on website)",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Online estate search available statewide via https://registers.maryland.gov/main/search.html. Contact the New Proceedings Division for opening new estates. Records Division handles copy requests (240-777-9680). Live chat available 8:30 am - 4:30 pm M-F. Documents no larger than 25 pages can be emailed in PDF format."
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal for this state's process)",
+    "priority": "Pull first (A)",
+    "office": "Circuit Court Land Records Public Information Room",
+    "phone": "240-777-9477",
+    "url": "https://www.montgomerycountymd.gov/circuit-court/how-do-i/land-records",
+    "address": "North Tower, Second Floor, Room 2120, Rockville, Maryland",
+    "foia": "mccclandrecdept@mdcourts.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Foreclosures can be judicial (Circuit Court) or nonjudicial (Recorder-filed notice). Search for lis pendens and trustee sale filings. MDLandRec (https://mdlandrec.net/) provides free online access to land records, including liens and judgments, after registration. Equity Index Books (1777-1981) are at Maryland State Archives online. Search by name, liber/folio, or tax account number. Copies available from Duplication Department (240-777-9480)."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index (mechanic's, tax, HOA, child-support liens; lis pendens)",
+    "priority": "Pull first (A)",
+    "office": "Circuit Court Land Records Public Information Room",
+    "phone": "240-777-9477",
+    "url": "https://www.montgomerycountymd.gov/circuit-court/how-do-i/land-records",
+    "address": "North Tower, Second Floor, Room 2120, Rockville, Maryland",
+    "foia": "mccclandrecdept@mdcourts.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "MDLandRec (https://mdlandrec.net/) provides free online access to land records, including liens and judgments, after registration. Search by name, liber/folio, or tax account number. Tax and child-support liens are indexed against the person, requiring name-matching to the assessor roll. Copies available from Duplication Department (240-777-9480)."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Department of Finance, Division of Treasury",
+    "phone": "",
+    "url": "https://www.montgomerycountymd.gov/department-finance/tax-sale/tax-sale-information-procedures",
+    "address": "27 Courthouse Square, Suite 200, Rockville, Maryland 20850",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Annually (second Monday in June)",
+    "verified": "Verified",
+    "notes": "Montgomery County conducts a public sealed bid tax lien sale annually. The sale is for tax liens, not the property itself. The owner retains title and can redeem. A notice of sale is mailed at least 30 days prior to advertisement. The County recommends seeking legal advice prior to participation. Specific list of properties for sale is published prior to the auction. No direct link to a current delinquent list found, but information on the sale process is detailed."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Department of Finance, Division of Treasury",
+    "phone": "",
+    "url": "https://www.montgomerycountymd.gov/department-finance/tax-sale/tax-sale-information-procedures",
+    "address": "27 Courthouse Square, Suite 200, Rockville, Maryland 20850",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing / Annually updated",
+    "verified": "Verified",
+    "notes": "The county collects all unpaid and delinquent property taxes. While a specific 'pre-sale roll' URL isn't provided, the tax sale information page indicates that properties with unpaid taxes are subject to the annual tax sale. The list of properties for the tax sale would serve as the pre-sale roll. Contact the Department of Finance for access to the current delinquent roll prior to the annual sale."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (each incorporated city)",
+    "priority": "Pull first (A)",
+    "office": "e.g., City of Rockville Finance Department",
+    "phone": "",
+    "url": "",
+    "address": "",
+    "foia": "",
+    "access": "Hard",
+    "access_raw": "Hard",
+    "updates": "",
+    "verified": "Verify locally",
+    "notes": "Montgomery County has several incorporated cities (e.g., Rockville, Gaithersburg, Takoma Park). Each city may levy its own property taxes and maintain separate delinquent lists. This would require individual research for each city. Start with the city's finance or treasurer department."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City",
+    "priority": "Pull next (B)",
+    "office": "e.g., City of Rockville Code Enforcement",
+    "phone": "",
+    "url": "",
+    "address": "",
+    "foia": "",
+    "access": "Hard",
+    "access_raw": "Hard",
+    "updates": "",
+    "verified": "Verify locally",
+    "notes": "Code violations are typically a city function. Many cities use Accela 'Citizen Access' portals. Research each incorporated city (e.g., Rockville, Gaithersburg, Takoma Park) for their specific code enforcement department and online portal. Look for an 'Export-to-Excel' option."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Montgomery County Department of Permitting Services (DPS) - Code Enforcement",
+    "phone": "311 or 240-777-0311 (MC311)",
+    "url": "https://montgomerycountymd.gov/dps/code-enforcement/index.html",
+    "address": "2425 Reedie Drive, 7th Floor, Wheaton, Maryland 20902",
+    "foia": "dps.publicrecords@montgomerycountymd.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing",
+    "verified": "Verify locally",
+    "notes": "The Department of Permitting Services handles code enforcement for unincorporated areas. They have an online complaint system and a public records request process. An online portal for searching violations by address directly was not immediately apparent, suggesting records requests or 311 inquiries might be the primary method."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Montgomery County Department of Permitting Services (DPS) - Code Enforcement",
+    "phone": "311 or 240-777-0311 (MC311)",
+    "url": "https://montgomerycountymd.gov/dps/code-enforcement/index.html",
+    "address": "2425 Reedie Drive, 7th Floor, Wheaton, Maryland 20902",
+    "foia": "dps.publicrecords@montgomerycountymd.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing",
+    "verified": "Verify locally",
+    "notes": "These types of violations would fall under the purview of Code Enforcement within the Department of Permitting Services. Specific lists of condemned or unsafe structures are usually not publicly indexed online but can be requested through public records. Inquire via MC311 or public records request."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "Montgomery County Circuit Court Clerk / District Court Clerk",
+    "phone": "240-777-9400 (Circuit Court Clerk)",
+    "url": "https://www.mdcourts.gov/casesearch",
+    "address": "50 Maryland Avenue, Rockville, MD 20850 (Circuit Court)",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Eviction (failure to pay rent, tenant holding over) cases are heard in the District Court of Maryland. Statewide Case Search (https://www.mdcourts.gov/casesearch) allows searching civil cases by party name. Search for plaintiffs (landlords) with multiple filings. While the Circuit Court handles some civil matters, District Court is the primary venue for evictions. No direct portal for 'multiple-eviction landlords' exists; this requires manual searching and analysis of court records."
+   }
+  ],
+  "anne_arundel_md": [
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Register of Wills for Anne Arundel County",
+    "phone": "410-222-1430",
+    "url": "https://registers.maryland.gov/main/annearundel.html",
+    "address": "2011 E Commerce Park Drive, Annapolis, Maryland 21401",
+    "foia": "row.aacounty@registers.maryland.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "The Register of Wills handles probate filings. Estate search is available online via the statewide portal. Walk-ins are accepted until 3:30 PM. Email is for general inquiries, not for filings or Public Information Act requests. Call before visiting to understand procedures and required documents."
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal for this state's process)",
+    "priority": "Pull first (A)",
+    "office": "Circuit Court for Anne Arundel County, Clerk of the Court",
+    "phone": "410-222-1397",
+    "url": "https://www.circuitcourt.org/daily-docket",
+    "address": "8 Church Circle, Annapolis, MD 21401",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Maryland uses either judicial or nonjudicial foreclosure. Judicial foreclosures are filed in the Circuit Court. The daily civil docket is updated between 3:00 and 3:30 PM each day for the next day's docket. Users should refresh their screen to ensure an up-to-date docket. Nonjudicial foreclosures would be recorded with the Land Records Department."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Circuit Court for Anne Arundel County, Land Records Department",
+    "phone": "410-222-1425",
+    "url": "https://www.mdlandrec.net",
+    "address": "8 Church Circle, Annapolis, MD 21401",
+    "foia": "",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "The Land Records Department records deeds, mortgages/deeds of trust, releases, subdivision/condominium plats, and other real property instruments. Verified land records can be viewed online at mdlandrec.net (requires account with Maryland State Archives). Plats can be viewed at plats.msa.maryland.gov. The office is prohibited from providing legal assistance or title searches. Copies are $0.50 per page, certified copies are an additional $5.00 per document."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Anne Arundel County Office of Finance, Tax Sale Division",
+    "phone": "410-222-1735",
+    "url": "https://www.aacounty.org/finance/tax-sale",
+    "address": "44 Calvert Street, Annapolis, MD 21401",
+    "foia": "",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Annually (June)",
+    "verified": "Verified",
+    "notes": "The county holds an annual tax sale in June. The county sells its first lien on the property to a tax sale purchaser. Bidders must register online at annearundel.marylandtaxsale.com. A final list of tax sale properties is posted on the website before the sale. Maryland is a tax lien state, meaning the owner retains title and can redeem the property."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Anne Arundel County Office of Finance, Tax Sale Division",
+    "phone": "410-222-1735",
+    "url": "https://www.aacounty.org/finance/tax-sale",
+    "address": "44 Calvert Street, Annapolis, MD 21401",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Annually (pre-sale)",
+    "verified": "Verified",
+    "notes": "The delinquent tax roll is typically available in the weeks leading up to the annual tax sale in June. This list identifies properties with unpaid taxes before they are offered at auction. Contact the Tax Sale Division for information on the current delinquent roll."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (each incorporated city)",
+    "priority": "Pull first (A)",
+    "office": "City of Annapolis, Finance Department",
+    "phone": "410-263-7953",
+    "url": "https://www.annapolis.gov/173/Finance-Department",
+    "address": "160 Duke of Gloucester Street, Annapolis, MD 21401",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Annually",
+    "verified": "Verify locally",
+    "notes": "The City of Annapolis levies its own property tax. A separate delinquent tax list would be maintained by the City's Finance Department. Check the City of Annapolis website or contact their Finance Department for information on their tax sale process and delinquent roll."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City",
+    "priority": "Pull next (B)",
+    "office": "City of Annapolis, Department of Planning and Zoning, Code Enforcement",
+    "phone": "410-263-7946",
+    "url": "https://www.annapolis.gov/300/Code-Enforcement",
+    "address": "160 Duke of Gloucester Street, Annapolis, MD 21401",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing",
+    "verified": "Verify locally",
+    "notes": "The City of Annapolis handles code enforcement within its municipal limits. Information on code violations may be available through their Department of Planning and Zoning. Many cities use online portals for citizen access to code enforcement records; check the City of Annapolis website for such a portal."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Anne Arundel County, Department of Inspections and Permits, Code Enforcement Division",
+    "phone": "410-222-7441",
+    "url": "https://www.aacounty.org/departments/inspections-and-permits/code-enforcement/",
+    "address": "2664 Riva Road, Annapolis, MD 21401",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing",
+    "verified": "Verify locally",
+    "notes": "Code violations in unincorporated areas of Anne Arundel County are handled by the Department of Inspections and Permits. Their website provides information on code enforcement. Records may be accessible through a public records request or an online portal if available."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Anne Arundel County, Department of Inspections and Permits, Code Enforcement Division",
+    "phone": "410-222-7441",
+    "url": "https://www.aacounty.org/departments/inspections-and-permits/code-enforcement/",
+    "address": "2664 Riva Road, Annapolis, MD 21401",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing",
+    "verified": "Verify locally",
+    "notes": "Information regarding condemned, unsafe structures, or demolition orders would typically fall under the purview of the Code Enforcement Division within the Department of Inspections and Permits. Public records requests may be necessary to obtain specific property lists."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "District Court of Maryland for Anne Arundel County, Clerk's Office",
+    "phone": "410-260-1370",
+    "url": "http://www.mdcourts.gov/district/directories/annearundel",
+    "address": "251 Rowe Blvd, Annapolis, MD 21401 (Annapolis District Court)",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Eviction (Tenant Holding Over/Wrongful Detainer) cases are heard in the District Court. The statewide Case Search portal (casesearch.courts.state.md.us/casesearch/) can be used to search for eviction filings. Searching by plaintiff name (landlord) can identify landlords with multiple filings. The District Court also has a Glen Burnie location (7500 Ritchie Hwy, Glen Burnie, MD 21061, 410-260-1370)."
+   }
+  ],
+  "frederick_md": [
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Register of Wills for Frederick County - Mary C. Rolle, Register of Wills",
+    "phone": "301-600-6565",
+    "url": "https://registers.maryland.gov/main/frederick.html",
+    "address": "Courthouse, 100 West Patrick Street, Frederick, Maryland 21701",
+    "foia": "Click Here (email link on website)",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Estate search available online via the Maryland Register of Wills website. Notice to Creditors opens the claim window and names the decedent + personal representative. Probate rarely carries the property address; a separate assessor lookup fills it. Contact the personal representative / executor, never the deceased. Filings cannot be accepted via email."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court for Frederick County (Land Records)",
+    "phone": "301-600-2354",
+    "url": "https://landrec.msa.maryland.gov/",
+    "address": "30 North Market Street, Frederick, MD 21701",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Records deeds, mortgages, liens (mechanic's, IRS & state tax, HOA, child-support), plats, and conveyances. Digital repository for land records is available online. Tax and child-support liens are indexed against the person, not the parcel; name-match to the assessor roll is required."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Frederick County Treasury Department",
+    "phone": "301-600-1111",
+    "url": "https://frederickcountymd.gov/2005/Tax-Sale",
+    "address": "12 E. Church St., Frederick, MD 21701",
+    "foia": "taxsale@frederickcountymd.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Annually (second Monday in May)",
+    "verified": "Verified",
+    "notes": "Maryland is a tax lien state. The tax sale is an internet-based auction. Properties are advertised in a local newspaper and on the website approximately 30 days before the sale. The '2026 Tax Sale Property Listing' is available online. Pre-registration is required for bidders. Marketing window is before the auction."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Frederick County Treasury Department",
+    "phone": "301-600-1111",
+    "url": "http://wp.fredericknewspost.com/databases/fnp-databases/taxes/",
+    "address": "12 E. Church St., Frederick, MD 21701",
+    "foia": "taxsale@frederickcountymd.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Ongoing / Updated periodically",
+    "verified": "Verified",
+    "notes": "A searchable database of Frederick County Delinquent Taxes is available through the Frederick News-Post. This list includes Parcel ID, Owner Name, and Sale Amount, indicating properties with outstanding taxes before the annual tax sale. This is the 'ongoing roll' of owners who owe but no auction date is set yet."
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal for this state's process)",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court for Frederick County",
+    "phone": "301-600-1976",
+    "url": "https://casesearch.courts.state.md.us/",
+    "address": "30 North Market Street, Frederick, MD 21701",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Maryland uses either judicial or nonjudicial foreclosure. Judicial foreclosures are filed with the Circuit Court. Search the Maryland Judiciary Case Search portal for 'foreclosure' cases. Nonjudicial foreclosures involve a trustee sale and are recorded with the Clerk of the Circuit Court (Land Records). Need to pull both the court foreclosure docket and the recorder's trustee-sale filings."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (each incorporated city)",
+    "priority": "Pull first (A)",
+    "office": "City of Frederick Treasurer's Office",
+    "phone": "301-600-1111 (Frederick County general line, need to confirm city specific)",
+    "url": "",
+    "address": "101 N Court St, Frederick, MD 21701",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "",
+    "verified": "Verify locally",
+    "notes": "Cities often levy their own property tax. A separate city delinquent list would need to be obtained from the City of Frederick Treasurer's Office. This information was not readily available on the Frederick County or City of Frederick websites. Further investigation into the City of Frederick's specific tax collection process is needed."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City",
+    "priority": "Pull next (B)",
+    "office": "City of Frederick Code Enforcement",
+    "phone": "301-600-1474",
+    "url": "https://frederickmd.gov/224/Code-Enforcement",
+    "address": "111 Airport Dr E, Frederick, MD 21701",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "The City of Frederick has a Code Enforcement division. Many cities use Accela 'Citizen Access' portals for code violations, which often allow for data export. Need to confirm if the City of Frederick uses such a system or if records requests are required."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Frederick County Division of Code Enforcement",
+    "phone": "301-600-1070",
+    "url": "https://frederickcountymd.gov/112/Code-Enforcement",
+    "address": "30 N Market St, Frederick, MD 21701",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "The Frederick County Division of Code Enforcement handles violations in unincorporated areas. Online access to a searchable database of violations is not immediately apparent. Records requests may be necessary."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Frederick County Division of Code Enforcement",
+    "phone": "301-600-1070",
+    "url": "https://frederickcountymd.gov/112/Code-Enforcement",
+    "address": "30 N Market St, Frederick, MD 21701",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "",
+    "verified": "Verify locally",
+    "notes": "Information regarding condemned, unsafe structures, or demolition orders would likely fall under the purview of the County's Code Enforcement division. Specific public lists or databases for these categories were not found. A public records request may be needed."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "District Court of Maryland for Frederick County (Civil Division)",
+    "phone": "301-600-2000",
+    "url": "https://casesearch.courts.state.md.us/",
+    "address": "100 West Patrick Street, Frederick, MD 21701",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Eviction (unlawful detainer) cases are handled by the District Court. Search the Maryland Judiciary Case Search portal. Focus on identifying landlords (plaintiffs) with multiple filings (2+ in 12 months) rather than tenants."
+   }
+  ],
+  "carroll_md": [
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Register of Wills for Carroll County - Paul G. Zimmermann, Register of Wills",
+    "phone": "410-848-2586 (Main), 410-876-3158 (Alternate), 888-876-0034 (Toll Free)",
+    "url": "https://registers.maryland.gov/main/carroll.html",
+    "address": "Courthouse Annex, 55 North Court Street, Room 124, Westminster, Maryland 21157",
+    "foia": "Click Here (Email link on website)",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Filings cannot be accepted via email. Online estate search available statewide. Call for appointment before visiting. Notice to Creditors opens the claim window and names the decedent + personal representative; probate rarely carries the property address (a separate assessor lookup fills it). Contact the personal representative / executor, never the deceased."
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court for Carroll County - Sarah Bradberry, Circuit Court Clerk",
+    "phone": "410-386-8710",
+    "url": "http://www.courts.state.md.us/clerks/carroll/records",
+    "address": "55 N. Court Street, Westminster, MD 21157-5155",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Maryland is an EITHER state - lenders use judicial OR nonjudicial per the recorded instrument. The first public signal is EITHER a court lis pendens / foreclosure complaint OR a recorder-filed notice / trustee sale. Pull BOTH the recorder's trustee-sale filings AND the court foreclosure docket (the lender picks the path in this state; run one cycle of both, keep the one that fills). Civil case information, including foreclosures, is available online through Case Search. Records are available to the public for review."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court for Carroll County, Land Records & Licensing Department",
+    "phone": "410-386-8760",
+    "url": "https://landrec.msa.maryland.gov/",
+    "address": "55 N. Court Street, Westminster, MD 21157-5155",
+    "foia": "",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Mechanic's, IRS & state tax, HOA, child-support liens + lis pendens all live in the recorder index. Deeds can be viewed for free online through mdlandrec.net; account creation with Maryland State Archives is required. GOTCHA: tax and child-support liens are indexed against the PERSON, not the parcel - name-match to the assessor roll. Some or most land records are available on MDLANDREC.NET."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Carroll County Comptroller, Collections Office",
+    "phone": "410-386-2971 (Option 3 for payments, general inquiries)",
+    "url": "https://www.carrollcountymd.gov/government/directory/comptroller/collectionstaxes/",
+    "address": "225 North Center Street, Westminster, MD 21157",
+    "foia": "",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Annually (June)",
+    "verified": "Verified",
+    "notes": "MD is a tax lien state (owner keeps title and can redeem: the best marketing window). Carroll County conducts an online Tax Sale in June of each year with RealAuction.com. The tax sale list is printed in the Carroll County Times newspaper the four consecutive Fridays prior to the annual sale. Market the owner before the auction. Tax Sale results are posted online."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Carroll County Comptroller, Collections Office",
+    "phone": "410-386-2971",
+    "url": "https://www.carrollcountymd.gov/government/directory/comptroller/collectionstaxes/",
+    "address": "225 North Center Street, Westminster, MD 21157",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing",
+    "verified": "Verified",
+    "notes": "Pull the county treasurer / tax collector's delinquent roll. Ongoing roll - owners owe but no auction date yet. Delinquent taxes are subject to interest and penalty. While a specific 'pre-sale roll' URL isn't provided, the Collections Office manages delinquent taxes and the tax sale process, implying they hold this data. Contact the office directly for access to the current delinquent roll."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (Westminster)",
+    "priority": "Pull first (A)",
+    "office": "City of Westminster, Finance Department",
+    "phone": "410-848-9000",
+    "url": "https://www.westminstermd.gov/155/Finance",
+    "address": "56 W Main St, Westminster, MD 21157",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Annually/Ongoing",
+    "verified": "Verify locally",
+    "notes": "Cities often levy their own property tax (a separate city delinquent list). Westminster is the largest incorporated city in Carroll County. Contact the City of Westminster Finance Department for their specific delinquent tax roll and tax sale information, as it would be separate from the county's."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City (Westminster)",
+    "priority": "Pull next (B)",
+    "office": "City of Westminster, Department of Planning and Public Works, Code Enforcement",
+    "phone": "410-848-9000",
+    "url": "https://www.westminstermd.gov/165/Code-Enforcement",
+    "address": "363 Charles Street, Westminster, MD 21157",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As violations occur",
+    "verified": "Verified",
+    "notes": "Code violations are typically a CITY function. Check the parcel's jurisdiction (city vs county vs town) first. The City of Westminster has a Code Enforcement division. Information on public access to violation lists or an online portal for code violations was not immediately apparent and may require direct inquiry or a public records request."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Carroll County Government, Department of Land Use, Planning and Development, Code Enforcement",
+    "phone": "410-386-2980",
+    "url": "https://www.carrollcountymd.gov/government/directory/land-use-planning-development/code-enforcement/",
+    "address": "225 N. Center Street, Westminster, MD 21157",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As violations occur",
+    "verified": "Verify locally",
+    "notes": "Unincorporated county code offices are typically behind - records request only. The Carroll County Code Enforcement office handles violations in unincorporated areas. An online portal for public access to specific violation records was not found; records may require a public records request."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Carroll County Government, Department of Land Use, Planning and Development, Code Enforcement",
+    "phone": "410-386-2980",
+    "url": "https://www.carrollcountymd.gov/government/directory/land-use-planning-development/code-enforcement/",
+    "address": "225 N. Center Street, Westminster, MD 21157",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As needed",
+    "verified": "Verify locally",
+    "notes": "Information regarding condemned/unsafe structures or demolition orders would typically fall under Code Enforcement. Public access to a specific list of such properties is not readily available online and would likely require a direct inquiry or public records request to the Code Enforcement office."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "Carroll County District Court Clerk",
+    "phone": "410-871-3500",
+    "url": "http://www.mdcourts.gov/courts/carroll/district",
+    "address": "101 North Court Street, Westminster, MD 21157",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Pull the county eviction / unlawful-detainer docket. Hunt the PLAINTIFF (landlord), not the tenant; 2+ filings in 12 months = a tired landlord. Eviction records are part of the District Court's civil case filings. Access to these records is typically through the court clerk's office or the statewide Case Search system (http://casesearch.courts.state.md.us/casesearch/)."
+   }
+  ],
+  "calvert_md": [
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Register of Wills for Calvert County - Margaret H. Phipps, Register of Wills",
+    "phone": "410-535-1600 x2256",
+    "url": "https://registers.maryland.gov/main/calvert.html",
+    "address": "Courthouse, 175 Main Street, Prince Frederick, Maryland 20678",
+    "foia": "Click Here (email link on page)",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Online estate search available statewide. Appointments recommended for in-person services. Cannot accept filings via email. Drop box available for document submission. Estate search portal: https://registers.maryland.gov/rownetweb/estates/frmestatesearch2.aspx"
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal)",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court for Calvert County",
+    "phone": "410-535-1600",
+    "url": "http://www.courts.state.md.us/clerks/calvert/docket",
+    "address": "175 Main Street, Prince Frederick, MD 20678",
+    "foia": "http://www.courts.state.md.us/clerks/calvert/judicialrecordsrequests",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Weekly",
+    "verified": "Verified",
+    "notes": "Foreclosures can be judicial or nonjudicial. Judicial foreclosures appear on the Circuit Court docket. Nonjudicial foreclosures (trustee sales) are recorded with Land Records. Check both sources. Weekly docket is available online. Case Search portal: http://www.mdcourts.gov/courts/courtrecords"
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court for Calvert County (Land Records)",
+    "phone": "410-535-1600 x2264",
+    "url": "http://www.courts.state.md.us/clerks/calvert/landrecords",
+    "address": "175 Main Street, Prince Frederick, MD 20678",
+    "foia": "http://www.courts.state.md.us/clerks/calvert/judicialrecordsrequests",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Records deeds, mortgages, plats, and various liens (mechanic's, IRS, state tax, HOA, child-support, lis pendens). Online search for land records is available via mdlandrec.net (registration required). Liens against individuals (tax, child support) require name-matching to assessor rolls. Drop box available for document submission."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Calvert County Treasurer's Office",
+    "phone": "410-535-1600 ext. 2630",
+    "url": "https://www.calvertcountymd.gov/301/Tax-Sale-Information",
+    "address": "150 Main Street, Prince Frederick, MD 20678 (County Administration Building)",
+    "foia": "custserv@calvertcountymd.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Annually (typically Spring)",
+    "verified": "Verified",
+    "notes": "Maryland is a tax lien state. Properties two years delinquent in real estate taxes (including water/sewer) are eligible. List of eligible properties available on GIS map and local newspapers at least 30 days prior to sale. Tax sale results and surplus lists are posted online. Owners have a six-month redemption period. Marketing window is before the auction."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Calvert County Treasurer's Office",
+    "phone": "410-535-1600 ext. 2277",
+    "url": "https://www.calvertcountymd.gov/638/Real-Estate-Taxes",
+    "address": "150 Main Street, Prince Frederick, MD 20678",
+    "foia": "custserv@calvertcountymd.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing / Annually updated",
+    "verified": "Verified",
+    "notes": "The Treasurer's Office maintains all tax accounts. Delinquent properties are those with unpaid taxes, prior to being eligible for the annual tax sale. While a direct 'delinquent roll' isn't explicitly published online, the tax sale information page indicates properties become eligible after two years of delinquency. Contact the office for current delinquent lists. Online payment portal for current taxes: https://calvertcountymd.munisselfservice.com/css/citizens/RealEstate/Default.aspx (note: tax sale accounts cannot be paid online)."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (each incorporated city)",
+    "priority": "Pull first (A)",
+    "office": "Town of North Beach / Town of Chesapeake Beach (Treasurer/Finance Department)",
+    "phone": "",
+    "url": "",
+    "address": "Varies by town",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Annually",
+    "verified": "Verify locally",
+    "notes": "Calvert County has two incorporated towns: North Beach and Chesapeake Beach. These towns may levy their own property taxes and maintain separate delinquent lists. The county tax sale includes delinquent water and sewer bills for these towns, but property tax delinquency lists should be sought directly from each town's finance department. Research each town individually."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Calvert County Department of Planning & Zoning (Code Enforcement)",
+    "phone": "410-535-2348",
+    "url": "https://www.calvertcountymd.gov/146/Code-Enforcement",
+    "address": "150 Main Street, Prince Frederick, MD 20678",
+    "foia": "https://www.calvertcountymd.gov/155/Public-Information-Act-Requests",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As needed / Ongoing",
+    "verified": "Verified",
+    "notes": "Handles code violations in unincorporated areas of Calvert County. Public records requests for specific property violations may be required. The website provides general information and contact details for code enforcement."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Calvert County Department of Planning & Zoning (Code Enforcement)",
+    "phone": "410-535-2348",
+    "url": "https://www.calvertcountymd.gov/146/Code-Enforcement",
+    "address": "150 Main Street, Prince Frederick, MD 20678",
+    "foia": "https://www.calvertcountymd.gov/155/Public-Information-Act-Requests",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As needed",
+    "verified": "Verified",
+    "notes": "Information regarding condemned or unsafe structures would typically fall under Code Enforcement. Direct public access to a list of such properties is unlikely; a public records request would likely be necessary. The Code Enforcement office handles complaints and enforcement actions related to property maintenance and safety."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City",
+    "priority": "Pull next (B)",
+    "office": "Town of North Beach / Town of Chesapeake Beach (Code Enforcement)",
+    "phone": "",
+    "url": "",
+    "address": "Varies by town",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As needed / Ongoing",
+    "verified": "Verify locally",
+    "notes": "Code violations are typically handled at the municipal level. Contact the Code Enforcement or Planning Department for the Town of North Beach and the Town of Chesapeake Beach. Check their respective websites for online portals or public records request procedures. Many cities use Accela Citizen Access."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "Clerk of the Circuit Court for Calvert County (District Court Civil Docket)",
+    "phone": "410-535-1600",
+    "url": "http://www.mdcourts.gov/courts/courtrecords",
+    "address": "175 Main Street, Prince Frederick, MD 20678",
+    "foia": "http://www.courts.state.md.us/clerks/calvert/judicialrecordsrequests",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Eviction (failure to pay rent/unlawful detainer) cases are heard in the District Court. The statewide 'Case Search' portal allows searching civil dockets. Search by plaintiff name to identify landlords with multiple filings. Requires diligent searching and filtering. The Circuit Court website provides a link to the statewide Case Search."
+   }
+  ],
+  "charles_md": [
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Register of Wills, Charles County - Loraine D. Hennessy, Register of Wills",
+    "phone": "301-932-3345",
+    "url": "https://registers.maryland.gov/main/charles.html",
+    "address": "Courthouse, 11 Washington Avenue, PO Box 3080, La Plata, MD 20646-3080",
+    "foia": "lhennessy@registers.maryland.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Estate search available online via the Maryland Register of Wills portal. Filings cannot be accepted via email. Appointments are encouraged for in-person service. Drop box and service window available."
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal for this state's process)",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court for Charles County",
+    "phone": "301-932-3201",
+    "url": "http://www.mdcourts.gov/clerks/charles",
+    "address": "200 Charles Street, La Plata, MD 20646",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Maryland allows both judicial and nonjudicial foreclosures. Judicial foreclosures are filed with the Circuit Court as civil cases (lis pendens). Nonjudicial foreclosures involve a trustee sale and are recorded with the Clerk of the Circuit Court (land records). Both should be monitored. Online access to court records (Case Search) is available statewide."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court for Charles County (Land Records)",
+    "phone": "301-932-3201",
+    "url": "http://www.mdcourts.gov/clerks/charles/records",
+    "address": "200 Charles Street, La Plata, MD 20646",
+    "foia": "",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "The Clerk's office records land deeds, mortgages, plats, and other documents. Deeds can be viewed for free online through mdlandrec.net (requires account with Maryland State Archives). Liens (mechanic's, IRS, state tax, HOA, child support, lis pendens) are indexed here. Tax and child support liens are indexed against the person, requiring name-matching to assessor rolls."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Charles County Treasury Division",
+    "phone": "301-645-0685",
+    "url": "https://www.charlescountymd.gov/government/fiscal-and-administrative-services/treasury-taxes",
+    "address": "200 Baltimore St., P.O. Box 2607, La Plata, MD 20646",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Annually (May)",
+    "verified": "Verify locally",
+    "notes": "Maryland is a tax lien state. The county conducts an annual tax sale in May. Properties with delinquent real estate taxes may be sold at the tax sale. The Treasury Division is responsible for conducting the tax sale. Information on past tax sales can sometimes be found on third-party sites like realtaxlien.com, but the official list is from the county."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Charles County Treasury Division",
+    "phone": "301-645-0685",
+    "url": "https://www.charlescountymd.gov/government/fiscal-and-administrative-services/treasury-taxes",
+    "address": "200 Baltimore St., P.O. Box 2607, La Plata, MD 20646",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Annually (prior to May tax sale), ongoing",
+    "verified": "Verify locally",
+    "notes": "The Treasury Division administers and collects county property taxes. A list of delinquent properties is compiled prior to the annual tax sale. Contact the Treasury Division directly for information on the current delinquent roll. An 'Application for Certificate of Tax Liens' is available on their website."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (each incorporated city)",
+    "priority": "Pull first (A)",
+    "office": "Town of La Plata (Treasurer/Finance Department)",
+    "phone": "301-934-8421",
+    "url": "https://www.townoflaplata.org/finance",
+    "address": "305 Queen Anne Street, La Plata, MD 20646",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Annually, ongoing",
+    "verified": "Verify locally",
+    "notes": "The Town of La Plata is the only incorporated municipality in Charles County. They levy their own property taxes. Contact their Finance Department for information on delinquent tax rolls and any potential tax sales. Other smaller towns/villages may not levy their own property taxes."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City",
+    "priority": "Pull next (B)",
+    "office": "Town of La Plata (Code Enforcement)",
+    "phone": "301-934-8421",
+    "url": "https://www.townoflaplata.org/code-enforcement",
+    "address": "305 Queen Anne Street, La Plata, MD 20646",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As needed, ongoing",
+    "verified": "Verify locally",
+    "notes": "Code violations within the incorporated Town of La Plata are handled by their Code Enforcement office. Check their website for online portals or contact them directly for records requests. Many cities use Accela Citizen Access portals."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Charles County Department of Planning and Growth Management (Code Enforcement)",
+    "phone": "301-645-0500",
+    "url": "https://www.charlescountymd.gov/government/planning-and-growth-management/code-enforcement",
+    "address": "200 Baltimore Street, La Plata, MD 20646",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As needed, ongoing",
+    "verified": "Verify locally",
+    "notes": "Code violations in unincorporated areas of Charles County are handled by the County's Code Enforcement division. They utilize a 'SeeClickFix' portal for reporting issues, which may provide some public data. For detailed records, a public records request may be necessary."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Charles County Department of Planning and Growth Management (Code Enforcement)",
+    "phone": "301-645-0500",
+    "url": "https://www.charlescountymd.gov/government/planning-and-growth-management/code-enforcement",
+    "address": "200 Baltimore Street, La Plata, MD 20646",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As needed",
+    "verified": "Verify locally",
+    "notes": "Information regarding condemned or unsafe structures and demolition orders would typically fall under the purview of Code Enforcement. These records may require a public records request. Check the Code Enforcement website for any publicly available lists or reports."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "District Court of Maryland for Charles County (Civil Division)",
+    "phone": "301-934-5110",
+    "url": "http://www.mdcourts.gov/district/directories/charles",
+    "address": "11 Washington Avenue, P.O. Box 3070, LaPlata, Maryland 20646-3070",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Eviction (summary ejectment/unlawful detainer) cases are filed in the District Court. Records can be accessed via the statewide 'Case Search' portal. Search for civil cases by plaintiff name to identify landlords with multiple filings. Focus on the plaintiff (landlord) rather than the tenant."
+   }
+  ],
+  "district_of_columbia": [
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal)",
+    "priority": "Pull first (A)",
+    "office": "Office of the Recorder of Deeds",
+    "phone": "(202) 727-4TAX (4829)",
+    "url": "https://washington.dc.publicsearch.us/",
+    "address": "1101 4th Street, SW, Suite 270 West, Washington, DC 20024",
+    "foia": "otr@dc.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "DC is a nonjudicial foreclosure state. The first public signal is typically a Notice of Default or Trustee Sale filed with the Recorder of Deeds. Online public records search is available for registered users. Index and document images are available from August 1921 to present."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Office of the Recorder of Deeds",
+    "phone": "(202) 727-4TAX (4829)",
+    "url": "https://washington.dc.publicsearch.us/",
+    "address": "1101 4th Street, SW, Suite 270 West, Washington, DC 20024",
+    "foia": "otr@dc.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "This office records all property-related documents, including deeds, mortgages, mechanic's liens, IRS and state tax liens, HOA liens, child-support liens, and lis pendens. Online public records search is available for registered users. Tax and child-support liens are indexed against the person, requiring a name-match to the assessor roll."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Office of Tax and Revenue (OTR)",
+    "phone": "(202) 727-4TAX (4829)",
+    "url": "https://otr.cfo.dc.gov/page/real-property-tax-lien-sale-and-resources",
+    "address": "1101 4th Street, SW, Suite 270 West, Washington, DC 20024",
+    "foia": "otr@dc.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Annually (July)",
+    "verified": "Verified",
+    "notes": "DC is a tax lien state. The OTR conducts an annual tax lien sale, typically in July. A list of properties eligible for the tax sale is published weeks in advance. This list is the 'upstream edge' for marketing to owners before the auction. The list is usually available on the OTR website."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Office of Tax and Revenue (OTR)",
+    "phone": "(202) 727-4TAX (4829)",
+    "url": "https://otr.cfo.dc.gov/page/real-property-tax-lien-sale-and-resources",
+    "address": "1101 4th Street, SW, Suite 270 West, Washington, DC 20024",
+    "foia": "otr@dc.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Annually (pre-sale list), ongoing roll",
+    "verified": "Verified",
+    "notes": "The OTR maintains a list of delinquent properties prior to the annual tax lien sale. This list is published on their website. The District of Columbia is a single jurisdiction, so there is no separate 'city' vs 'county' tax delinquency list."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency",
+    "priority": "Pull first (A)",
+    "office": "N/A (District of Columbia is a single jurisdiction)",
+    "phone": "",
+    "url": "",
+    "address": "",
+    "foia": "",
+    "access": "Unrated",
+    "access_raw": "",
+    "updates": "",
+    "verified": "Verified",
+    "notes": "The District of Columbia operates as a unified city-county government. There are no separate incorporated cities within the District, therefore no separate city tax delinquency lists."
+   },
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Superior Court of the District of Columbia, Probate Division",
+    "phone": "(202) 879-1499",
+    "url": "https://www.dccourts.gov/superior-court/superior-court-case-search",
+    "address": "515 5th Street, NW, Washington, DC 20001",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Online case search available. New case filings can be tracked here. Notice to Creditors and other probate documents are part of the case file. Property address often requires a separate assessor lookup."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "N/A (District of Columbia is a single jurisdiction)",
+    "phone": "",
+    "url": "",
+    "address": "",
+    "foia": "",
+    "access": "Unrated",
+    "access_raw": "",
+    "updates": "",
+    "verified": "Verified",
+    "notes": "The District of Columbia operates as a unified city-county government. There are no unincorporated areas within the District, therefore no separate unincorporated county code violation office."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City",
+    "priority": "Pull next (B)",
+    "office": "Department of Buildings (DOB)",
+    "phone": "(202) 671-3500",
+    "url": "https://dob.dc.gov/page/dob-online-permits-and-inspections",
+    "address": "1100 4th Street SW, Washington, DC 20024",
+    "foia": "dob@dc.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "The Department of Buildings handles code violations for the entire District. They utilize an online portal for permits and inspections, which may include code violation information. Look for a public search or reporting tool. Accela Citizen Access is a common platform for this type of data."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Department of Buildings (DOB)",
+    "phone": "(202) 671-3500",
+    "url": "https://dob.dc.gov/page/dob-online-permits-and-inspections",
+    "address": "1100 4th Street SW, Washington, DC 20024",
+    "foia": "dob@dc.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Varies",
+    "verified": "Verify locally",
+    "notes": "Information regarding condemned, unsafe structures, or demolition orders would likely be managed by the Department of Buildings. This data may be accessible through their online permit and inspection portal or via a public records request."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "Superior Court of the District of Columbia, Landlord and Tenant Branch",
+    "phone": "(202) 879-1010",
+    "url": "https://www.dccourts.gov/superior-court/superior-court-case-search",
+    "address": "510 3rd Street NW, Washington, DC 20001",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Eviction (unlawful detainer) filings are handled by the Landlord and Tenant Branch of the Superior Court. The online case search can be used to identify landlords (plaintiffs) with multiple filings. Searching by plaintiff name and filtering for eviction case types would be the method."
+   }
+  ],
+  "prince_william_va": [
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Tax Administration - Collections",
+    "phone": "(703) 792-6700",
+    "url": "https://www.pwcva.gov/department/tax-administration/tax-enforcement-delinquent-tax-collections",
+    "address": "4379 Ridgewood Center Dr, Prince William, VA 22192",
+    "foia": "taxpayer_services@pwcgov.org",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing / Annually updated",
+    "verified": "Verified",
+    "notes": "The Tax Administration's Collections staff is responsible for collecting past due taxes. While a direct 'delinquent roll' for public download isn't explicitly stated, the office manages these accounts. Contacting the office directly or monitoring the tax sale auction list (which is derived from this roll) is the best approach. Payment plans are offered to delinquent taxpayers."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (each incorporated city)",
+    "priority": "Pull first (A)",
+    "office": "City of Manassas Treasurer / City of Manassas Park Treasurer",
+    "phone": "Manassas: (703) 257-8250 / Manassas Park: (703) 335-8825",
+    "url": "https://www.manassasva.gov/treasurer/index.html",
+    "address": "Manassas: 9025 Center St, Manassas, VA 20110 / Manassas Park: 103 Manassas Park Dr, Manassas Park, VA 20111",
+    "foia": "Manassas: treasurer@manassasva.gov / Manassas Park: treasurer@manassasparkva.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing / Annually updated",
+    "verified": "Verified",
+    "notes": "Prince William County has two incorporated cities: Manassas and Manassas Park, which levy their own property taxes. Separate research is required for their delinquent tax rolls. Check their respective Treasurer's offices for information on delinquent properties and potential tax sales."
+   },
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Circuit Court Clerk's Probate Office",
+    "phone": "(703) 792-6015",
+    "url": "https://www.pwcva.gov/department/circuit-court/probatequalifywills",
+    "address": "9311 Lee Avenue, 3rd Floor, Manassas, VA 20110",
+    "foia": "probate@pwcgov.org",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Virginia has no separate probate court; the Clerk of Circuit Court handles probate. To schedule an appointment, a pre-appointment worksheet must be completed. Records are indexed by decedent name, not property address. A separate assessor lookup is needed to link to property."
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal for this state's process)",
+    "priority": "Pull first (A)",
+    "office": "Circuit Court Clerk's Office - Land Records",
+    "phone": "(703) 792-6840",
+    "url": "https://www.pwcva.gov/department/circuit-court/land-records-online",
+    "address": "9311 Lee Avenue, Room 300, Manassas, VA 20110",
+    "foia": "circuitcourt@pwcgov.org",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Virginia is a non-judicial foreclosure state. The first public signal is a recorded Notice of Default or Trustee Sale. These are filed with the Circuit Court Clerk's Land Records division. Online access to Land Records Management System (LRMS) is available via subscription. Deeds prior to 1918 are not available online."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Circuit Court Clerk's Office - Land Records",
+    "phone": "(703) 792-6840",
+    "url": "https://www.pwcva.gov/department/circuit-court/land-records-online",
+    "address": "9311 Lee Avenue, Room 300, Manassas, VA 20110",
+    "foia": "circuitcourt@pwcgov.org",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "The Clerk's Office maintains deeds and related land records (indexes and images from 1918 to present). Mechanic's, IRS & state tax, HOA, child-support liens, and lis pendens are indexed here. Online access is available via subscription to the Land Records Management System (LRMS). Tax and child-support liens are indexed against the person, requiring a name-match to the assessor roll."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "County Attorney's Office / TACS (Taxing Authority Consulting Services)",
+    "phone": "(703) 792-6620 (County Attorney)",
+    "url": "https://www.pwcva.gov/department/office-county-attorney/foreclosure-auction-list",
+    "address": "1 County Complex Ct, Prince William, VA 22192 (County Attorney)",
+    "foia": "",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "As scheduled (typically annually)",
+    "verified": "Verify locally",
+    "notes": "Virginia is a tax deed state. The County Attorney's Office provides a list of tax foreclosure auction properties. Auctions are facilitated by third-party contractors like TACS. Lists are published as legal notices weeks before the sale. It is crucial to market the owner before the auction. Sign-up for email notifications of upcoming sales is available through TACS."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City",
+    "priority": "Pull next (B)",
+    "office": "City of Manassas - Code Enforcement / City of Manassas Park - Code Enforcement",
+    "phone": "Manassas: (703) 257-8230 / Manassas Park: (703) 335-8845",
+    "url": "https://www.manassasva.gov/code_enforcement/index.html",
+    "address": "Manassas: 9025 Center St, Manassas, VA 20110 / Manassas Park: 103 Manassas Park Dr, Manassas Park, VA 20111",
+    "foia": "Manassas: codeenforcement@manassasva.gov / Manassas Park: CONFIRM",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily / As reported",
+    "verified": "Verified",
+    "notes": "Code violations are typically a city function. Both Manassas and Manassas Park have dedicated Code Enforcement divisions. Check their websites for online portals or contact information for records requests. Accela 'Citizen Access' portals are common for cities, allowing for online searches and potentially data exports."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Prince William County - Code Enforcement",
+    "phone": "(703) 792-7018",
+    "url": "https://www.pwcva.gov/department/code-enforcement",
+    "address": "5 County Complex Ct, Prince William, VA 22192",
+    "foia": "codeenforcement@pwcgov.org",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily / As reported",
+    "verified": "Verify locally",
+    "notes": "The County's Code Enforcement division handles violations in unincorporated areas. They have an online portal for reporting violations and checking status. Records requests for specific properties may be necessary for detailed information. Online indexes for code violations are often less robust than city-level systems."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Prince William County - Building Development Division (Code Enforcement)",
+    "phone": "(703) 792-7018",
+    "url": "https://www.pwcva.gov/department/code-enforcement",
+    "address": "5 County Complex Ct, Prince William, VA 22192",
+    "foia": "codeenforcement@pwcgov.org",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As needed",
+    "verified": "Verify locally",
+    "notes": "Information regarding condemned or unsafe structures and demolition orders would typically fall under the purview of Code Enforcement or the Building Development Division. While a specific 'condemned list' isn't explicitly advertised, these records would be part of their enforcement actions. A public records request may be required to obtain a list of such properties."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "Prince William County General District Court Clerk",
+    "phone": "(703) 792-6000",
+    "url": "http://www.courts.state.va.us/courts/gd/princewilliam/home.html",
+    "address": "9311 Lee Avenue, Manassas, VA 20110",
+    "foia": "",
+    "access": "Hard",
+    "access_raw": "Hard",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Eviction (Unlawful Detainer) dockets are maintained by the General District Court. Online access to court records may be available through the Virginia Judicial System's online portal (case information system). Searching for multiple filings by the same plaintiff (landlord) would be the method to identify 'multiple-eviction landlords'. This often requires manual review or specialized data access."
+   }
+  ],
+  "fairfax_va": [
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Fairfax Circuit Court Probate Division",
+    "phone": "703-691-7320 (press 3, 8 for appointments)",
+    "url": "https://www.fairfaxcounty.gov/circuit/probate/administration-of-estates",
+    "address": "4110 Chain Bridge Road, Suite 401, Fairfax, VA 22030",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Probate records are public. Appointments are recommended for in-person research. Notice to Creditors opens the claim window and names the decedent + personal representative; probate rarely carries the property address (a separate assessor lookup fills it). Contact the personal representative / executor, never the deceased."
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal for this state's process)",
+    "priority": "Pull first (A)",
+    "office": "Fairfax Circuit Court Land Records Division",
+    "phone": "703-691-7320 (press 3, then 3)",
+    "url": "https://www.fairfaxcounty.gov/circuit/land-records/general-information",
+    "address": "4110 Chain Bridge Road, Fairfax, VA 22030",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Virginia is a nonjudicial foreclosure state. The first signal is a recorder-filed notice of default or a published trustee-sale notice, which hits the recorder index BEFORE the newspaper ad. Pull the recorder's trustee-sale filings. Online access to scanned indexes and images is available."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Fairfax Circuit Court Land Records Division",
+    "phone": "703-691-7320 (press 3, then 3)",
+    "url": "https://www.fairfaxcounty.gov/circuit/land-records/research",
+    "address": "4110 Chain Bridge Road, Fairfax, VA 22030",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Records documents for property transactions including mechanic's, IRS & state tax, HOA, child-support liens, and lis pendens. Online access to scanned indexes and images is available. Tax and child-support liens are indexed against the PERSON, not the parcel - name-match to the assessor roll. Research Room is open to the public from 8:00 a.m. until 4:30 p.m., Monday through Friday."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Department of Tax Administration",
+    "phone": "703-222-8234",
+    "url": "https://www.fairfaxcounty.gov/taxes/pay/auction-real-property",
+    "address": "12000 Government Center Parkway, Suite 223, Fairfax, VA 22035",
+    "foia": "",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "As announced (typically annually)",
+    "verified": "Verified",
+    "notes": "Virginia is a tax deed state. Auctions of real estate properties are initiated when all other collection attempts have failed. Sales only occur at public auction, typically online. The list publishes as a legal notice weeks before the sale; market the owner before the auction. Any tax sale would be handled by the county's contracted legal firm."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Department of Tax Administration",
+    "phone": "703-222-8234",
+    "url": "https://www.fairfaxcounty.gov/taxes/pay/auction-real-property",
+    "address": "12000 Government Center Parkway, Suite 223, Fairfax, VA 22035",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing",
+    "verified": "Verified",
+    "notes": "The county publishes information regarding properties subject to tax sale, which serves as a delinquent roll. Owners owe but no auction date yet. Contact the Department of Tax Administration for current delinquent lists."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (City of Fairfax)",
+    "priority": "Pull first (A)",
+    "office": "City of Fairfax Commissioner of the Revenue",
+    "phone": "703-385-7880",
+    "url": "https://www.fairfaxva.gov/Property-Business/Taxes/Delinquent-Taxpayer-Lists",
+    "address": "10455 Armstrong St, Room 207, Fairfax, VA 22030",
+    "foia": "",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Quarterly",
+    "verified": "Verify locally",
+    "notes": "The City of Fairfax provides quarterly updates on delinquent taxes, including real estate. This is a separate list from the county's."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Fairfax County Department of Code Compliance",
+    "phone": "703-324-1300",
+    "url": "https://www.fairfaxcounty.gov/code/",
+    "address": "12055 Government Center Parkway, Suite 1016, Fairfax, VA 22035",
+    "foia": "codecompliance@fairfaxcounty.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Investigates neighborhood quality of life complaints, involving most zoning, noise, property maintenance, building, and fire code violations in unincorporated areas. Records can be requested via email or phone. Online portal for notices of violation (NOVs) exists."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Fairfax County Department of Code Compliance",
+    "phone": "703-324-1300",
+    "url": "https://www.fairfaxcounty.gov/code/may-2026-code-compliance-corner",
+    "address": "12055 Government Center Parkway, Suite 1016, Fairfax, VA 22035",
+    "foia": "codecompliance@fairfaxcounty.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As needed",
+    "verified": "Verified",
+    "notes": "The Department of Code Compliance has a Spot Blight Abatement Program to compel demolition or repair if the property owner doesn't address violations voluntarily. Residential demolition permits are also handled by Land Development Services (703-222-0801)."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City (City of Fairfax)",
+    "priority": "Pull next (B)",
+    "office": "City of Fairfax Code Administration",
+    "phone": "703-385-7830",
+    "url": "https://www.fairfaxva.gov/Government/Departments/Fire-Department/Code-Administration",
+    "address": "10455 Armstrong St, Fairfax, VA 22030",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "The City of Fairfax handles code administration for properties within its jurisdiction. Contact them directly for records. Office hours: Monday-Friday, 8:30 a.m. to 5:00 p.m."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "Fairfax County General District Court",
+    "phone": "703-246-4100",
+    "url": "https://eapps.courts.state.va.us/gdcourts/welcomePage.do",
+    "address": "4110 Chain Bridge Road, Fairfax, VA 22030",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Eviction (Unlawful Detainer) cases are filed in the General District Court. The Virginia Courts Online Case Information System allows searching by plaintiff or defendant name. Hunt the PLAINTIFF (landlord), not the tenant; 2+ filings in 12 months = a tired landlord. The first court action is when a landlord files an unlawful detainer (UD)."
+   }
+  ],
+  "arlington_va": [
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal for this state's process)",
+    "priority": "Pull first (A)",
+    "office": "Arlington County Circuit Court, Land Records Division",
+    "phone": "703-228-4369",
+    "url": "https://arlington.va.publicsearch.us/",
+    "address": "1425 N. Courthouse Rd., Suite 6200, Arlington, VA 22201",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Virginia is a nonjudicial / power-of-sale state. The first signal is a recorder-filed notice of default or a published trustee-sale notice, which hits the recorder index BEFORE the newspaper ad. Pull the recorder's trustee-sale filings. Online search available, free for basic indexing, $.50 per page for images, or subscription for unlimited access ($50/month or $600/year)."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Arlington County Circuit Court, Land Records Division",
+    "phone": "703-228-4369",
+    "url": "https://arlington.va.publicsearch.us/",
+    "address": "1425 N. Courthouse Rd., Suite 6200, Arlington, VA 22201",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Mechanic's, IRS & state tax, HOA, child-support liens + lis pendens all live in the recorder index. Tax and child-support liens are indexed against the PERSON, not the parcel - name-match to the assessor roll. Online search available, free for basic indexing, $.50 per page for images, or subscription for unlimited access ($50/month or $600/year). Documents dating back to 1869 are accessible."
+   },
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Arlington County Circuit Court, Probate Office",
+    "phone": "703-228-4376",
+    "url": "https://www.arlingtonva.us/Government/Departments/Courts/Circuit-Court/Probate",
+    "address": "1425 North Courthouse Road, Suite 6300, Arlington, Virginia 22201",
+    "foia": "probate@arlingtonva.us",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Probate records wills, qualifies personal representatives, and maintains estate files. Appointments are required for probate qualification. The Commissioner of Accounts oversees fiduciaries. Notice to Creditors opens the claim window and names the decedent + personal representative; probate rarely carries the property address (a separate assessor lookup fills it). Contact the personal representative / executor, never the deceased."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Arlington County Treasurer's Office",
+    "phone": "703-228-4000",
+    "url": "https://www.arlingtonva.us/Government/Programs/Taxes/Tax-Sales",
+    "address": "2100 Clarendon Boulevard, Suite 201, Arlington, VA 22201",
+    "foia": "treasurer@arlingtonva.us",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Periodically (check website for updates)",
+    "verified": "Verify locally",
+    "notes": "Virginia is a tax deed state (usually no redemption after the sale: market BEFORE the auction). The Treasurer of Arlington County periodically sells property at public auction to satisfy delinquent taxes. The list publishes as a legal notice weeks before the sale; market the owner before the auction. The direct link to 'Tax Sales' on the county website resulted in a 'Page Not Found' error, but external sites and the county's 'Delinquent Tax Account Lists' confirm tax sales occur. It is recommended to contact the Treasurer's Office directly for upcoming sale information."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Arlington County Treasurer's Office",
+    "phone": "703-228-4000 (Option 4)",
+    "url": "https://www.arlingtonva.us/Government/Programs/Taxes/Delinquent-Tax-Account-Lists",
+    "address": "2100 Clarendon Boulevard, Suite 201, Arlington, VA 22201",
+    "foia": "treasurer@arlingtonva.us",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Monthly/Quarterly (PDFs updated periodically)",
+    "verified": "Verify locally",
+    "notes": "Pull the county treasurer / tax collector's delinquent roll. Ongoing roll - owners owe but no auction date yet. Real Estate Tax Delinquent list available as a PDF. Contact a Compliance and Research Specialist for more information."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (each incorporated city)",
+    "priority": "Pull first (A)",
+    "office": "Arlington County Treasurer's Office",
+    "phone": "703-228-4000",
+    "url": "https://www.arlingtonva.us/Government/Programs/Taxes/Delinquent-Tax-Account-Lists",
+    "address": "2100 Clarendon Boulevard, Suite 201, Arlington, VA 22201",
+    "foia": "treasurer@arlingtonva.us",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "N/A (Arlington County is an unincorporated county, no incorporated cities within its borders)",
+    "verified": "Verify locally",
+    "notes": "Arlington County is an unincorporated county and does not contain separate incorporated cities with their own property tax lists. The county's delinquent tax list covers all properties within its jurisdiction."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Department of Community Planning, Housing and Development (CPHD), Code Enforcement Division",
+    "phone": "703-228-3232",
+    "url": "https://www.arlingtonva.us/Government/Departments/CPHD/Code-Enforcement",
+    "address": "2100 Clarendon Blvd, Suite 700, Arlington, VA 22201",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing",
+    "verified": "Verify locally",
+    "notes": "Code violations are typically handled by the Code Enforcement Division. The county website provides information on reporting violations and general code information. An online portal for searching specific violations by address was not immediately apparent and may require a public records request."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Department of Community Planning, Housing and Development (CPHD), Code Enforcement Division",
+    "phone": "703-228-3232",
+    "url": "https://www.arlingtonva.us/Government/Departments/CPHD/Code-Enforcement",
+    "address": "2100 Clarendon Blvd, Suite 700, Arlington, VA 22201",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Ongoing",
+    "verified": "Verify locally",
+    "notes": "Information regarding condemned/unsafe structures and demolitions would typically fall under the purview of Code Enforcement or Building Permits. A direct public list was not found; likely requires a public records request or direct inquiry to the department."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "Arlington County General District Court",
+    "phone": "703-228-7900",
+    "url": "https://www.vacourts.gov/courts/gd/arlington/home.html",
+    "address": "1425 N Courthouse Rd, Suite 2400, Arlington, VA 22201",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Pull the county eviction / unlawful-detainer docket. Hunt the PLAINTIFF (landlord), not the tenant; 2+ filings in 12 months = a tired landlord. Access to court dockets may require in-person visits or a subscription to a legal research service. The Virginia Judicial System website provides general court information but not direct access to detailed dockets for specific cases."
+   }
+  ],
+  "stafford_va": [
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court - Probate and Estate Administration",
+    "phone": "(540) 658-8750",
+    "url": "https://staffordcountyva.gov/government/courts/circuit_court/probate_and_estate_administration.php",
+    "address": "1300 Courthouse Rd, Stafford, VA 22554",
+    "foia": "clerksoffice@staffordcountyva.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Probate appointments must be scheduled. Notice to Creditors opens the claim window and names the decedent + personal representative. Probate rarely carries the property address (a separate assessor lookup fills it). Contact the personal representative / executor, never the deceased."
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal)",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court - Land Records",
+    "phone": "(540) 658-8752",
+    "url": "https://staffordcountyva.gov/government/courts/circuit_court/land_records.php",
+    "address": "1300 Courthouse Rd, Stafford, VA 22554",
+    "foia": "clerksoffice@staffordcountyva.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Virginia is a nonjudicial / power-of-sale state. The first signal is a recorder-filed notice of default or a published trustee-sale notice, which hits the recorder index BEFORE the newspaper ad. Pull the recorder's trustee-sale filings. Online index availability for specific trustee sale notices needs further investigation."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court - Land Records",
+    "phone": "(540) 658-8752",
+    "url": "https://staffordcountyva.gov/government/courts/circuit_court/land_records.php",
+    "address": "1300 Courthouse Rd, Stafford, VA 22554",
+    "foia": "clerksoffice@staffordcountyva.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Mechanic's, IRS & state tax, HOA, child-support liens + lis pendens all live in the recorder index. GOTCHA: tax and child-support liens are indexed against the PERSON, not the parcel - name-match to the assessor roll. Online access to the full index may require a subscription or in-person visit."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Treasurer's Office",
+    "phone": "(540) 658-8700",
+    "url": "https://staffordcountyva.gov/government/elected_and_appointed_officials/treasurer/taxes_search_view___pay/delinquent_tax_lists.php",
+    "address": "1300 Courthouse Rd, Stafford, VA 22554",
+    "foia": "treasurer@staffordcountyva.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Annually/As needed",
+    "verified": "Verified",
+    "notes": "VA is a tax deed state (usually no redemption after the sale: market BEFORE the auction). The list publishes as a legal notice weeks before the sale; market the owner before the auction. The county website provides delinquent tax lists which may indicate properties eligible for land sale."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Treasurer's Office",
+    "phone": "(540) 658-8700",
+    "url": "https://staffordcountyva.gov/government/elected_and_appointed_officials/treasurer/taxes_search_view___pay/delinquent_tax_lists.php",
+    "address": "1300 Courthouse Rd, Stafford, VA 22554",
+    "foia": "treasurer@staffordcountyva.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Ongoing",
+    "verified": "Verified",
+    "notes": "Ongoing roll - owners owe but no auction date yet. The county provides lists of delinquent real estate taxes. This is the pre-auction list to market owners."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (each incorporated city)",
+    "priority": "Pull first (A)",
+    "office": "N/A - Stafford County has no incorporated cities.",
+    "phone": "",
+    "url": "",
+    "address": "",
+    "foia": "",
+    "access": "Unrated",
+    "access_raw": "",
+    "updates": "",
+    "verified": "Verified",
+    "notes": "Stafford County is an unincorporated county and does not have incorporated cities with their own separate tax delinquency lists."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City",
+    "priority": "Pull next (B)",
+    "office": "N/A - Stafford County has no incorporated cities.",
+    "phone": "",
+    "url": "",
+    "address": "",
+    "foia": "",
+    "access": "Unrated",
+    "access_raw": "",
+    "updates": "",
+    "verified": "Verified",
+    "notes": "Stafford County is an unincorporated county and does not have incorporated cities with their own separate code enforcement departments."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Department of Planning and Zoning - Code Administration",
+    "phone": "(540) 658-8668",
+    "url": "https://staffordcountyva.gov/government/departments_p-z/planning_and_zoning/code_administration/index.php",
+    "address": "1300 Courthouse Rd, Stafford, VA 22554",
+    "foia": "FOIA@staffordcountyva.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As reported/investigated",
+    "verified": "Verify locally",
+    "notes": "County code offices are typically behind - records request only. Check the parcel's jurisdiction (city vs county vs town) first. Online portal for searching specific code violations may be limited; a FOIA request might be necessary for comprehensive data."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Department of Planning and Zoning - Code Administration",
+    "phone": "(540) 658-8668",
+    "url": "https://staffordcountyva.gov/government/departments_p-z/planning_and_zoning/code_administration/index.php",
+    "address": "1300 Courthouse Rd, Stafford, VA 22554",
+    "foia": "FOIA@staffordcountyva.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As needed",
+    "verified": "Verify locally",
+    "notes": "Information on condemned or unsafe structures typically falls under code enforcement. Public access to a specific list of such properties may require a direct inquiry or FOIA request."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "General District Court",
+    "phone": "(540) 658-8935",
+    "url": "https://eapps.courts.state.va.us/gdcourts",
+    "address": "1300 Courthouse Rd, Stafford, VA 22554",
+    "foia": "FOIA@staffordcountyva.gov",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verify locally",
+    "notes": "Pull the county eviction / unlawful-detainer docket. Hunt the PLAINTIFF (landlord), not the tenant; 2+ filings in 12 months = a tired landlord. The Virginia General District Court Online Case Information System allows searching by name, case number, or hearing date. This requires manual searching to identify repeat landlords."
+   }
+  ],
+  "spotsylvania_va": [
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court, Probate Division",
+    "phone": "540-507-7603, 540-507-7620",
+    "url": "https://www.spotsylvania.va.us/1187/Probate-Estate-Administration",
+    "address": "9107 Judicial Center Lane, Spotsylvania, VA 22553",
+    "foia": "sstanley@vacourts.gov",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Probate is done by appointment only. Applications can be submitted by email, mail, or in person. Original documents are required. The Clerk acts as a probate judge. Notice to Creditors opens the claim window and names the decedent + personal representative; probate rarely carries the property address (a separate assessor lookup fills it). Contact the personal representative / executor, never the deceased."
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal for this state's process)",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court (Recorder of Deeds)",
+    "phone": "540-507-7600",
+    "url": "https://www.spotsylvania.va.us/1210/Records-Recordation-Services",
+    "address": "9107 Judicial Center Lane, Spotsylvania, VA 22553",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Virginia is a nonjudicial / power-of-sale state. The first signal is a recorder-filed notice of default or a published trustee-sale notice, which hits the recorder index BEFORE the newspaper ad. Online access to recorded documents is by paid subscription only (VA Code \u00a7 17.1-277.6). Public notices, including foreclosure sales, may also be found in local newspapers like the Fredericksburg Free-Lance Star (fredericksburg.column.us)."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+    "priority": "Pull first (A)",
+    "office": "Clerk of the Circuit Court, Records & Recordation Services",
+    "phone": "540-507-7609",
+    "url": "https://www.spotsylvania.va.us/1210/Records-Recordation-Services",
+    "address": "9107 Judicial Center Lane, Spotsylvania, VA 22553",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "The Clerk is responsible for retaining all deeds and land records. Online access to recorded documents (including mechanic's, tax, HOA, child-support liens, and lis pendens) is by paid subscription only (VA Code \u00a7 17.1-277.6). Recording hours are Monday-Friday from 8:00 AM to 3:00 PM. A Virginia Land Record Cover Sheet is required for all documents to be recorded. GOTCHA: tax and child-support liens are indexed against the PERSON, not the parcel - name-match to the assessor roll."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "Treasurer's Office",
+    "phone": "540-507-7105",
+    "url": "https://www.spotsylvania.va.us/435/Public-Treasurers-Land-Sale-Information",
+    "address": "9104 Courthouse Rd, Spotsylvania, VA 22553",
+    "foia": "",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Annually/As needed",
+    "verified": "Verified",
+    "notes": "Virginia is a tax deed state (usually no redemption after the sale). The Treasurer's office conducts auctions for land for sale due to unpaid real estate taxes. The list publishes as a legal notice weeks before the sale; market the owner before the auction. Information on upcoming sales is posted on the county website."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "Treasurer's Office",
+    "phone": "540-507-7105",
+    "url": "https://www.spotsylvania.va.us/435/Public-Treasurers-Land-Sale-Information",
+    "address": "9104 Courthouse Rd, Spotsylvania, VA 22553",
+    "foia": "",
+    "access": "Easy",
+    "access_raw": "Easy",
+    "updates": "Ongoing",
+    "verified": "Verified",
+    "notes": "The Treasurer's office manages delinquent real estate taxes. While a specific 'pre-sale roll' portal isn't explicitly stated, the land sale information page is the primary source for tax-related property issues. Contact the Treasurer's office directly for the most current delinquent roll. Cities often levy their own property tax (a separate city delinquent list)."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (each incorporated city)",
+    "priority": "Pull first (A)",
+    "office": "N/A - Spotsylvania County has no incorporated cities.",
+    "phone": "",
+    "url": "",
+    "address": "",
+    "foia": "",
+    "access": "Unrated",
+    "access_raw": "",
+    "updates": "",
+    "verified": "Verified",
+    "notes": "Spotsylvania County does not contain any incorporated cities, therefore there is no separate city tax delinquency list."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City",
+    "priority": "Pull next (B)",
+    "office": "N/A - Spotsylvania County has no incorporated cities.",
+    "phone": "",
+    "url": "",
+    "address": "",
+    "foia": "",
+    "access": "Unrated",
+    "access_raw": "",
+    "updates": "",
+    "verified": "Verified",
+    "notes": "Spotsylvania County does not contain any incorporated cities, therefore there is no separate city code enforcement."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Department of Community Development, Code Enforcement Division",
+    "phone": "540-507-7222",
+    "url": "https://www.spotsylvania.va.us/165/Code-Enforcement",
+    "address": "9019 Old Battlefield Blvd, Spotsylvania, VA 22553",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As reported/investigated",
+    "verified": "Verify locally",
+    "notes": "The Code Enforcement Division investigates complaints regarding violations of the Spotsylvania County Code. Online access to specific violation records may require a public records request. Unincorporated county code offices are typically behind - records request only."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "Department of Community Development, Code Enforcement Division",
+    "phone": "540-507-7222",
+    "url": "https://www.spotsylvania.va.us/165/Code-Enforcement",
+    "address": "9019 Old Battlefield Blvd, Spotsylvania, VA 22553",
+    "foia": "",
+    "access": "Medium",
+    "access_raw": "Medium",
+    "updates": "As reported/investigated",
+    "verified": "Verify locally",
+    "notes": "Information regarding condemned or unsafe structures would fall under the purview of Code Enforcement. Specific lists of such properties are generally not available online and would likely require a public records request."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "General District Court",
+    "phone": "540-507-7650",
+    "url": "https://www.vacourts.gov/courts/gd/spotsylvania/home.html",
+    "address": "9107 Judicial Center Lane, Spotsylvania, VA 22553",
+    "foia": "",
+    "access": "Hard",
+    "access_raw": "Hard",
+    "updates": "Daily",
+    "verified": "Verified",
+    "notes": "Eviction (unlawful detainer) cases are heard in the General District Court. To identify multiple-eviction landlords, one would need to pull the court's eviction docket and analyze the plaintiff (landlord) filings. This typically requires in-person research or a subscription to a legal data service, as online dockets may not be easily searchable by plaintiff across multiple cases. Hunt the PLAINTIFF (landlord), not the tenant; 2+ filings in 12 months = a tired landlord."
+   }
+  ],
+  "fredericksburg_city_va": [
+   {
+    "data_type": "probate",
+    "raw_data_type": "Probate / Estates / Unknown Heirs",
+    "priority": "Pull first (A)",
+    "office": "Fredericksburg Circuit Court Clerk's Office - Jeff Small, Clerk of the Circuit Court",
+    "phone": "540-372-1066",
+    "url": "https://www.fredericksburgva.gov/653/Wills-and-Probate",
+    "address": "701 Princess Anne St Suite 100, Fredericksburg, VA",
+    "foia": "Not explicitly listed for probate, but the city has a FOIA portal.",
+    "access": "Medium",
+    "access_raw": "Moderate",
+    "updates": "Ongoing as estates are filed.",
+    "verified": "Verified",
+    "notes": "Probate is by appointment only. Requires submitting a probate packet form, copy of will (if any), death certificate, and list of heirs. The Clerk's office cannot assist with preparing or correcting files. Small Estate Affidavit (personal property < $75,000) and Real Estate Affidavit forms are available but not filed with the court. The Commissioner of Accounts oversees estate administration."
+   },
+   {
+    "data_type": "tax_sale",
+    "raw_data_type": "Tax Sale / Delinquent Tax Auction",
+    "priority": "Pull first (A)",
+    "office": "City of Fredericksburg Treasurer's Office",
+    "phone": "540-372-1001",
+    "url": "",
+    "address": "715 Princess Anne Street Room 118, Fredericksburg, VA 22401",
+    "foia": "https://www.fredericksburgva.gov/525/Treasurer (FOIA Request Form link available on this page)",
+    "access": "Hard",
+    "access_raw": "High",
+    "updates": "Annually, but specific dates vary.",
+    "verified": "Verified",
+    "notes": "Virginia is a tax deed state. The list publishes as a legal notice weeks before the sale. Likely requires direct contact with the Treasurer's office or monitoring local legal notices."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "County Tax Delinquency (pre-sale roll)",
+    "priority": "Pull first (A)",
+    "office": "City of Fredericksburg Treasurer's Office",
+    "phone": "540-372-1001",
+    "url": "",
+    "address": "715 Princess Anne Street Room 118, Fredericksburg, VA 22401",
+    "foia": "https://www.fredericksburgva.gov/525/Treasurer (FOIA Request Form link available on this page)",
+    "access": "Hard",
+    "access_raw": "High",
+    "updates": "Ongoing roll.",
+    "verified": "Verified",
+    "notes": "This is the pre-sale roll for owners who owe but no auction date is set yet. Likely requires direct contact with the Treasurer's office."
+   },
+   {
+    "data_type": "tax_delinquent",
+    "raw_data_type": "City Tax Delinquency (each incorporated city)",
+    "priority": "Pull first (A)",
+    "office": "City of Fredericksburg Treasurer's Office",
+    "phone": "540-372-1001",
+    "url": "",
+    "address": "715 Princess Anne Street Room 118, Fredericksburg, VA 22401",
+    "foia": "https://www.fredericksburgva.gov/525/Treasurer (FOIA Request Form link available on this page)",
+    "access": "Hard",
+    "access_raw": "High",
+    "updates": "Ongoing roll.",
+    "verified": "Verified",
+    "notes": "Fredericksburg is an independent city, so this covers all city property taxes. Likely requires direct contact with the Treasurer's office."
+   },
+   {
+    "data_type": "foreclosure",
+    "raw_data_type": "Foreclosure (first public signal for this state's process)",
+    "priority": "Pull first (A)",
+    "office": "Fredericksburg Circuit Court Clerk (Land Records Division)",
+    "phone": "540-372-1066",
+    "url": "",
+    "address": "701 Princess Anne St Suite 100, Fredericksburg, VA",
+    "foia": "Not explicitly listed for land records, but the city has a FOIA portal.",
+    "access": "Medium",
+    "access_raw": "Moderate",
+    "updates": "Ongoing as foreclosures are filed.",
+    "verified": "Verify locally",
+    "notes": "Virginia is a non-judicial foreclosure state. The first public signal is a recorder-filed notice of default or a published trustee-sale notice. These hit the recorder index before newspaper ads."
+   },
+   {
+    "data_type": "lien_deed_index",
+    "raw_data_type": "Recorder / Register of Deeds - Lien & Deed Index (mechanic's, tax, HOA, child-support liens; lis pendens)",
+    "priority": "Pull first (A)",
+    "office": "Fredericksburg Circuit Court Clerk (Land Records Division) - Jeff Small, Clerk of the Circuit Court",
+    "phone": "540-372-1066",
+    "url": "https://www.fredericksburgva.gov/653/Wills-and-Probate",
+    "address": "701 Princess Anne St Suite 100, Fredericksburg, VA",
+    "foia": "Not explicitly listed for land records, but the city has a FOIA portal.",
+    "access": "Medium",
+    "access_raw": "Moderate",
+    "updates": "Ongoing.",
+    "verified": "Verify locally",
+    "notes": "Liens (mechanic's, IRS & state tax, HOA, child-support liens, lis pendens) are recorded in the land records. Tax and child-support liens are indexed against the person, not the parcel. Likely requires in-person search or a paid subscription service for a comprehensive index."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - City",
+    "priority": "Pull next (B)",
+    "office": "City of Fredericksburg Building Services Division (Community Planning and Building Department)",
+    "phone": "540-372-1080",
+    "url": "https://www.fredericksburgva.gov/814/Building-Services",
+    "address": "601 Caroline Street Suite 400, Fredericksburg, VA 22401",
+    "foia": "Not explicitly listed for Building Services, but the city has a FOIA portal.",
+    "access": "Hard",
+    "access_raw": "High",
+    "updates": "Ongoing.",
+    "verified": "Verified",
+    "notes": "The Building Services Division administers the Virginia Uniform Statewide Building Code and Property Maintenance Code. Likely requires a public records request for specific violation lists."
+   },
+   {
+    "data_type": "code_violation",
+    "raw_data_type": "Code Violations - Unincorporated County",
+    "priority": "Pull next (B)",
+    "office": "Not Applicable",
+    "phone": "",
+    "url": "",
+    "address": "",
+    "foia": "",
+    "access": "Unrated",
+    "access_raw": "",
+    "updates": "",
+    "verified": "Verified",
+    "notes": "Fredericksburg City is an independent city and does not have unincorporated county areas."
+   },
+   {
+    "data_type": "condemnation",
+    "raw_data_type": "Condemned / Unsafe Structures / Demolition",
+    "priority": "Pull next (B)",
+    "office": "City of Fredericksburg Building Services Division (Community Planning and Building Department)",
+    "phone": "540-372-1080",
+    "url": "https://www.fredericksburgva.gov/814/Building-Services",
+    "address": "601 Caroline Street Suite 400, Fredericksburg, VA 22401",
+    "foia": "Not explicitly listed for Building Services, but the city has a FOIA portal.",
+    "access": "Hard",
+    "access_raw": "High",
+    "updates": "Ongoing.",
+    "verified": "Verified",
+    "notes": "These records are typically handled by code enforcement or building departments. Likely requires a public records request."
+   },
+   {
+    "data_type": "eviction",
+    "raw_data_type": "Multiple-Eviction Landlords",
+    "priority": "Pull last (C)",
+    "office": "Fredericksburg General District Court Clerk",
+    "phone": "",
+    "url": "https://eapps.courts.state.va.us/gdcourts",
+    "address": "701 Princess Anne St, Fredericksburg, VA",
+    "foia": "Not explicitly listed, but the city has a FOIA portal.",
+    "access": "Hard",
+    "access_raw": "High",
+    "updates": "Ongoing.",
+    "verified": "Verify locally",
+    "notes": "Hunt the PLAINTIFF (landlord), not the tenant. Two or more filings in 12 months can indicate a \"tired landlord.\" The state portal allows searching by name, case number, or hearing date."
+   }
+  ]
+ },
+ "matrix": {
+  "baltimore_county_md": {
+   "jurisdiction": "Baltimore County, MD",
+   "regime": "judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": {
+      "script": "md_register_of_wills_pull.py",
+      "status": "running",
+      "county_arg": "Baltimore County"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "foreclosure": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "mddc_trustee_sale_pull.py",
+      "status": "running",
+      "county_arg": "Baltimore County"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Annually (list updated weekly prior to sale)",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "tax_delinquent": {
+     "provider": "covered",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Annually (delinquent notices mailed in February)",
+     "verified": "Verified",
+     "verdict": "covered_by_provider"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Hard",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": {
+      "name": "MD Courts daily case PDF pull",
+      "where": "Windows Task Scheduler job 'MD Courts Daily PDF Pull' (outside this repo)",
+      "script": "Galal Development/automation/daily_mdcourts_pull.ps1",
+      "covers_states": [
+       "MD"
+      ],
+      "note": "downloads mdcourts.gov/data/case/fileYYYY-MM-DD.pdf daily at 09:00 ET and launches the shared case watcher. Statewide MD, so it reaches all 7 MD counties; it does NOT cover DC or VA. Its task exit code is 0 even when nothing downloaded -- ground truth is whether the day's PDF exists."
+     },
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "external_feed"
+    }
+   }
+  },
+  "montgomery_md": {
+   "jurisdiction": "Montgomery, MD",
+   "regime": "judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": {
+      "script": "md_register_of_wills_pull.py",
+      "status": "running",
+      "county_arg": "Montgomery"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "foreclosure": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "mddc_trustee_sale_pull.py",
+      "status": "running",
+      "county_arg": "Montgomery"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Annually (second Monday in June)",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "tax_delinquent": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing / Annually updated",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": {
+      "name": "MD Courts daily case PDF pull",
+      "where": "Windows Task Scheduler job 'MD Courts Daily PDF Pull' (outside this repo)",
+      "script": "Galal Development/automation/daily_mdcourts_pull.ps1",
+      "covers_states": [
+       "MD"
+      ],
+      "note": "downloads mdcourts.gov/data/case/fileYYYY-MM-DD.pdf daily at 09:00 ET and launches the shared case watcher. Statewide MD, so it reaches all 7 MD counties; it does NOT cover DC or VA. Its task exit code is 0 even when nothing downloaded -- ground truth is whether the day's PDF exists."
+     },
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "external_feed"
+    }
+   }
+  },
+  "anne_arundel_md": {
+   "jurisdiction": "Anne Arundel, MD",
+   "regime": "judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": {
+      "script": "md_register_of_wills_pull.py",
+      "status": "running",
+      "county_arg": "Anne Arundel"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "foreclosure": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "mddc_trustee_sale_pull.py",
+      "status": "running",
+      "county_arg": "Anne Arundel"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Annually (June)",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "tax_delinquent": {
+     "provider": "covered",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Annually (pre-sale)",
+     "verified": "Verified",
+     "verdict": "covered_by_provider"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": {
+      "name": "MD Courts daily case PDF pull",
+      "where": "Windows Task Scheduler job 'MD Courts Daily PDF Pull' (outside this repo)",
+      "script": "Galal Development/automation/daily_mdcourts_pull.ps1",
+      "covers_states": [
+       "MD"
+      ],
+      "note": "downloads mdcourts.gov/data/case/fileYYYY-MM-DD.pdf daily at 09:00 ET and launches the shared case watcher. Statewide MD, so it reaches all 7 MD counties; it does NOT cover DC or VA. Its task exit code is 0 even when nothing downloaded -- ground truth is whether the day's PDF exists."
+     },
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "external_feed"
+    }
+   }
+  },
+  "frederick_md": {
+   "jurisdiction": "Frederick, MD",
+   "regime": "judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": {
+      "script": "md_register_of_wills_pull.py",
+      "status": "running",
+      "county_arg": "Frederick"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "foreclosure": {
+     "provider": "covered",
+     "scraper": {
+      "script": "mddc_trustee_sale_pull.py",
+      "status": "running",
+      "county_arg": "Frederick"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Annually (second Monday in May)",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "tax_delinquent": {
+     "provider": "covered",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Easy",
+     "cadence": "Ongoing / Updated periodically",
+     "verified": "Verified",
+     "verdict": "covered_by_provider"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": null,
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": {
+      "name": "MD Courts daily case PDF pull",
+      "where": "Windows Task Scheduler job 'MD Courts Daily PDF Pull' (outside this repo)",
+      "script": "Galal Development/automation/daily_mdcourts_pull.ps1",
+      "covers_states": [
+       "MD"
+      ],
+      "note": "downloads mdcourts.gov/data/case/fileYYYY-MM-DD.pdf daily at 09:00 ET and launches the shared case watcher. Statewide MD, so it reaches all 7 MD counties; it does NOT cover DC or VA. Its task exit code is 0 even when nothing downloaded -- ground truth is whether the day's PDF exists."
+     },
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "external_feed"
+    }
+   }
+  },
+  "carroll_md": {
+   "jurisdiction": "Carroll, MD",
+   "regime": "judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": {
+      "script": "md_register_of_wills_pull.py",
+      "status": "running",
+      "county_arg": "Carroll"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "foreclosure": {
+     "provider": "covered",
+     "scraper": {
+      "script": "mddc_trustee_sale_pull.py",
+      "status": "running",
+      "county_arg": "Carroll"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Annually (June)",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "tax_delinquent": {
+     "provider": "covered",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing",
+     "verified": "Verified",
+     "verdict": "covered_by_provider"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "As violations occur",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "As needed",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": {
+      "name": "MD Courts daily case PDF pull",
+      "where": "Windows Task Scheduler job 'MD Courts Daily PDF Pull' (outside this repo)",
+      "script": "Galal Development/automation/daily_mdcourts_pull.ps1",
+      "covers_states": [
+       "MD"
+      ],
+      "note": "downloads mdcourts.gov/data/case/fileYYYY-MM-DD.pdf daily at 09:00 ET and launches the shared case watcher. Statewide MD, so it reaches all 7 MD counties; it does NOT cover DC or VA. Its task exit code is 0 even when nothing downloaded -- ground truth is whether the day's PDF exists."
+     },
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "external_feed"
+    }
+   }
+  },
+  "calvert_md": {
+   "jurisdiction": "Calvert, MD",
+   "regime": "judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": {
+      "script": "md_register_of_wills_pull.py",
+      "status": "running",
+      "county_arg": "Calvert"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "foreclosure": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "mddc_trustee_sale_pull.py",
+      "status": "running",
+      "county_arg": "Calvert"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Weekly",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Annually (typically Spring)",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "tax_delinquent": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing / Annually updated",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "As needed / Ongoing",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "As needed",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": {
+      "name": "MD Courts daily case PDF pull",
+      "where": "Windows Task Scheduler job 'MD Courts Daily PDF Pull' (outside this repo)",
+      "script": "Galal Development/automation/daily_mdcourts_pull.ps1",
+      "covers_states": [
+       "MD"
+      ],
+      "note": "downloads mdcourts.gov/data/case/fileYYYY-MM-DD.pdf daily at 09:00 ET and launches the shared case watcher. Statewide MD, so it reaches all 7 MD counties; it does NOT cover DC or VA. Its task exit code is 0 even when nothing downloaded -- ground truth is whether the day's PDF exists."
+     },
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "external_feed"
+    }
+   }
+  },
+  "charles_md": {
+   "jurisdiction": "Charles, MD",
+   "regime": "judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": {
+      "script": "md_register_of_wills_pull.py",
+      "status": "running",
+      "county_arg": "Charles"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "foreclosure": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "mddc_trustee_sale_pull.py",
+      "status": "running",
+      "county_arg": "Charles"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Annually (May)",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "tax_delinquent": {
+     "provider": "covered",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Annually (prior to May tax sale), ongoing",
+     "verified": "Verify locally",
+     "verdict": "covered_by_provider"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "As needed, ongoing",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "As needed",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": {
+      "name": "MD Courts daily case PDF pull",
+      "where": "Windows Task Scheduler job 'MD Courts Daily PDF Pull' (outside this repo)",
+      "script": "Galal Development/automation/daily_mdcourts_pull.ps1",
+      "covers_states": [
+       "MD"
+      ],
+      "note": "downloads mdcourts.gov/data/case/fileYYYY-MM-DD.pdf daily at 09:00 ET and launches the shared case watcher. Statewide MD, so it reaches all 7 MD counties; it does NOT cover DC or VA. Its task exit code is 0 even when nothing downloaded -- ground truth is whether the day's PDF exists."
+     },
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "external_feed"
+    }
+   }
+  },
+  "district_of_columbia": {
+   "jurisdiction": "District of Columbia",
+   "regime": "non-judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "covered_by_provider"
+    },
+    "foreclosure": {
+     "provider": "covered",
+     "scraper": {
+      "script": "mddc_trustee_sale_pull.py",
+      "status": "running",
+      "county_arg": "Washington DC"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Annually (July)",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "tax_delinquent": {
+     "provider": "covered",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Easy",
+     "cadence": "Annually (pre-sale list), ongoing roll",
+     "verified": "Verified",
+     "verdict": "covered_by_provider"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Varies",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "unsourced"
+    }
+   }
+  },
+  "fairfax_va": {
+   "jurisdiction": "Fairfax, VA",
+   "regime": "non-judicial",
+   "cells": {
+    "probate": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 6",
+      "status": "built_never_run",
+      "county_arg": "Fairfax"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "existing_scraper_never_run"
+    },
+    "foreclosure": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 4",
+      "status": "running",
+      "county_arg": "Fairfax"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 8",
+      "status": "built_never_run",
+      "county_arg": "Fairfax"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "As announced (typically annually)",
+     "verified": "Verified",
+     "verdict": "existing_scraper_never_run"
+    },
+    "tax_delinquent": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Easy",
+     "cadence": "Quarterly",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "As needed",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "unsourced"
+    }
+   }
+  },
+  "prince_william_va": {
+   "jurisdiction": "Prince William, VA",
+   "regime": "non-judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 6",
+      "status": "built_never_run",
+      "county_arg": "Prince William"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "existing_scraper_never_run"
+    },
+    "foreclosure": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 4",
+      "status": "running",
+      "county_arg": "Prince William"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 8",
+      "status": "built_never_run",
+      "county_arg": "Prince William"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "As scheduled (typically annually)",
+     "verified": "Verify locally",
+     "verdict": "existing_scraper_never_run"
+    },
+    "tax_delinquent": {
+     "provider": "covered",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing / Annually updated",
+     "verified": "Verified",
+     "verdict": "covered_by_provider"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "Daily / As reported",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "As needed",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Hard",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "unsourced"
+    }
+   }
+  },
+  "arlington_va": {
+   "jurisdiction": "Arlington, VA",
+   "regime": "non-judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 6",
+      "status": "built_never_run",
+      "county_arg": "Arlington"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "existing_scraper_never_run"
+    },
+    "foreclosure": {
+     "provider": "covered",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 4",
+      "status": "running",
+      "county_arg": "Arlington"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 8",
+      "status": "built_never_run",
+      "county_arg": "Arlington"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Periodically (check website for updates)",
+     "verified": "Verify locally",
+     "verdict": "existing_scraper_never_run"
+    },
+    "tax_delinquent": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Easy",
+     "cadence": "Monthly/Quarterly (PDFs updated periodically)",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "unsourced"
+    }
+   }
+  },
+  "stafford_va": {
+   "jurisdiction": "Stafford, VA",
+   "regime": "non-judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 6",
+      "status": "built_never_run",
+      "county_arg": "Stafford"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "existing_scraper_never_run"
+    },
+    "foreclosure": {
+     "provider": "covered",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 4",
+      "status": "running",
+      "county_arg": "Stafford"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 8",
+      "status": "built_never_run",
+      "county_arg": "Stafford"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Annually/As needed",
+     "verified": "Verified",
+     "verdict": "existing_scraper_never_run"
+    },
+    "tax_delinquent": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Easy",
+     "cadence": "Ongoing",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "As reported/investigated",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "As needed",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "unsourced"
+    }
+   }
+  },
+  "spotsylvania_va": {
+   "jurisdiction": "Spotsylvania, VA",
+   "regime": "non-judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 6",
+      "status": "built_never_run",
+      "county_arg": "Spotsylvania"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "existing_scraper_never_run"
+    },
+    "foreclosure": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 4",
+      "status": "running",
+      "county_arg": "Spotsylvania"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "covered_by_scraper"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": {
+      "script": "va_trustee_sale_pull.py --popular-search 8",
+      "status": "built_never_run",
+      "county_arg": "Spotsylvania"
+     },
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Easy",
+     "cadence": "Annually/As needed",
+     "verified": "Verified",
+     "verdict": "existing_scraper_never_run"
+    },
+    "tax_delinquent": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Easy",
+     "cadence": "Ongoing",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Medium",
+     "cadence": "As reported/investigated",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "As reported/investigated",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Hard",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Daily",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "unsourced"
+    }
+   }
+  },
+  "fredericksburg_city_va": {
+   "jurisdiction": "Fredericksburg City, VA",
+   "regime": "non-judicial",
+   "cells": {
+    "probate": {
+     "provider": "covered",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing as estates are filed.",
+     "verified": "Verified",
+     "verdict": "covered_by_provider"
+    },
+    "foreclosure": {
+     "provider": "covered",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing as foreclosures are filed.",
+     "verified": "Verify locally",
+     "verdict": "covered_by_provider"
+    },
+    "tax_sale": {
+     "provider": "low_or_zero",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Hard",
+     "cadence": "Annually, but specific dates vary.",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "tax_delinquent": {
+     "provider": "covered",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Hard",
+     "cadence": "Ongoing roll.",
+     "verified": "Verified",
+     "verdict": "covered_by_provider"
+    },
+    "code_violation": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 2,
+     "easiest_access": "Hard",
+     "cadence": "Ongoing.",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "condemnation": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Hard",
+     "cadence": "Ongoing.",
+     "verified": "Verified",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "eviction": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Hard",
+     "cadence": "Ongoing.",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "lien_deed_index": {
+     "provider": "not_assessed",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 1,
+     "easiest_access": "Medium",
+     "cadence": "Ongoing.",
+     "verified": "Verify locally",
+     "verdict": "researched_needs_new_scraper"
+    },
+    "divorce": {
+     "provider": "absent",
+     "scraper": null,
+     "external_feed": null,
+     "county_offices": 0,
+     "easiest_access": null,
+     "cadence": null,
+     "verified": null,
+     "verdict": "unsourced"
+    }
+   }
+  }
+ },
+ "unmapped": [],
+ "credentials": [
+  {
+   "key": "CAPTCHA_API_KEY",
+   "status": "placeholder",
+   "unlocks": "va_trustee_sale_pull --full-text (the Turnstile gate on VA detail pages). Everything else in the VA pull works without it."
+  },
+  {
+   "key": "FIRECRAWL_API_KEY",
+   "status": "set",
+   "unlocks": "the MDDC and VA grid pulls, and the MD Register of Wills pull."
+  },
+  {
+   "key": "MDDC_EMAIL",
+   "status": "set",
+   "unlocks": "mddc_trustee_sale_pull login (the pull hard-fails without it)."
+  },
+  {
+   "key": "MDDC_PASSWORD",
+   "status": "set",
+   "unlocks": "mddc_trustee_sale_pull login (the pull hard-fails without it)."
+  },
+  {
+   "key": "SCRAPFLY_KEY",
+   "status": "set",
+   "unlocks": "gated detail pages: MDDC Details.aspx, VA --full-text."
+  },
+  {
+   "key": "MD_LANDREC_EMAIL",
+   "status": "set",
+   "unlocks": "md_land_records_lookup deed search (free account)."
+  },
+  {
+   "key": "MD_LANDREC_PASSWORD",
+   "status": "set",
+   "unlocks": "md_land_records_lookup deed search (free account)."
+  },
+  {
+   "key": "DATASIFT_EMAIL",
+   "status": "set",
+   "unlocks": "every browser pass against the account."
+  },
+  {
+   "key": "DATASIFT_PASSWORD",
+   "status": "set",
+   "unlocks": "every browser pass against the account."
+  }
+ ],
+ "signups": [
+  {
+   "service": "2Captcha",
+   "env_key": "CAPTCHA_API_KEY",
+   "unlocks": "unblocks VA --full-text, which is where the auction date and loan principal live; the grid snippet truncates before them"
+  },
+  {
+   "service": "Maryland Judiciary Case Search",
+   "env_key": null,
+   "unlocks": "the MD judicial-foreclosure signal (lis pendens / final judgment) that the 7 MD counties need and no pull reaches"
+  },
+  {
+   "service": "DC washington.dc.publicsearch.us",
+   "env_key": null,
+   "unlocks": "DC recorder lien and deed index"
+  },
+  {
+   "service": "per-county Accela / SeeClickFix portals",
+   "env_key": null,
+   "unlocks": "code violations and condemnations, the two types with a researched office in all 14 and no Easy rating anywhere"
+  }
+ ]
+}

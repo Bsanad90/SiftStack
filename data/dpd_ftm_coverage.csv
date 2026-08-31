@@ -1,0 +1,127 @@
+jurisdiction,regime,data_type,provider,verdict,scraper,scraper_status,county_offices,easiest_access,cadence,verified
+"Baltimore County, MD",judicial,Probate / estates / unknown heirs,covered,covered_by_scraper,md_register_of_wills_pull.py,running,1,Easy,Daily,Verified
+"Baltimore County, MD",judicial,Foreclosure (first public signal),low_or_zero,covered_by_scraper,mddc_trustee_sale_pull.py,running,1,Medium,Daily,Verified
+"Baltimore County, MD",judicial,Tax sale / delinquent tax auction,low_or_zero,researched_needs_new_scraper,,,1,Easy,Annually (list updated weekly prior to sale),Verified
+"Baltimore County, MD",judicial,Tax delinquency roll (pre-sale),covered,covered_by_provider,,,2,Medium,Annually (delinquent notices mailed in February),Verified
+"Baltimore County, MD",judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,Ongoing,Verified
+"Baltimore County, MD",judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,Ongoing,Verify locally
+"Baltimore County, MD",judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Hard,Daily,Verify locally
+"Baltimore County, MD",judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Easy,Daily,Verified
+"Baltimore County, MD",judicial,Divorce filings,absent,external_feed,,,0,,,
+"Montgomery, MD",judicial,Probate / estates / unknown heirs,covered,covered_by_scraper,md_register_of_wills_pull.py,running,1,Easy,Daily,Verified
+"Montgomery, MD",judicial,Foreclosure (first public signal),low_or_zero,covered_by_scraper,mddc_trustee_sale_pull.py,running,1,Medium,Daily,Verified
+"Montgomery, MD",judicial,Tax sale / delinquent tax auction,low_or_zero,researched_needs_new_scraper,,,1,Medium,Annually (second Monday in June),Verified
+"Montgomery, MD",judicial,Tax delinquency roll (pre-sale),low_or_zero,researched_needs_new_scraper,,,2,Medium,Ongoing / Annually updated,Verified
+"Montgomery, MD",judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,Ongoing,Verify locally
+"Montgomery, MD",judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,Ongoing,Verify locally
+"Montgomery, MD",judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Medium,Daily,Verify locally
+"Montgomery, MD",judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Medium,Daily,Verified
+"Montgomery, MD",judicial,Divorce filings,absent,external_feed,,,0,,,
+"Anne Arundel, MD",judicial,Probate / estates / unknown heirs,covered,covered_by_scraper,md_register_of_wills_pull.py,running,1,Easy,Daily,Verified
+"Anne Arundel, MD",judicial,Foreclosure (first public signal),low_or_zero,covered_by_scraper,mddc_trustee_sale_pull.py,running,1,Medium,Daily,Verified
+"Anne Arundel, MD",judicial,Tax sale / delinquent tax auction,low_or_zero,researched_needs_new_scraper,,,1,Easy,Annually (June),Verified
+"Anne Arundel, MD",judicial,Tax delinquency roll (pre-sale),covered,covered_by_provider,,,2,Medium,Annually (pre-sale),Verified
+"Anne Arundel, MD",judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,Ongoing,Verify locally
+"Anne Arundel, MD",judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,Ongoing,Verify locally
+"Anne Arundel, MD",judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Medium,Daily,Verify locally
+"Anne Arundel, MD",judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Easy,Daily,Verified
+"Anne Arundel, MD",judicial,Divorce filings,absent,external_feed,,,0,,,
+"Frederick, MD",judicial,Probate / estates / unknown heirs,covered,covered_by_scraper,md_register_of_wills_pull.py,running,1,Easy,Daily,Verified
+"Frederick, MD",judicial,Foreclosure (first public signal),covered,covered_by_scraper,mddc_trustee_sale_pull.py,running,1,Medium,Daily,Verify locally
+"Frederick, MD",judicial,Tax sale / delinquent tax auction,low_or_zero,researched_needs_new_scraper,,,1,Easy,Annually (second Monday in May),Verified
+"Frederick, MD",judicial,Tax delinquency roll (pre-sale),covered,covered_by_provider,,,2,Easy,Ongoing / Updated periodically,Verified
+"Frederick, MD",judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,Daily,Verified
+"Frederick, MD",judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,,Verify locally
+"Frederick, MD",judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Medium,Daily,Verify locally
+"Frederick, MD",judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Medium,Daily,Verified
+"Frederick, MD",judicial,Divorce filings,absent,external_feed,,,0,,,
+"Carroll, MD",judicial,Probate / estates / unknown heirs,covered,covered_by_scraper,md_register_of_wills_pull.py,running,1,Easy,Daily,Verified
+"Carroll, MD",judicial,Foreclosure (first public signal),covered,covered_by_scraper,mddc_trustee_sale_pull.py,running,1,Medium,Daily,Verified
+"Carroll, MD",judicial,Tax sale / delinquent tax auction,low_or_zero,researched_needs_new_scraper,,,1,Easy,Annually (June),Verified
+"Carroll, MD",judicial,Tax delinquency roll (pre-sale),covered,covered_by_provider,,,2,Medium,Ongoing,Verified
+"Carroll, MD",judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,As violations occur,Verified
+"Carroll, MD",judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,As needed,Verify locally
+"Carroll, MD",judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Medium,Daily,Verify locally
+"Carroll, MD",judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Easy,Daily,Verified
+"Carroll, MD",judicial,Divorce filings,absent,external_feed,,,0,,,
+"Calvert, MD",judicial,Probate / estates / unknown heirs,covered,covered_by_scraper,md_register_of_wills_pull.py,running,1,Easy,Daily,Verified
+"Calvert, MD",judicial,Foreclosure (first public signal),low_or_zero,covered_by_scraper,mddc_trustee_sale_pull.py,running,1,Medium,Weekly,Verified
+"Calvert, MD",judicial,Tax sale / delinquent tax auction,low_or_zero,researched_needs_new_scraper,,,1,Easy,Annually (typically Spring),Verified
+"Calvert, MD",judicial,Tax delinquency roll (pre-sale),low_or_zero,researched_needs_new_scraper,,,2,Medium,Ongoing / Annually updated,Verified
+"Calvert, MD",judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,As needed / Ongoing,Verified
+"Calvert, MD",judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,As needed,Verified
+"Calvert, MD",judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Medium,Daily,Verified
+"Calvert, MD",judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Easy,Daily,Verified
+"Calvert, MD",judicial,Divorce filings,absent,external_feed,,,0,,,
+"Charles, MD",judicial,Probate / estates / unknown heirs,covered,covered_by_scraper,md_register_of_wills_pull.py,running,1,Easy,Daily,Verified
+"Charles, MD",judicial,Foreclosure (first public signal),low_or_zero,covered_by_scraper,mddc_trustee_sale_pull.py,running,1,Medium,Daily,Verified
+"Charles, MD",judicial,Tax sale / delinquent tax auction,low_or_zero,researched_needs_new_scraper,,,1,Medium,Annually (May),Verify locally
+"Charles, MD",judicial,Tax delinquency roll (pre-sale),covered,covered_by_provider,,,2,Medium,"Annually (prior to May tax sale), ongoing",Verify locally
+"Charles, MD",judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,"As needed, ongoing",Verify locally
+"Charles, MD",judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,As needed,Verify locally
+"Charles, MD",judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Medium,Daily,Verified
+"Charles, MD",judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Easy,Daily,Verified
+"Charles, MD",judicial,Divorce filings,absent,external_feed,,,0,,,
+District of Columbia,non-judicial,Probate / estates / unknown heirs,covered,covered_by_provider,,,1,Medium,Daily,Verify locally
+District of Columbia,non-judicial,Foreclosure (first public signal),covered,covered_by_scraper,mddc_trustee_sale_pull.py,running,1,Medium,Daily,Verified
+District of Columbia,non-judicial,Tax sale / delinquent tax auction,low_or_zero,researched_needs_new_scraper,,,1,Easy,Annually (July),Verified
+District of Columbia,non-judicial,Tax delinquency roll (pre-sale),covered,covered_by_provider,,,2,Easy,"Annually (pre-sale list), ongoing roll",Verified
+District of Columbia,non-judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,Daily,Verify locally
+District of Columbia,non-judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,Varies,Verify locally
+District of Columbia,non-judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Medium,Daily,Verify locally
+District of Columbia,non-judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Medium,Daily,Verified
+District of Columbia,non-judicial,Divorce filings,absent,unsourced,,,0,,,
+"Fairfax, VA",non-judicial,Probate / estates / unknown heirs,low_or_zero,existing_scraper_never_run,va_trustee_sale_pull.py --popular-search 6,built_never_run,1,Medium,Daily,Verified
+"Fairfax, VA",non-judicial,Foreclosure (first public signal),low_or_zero,covered_by_scraper,va_trustee_sale_pull.py --popular-search 4,running,1,Medium,Daily,Verified
+"Fairfax, VA",non-judicial,Tax sale / delinquent tax auction,low_or_zero,existing_scraper_never_run,va_trustee_sale_pull.py --popular-search 8,built_never_run,1,Easy,As announced (typically annually),Verified
+"Fairfax, VA",non-judicial,Tax delinquency roll (pre-sale),low_or_zero,researched_needs_new_scraper,,,2,Easy,Quarterly,Verify locally
+"Fairfax, VA",non-judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,Daily,Verified
+"Fairfax, VA",non-judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,As needed,Verified
+"Fairfax, VA",non-judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Medium,Daily,Verified
+"Fairfax, VA",non-judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Medium,Daily,Verified
+"Fairfax, VA",non-judicial,Divorce filings,absent,unsourced,,,0,,,
+"Prince William, VA",non-judicial,Probate / estates / unknown heirs,covered,existing_scraper_never_run,va_trustee_sale_pull.py --popular-search 6,built_never_run,1,Easy,Daily,Verify locally
+"Prince William, VA",non-judicial,Foreclosure (first public signal),low_or_zero,covered_by_scraper,va_trustee_sale_pull.py --popular-search 4,running,1,Medium,Daily,Verify locally
+"Prince William, VA",non-judicial,Tax sale / delinquent tax auction,low_or_zero,existing_scraper_never_run,va_trustee_sale_pull.py --popular-search 8,built_never_run,1,Easy,As scheduled (typically annually),Verify locally
+"Prince William, VA",non-judicial,Tax delinquency roll (pre-sale),covered,covered_by_provider,,,2,Medium,Ongoing / Annually updated,Verified
+"Prince William, VA",non-judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,Daily / As reported,Verified
+"Prince William, VA",non-judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,As needed,Verify locally
+"Prince William, VA",non-judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Hard,Daily,Verify locally
+"Prince William, VA",non-judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Medium,Daily,Verify locally
+"Prince William, VA",non-judicial,Divorce filings,absent,unsourced,,,0,,,
+"Arlington, VA",non-judicial,Probate / estates / unknown heirs,covered,existing_scraper_never_run,va_trustee_sale_pull.py --popular-search 6,built_never_run,1,Easy,Daily,Verify locally
+"Arlington, VA",non-judicial,Foreclosure (first public signal),covered,covered_by_scraper,va_trustee_sale_pull.py --popular-search 4,running,1,Medium,Daily,Verified
+"Arlington, VA",non-judicial,Tax sale / delinquent tax auction,low_or_zero,existing_scraper_never_run,va_trustee_sale_pull.py --popular-search 8,built_never_run,1,Easy,Periodically (check website for updates),Verify locally
+"Arlington, VA",non-judicial,Tax delinquency roll (pre-sale),low_or_zero,researched_needs_new_scraper,,,2,Easy,Monthly/Quarterly (PDFs updated periodically),Verify locally
+"Arlington, VA",non-judicial,Code violations,absent,researched_needs_new_scraper,,,1,Medium,Ongoing,Verify locally
+"Arlington, VA",non-judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,Ongoing,Verify locally
+"Arlington, VA",non-judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Medium,Daily,Verify locally
+"Arlington, VA",non-judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Medium,Daily,Verified
+"Arlington, VA",non-judicial,Divorce filings,absent,unsourced,,,0,,,
+"Stafford, VA",non-judicial,Probate / estates / unknown heirs,covered,existing_scraper_never_run,va_trustee_sale_pull.py --popular-search 6,built_never_run,1,Easy,Daily,Verified
+"Stafford, VA",non-judicial,Foreclosure (first public signal),covered,covered_by_scraper,va_trustee_sale_pull.py --popular-search 4,running,1,Medium,Daily,Verified
+"Stafford, VA",non-judicial,Tax sale / delinquent tax auction,low_or_zero,existing_scraper_never_run,va_trustee_sale_pull.py --popular-search 8,built_never_run,1,Easy,Annually/As needed,Verified
+"Stafford, VA",non-judicial,Tax delinquency roll (pre-sale),low_or_zero,researched_needs_new_scraper,,,2,Easy,Ongoing,Verified
+"Stafford, VA",non-judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,As reported/investigated,Verify locally
+"Stafford, VA",non-judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,As needed,Verify locally
+"Stafford, VA",non-judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Medium,Daily,Verify locally
+"Stafford, VA",non-judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Medium,Daily,Verified
+"Stafford, VA",non-judicial,Divorce filings,absent,unsourced,,,0,,,
+"Spotsylvania, VA",non-judicial,Probate / estates / unknown heirs,covered,existing_scraper_never_run,va_trustee_sale_pull.py --popular-search 6,built_never_run,1,Easy,Daily,Verified
+"Spotsylvania, VA",non-judicial,Foreclosure (first public signal),low_or_zero,covered_by_scraper,va_trustee_sale_pull.py --popular-search 4,running,1,Medium,Daily,Verified
+"Spotsylvania, VA",non-judicial,Tax sale / delinquent tax auction,low_or_zero,existing_scraper_never_run,va_trustee_sale_pull.py --popular-search 8,built_never_run,1,Easy,Annually/As needed,Verified
+"Spotsylvania, VA",non-judicial,Tax delinquency roll (pre-sale),low_or_zero,researched_needs_new_scraper,,,2,Easy,Ongoing,Verified
+"Spotsylvania, VA",non-judicial,Code violations,absent,researched_needs_new_scraper,,,2,Medium,As reported/investigated,Verify locally
+"Spotsylvania, VA",non-judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Medium,As reported/investigated,Verify locally
+"Spotsylvania, VA",non-judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Hard,Daily,Verified
+"Spotsylvania, VA",non-judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Medium,Daily,Verified
+"Spotsylvania, VA",non-judicial,Divorce filings,absent,unsourced,,,0,,,
+"Fredericksburg City, VA",non-judicial,Probate / estates / unknown heirs,covered,covered_by_provider,,,1,Medium,Ongoing as estates are filed.,Verified
+"Fredericksburg City, VA",non-judicial,Foreclosure (first public signal),covered,covered_by_provider,,,1,Medium,Ongoing as foreclosures are filed.,Verify locally
+"Fredericksburg City, VA",non-judicial,Tax sale / delinquent tax auction,low_or_zero,researched_needs_new_scraper,,,1,Hard,"Annually, but specific dates vary.",Verified
+"Fredericksburg City, VA",non-judicial,Tax delinquency roll (pre-sale),covered,covered_by_provider,,,2,Hard,Ongoing roll.,Verified
+"Fredericksburg City, VA",non-judicial,Code violations,absent,researched_needs_new_scraper,,,2,Hard,Ongoing.,Verified
+"Fredericksburg City, VA",non-judicial,Condemned / unsafe / demolition,not_assessed,researched_needs_new_scraper,,,1,Hard,Ongoing.,Verified
+"Fredericksburg City, VA",non-judicial,Evictions (multiple-eviction landlords),absent,researched_needs_new_scraper,,,1,Hard,Ongoing.,Verify locally
+"Fredericksburg City, VA",non-judicial,Recorder lien & deed index (incl. lis pendens),not_assessed,researched_needs_new_scraper,,,1,Medium,Ongoing.,Verify locally
+"Fredericksburg City, VA",non-judicial,Divorce filings,absent,unsourced,,,0,,,

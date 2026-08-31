@@ -1,0 +1,453 @@
+{
+  "generated_at": "2026-08-28T02:40:56-04:00",
+  "type": "foreclosure",
+  "method": "Read-only verification of the 14 workbook rows: WebFetch on every workbook URL plus the two press-association aggregators (mddcpublicnotices.com, publicnoticevirginia.com) and the vendor/terms pages they pointed to; src/scrapfly_browser.py on the six pages that returned HTTP 403 to WebFetch (it confirmed HTTP 200 on four before the account throttled); WebSearch only to locate official pages (Fairfax CPAN, Spotsylvania Logan Systems, Free Lance-Star Column.us, MD Case Search's new host). No accounts created, no forms submitted, no Firecrawl, nothing under src/scripts run.",
+  "jurisdictions": {
+    "baltimore_county_md": {
+      "jurisdiction": "Baltimore County, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Circuit Court for Baltimore County, Clerk's Office - online Daily Docket",
+      "url": "https://www.baltimorecountymd.gov/departments/circuit/daily-docket",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Judiciary Case Search (statewide circuit court civil docket incl. foreclosure case type)",
+          "url": "https://portal.mdcourts.gov/casesearch/"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "MDDC Press Association (mddcpublicnotices.com) - trustee's sale advertisements; free basic search, Smart Search saved-search login used by src/scripts/mddc_trustee_sale_pull.py",
+          "url": "https://www.mddcpublicnotices.com/Search.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "MDLandRec (Maryland State Archives land records, free registration) - recorded deed of appointment of substitute trustee / lis pendens",
+          "url": "https://mdlandrec.net/"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily - 'updated between 4 and 4:30 p.m. each day for the next day's docket'",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "WebFetch got HTTP 403 (WAF); Scrapfly residential render returned HTTP 200 / 694 KB so the page is live, but the text could not be read back this session (stdout encoding crash, then Scrapfly throttled). Cadence sentence confirmed from the page's own search snippet. The docket is a next-day HEARING schedule, not a filings feed - new foreclosure complaints surface only via Case Search (CAPTCHA) or the mddcpublicnotices ad. MD is judicial: the first public signal is the Circuit Court foreclosure case (Case Search); the trustee's ad follows on mddcpublicnotices.com. Case Search is WAF-blocked to plain fetch (HTTP 403 on casesearch.courts.state.md.us, connection refused on portal.mdcourts.gov, Scrapfly empty) and the Judiciary's own Case Search FAQ (search-sourced) says CAPTCHA was added to confirm users are not robots or automated systems, so the court channel is CAPTCHA-gated with no bulk export; the ad channel is what the repo already scrapes."
+    },
+    "montgomery_md": {
+      "jurisdiction": "Montgomery, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Circuit Court for Montgomery County - Land Records Public Information Room (workbook office); judicial docket via Maryland Judiciary Case Search",
+      "url": "https://www.montgomerycountymd.gov/circuit-court/how-do-i/land-records",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Judiciary Case Search (statewide circuit court civil docket incl. foreclosure case type)",
+          "url": "https://portal.mdcourts.gov/casesearch/"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "MDDC Press Association (mddcpublicnotices.com) - trustee's sale advertisements; free basic search, Smart Search saved-search login used by src/scripts/mddc_trustee_sale_pull.py",
+          "url": "https://www.mddcpublicnotices.com/Search.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "MDLandRec (Maryland State Archives land records, free registration) - recorded deed of appointment of substitute trustee / lis pendens",
+          "url": "https://mdlandrec.net/"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "login_free",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "workbook URL is a land-records information page (links MDLandRec, PLATS.NET, State Archives); it does not itself expose a foreclosure docket - the court channel is Case Search",
+      "notes": "Page live, informational only: MDLandRec is free after email registration and is where the recorded lis pendens / deed of appointment of substitute trustee lands; the county publishes no foreclosure list. MD is judicial: the first public signal is the Circuit Court foreclosure case (Case Search); the trustee's ad follows on mddcpublicnotices.com. Case Search is WAF-blocked to plain fetch (HTTP 403 on casesearch.courts.state.md.us, connection refused on portal.mdcourts.gov, Scrapfly empty) and the Judiciary's own Case Search FAQ (search-sourced) says CAPTCHA was added to confirm users are not robots or automated systems, so the court channel is CAPTCHA-gated with no bulk export; the ad channel is what the repo already scrapes."
+    },
+    "anne_arundel_md": {
+      "jurisdiction": "Anne Arundel, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Circuit Court for Anne Arundel County, Clerk of the Court - Daily Docket (Docket On Demand)",
+      "url": "https://www.circuitcourt.org/daily-docket",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Judiciary Case Search (statewide circuit court civil docket incl. foreclosure case type)",
+          "url": "https://portal.mdcourts.gov/casesearch/"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "MDDC Press Association (mddcpublicnotices.com) - trustee's sale advertisements; free basic search, Smart Search saved-search login used by src/scripts/mddc_trustee_sale_pull.py",
+          "url": "https://www.mddcpublicnotices.com/Search.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "MDLandRec (Maryland State Archives land records, free registration) - recorded deed of appointment of substitute trustee / lis pendens",
+          "url": "https://mdlandrec.net/"
+        }
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "pdf_download",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily - 'The Docket On Demand service is updated between 3:00 and 3:30 p.m. each day for the next day's docket.'",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "Civil and Criminal dockets are PDF downloads, no login, no CAPTCHA seen; a scraper downloads the Civil PDF daily and greps for foreclosure case captions. It is a hearing schedule, so NEW filings still come from Case Search (CAPTCHA) or the mddcpublicnotices ad. MD is judicial: the first public signal is the Circuit Court foreclosure case (Case Search); the trustee's ad follows on mddcpublicnotices.com. Case Search is WAF-blocked to plain fetch (HTTP 403 on casesearch.courts.state.md.us, connection refused on portal.mdcourts.gov, Scrapfly empty) and the Judiciary's own Case Search FAQ (search-sourced) says CAPTCHA was added to confirm users are not robots or automated systems, so the court channel is CAPTCHA-gated with no bulk export; the ad channel is what the repo already scrapes."
+    },
+    "frederick_md": {
+      "jurisdiction": "Frederick, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Judiciary Case Search (Clerk of the Circuit Court for Frederick County)",
+      "url": "https://casesearch.courts.state.md.us/",
+      "url_status": "blocked",
+      "secondary_sources": [
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "MDDC Press Association (mddcpublicnotices.com) - trustee's sale advertisements; free basic search, Smart Search saved-search login used by src/scripts/mddc_trustee_sale_pull.py",
+          "url": "https://www.mddcpublicnotices.com/Search.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "MDLandRec (Maryland State Archives land records, free registration) - recorded deed of appointment of substitute trustee / lis pendens",
+          "url": "https://mdlandrec.net/"
+        },
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Judiciary Case Search (new host)",
+          "url": "https://portal.mdcourts.gov/casesearch/"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "yes",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "unreachable",
+      "changed_vs_workbook": "Case Search now also lives at portal.mdcourts.gov/casesearch/ (found via search); both hosts refused this session",
+      "notes": "Both Case Search hosts unreachable read-only (403 / connection refused / Scrapfly empty). Per the Judiciary's own FAQ (search-sourced, not fetched) Case Search requires accepting a disclaimer and passing a CAPTCHA, offers filing-date range + case-type filters, no bulk export. Workbook values kept. MD is judicial: the first public signal is the Circuit Court foreclosure case (Case Search); the trustee's ad follows on mddcpublicnotices.com. Case Search is WAF-blocked to plain fetch (HTTP 403 on casesearch.courts.state.md.us, connection refused on portal.mdcourts.gov, Scrapfly empty) and the Judiciary's own Case Search FAQ (search-sourced) says CAPTCHA was added to confirm users are not robots or automated systems, so the court channel is CAPTCHA-gated with no bulk export; the ad channel is what the repo already scrapes."
+    },
+    "carroll_md": {
+      "jurisdiction": "Carroll, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Clerk of the Circuit Court for Carroll County (records page); judicial docket via Maryland Judiciary Case Search",
+      "url": "https://www.mdcourts.gov/clerks/carroll/records",
+      "url_status": "redirect",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Judiciary Case Search (statewide circuit court civil docket incl. foreclosure case type)",
+          "url": "https://portal.mdcourts.gov/casesearch/"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "MDDC Press Association (mddcpublicnotices.com) - trustee's sale advertisements; free basic search, Smart Search saved-search login used by src/scripts/mddc_trustee_sale_pull.py",
+          "url": "https://www.mddcpublicnotices.com/Search.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "MDLandRec (Maryland State Archives land records, free registration) - recorded deed of appointment of substitute trustee / lis pendens",
+          "url": "https://mdlandrec.net/"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "courts.state.md.us redirects to www.mdcourts.gov; WebFetch 403 (WAF) on both hosts",
+      "notes": "Scrapfly render returned HTTP 200 / 97 KB, so the clerk records page is live at the mdcourts.gov host; text not read back (throttle). Informational page pointing to Case Search; no county-published foreclosure list. MD is judicial: the first public signal is the Circuit Court foreclosure case (Case Search); the trustee's ad follows on mddcpublicnotices.com. Case Search is WAF-blocked to plain fetch (HTTP 403 on casesearch.courts.state.md.us, connection refused on portal.mdcourts.gov, Scrapfly empty) and the Judiciary's own Case Search FAQ (search-sourced) says CAPTCHA was added to confirm users are not robots or automated systems, so the court channel is CAPTCHA-gated with no bulk export; the ad channel is what the repo already scrapes."
+    },
+    "calvert_md": {
+      "jurisdiction": "Calvert, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Clerk of the Circuit Court for Calvert County - weekly docket (workbook)",
+      "url": "http://www.courts.state.md.us/clerks/calvert/docket",
+      "url_status": "blocked",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Judiciary Case Search (statewide circuit court civil docket incl. foreclosure case type)",
+          "url": "https://portal.mdcourts.gov/casesearch/"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "MDDC Press Association (mddcpublicnotices.com) - trustee's sale advertisements; free basic search, Smart Search saved-search login used by src/scripts/mddc_trustee_sale_pull.py",
+          "url": "https://www.mddcpublicnotices.com/Search.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "MDLandRec (Maryland State Archives land records, free registration) - recorded deed of appointment of substitute trustee / lis pendens",
+          "url": "https://mdlandrec.net/"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Weekly",
+      "cadence_source": "workbook",
+      "verified": "unreachable",
+      "changed_vs_workbook": "",
+      "notes": "WebFetch 403 and Scrapfly returned empty content on both the courts.state.md.us and mdcourts.gov paths - could not confirm the weekly docket page still exists. Workbook values kept. MD is judicial: the first public signal is the Circuit Court foreclosure case (Case Search); the trustee's ad follows on mddcpublicnotices.com. Case Search is WAF-blocked to plain fetch (HTTP 403 on casesearch.courts.state.md.us, connection refused on portal.mdcourts.gov, Scrapfly empty) and the Judiciary's own Case Search FAQ (search-sourced) says CAPTCHA was added to confirm users are not robots or automated systems, so the court channel is CAPTCHA-gated with no bulk export; the ad channel is what the repo already scrapes."
+    },
+    "charles_md": {
+      "jurisdiction": "Charles, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Clerk of the Circuit Court for Charles County; judicial docket via Maryland Judiciary Case Search",
+      "url": "https://www.mdcourts.gov/clerks/charles",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Judiciary Case Search (statewide circuit court civil docket incl. foreclosure case type)",
+          "url": "https://portal.mdcourts.gov/casesearch/"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "MDDC Press Association (mddcpublicnotices.com) - trustee's sale advertisements; free basic search, Smart Search saved-search login used by src/scripts/mddc_trustee_sale_pull.py",
+          "url": "https://www.mddcpublicnotices.com/Search.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "MDLandRec (Maryland State Archives land records, free registration) - recorded deed of appointment of substitute trustee / lis pendens",
+          "url": "https://mdlandrec.net/"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "Scrapfly render returned HTTP 200 / 97 KB (page live; WebFetch 403 WAF); text not read back (throttle). Clerk landing page only - foreclosure cases are searched on Case Search. MD is judicial: the first public signal is the Circuit Court foreclosure case (Case Search); the trustee's ad follows on mddcpublicnotices.com. Case Search is WAF-blocked to plain fetch (HTTP 403 on casesearch.courts.state.md.us, connection refused on portal.mdcourts.gov, Scrapfly empty) and the Judiciary's own Case Search FAQ (search-sourced) says CAPTCHA was added to confirm users are not robots or automated systems, so the court channel is CAPTCHA-gated with no bulk export; the ad channel is what the repo already scrapes."
+    },
+    "district_of_columbia": {
+      "jurisdiction": "District of Columbia",
+      "primary_source_type": "portal",
+      "publisher": "DC Office of the Recorder of Deeds - Official Records Search (Kofile/GovOS publicsearch)",
+      "url": "https://washington.dc.publicsearch.us/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "MDDC Press Association (mddcpublicnotices.com) - trustee's sale advertisements; free basic search, Smart Search saved-search login used by src/scripts/mddc_trustee_sale_pull.py",
+          "url": "https://www.mddcpublicnotices.com/Search.aspx"
+        },
+        {
+          "type": "newspaper",
+          "publisher": "Washington Times / Washington Post legal notices (the source papers behind mddcpublicnotices DC checkbox 25)",
+          "url": "https://www.mddcpublicnotices.com/Search.aspx"
+        }
+      ],
+      "scrapable": "yes_with_credential",
+      "access_mechanics": "login_free",
+      "bulk_export": "no",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "Re-fetched 2026-08-28: still resolves, content unchanged from output/dpd_dc_ftm_investigation.md - free self-service registration, no CAPTCHA seen, index search free, images $4.00/doc + $1.50/txn or $175/mo. DC Code 42-815 makes the Recorder the office of record for the notice of foreclosure sale, so the RECORDED signal precedes the published one and sits behind that registration; no open-data list of those filings found. Published side already scraped by mddc_trustee_sale_pull.py (DC checkbox 25) but stamps 'Claude first batch 8.22' not FTM - see the investigation's Actions."
+    },
+    "fairfax_va": {
+      "jurisdiction": "Fairfax, VA",
+      "primary_source_type": "portal",
+      "publisher": "Fairfax Circuit Court - Court Public Access Network (CPAN), Land Records Division",
+      "url": "https://www.fairfaxcounty.gov/circuit/online-services/court-public-access-network",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "Virginia Press Association (publicnoticevirginia.com) - Popular Search 'Foreclosures' (value 4), public, no login; pulled by src/scripts/va_trustee_sale_pull.py",
+          "url": "https://www.publicnoticevirginia.com/"
+        },
+        {
+          "type": "portal",
+          "publisher": "Fairfax Circuit Court Land Records general information (workbook URL, still live)",
+          "url": "https://www.fairfaxcounty.gov/circuit/land-records/general-information"
+        }
+      ],
+      "scrapable": "yes_with_credential",
+      "access_mechanics": "login_paid",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "the right page is the CPAN subscription page, not the general-information page; /circuit/cpan is 404",
+      "notes": "CPAN is $150 per user per quarter, entity agreement required, 'Sharing of accounts is prohibited', Chrome/Edge only, login via MyFairfax OIDC (ccr.fairfaxcounty.gov/cpan/ redirects to the IdP) - no free index search. The public first signal is therefore the Foreclosures category on publicnoticevirginia.com (Fairfax checkbox 29), which the repo already pulls."
+    },
+    "prince_william_va": {
+      "jurisdiction": "Prince William, VA",
+      "primary_source_type": "portal",
+      "publisher": "Prince William Circuit Court Clerk - Land Records Management System (LRMS) remote access",
+      "url": "https://www.pwcva.gov/department/circuit-court/land-records-online",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "Virginia Press Association (publicnoticevirginia.com) - Popular Search 'Foreclosures' (value 4), public, no login; pulled by src/scripts/va_trustee_sale_pull.py",
+          "url": "https://www.publicnoticevirginia.com/"
+        },
+        {
+          "type": "portal",
+          "publisher": "LRMS login (www4.pwcva.gov/Web)",
+          "url": "https://www4.pwcva.gov/Web"
+        }
+      ],
+      "scrapable": "yes_with_credential",
+      "access_mechanics": "login_paid",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "LRMS remote access is $240 per person per year with a signed Individual Subscriber Agreement; the login host www4.pwcva.gov/Web returns 403 to a plain fetch. No free index. Public first signal is publicnoticevirginia.com Foreclosures (Prince William checkbox 75), already pulled."
+    },
+    "arlington_va": {
+      "jurisdiction": "Arlington, VA",
+      "primary_source_type": "portal",
+      "publisher": "Arlington County Circuit Court, Land Records Division - Official Records Search (Kofile/publicsearch)",
+      "url": "https://arlington.va.publicsearch.us/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "Virginia Press Association (publicnoticevirginia.com) - Popular Search 'Foreclosures' (value 4), public, no login; pulled by src/scripts/va_trustee_sale_pull.py",
+          "url": "https://www.publicnoticevirginia.com/"
+        }
+      ],
+      "scrapable": "yes_with_credential",
+      "access_mechanics": "login_free",
+      "bulk_export": "no",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "Live: 'makes public search available only to Registered Users and Subscribers' - free registration gives index search, images $0.50/page + $2/order or a Secure Remote Access subscription. Same Kofile platform as DC, so one client covers both. Public first signal is publicnoticevirginia.com Foreclosures (Arlington checkbox 6)."
+    },
+    "stafford_va": {
+      "jurisdiction": "Stafford, VA",
+      "primary_source_type": "portal",
+      "publisher": "Stafford County Clerk of the Circuit Court - Land Records (Secure Remote Access subscription)",
+      "url": "https://staffordcountyva.gov/government/courts/circuit_court/land_records.php",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "Virginia Press Association (publicnoticevirginia.com) - Popular Search 'Foreclosures' (value 4), public, no login; pulled by src/scripts/va_trustee_sale_pull.py",
+          "url": "https://www.publicnoticevirginia.com/"
+        },
+        {
+          "type": "newspaper",
+          "publisher": "The Free Lance-Star public notices (Column.us) - Fredericksburg-area trustee's sales",
+          "url": "https://fredericksburg.column.us/search"
+        },
+        {
+          "type": "portal",
+          "publisher": "Stafford County Land Records (CivicPlus page found via search, 403 to plain fetch)",
+          "url": "https://staffordcountyva.gov/1879/Land-Records"
+        }
+      ],
+      "scrapable": "yes_with_credential",
+      "access_mechanics": "login_paid",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "WebFetch 403 (WAF); Scrapfly render HTTP 200 / 99 KB confirms the page is live but only the site nav was read before truncation. Secure Remote Access is subscription-only for qualified professionals; cost not published. Public first signal is publicnoticevirginia.com Foreclosures (Stafford checkbox 90); the Free Lance-Star (column.us) also carries Stafford 22405 trustee's sales."
+    },
+    "spotsylvania_va": {
+      "jurisdiction": "Spotsylvania, VA",
+      "primary_source_type": "portal",
+      "publisher": "Spotsylvania Clerk of the Circuit Court - Records & Recordation Services (Logan Systems remote access, spotsylandrecords.org)",
+      "url": "https://www.spotsylvania.va.us/1210/Records-Recordation-Services",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "Virginia Press Association (publicnoticevirginia.com) - Popular Search 'Foreclosures' (value 4), public, no login; pulled by src/scripts/va_trustee_sale_pull.py",
+          "url": "https://www.publicnoticevirginia.com/"
+        },
+        {
+          "type": "newspaper",
+          "publisher": "The Free Lance-Star public notices (Column.us) - Fredericksburg-area trustee's sales",
+          "url": "https://fredericksburg.column.us/search"
+        },
+        {
+          "type": "portal",
+          "publisher": "Logan Systems remote access site (paid subscription; loaded with 'An unhandled error has occurred' on plain fetch)",
+          "url": "https://spotsylandrecords.org/"
+        }
+      ],
+      "scrapable": "yes_with_credential",
+      "access_mechanics": "login_paid",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily (Property Notification Service: 'A search is conducted each night after close of business')",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "site cites VA Code 17.1-279D.1 (not 17.1-277.6) for subscription-only access",
+      "notes": "Land records are 'available online by a paid subscription only'; vendor is Logan Systems (spotsylandrecords.org, a Blazor app that errored on fetch). The free Property Notification Service is name-registered email alerts, not a feed. Public first signal is publicnoticevirginia.com Foreclosures (Spotsylvania checkbox 89) and the Free Lance-Star on column.us."
+    },
+    "fredericksburg_city_va": {
+      "jurisdiction": "Fredericksburg City, VA",
+      "primary_source_type": "newspaper",
+      "publisher": "The Free Lance-Star public notices on Column.us (newspaper of record for the City of Fredericksburg)",
+      "url": "https://fredericksburg.column.us/search",
+      "url_status": "blocked",
+      "secondary_sources": [
+        {
+          "type": "portal",
+          "publisher": "Fredericksburg Circuit Court Clerk, Land Records Division (workbook office; no URL)",
+          "url": ""
+        },
+        {
+          "type": "newspaper",
+          "publisher": "fredericksburg.com Trustee Sales classifieds (302s bots to a Tollbit token gateway)",
+          "url": "https://fredericksburg.com/ads/community/announcements/trustee/"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "yes",
+      "cadence": "Ongoing as trustee's sales are advertised (Free Lance-Star publishes daily)",
+      "cadence_source": "inferred",
+      "verified": "unreachable",
+      "changed_vs_workbook": "workbook had no URL; the ad channel is the Free Lance-Star on Column.us, not publicnoticevirginia.com",
+      "notes": "column.us/search is a JS app: WebFetch returned an empty body and Scrapfly returned empty content, so the page could not be read this session, though search-engine snippets show live trustee's sale notices on it (e.g. 211 Regina Ln, Fredericksburg 22405 - a Stafford ZIP, so 'Fredericksburg' addresses there span Stafford/Spotsylvania and the city; city-proper coverage still unconfirmed). fredericksburg.com's Trustee Sales list 302s bots to tollbit.fredericksburg.com: 'You are not authorized to access this content without a valid TollBit Token' - an explicit automated-access restriction. Not on publicnoticevirginia.com (no checkbox)."
+    }
+  }
+}

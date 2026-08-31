@@ -1,0 +1,270 @@
+{
+ "measured_at": "2026-08-26T09:50:33",
+ "jurisdiction": "District of Columbia",
+ "min_count": 50,
+ "baseline": 215290,
+ "zips": [
+  {
+   "value": "20002",
+   "count": 23698,
+   "status": "ok"
+  },
+  {
+   "value": "20011",
+   "count": 19871,
+   "status": "ok"
+  },
+  {
+   "value": "20009",
+   "count": 17873,
+   "status": "ok"
+  },
+  {
+   "value": "20001",
+   "count": 16462,
+   "status": "ok"
+  },
+  {
+   "value": "20019",
+   "count": 16158,
+   "status": "ok"
+  },
+  {
+   "value": "20007",
+   "count": 12828,
+   "status": "ok"
+  },
+  {
+   "value": "20020",
+   "count": 12653,
+   "status": "ok"
+  },
+  {
+   "value": "20016",
+   "count": 12633,
+   "status": "ok"
+  },
+  {
+   "value": "20003",
+   "count": 10933,
+   "status": "ok"
+  },
+  {
+   "value": "20008",
+   "count": 9386,
+   "status": "ok"
+  },
+  {
+   "value": "20010",
+   "count": 8460,
+   "status": "ok"
+  },
+  {
+   "value": "20017",
+   "count": 7557,
+   "status": "ok"
+  },
+  {
+   "value": "20018",
+   "count": 7286,
+   "status": "ok"
+  },
+  {
+   "value": "20032",
+   "count": 6627,
+   "status": "ok"
+  },
+  {
+   "value": "20015",
+   "count": 5863,
+   "status": "ok"
+  },
+  {
+   "value": "20012",
+   "count": 5315,
+   "status": "ok"
+  },
+  {
+   "value": "20005",
+   "count": 4917,
+   "status": "ok"
+  },
+  {
+   "value": "20037",
+   "count": 4648,
+   "status": "ok"
+  },
+  {
+   "value": "20024",
+   "count": 4471,
+   "status": "ok"
+  },
+  {
+   "value": "20036",
+   "count": 3658,
+   "status": "ok"
+  },
+  {
+   "value": "20004",
+   "count": 1294,
+   "status": "ok"
+  },
+  {
+   "value": "20006",
+   "count": 480,
+   "status": "ok"
+  }
+ ],
+ "neighborhoods": [
+  {
+   "value": "Takoma",
+   "count": 1523,
+   "status": "ok"
+  },
+  {
+   "value": "Petworth",
+   "count": 1510,
+   "status": "ok"
+  },
+  {
+   "value": "Lamond Riggs",
+   "count": 1398,
+   "status": "ok"
+  },
+  {
+   "value": "Kingman Park",
+   "count": 1298,
+   "status": "ok"
+  },
+  {
+   "value": "Dupont Circle",
+   "count": 1290,
+   "status": "ok"
+  },
+  {
+   "value": "Logan Circle",
+   "count": 1280,
+   "status": "ok"
+  },
+  {
+   "value": "Adams Morgan",
+   "count": 1252,
+   "status": "ok"
+  },
+  {
+   "value": "Eckington",
+   "count": 1106,
+   "status": "ok"
+  },
+  {
+   "value": "Marshall Heights",
+   "count": 903,
+   "status": "ok"
+  },
+  {
+   "value": "Deanwood",
+   "count": 870,
+   "status": "ok"
+  },
+  {
+   "value": "Fort Dupont",
+   "count": 811,
+   "status": "ok"
+  },
+  {
+   "value": "Anacostia",
+   "count": 713,
+   "status": "ok"
+  },
+  {
+   "value": "Congress Heights",
+   "count": 686,
+   "status": "ok"
+  },
+  {
+   "value": "Barry Farm",
+   "count": 444,
+   "status": "ok"
+  },
+  {
+   "value": "Capitol Hill",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Columbia Heights",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Brookland",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Shaw",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Trinidad",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Michigan Park",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Brightwood",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Hillcrest",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Woodridge",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Bloomingdale",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Georgetown",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Mount Pleasant",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Navy Yard",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Bellevue",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Benning",
+   "count": 0,
+   "status": "empty"
+  },
+  {
+   "value": "Riggs Park",
+   "count": 0,
+   "status": "empty"
+  }
+ ]
+}

@@ -1,0 +1,6867 @@
+{
+ "generated_at": "2026-08-26T08:55:55",
+ "rules": {
+  "max_supply_months": 3.0,
+  "price_band_pct": [
+   20,
+   80
+  ],
+  "competition_pct": 90,
+  "top_n": 5,
+  "dead_max_inv_trans": 1
+ },
+ "counties": {
+  "Baltimore County, MD": {
+   "fips": "24005",
+   "status": "ok",
+   "price_band_60pct": [
+    310953.4,
+    571490.2000000001
+   ],
+   "dom_baseline": 48.0,
+   "competition_cutoff": 74.79999999999997,
+   "counts": {
+    "total": 80,
+    "real_markets": 43,
+    "dropped_no_market": 37,
+    "eligible": 2,
+    "set_aside_contested": 5
+   },
+   "selected": [
+    "21228",
+    "21093",
+    "21152",
+    "21286",
+    "21236"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "21228",
+     "inv_trans_6mo": 39,
+     "homes_on_market": 160,
+     "homes_sold_last_month": 72,
+     "median_days_on_market": 41,
+     "median_home_value": 440573.0,
+     "median_sale_price": 408108.0,
+     "supply_months": 2.22,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21093",
+     "inv_trans_6mo": 38,
+     "homes_on_market": 168,
+     "homes_sold_last_month": 63,
+     "median_days_on_market": 40,
+     "median_home_value": 518220.0,
+     "median_sale_price": 497252.0,
+     "supply_months": 2.67,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21152",
+     "inv_trans_6mo": 42,
+     "homes_on_market": 26,
+     "homes_sold_last_month": 16,
+     "median_days_on_market": 38,
+     "median_home_value": 543272.0,
+     "median_sale_price": 1242452.0,
+     "supply_months": 1.62,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21286",
+     "inv_trans_6mo": 37,
+     "homes_on_market": 115,
+     "homes_sold_last_month": 34,
+     "median_days_on_market": 45,
+     "median_home_value": 449091.0,
+     "median_sale_price": 395458.0,
+     "supply_months": 3.38,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21236",
+     "inv_trans_6mo": 30,
+     "homes_on_market": 153,
+     "homes_sold_last_month": 39,
+     "median_days_on_market": 48,
+     "median_home_value": 358073.0,
+     "median_sale_price": 342479.0,
+     "supply_months": 3.92,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "21222",
+     "inv_trans_6mo": 165,
+     "homes_on_market": 276,
+     "homes_sold_last_month": 86,
+     "median_days_on_market": 51,
+     "median_home_value": 233296.0,
+     "median_sale_price": 232884.0,
+     "supply_months": 3.21,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21244",
+     "inv_trans_6mo": 92,
+     "homes_on_market": 106,
+     "homes_sold_last_month": 19,
+     "median_days_on_market": 47,
+     "median_home_value": 329240.0,
+     "median_sale_price": 401386.0,
+     "supply_months": 5.58,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21234",
+     "inv_trans_6mo": 83,
+     "homes_on_market": 236,
+     "homes_sold_last_month": 75,
+     "median_days_on_market": 45,
+     "median_home_value": 311593.0,
+     "median_sale_price": 295045.0,
+     "supply_months": 3.15,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21220",
+     "inv_trans_6mo": 77,
+     "homes_on_market": 241,
+     "homes_sold_last_month": 46,
+     "median_days_on_market": 59,
+     "median_home_value": 326116.0,
+     "median_sale_price": 306337.0,
+     "supply_months": 5.24,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21227",
+     "inv_trans_6mo": 77,
+     "homes_on_market": 129,
+     "homes_sold_last_month": 44,
+     "median_days_on_market": 42,
+     "median_home_value": 310527.0,
+     "median_sale_price": 306564.0,
+     "supply_months": 2.93,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21221",
+     "inv_trans_6mo": 66,
+     "homes_on_market": 176,
+     "homes_sold_last_month": 47,
+     "median_days_on_market": 48,
+     "median_home_value": 294340.0,
+     "median_sale_price": 252981.0,
+     "supply_months": 3.74,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21237",
+     "inv_trans_6mo": 66,
+     "homes_on_market": 107,
+     "homes_sold_last_month": 42,
+     "median_days_on_market": 50,
+     "median_home_value": 323379.0,
+     "median_sale_price": 332037.0,
+     "supply_months": 2.55,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21208",
+     "inv_trans_6mo": 64,
+     "homes_on_market": 208,
+     "homes_sold_last_month": 40,
+     "median_days_on_market": 55,
+     "median_home_value": 362713.0,
+     "median_sale_price": 375809.0,
+     "supply_months": 5.2,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21117",
+     "inv_trans_6mo": 50,
+     "homes_on_market": 203,
+     "homes_sold_last_month": 65,
+     "median_days_on_market": 52,
+     "median_home_value": 440031.0,
+     "median_sale_price": 421493.0,
+     "supply_months": 3.12,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21152",
+     "inv_trans_6mo": 42,
+     "homes_on_market": 26,
+     "homes_sold_last_month": 16,
+     "median_days_on_market": 38,
+     "median_home_value": 543272.0,
+     "median_sale_price": 1242452.0,
+     "supply_months": 1.62,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21207",
+     "inv_trans_6mo": 40,
+     "homes_on_market": 132,
+     "homes_sold_last_month": 38,
+     "median_days_on_market": 54,
+     "median_home_value": 306035.0,
+     "median_sale_price": 301814.0,
+     "supply_months": 3.47,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21228",
+     "inv_trans_6mo": 39,
+     "homes_on_market": 160,
+     "homes_sold_last_month": 72,
+     "median_days_on_market": 41,
+     "median_home_value": 440573.0,
+     "median_sale_price": 408108.0,
+     "supply_months": 2.22,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21093",
+     "inv_trans_6mo": 38,
+     "homes_on_market": 168,
+     "homes_sold_last_month": 63,
+     "median_days_on_market": 40,
+     "median_home_value": 518220.0,
+     "median_sale_price": 497252.0,
+     "supply_months": 2.67,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21286",
+     "inv_trans_6mo": 37,
+     "homes_on_market": 115,
+     "homes_sold_last_month": 34,
+     "median_days_on_market": 45,
+     "median_home_value": 449091.0,
+     "median_sale_price": 395458.0,
+     "supply_months": 3.38,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21128",
+     "inv_trans_6mo": 36,
+     "homes_on_market": 83,
+     "homes_sold_last_month": 26,
+     "median_days_on_market": 47,
+     "median_home_value": 511150.0,
+     "median_sale_price": 533552.0,
+     "supply_months": 3.19,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21136",
+     "inv_trans_6mo": 36,
+     "homes_on_market": 139,
+     "homes_sold_last_month": 32,
+     "median_days_on_market": 49,
+     "median_home_value": 414086.0,
+     "median_sale_price": 361183.0,
+     "supply_months": 4.34,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21236",
+     "inv_trans_6mo": 30,
+     "homes_on_market": 153,
+     "homes_sold_last_month": 39,
+     "median_days_on_market": 48,
+     "median_home_value": 358073.0,
+     "median_sale_price": 342479.0,
+     "supply_months": 3.92,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21133",
+     "inv_trans_6mo": 29,
+     "homes_on_market": 77,
+     "homes_sold_last_month": 17,
+     "median_days_on_market": 44,
+     "median_home_value": 370916.0,
+     "median_sale_price": 344047.0,
+     "supply_months": 4.53,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21224",
+     "inv_trans_6mo": 29,
+     "homes_on_market": 38,
+     "homes_sold_last_month": 12,
+     "median_days_on_market": 55,
+     "median_home_value": 198154.0,
+     "median_sale_price": 192387.0,
+     "supply_months": 3.17,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21030",
+     "inv_trans_6mo": 21,
+     "homes_on_market": 78,
+     "homes_sold_last_month": 24,
+     "median_days_on_market": 44,
+     "median_home_value": 538704.0,
+     "median_sale_price": 583892.0,
+     "supply_months": 3.25,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21206",
+     "inv_trans_6mo": 19,
+     "homes_on_market": 49,
+     "homes_sold_last_month": 9,
+     "median_days_on_market": 54,
+     "median_home_value": 280746.0,
+     "median_sale_price": 275738.0,
+     "supply_months": 5.44,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21204",
+     "inv_trans_6mo": 14,
+     "homes_on_market": 60,
+     "homes_sold_last_month": 16,
+     "median_days_on_market": 42,
+     "median_home_value": 584609.0,
+     "median_sale_price": 569028.0,
+     "supply_months": 3.75,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21219",
+     "inv_trans_6mo": 10,
+     "homes_on_market": 52,
+     "homes_sold_last_month": 17,
+     "median_days_on_market": 60,
+     "median_home_value": 382397.0,
+     "median_sale_price": 395714.0,
+     "supply_months": 3.06,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21209",
+     "inv_trans_6mo": 9,
+     "homes_on_market": 64,
+     "homes_sold_last_month": 19,
+     "median_days_on_market": 51,
+     "median_home_value": 466272.0,
+     "median_sale_price": 397744.0,
+     "supply_months": 3.37,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21131",
+     "inv_trans_6mo": 5,
+     "homes_on_market": 37,
+     "homes_sold_last_month": 14,
+     "median_days_on_market": 49,
+     "median_home_value": 743824.0,
+     "median_sale_price": 750571.0,
+     "supply_months": 2.64,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21087",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 23,
+     "homes_sold_last_month": 6,
+     "median_days_on_market": 51,
+     "median_home_value": 579497.0,
+     "median_sale_price": 475000.0,
+     "supply_months": 3.83,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21162",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 31,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 53,
+     "median_home_value": 512284.0,
+     "median_sale_price": 550000.0,
+     "supply_months": 6.2,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21111",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 22,
+     "homes_sold_last_month": 13,
+     "median_days_on_market": 52,
+     "median_home_value": 722762.0,
+     "median_sale_price": 777500.0,
+     "supply_months": 1.69,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21212",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 33,
+     "homes_sold_last_month": 22,
+     "median_days_on_market": 43,
+     "median_home_value": 527188.0,
+     "median_sale_price": 530213.0,
+     "supply_months": 1.5,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21229",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 16,
+     "homes_sold_last_month": 7,
+     "median_days_on_market": 54,
+     "median_home_value": 307663.0,
+     "median_sale_price": 321724.0,
+     "supply_months": 2.29,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21057",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 17,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 45,
+     "median_home_value": 656351.0,
+     "median_sale_price": 720000.0,
+     "supply_months": 3.4,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21163",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 9,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 62,
+     "median_home_value": 641187.0,
+     "median_sale_price": 574900.0,
+     "supply_months": 3.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21215",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 8,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 74,
+     "median_home_value": 250099.0,
+     "median_sale_price": 251250.0,
+     "supply_months": 8.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21239",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 21,
+     "homes_sold_last_month": 4,
+     "median_days_on_market": 43,
+     "median_home_value": 386565.0,
+     "median_sale_price": 362034.0,
+     "supply_months": 5.25,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21053",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 16,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 46,
+     "median_home_value": 559480.0,
+     "median_sale_price": 490000.0,
+     "supply_months": 3.2,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21082",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 5,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 40,
+     "median_home_value": 588137.0,
+     "median_sale_price": 405000.0,
+     "supply_months": 5.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21120",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 32,
+     "homes_sold_last_month": 4,
+     "median_days_on_market": 43,
+     "median_home_value": 643962.0,
+     "median_sale_price": 663881.0,
+     "supply_months": 8.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21155",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 8,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 42,
+     "median_home_value": 469256.0,
+     "median_sale_price": 482500.0,
+     "supply_months": 2.67,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21013",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 12,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 44,
+     "median_home_value": 664792.0,
+     "median_sale_price": 700000.0,
+     "supply_months": 2.4,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21043",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 4,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 33,
+     "median_home_value": 513243.0,
+     "median_sale_price": 474091.0,
+     "supply_months": 4.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21139",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 0,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 146,
+     "median_home_value": 458000.0,
+     "median_sale_price": 460000.0,
+     "supply_months": 0.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21161",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 9,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 49,
+     "median_home_value": 544629.0,
+     "median_sale_price": 550000.0,
+     "supply_months": 9.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21225",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 0,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": null,
+     "median_home_value": 259000.0,
+     "median_sale_price": 675000.0,
+     "supply_months": 0.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "Montgomery, MD": {
+   "fips": "24031",
+   "status": "ok",
+   "price_band_60pct": [
+    507231.0,
+    860692.0
+   ],
+   "dom_baseline": 42.5,
+   "competition_cutoff": 36.0,
+   "counts": {
+    "total": 89,
+    "real_markets": 41,
+    "dropped_no_market": 48,
+    "eligible": 2,
+    "set_aside_contested": 4
+   },
+   "selected": [
+    "20902",
+    "20853",
+    "20904",
+    "20895",
+    "20851"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "20902",
+     "inv_trans_6mo": 18,
+     "homes_on_market": 135,
+     "homes_sold_last_month": 49,
+     "median_days_on_market": 40,
+     "median_home_value": 519460.0,
+     "median_sale_price": 518420.0,
+     "supply_months": 2.76,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20853",
+     "inv_trans_6mo": 10,
+     "homes_on_market": 71,
+     "homes_sold_last_month": 27,
+     "median_days_on_market": 36,
+     "median_home_value": 628415.0,
+     "median_sale_price": 623807.0,
+     "supply_months": 2.63,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20904",
+     "inv_trans_6mo": 28,
+     "homes_on_market": 114,
+     "homes_sold_last_month": 41,
+     "median_days_on_market": 41,
+     "median_home_value": 560570.0,
+     "median_sale_price": 560815.0,
+     "supply_months": 2.78,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20895",
+     "inv_trans_6mo": 17,
+     "homes_on_market": 72,
+     "homes_sold_last_month": 40,
+     "median_days_on_market": 37,
+     "median_home_value": 789538.0,
+     "median_sale_price": 920079.0,
+     "supply_months": 1.8,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20851",
+     "inv_trans_6mo": 11,
+     "homes_on_market": 31,
+     "homes_sold_last_month": 15,
+     "median_days_on_market": 35,
+     "median_home_value": 539117.0,
+     "median_sale_price": 553291.0,
+     "supply_months": 2.07,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "20817",
+     "inv_trans_6mo": 76,
+     "homes_on_market": 213,
+     "homes_sold_last_month": 60,
+     "median_days_on_market": 49,
+     "median_home_value": 1237299.0,
+     "median_sale_price": 1279567.0,
+     "supply_months": 3.55,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "20815",
+     "inv_trans_6mo": 46,
+     "homes_on_market": 191,
+     "homes_sold_last_month": 44,
+     "median_days_on_market": 53,
+     "median_home_value": 1248065.0,
+     "median_sale_price": 1133393.0,
+     "supply_months": 4.34,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "20874",
+     "inv_trans_6mo": 39,
+     "homes_on_market": 203,
+     "homes_sold_last_month": 78,
+     "median_days_on_market": 45,
+     "median_home_value": 458387.0,
+     "median_sale_price": 467603.0,
+     "supply_months": 2.6,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "20854",
+     "inv_trans_6mo": 38,
+     "homes_on_market": 185,
+     "homes_sold_last_month": 63,
+     "median_days_on_market": 40,
+     "median_home_value": 1237392.0,
+     "median_sale_price": 1286412.0,
+     "supply_months": 2.94,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "20906",
+     "inv_trans_6mo": 36,
+     "homes_on_market": 328,
+     "homes_sold_last_month": 83,
+     "median_days_on_market": 51,
+     "median_home_value": 428296.0,
+     "median_sale_price": 385919.0,
+     "supply_months": 3.95,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20852",
+     "inv_trans_6mo": 34,
+     "homes_on_market": 184,
+     "homes_sold_last_month": 45,
+     "median_days_on_market": 52,
+     "median_home_value": 655952.0,
+     "median_sale_price": 654055.0,
+     "supply_months": 4.09,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20814",
+     "inv_trans_6mo": 31,
+     "homes_on_market": 172,
+     "homes_sold_last_month": 41,
+     "median_days_on_market": 45,
+     "median_home_value": 860692.0,
+     "median_sale_price": 952345.0,
+     "supply_months": 4.2,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20886",
+     "inv_trans_6mo": 29,
+     "homes_on_market": 136,
+     "homes_sold_last_month": 55,
+     "median_days_on_market": 46,
+     "median_home_value": 400633.0,
+     "median_sale_price": 419916.0,
+     "supply_months": 2.47,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20850",
+     "inv_trans_6mo": 28,
+     "homes_on_market": 183,
+     "homes_sold_last_month": 73,
+     "median_days_on_market": 46,
+     "median_home_value": 718772.0,
+     "median_sale_price": 736898.0,
+     "supply_months": 2.51,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20878",
+     "inv_trans_6mo": 28,
+     "homes_on_market": 223,
+     "homes_sold_last_month": 84,
+     "median_days_on_market": 44,
+     "median_home_value": 702783.0,
+     "median_sale_price": 713332.0,
+     "supply_months": 2.65,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20904",
+     "inv_trans_6mo": 28,
+     "homes_on_market": 114,
+     "homes_sold_last_month": 41,
+     "median_days_on_market": 41,
+     "median_home_value": 560570.0,
+     "median_sale_price": 560815.0,
+     "supply_months": 2.78,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20910",
+     "inv_trans_6mo": 21,
+     "homes_on_market": 116,
+     "homes_sold_last_month": 34,
+     "median_days_on_market": 47,
+     "median_home_value": 621843.0,
+     "median_sale_price": 607249.0,
+     "supply_months": 3.41,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20816",
+     "inv_trans_6mo": 19,
+     "homes_on_market": 62,
+     "homes_sold_last_month": 28,
+     "median_days_on_market": 39,
+     "median_home_value": 1274683.0,
+     "median_sale_price": 1397197.0,
+     "supply_months": 2.21,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20902",
+     "inv_trans_6mo": 18,
+     "homes_on_market": 135,
+     "homes_sold_last_month": 49,
+     "median_days_on_market": 40,
+     "median_home_value": 519460.0,
+     "median_sale_price": 518420.0,
+     "supply_months": 2.76,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20895",
+     "inv_trans_6mo": 17,
+     "homes_on_market": 72,
+     "homes_sold_last_month": 40,
+     "median_days_on_market": 37,
+     "median_home_value": 789538.0,
+     "median_sale_price": 920079.0,
+     "supply_months": 1.8,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20879",
+     "inv_trans_6mo": 15,
+     "homes_on_market": 60,
+     "homes_sold_last_month": 32,
+     "median_days_on_market": 46,
+     "median_home_value": 453320.0,
+     "median_sale_price": 429255.0,
+     "supply_months": 1.88,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20901",
+     "inv_trans_6mo": 15,
+     "homes_on_market": 98,
+     "homes_sold_last_month": 31,
+     "median_days_on_market": 39,
+     "median_home_value": 585940.0,
+     "median_sale_price": 605305.0,
+     "supply_months": 3.16,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20912",
+     "inv_trans_6mo": 14,
+     "homes_on_market": 48,
+     "homes_sold_last_month": 21,
+     "median_days_on_market": 43,
+     "median_home_value": 690824.0,
+     "median_sale_price": 693147.0,
+     "supply_months": 2.29,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20851",
+     "inv_trans_6mo": 11,
+     "homes_on_market": 31,
+     "homes_sold_last_month": 15,
+     "median_days_on_market": 35,
+     "median_home_value": 539117.0,
+     "median_sale_price": 553291.0,
+     "supply_months": 2.07,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20855",
+     "inv_trans_6mo": 11,
+     "homes_on_market": 32,
+     "homes_sold_last_month": 18,
+     "median_days_on_market": 46,
+     "median_home_value": 646063.0,
+     "median_sale_price": 712928.0,
+     "supply_months": 1.78,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20853",
+     "inv_trans_6mo": 10,
+     "homes_on_market": 71,
+     "homes_sold_last_month": 27,
+     "median_days_on_market": 36,
+     "median_home_value": 628415.0,
+     "median_sale_price": 623807.0,
+     "supply_months": 2.63,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20905",
+     "inv_trans_6mo": 9,
+     "homes_on_market": 39,
+     "homes_sold_last_month": 15,
+     "median_days_on_market": 39,
+     "median_home_value": 645243.0,
+     "median_sale_price": 688304.0,
+     "supply_months": 2.6,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20876",
+     "inv_trans_6mo": 7,
+     "homes_on_market": 71,
+     "homes_sold_last_month": 21,
+     "median_days_on_market": 50,
+     "median_home_value": 539809.0,
+     "median_sale_price": 534646.0,
+     "supply_months": 3.38,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20832",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 66,
+     "homes_sold_last_month": 35,
+     "median_days_on_market": 39,
+     "median_home_value": 643440.0,
+     "median_sale_price": 645712.0,
+     "supply_months": 1.89,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20866",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 51,
+     "homes_sold_last_month": 16,
+     "median_days_on_market": 43,
+     "median_home_value": 493456.0,
+     "median_sale_price": 494317.0,
+     "supply_months": 3.19,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20877",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 64,
+     "homes_sold_last_month": 19,
+     "median_days_on_market": 50,
+     "median_home_value": 459546.0,
+     "median_sale_price": 410869.0,
+     "supply_months": 3.37,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20833",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 17,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 39,
+     "median_home_value": 771589.0,
+     "median_sale_price": 796000.0,
+     "supply_months": 3.4,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20837",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 22,
+     "homes_sold_last_month": 8,
+     "median_days_on_market": 36,
+     "median_home_value": 677101.0,
+     "median_sale_price": 698726.0,
+     "supply_months": 2.75,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20871",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 119,
+     "homes_sold_last_month": 26,
+     "median_days_on_market": 40,
+     "median_home_value": 660244.0,
+     "median_sale_price": 710797.0,
+     "supply_months": 4.58,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20872",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 67,
+     "homes_sold_last_month": 11,
+     "median_days_on_market": 50,
+     "median_home_value": 507231.0,
+     "median_sale_price": 525867.0,
+     "supply_months": 6.09,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20882",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 44,
+     "homes_sold_last_month": 10,
+     "median_days_on_market": 42,
+     "median_home_value": 768245.0,
+     "median_sale_price": 758688.0,
+     "supply_months": 4.4,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20841",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 49,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 43,
+     "median_home_value": 792369.0,
+     "median_sale_price": 733815.0,
+     "supply_months": 9.8,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20903",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 26,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 41,
+     "median_home_value": 508917.0,
+     "median_sale_price": 537086.0,
+     "supply_months": 8.67,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20818",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 6,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 41,
+     "median_home_value": 1227049.0,
+     "median_sale_price": 937000.0,
+     "supply_months": 6.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20839",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 0,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": null,
+     "median_home_value": 476899.0,
+     "median_sale_price": 395000.0,
+     "supply_months": 0.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20842",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 4,
+     "homes_sold_last_month": 4,
+     "median_days_on_market": 37,
+     "median_home_value": 495606.0,
+     "median_sale_price": 601350.0,
+     "supply_months": 1.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20860",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 14,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 42,
+     "median_home_value": 765714.0,
+     "median_sale_price": 647727.0,
+     "supply_months": 7.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20861",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 7,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 64,
+     "median_home_value": 919691.0,
+     "median_sale_price": 770294.0,
+     "supply_months": 1.4,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20862",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 3,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 71,
+     "median_home_value": 814815.0,
+     "median_sale_price": 744933.0,
+     "supply_months": 3.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20812",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 2,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 36,
+     "median_home_value": 1138964.0,
+     "median_sale_price": 1251000.0,
+     "supply_months": 2.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20896",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 3,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 41,
+     "median_home_value": 1061797.0,
+     "median_sale_price": 1022300.0,
+     "supply_months": 3.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "Anne Arundel, MD": {
+   "fips": "24003",
+   "status": "ok",
+   "price_band_60pct": [
+    455273.6,
+    663243.0
+   ],
+   "dom_baseline": 48.5,
+   "competition_cutoff": 55.0,
+   "counts": {
+    "total": 59,
+    "real_markets": 35,
+    "dropped_no_market": 24,
+    "eligible": 4,
+    "set_aside_contested": 2
+   },
+   "selected": [
+    "21113",
+    "21012",
+    "21114",
+    "21061",
+    "21146"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "21113",
+     "inv_trans_6mo": 55,
+     "homes_on_market": 164,
+     "homes_sold_last_month": 55,
+     "median_days_on_market": 44,
+     "median_home_value": 550942.0,
+     "median_sale_price": 499899.0,
+     "supply_months": 2.98,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21012",
+     "inv_trans_6mo": 21,
+     "homes_on_market": 85,
+     "homes_sold_last_month": 45,
+     "median_days_on_market": 45,
+     "median_home_value": 622845.0,
+     "median_sale_price": 565664.0,
+     "supply_months": 1.89,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21114",
+     "inv_trans_6mo": 15,
+     "homes_on_market": 77,
+     "homes_sold_last_month": 43,
+     "median_days_on_market": 43,
+     "median_home_value": 548951.0,
+     "median_sale_price": 507486.0,
+     "supply_months": 1.79,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21061",
+     "inv_trans_6mo": 45,
+     "homes_on_market": 159,
+     "homes_sold_last_month": 56,
+     "median_days_on_market": 45,
+     "median_home_value": 378970.0,
+     "median_sale_price": 359677.0,
+     "supply_months": 2.84,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21146",
+     "inv_trans_6mo": 34,
+     "homes_on_market": 107,
+     "homes_sold_last_month": 47,
+     "median_days_on_market": 39,
+     "median_home_value": 749126.0,
+     "median_sale_price": 733936.0,
+     "supply_months": 2.28,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "21122",
+     "inv_trans_6mo": 67,
+     "homes_on_market": 274,
+     "homes_sold_last_month": 96,
+     "median_days_on_market": 46,
+     "median_home_value": 458133.0,
+     "median_sale_price": 446346.0,
+     "supply_months": 2.85,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21108",
+     "inv_trans_6mo": 62,
+     "homes_on_market": 94,
+     "homes_sold_last_month": 50,
+     "median_days_on_market": 46,
+     "median_home_value": 653454.0,
+     "median_sale_price": 817715.0,
+     "supply_months": 1.88,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21113",
+     "inv_trans_6mo": 55,
+     "homes_on_market": 164,
+     "homes_sold_last_month": 55,
+     "median_days_on_market": 44,
+     "median_home_value": 550942.0,
+     "median_sale_price": 499899.0,
+     "supply_months": 2.98,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21401",
+     "inv_trans_6mo": 55,
+     "homes_on_market": 212,
+     "homes_sold_last_month": 45,
+     "median_days_on_market": 53,
+     "median_home_value": 659354.0,
+     "median_sale_price": 651530.0,
+     "supply_months": 4.71,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21403",
+     "inv_trans_6mo": 55,
+     "homes_on_market": 202,
+     "homes_sold_last_month": 34,
+     "median_days_on_market": 50,
+     "median_home_value": 625938.0,
+     "median_sale_price": 663080.0,
+     "supply_months": 5.94,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21061",
+     "inv_trans_6mo": 45,
+     "homes_on_market": 159,
+     "homes_sold_last_month": 56,
+     "median_days_on_market": 45,
+     "median_home_value": 378970.0,
+     "median_sale_price": 359677.0,
+     "supply_months": 2.84,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21225",
+     "inv_trans_6mo": 38,
+     "homes_on_market": 65,
+     "homes_sold_last_month": 31,
+     "median_days_on_market": 45,
+     "median_home_value": 287693.0,
+     "median_sale_price": 324469.0,
+     "supply_months": 2.1,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21060",
+     "inv_trans_6mo": 36,
+     "homes_on_market": 217,
+     "homes_sold_last_month": 44,
+     "median_days_on_market": 51,
+     "median_home_value": 400447.0,
+     "median_sale_price": 380980.0,
+     "supply_months": 4.93,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21146",
+     "inv_trans_6mo": 34,
+     "homes_on_market": 107,
+     "homes_sold_last_month": 47,
+     "median_days_on_market": 39,
+     "median_home_value": 749126.0,
+     "median_sale_price": 733936.0,
+     "supply_months": 2.28,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21409",
+     "inv_trans_6mo": 24,
+     "homes_on_market": 89,
+     "homes_sold_last_month": 26,
+     "median_days_on_market": 42,
+     "median_home_value": 612383.0,
+     "median_sale_price": 582247.0,
+     "supply_months": 3.42,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20724",
+     "inv_trans_6mo": 21,
+     "homes_on_market": 74,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 56,
+     "median_home_value": 462978.0,
+     "median_sale_price": 524805.0,
+     "supply_months": 2.96,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21012",
+     "inv_trans_6mo": 21,
+     "homes_on_market": 85,
+     "homes_sold_last_month": 45,
+     "median_days_on_market": 45,
+     "median_home_value": 622845.0,
+     "median_sale_price": 565664.0,
+     "supply_months": 1.89,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21037",
+     "inv_trans_6mo": 20,
+     "homes_on_market": 128,
+     "homes_sold_last_month": 32,
+     "median_days_on_market": 48,
+     "median_home_value": 573472.0,
+     "median_sale_price": 631193.0,
+     "supply_months": 4.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21054",
+     "inv_trans_6mo": 18,
+     "homes_on_market": 46,
+     "homes_sold_last_month": 26,
+     "median_days_on_market": 46,
+     "median_home_value": 678799.0,
+     "median_sale_price": 730539.0,
+     "supply_months": 1.77,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21032",
+     "inv_trans_6mo": 15,
+     "homes_on_market": 49,
+     "homes_sold_last_month": 11,
+     "median_days_on_market": 44,
+     "median_home_value": 572688.0,
+     "median_sale_price": 650000.0,
+     "supply_months": 4.45,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21114",
+     "inv_trans_6mo": 15,
+     "homes_on_market": 77,
+     "homes_sold_last_month": 43,
+     "median_days_on_market": 43,
+     "median_home_value": 548951.0,
+     "median_sale_price": 507486.0,
+     "supply_months": 1.79,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21090",
+     "inv_trans_6mo": 13,
+     "homes_on_market": 47,
+     "homes_sold_last_month": 17,
+     "median_days_on_market": 40,
+     "median_home_value": 440848.0,
+     "median_sale_price": 422000.0,
+     "supply_months": 2.76,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21144",
+     "inv_trans_6mo": 13,
+     "homes_on_market": 148,
+     "homes_sold_last_month": 38,
+     "median_days_on_market": 50,
+     "median_home_value": 518970.0,
+     "median_sale_price": 486323.0,
+     "supply_months": 3.89,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20764",
+     "inv_trans_6mo": 12,
+     "homes_on_market": 55,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 47,
+     "median_home_value": 426838.0,
+     "median_sale_price": 400000.0,
+     "supply_months": 18.33,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21076",
+     "inv_trans_6mo": 12,
+     "homes_on_market": 93,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 49,
+     "median_home_value": 544498.0,
+     "median_sale_price": 536736.0,
+     "supply_months": 3.72,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20711",
+     "inv_trans_6mo": 5,
+     "homes_on_market": 22,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 62,
+     "median_home_value": 652114.0,
+     "median_sale_price": 526000.0,
+     "supply_months": 7.33,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21035",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 37,
+     "homes_sold_last_month": 12,
+     "median_days_on_market": 52,
+     "median_home_value": 955825.0,
+     "median_sale_price": 897500.0,
+     "supply_months": 3.08,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20751",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 14,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 47,
+     "median_home_value": 520000.0,
+     "median_sale_price": 630000.0,
+     "supply_months": 4.67,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21056",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 5,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 64,
+     "median_home_value": 3126000.0,
+     "median_sale_price": 3222500.0,
+     "supply_months": 2.5,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20714",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 6,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 69,
+     "median_home_value": 520350.0,
+     "median_sale_price": 462500.0,
+     "supply_months": 2.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20733",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 20,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 41,
+     "median_home_value": 443836.0,
+     "median_sale_price": 392500.0,
+     "supply_months": 4.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21226",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 27,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 52,
+     "median_home_value": 402170.0,
+     "median_sale_price": 441655.0,
+     "supply_months": 5.4,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20758",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 7,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 66,
+     "median_home_value": 631000.0,
+     "median_sale_price": 672000.0,
+     "supply_months": 3.5,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21106",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 0,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": null,
+     "median_home_value": 577459.0,
+     "median_sale_price": 5000.0,
+     "supply_months": 0.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21140",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 14,
+     "homes_sold_last_month": 6,
+     "median_days_on_market": 53,
+     "median_home_value": 715168.0,
+     "median_sale_price": 574496.0,
+     "supply_months": 2.33,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20754",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 7,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 70,
+     "median_home_value": 639268.0,
+     "median_sale_price": 627500.0,
+     "supply_months": 7.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20776",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 9,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 106,
+     "median_home_value": 767053.0,
+     "median_sale_price": 875000.0,
+     "supply_months": 4.5,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20778",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 7,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 52,
+     "median_home_value": 687000.0,
+     "median_sale_price": 699000.0,
+     "supply_months": 7.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20779",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 11,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 45,
+     "median_home_value": 580341.0,
+     "median_sale_price": 290700.0,
+     "supply_months": 5.5,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21077",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 1,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 61,
+     "median_home_value": 463531.0,
+     "median_sale_price": 445000.0,
+     "supply_months": 1.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "Frederick, MD": {
+   "fips": "24021",
+   "status": "ok",
+   "price_band_60pct": [
+    423478.0,
+    618540.0
+   ],
+   "dom_baseline": 49.0,
+   "competition_cutoff": 30.0,
+   "counts": {
+    "total": 43,
+    "real_markets": 26,
+    "dropped_no_market": 17,
+    "eligible": 3,
+    "set_aside_contested": 3
+   },
+   "selected": [
+    "21769",
+    "21793",
+    "21710",
+    "21774",
+    "21788"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "21769",
+     "inv_trans_6mo": 8,
+     "homes_on_market": 34,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 46,
+     "median_home_value": 571593.0,
+     "median_sale_price": 495155.0,
+     "supply_months": 1.36,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21793",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 34,
+     "homes_sold_last_month": 12,
+     "median_days_on_market": 40,
+     "median_home_value": 453807.0,
+     "median_sale_price": 438192.0,
+     "supply_months": 2.83,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21710",
+     "inv_trans_6mo": 20,
+     "homes_on_market": 9,
+     "homes_sold_last_month": 6,
+     "median_days_on_market": 44,
+     "median_home_value": 663806.0,
+     "median_sale_price": 645000.0,
+     "supply_months": 1.5,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21774",
+     "inv_trans_6mo": 11,
+     "homes_on_market": 98,
+     "homes_sold_last_month": 33,
+     "median_days_on_market": 50,
+     "median_home_value": 611174.0,
+     "median_sale_price": 588727.0,
+     "supply_months": 2.97,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21788",
+     "inv_trans_6mo": 7,
+     "homes_on_market": 44,
+     "homes_sold_last_month": 20,
+     "median_days_on_market": 46,
+     "median_home_value": 401217.0,
+     "median_sale_price": 386001.0,
+     "supply_months": 2.2,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "21702",
+     "inv_trans_6mo": 59,
+     "homes_on_market": 220,
+     "homes_sold_last_month": 53,
+     "median_days_on_market": 53,
+     "median_home_value": 482678.0,
+     "median_sale_price": 454064.0,
+     "supply_months": 4.15,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21703",
+     "inv_trans_6mo": 49,
+     "homes_on_market": 164,
+     "homes_sold_last_month": 58,
+     "median_days_on_market": 45,
+     "median_home_value": 443388.0,
+     "median_sale_price": 425493.0,
+     "supply_months": 2.83,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21701",
+     "inv_trans_6mo": 38,
+     "homes_on_market": 252,
+     "homes_sold_last_month": 70,
+     "median_days_on_market": 51,
+     "median_home_value": 453448.0,
+     "median_sale_price": 447420.0,
+     "supply_months": 3.6,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21716",
+     "inv_trans_6mo": 22,
+     "homes_on_market": 45,
+     "homes_sold_last_month": 17,
+     "median_days_on_market": 47,
+     "median_home_value": 402779.0,
+     "median_sale_price": 404461.0,
+     "supply_months": 2.65,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21710",
+     "inv_trans_6mo": 20,
+     "homes_on_market": 9,
+     "homes_sold_last_month": 6,
+     "median_days_on_market": 44,
+     "median_home_value": 663806.0,
+     "median_sale_price": 645000.0,
+     "supply_months": 1.5,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21774",
+     "inv_trans_6mo": 11,
+     "homes_on_market": 98,
+     "homes_sold_last_month": 33,
+     "median_days_on_market": 50,
+     "median_home_value": 611174.0,
+     "median_sale_price": 588727.0,
+     "supply_months": 2.97,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21769",
+     "inv_trans_6mo": 8,
+     "homes_on_market": 34,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 46,
+     "median_home_value": 571593.0,
+     "median_sale_price": 495155.0,
+     "supply_months": 1.36,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21788",
+     "inv_trans_6mo": 7,
+     "homes_on_market": 44,
+     "homes_sold_last_month": 20,
+     "median_days_on_market": 46,
+     "median_home_value": 401217.0,
+     "median_sale_price": 386001.0,
+     "supply_months": 2.2,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21758",
+     "inv_trans_6mo": 5,
+     "homes_on_market": 14,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 58,
+     "median_home_value": 472250.0,
+     "median_sale_price": 452857.0,
+     "supply_months": 4.67,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21704",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 91,
+     "homes_sold_last_month": 30,
+     "median_days_on_market": 52,
+     "median_home_value": 713049.0,
+     "median_sale_price": 642016.0,
+     "supply_months": 3.03,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21727",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 24,
+     "homes_sold_last_month": 7,
+     "median_days_on_market": 57,
+     "median_home_value": 377512.0,
+     "median_sale_price": 514405.0,
+     "supply_months": 3.43,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21755",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 24,
+     "homes_sold_last_month": 7,
+     "median_days_on_market": 34,
+     "median_home_value": 581013.0,
+     "median_sale_price": 491068.0,
+     "supply_months": 3.43,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21754",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 36,
+     "homes_sold_last_month": 7,
+     "median_days_on_market": 58,
+     "median_home_value": 684533.0,
+     "median_sale_price": 743379.0,
+     "supply_months": 5.14,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21770",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 33,
+     "homes_sold_last_month": 7,
+     "median_days_on_market": 47,
+     "median_home_value": 656124.0,
+     "median_sale_price": 554907.0,
+     "supply_months": 4.71,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21771",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 41,
+     "homes_sold_last_month": 13,
+     "median_days_on_market": 45,
+     "median_home_value": 618540.0,
+     "median_sale_price": 632983.0,
+     "supply_months": 3.15,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21773",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 23,
+     "homes_sold_last_month": 11,
+     "median_days_on_market": 82,
+     "median_home_value": 532770.0,
+     "median_sale_price": 518451.0,
+     "supply_months": 2.09,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21793",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 34,
+     "homes_sold_last_month": 12,
+     "median_days_on_market": 40,
+     "median_home_value": 453807.0,
+     "median_sale_price": 438192.0,
+     "supply_months": 2.83,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21798",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 9,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 78,
+     "median_home_value": 479263.0,
+     "median_sale_price": 407467.0,
+     "supply_months": 4.5,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20842",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 1,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": null,
+     "median_home_value": 776006.0,
+     "median_sale_price": 400000.0,
+     "supply_months": 1.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21757",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 4,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 56,
+     "median_home_value": 455600.0,
+     "median_sale_price": 432400.0,
+     "supply_months": 4.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21791",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 9,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 49,
+     "median_home_value": 423478.0,
+     "median_sale_price": 285000.0,
+     "supply_months": 9.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21717",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 2,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 42,
+     "median_home_value": 492000.0,
+     "median_sale_price": 586000.0,
+     "supply_months": 2.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21762",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 0,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 60,
+     "median_home_value": 350619.0,
+     "median_sale_price": 334833.0,
+     "supply_months": 0.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21776",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 4,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 47,
+     "median_home_value": 532425.0,
+     "median_sale_price": 627500.0,
+     "supply_months": 1.33,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21777",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 7,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 91,
+     "median_home_value": 547239.0,
+     "median_sale_price": 553000.0,
+     "supply_months": 7.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21780",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 7,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 49,
+     "median_home_value": 372354.0,
+     "median_sale_price": 180000.0,
+     "supply_months": 1.4,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "Carroll, MD": {
+   "fips": "24013",
+   "status": "ok",
+   "price_band_60pct": [
+    420289.0,
+    566461.3999999999
+   ],
+   "dom_baseline": 47.0,
+   "competition_cutoff": 14.2,
+   "counts": {
+    "total": 16,
+    "real_markets": 15,
+    "dropped_no_market": 1,
+    "eligible": 2,
+    "set_aside_contested": 2
+   },
+   "selected": [
+    "21155",
+    "21158",
+    "21074",
+    "21771",
+    "21102"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "21155",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 1,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 37,
+     "median_home_value": 503670.0,
+     "median_sale_price": 356200.0,
+     "supply_months": 1.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21158",
+     "inv_trans_6mo": 13,
+     "homes_on_market": 82,
+     "homes_sold_last_month": 28,
+     "median_days_on_market": 54,
+     "median_home_value": 474596.0,
+     "median_sale_price": 462201.0,
+     "supply_months": 2.93,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21074",
+     "inv_trans_6mo": 12,
+     "homes_on_market": 63,
+     "homes_sold_last_month": 27,
+     "median_days_on_market": 48,
+     "median_home_value": 421213.0,
+     "median_sale_price": 392113.0,
+     "supply_months": 2.33,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21771",
+     "inv_trans_6mo": 12,
+     "homes_on_market": 33,
+     "homes_sold_last_month": 13,
+     "median_days_on_market": 43,
+     "median_home_value": 619913.0,
+     "median_sale_price": 540516.0,
+     "supply_months": 2.54,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21102",
+     "inv_trans_6mo": 8,
+     "homes_on_market": 44,
+     "homes_sold_last_month": 18,
+     "median_days_on_market": 64,
+     "median_home_value": 453079.0,
+     "median_sale_price": 403698.0,
+     "supply_months": 2.44,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "21157",
+     "inv_trans_6mo": 29,
+     "homes_on_market": 165,
+     "homes_sold_last_month": 35,
+     "median_days_on_market": 49,
+     "median_home_value": 455052.0,
+     "median_sale_price": 435612.0,
+     "supply_months": 4.71,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21784",
+     "inv_trans_6mo": 15,
+     "homes_on_market": 151,
+     "homes_sold_last_month": 56,
+     "median_days_on_market": 41,
+     "median_home_value": 546566.0,
+     "median_sale_price": 539686.0,
+     "supply_months": 2.7,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "21158",
+     "inv_trans_6mo": 13,
+     "homes_on_market": 82,
+     "homes_sold_last_month": 28,
+     "median_days_on_market": 54,
+     "median_home_value": 474596.0,
+     "median_sale_price": 462201.0,
+     "supply_months": 2.93,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21074",
+     "inv_trans_6mo": 12,
+     "homes_on_market": 63,
+     "homes_sold_last_month": 27,
+     "median_days_on_market": 48,
+     "median_home_value": 421213.0,
+     "median_sale_price": 392113.0,
+     "supply_months": 2.33,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21771",
+     "inv_trans_6mo": 12,
+     "homes_on_market": 33,
+     "homes_sold_last_month": 13,
+     "median_days_on_market": 43,
+     "median_home_value": 619913.0,
+     "median_sale_price": 540516.0,
+     "supply_months": 2.54,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21102",
+     "inv_trans_6mo": 8,
+     "homes_on_market": 44,
+     "homes_sold_last_month": 18,
+     "median_days_on_market": 64,
+     "median_home_value": 453079.0,
+     "median_sale_price": 403698.0,
+     "supply_months": 2.44,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21787",
+     "inv_trans_6mo": 8,
+     "homes_on_market": 68,
+     "homes_sold_last_month": 13,
+     "median_days_on_market": 60,
+     "median_home_value": 387275.0,
+     "median_sale_price": 341430.0,
+     "supply_months": 5.23,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21048",
+     "inv_trans_6mo": 7,
+     "homes_on_market": 39,
+     "homes_sold_last_month": 15,
+     "median_days_on_market": 43,
+     "median_home_value": 550585.0,
+     "median_sale_price": 565238.0,
+     "supply_months": 2.6,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21776",
+     "inv_trans_6mo": 5,
+     "homes_on_market": 33,
+     "homes_sold_last_month": 11,
+     "median_days_on_market": 47,
+     "median_home_value": 483923.0,
+     "median_sale_price": 434859.0,
+     "supply_months": 3.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21791",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 11,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 48,
+     "median_home_value": 373841.0,
+     "median_sale_price": 305833.0,
+     "supply_months": 3.67,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21136",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 3,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 41,
+     "median_home_value": 553776.0,
+     "median_sale_price": 576000.0,
+     "supply_months": 1.5,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21757",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 5,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 83,
+     "median_home_value": 416593.0,
+     "median_sale_price": 308500.0,
+     "supply_months": 1.67,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21155",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 1,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 37,
+     "median_home_value": 503670.0,
+     "median_sale_price": 356200.0,
+     "supply_months": 1.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21797",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 15,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 37,
+     "median_home_value": 617203.0,
+     "median_sale_price": 580000.0,
+     "supply_months": 3.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "21104",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 9,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 39,
+     "median_home_value": 694361.0,
+     "median_sale_price": 665000.0,
+     "supply_months": 4.5,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "Calvert, MD": {
+   "fips": "24009",
+   "status": "ok",
+   "price_band_60pct": [
+    462743.0,
+    621171.0
+   ],
+   "dom_baseline": 54.0,
+   "competition_cutoff": 30.0,
+   "counts": {
+    "total": 15,
+    "real_markets": 11,
+    "dropped_no_market": 4,
+    "eligible": 0,
+    "set_aside_contested": 1
+   },
+   "selected": [
+    "20678",
+    "20685",
+    "20657",
+    "20732",
+    "20714"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "20678",
+     "inv_trans_6mo": 25,
+     "homes_on_market": 81,
+     "homes_sold_last_month": 29,
+     "median_days_on_market": 55,
+     "median_home_value": 502196.0,
+     "median_sale_price": 487235.0,
+     "supply_months": 2.79,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20685",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 46,
+     "homes_sold_last_month": 12,
+     "median_days_on_market": 51,
+     "median_home_value": 479288.0,
+     "median_sale_price": 388637.0,
+     "supply_months": 3.83,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20657",
+     "inv_trans_6mo": 30,
+     "homes_on_market": 223,
+     "homes_sold_last_month": 49,
+     "median_days_on_market": 50,
+     "median_home_value": 359734.0,
+     "median_sale_price": 307218.0,
+     "supply_months": 4.55,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20732",
+     "inv_trans_6mo": 10,
+     "homes_on_market": 84,
+     "homes_sold_last_month": 27,
+     "median_days_on_market": 56,
+     "median_home_value": 462743.0,
+     "median_sale_price": 440748.0,
+     "supply_months": 3.11,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20714",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 18,
+     "homes_sold_last_month": 8,
+     "median_days_on_market": 47,
+     "median_home_value": 394212.0,
+     "median_sale_price": 414375.0,
+     "supply_months": 2.25,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "20736",
+     "inv_trans_6mo": 31,
+     "homes_on_market": 53,
+     "homes_sold_last_month": 14,
+     "median_days_on_market": 54,
+     "median_home_value": 623641.0,
+     "median_sale_price": 2095745.0,
+     "supply_months": 3.79,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "20657",
+     "inv_trans_6mo": 30,
+     "homes_on_market": 223,
+     "homes_sold_last_month": 49,
+     "median_days_on_market": 50,
+     "median_home_value": 359734.0,
+     "median_sale_price": 307218.0,
+     "supply_months": 4.55,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20678",
+     "inv_trans_6mo": 25,
+     "homes_on_market": 81,
+     "homes_sold_last_month": 29,
+     "median_days_on_market": 55,
+     "median_home_value": 502196.0,
+     "median_sale_price": 487235.0,
+     "supply_months": 2.79,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20732",
+     "inv_trans_6mo": 10,
+     "homes_on_market": 84,
+     "homes_sold_last_month": 27,
+     "median_days_on_market": 56,
+     "median_home_value": 462743.0,
+     "median_sale_price": 440748.0,
+     "supply_months": 3.11,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20639",
+     "inv_trans_6mo": 9,
+     "homes_on_market": 78,
+     "homes_sold_last_month": 14,
+     "median_days_on_market": 55,
+     "median_home_value": 621171.0,
+     "median_sale_price": 633097.0,
+     "supply_months": 5.57,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20676",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 20,
+     "homes_sold_last_month": 6,
+     "median_days_on_market": 72,
+     "median_home_value": 499648.0,
+     "median_sale_price": 686700.0,
+     "supply_months": 3.33,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20685",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 46,
+     "homes_sold_last_month": 12,
+     "median_days_on_market": 51,
+     "median_home_value": 479288.0,
+     "median_sale_price": 388637.0,
+     "supply_months": 3.83,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20714",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 18,
+     "homes_sold_last_month": 8,
+     "median_days_on_market": 47,
+     "median_home_value": 394212.0,
+     "median_sale_price": 414375.0,
+     "supply_months": 2.25,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20688",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 26,
+     "homes_sold_last_month": 7,
+     "median_days_on_market": 60,
+     "median_home_value": 574353.0,
+     "median_sale_price": 456243.0,
+     "supply_months": 3.71,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20754",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 26,
+     "homes_sold_last_month": 9,
+     "median_days_on_market": 42,
+     "median_home_value": 635595.0,
+     "median_sale_price": 662439.0,
+     "supply_months": 2.89,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20689",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 12,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 47,
+     "median_home_value": 555027.0,
+     "median_sale_price": 719063.0,
+     "supply_months": 4.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "Charles, MD": {
+   "fips": "24017",
+   "status": "ok",
+   "price_band_60pct": [
+    402000.0,
+    527057.0
+   ],
+   "dom_baseline": 63.5,
+   "competition_cutoff": 23.0,
+   "counts": {
+    "total": 28,
+    "real_markets": 21,
+    "dropped_no_market": 7,
+    "eligible": 1,
+    "set_aside_contested": 2
+   },
+   "selected": [
+    "20601",
+    "20662",
+    "20664",
+    "20677",
+    "20675"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "20601",
+     "inv_trans_6mo": 23,
+     "homes_on_market": 150,
+     "homes_sold_last_month": 23,
+     "median_days_on_market": 63,
+     "median_home_value": 421172.0,
+     "median_sale_price": 414818.0,
+     "supply_months": 6.52,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20662",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 24,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 53,
+     "median_home_value": 414320.0,
+     "median_sale_price": 268800.0,
+     "supply_months": 12.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20664",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 29,
+     "homes_sold_last_month": 6,
+     "median_days_on_market": 50,
+     "median_home_value": 460622.0,
+     "median_sale_price": 235000.0,
+     "supply_months": 4.83,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20677",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 10,
+     "homes_sold_last_month": 4,
+     "median_days_on_market": 55,
+     "median_home_value": 567442.0,
+     "median_sale_price": 490000.0,
+     "supply_months": 2.5,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20675",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 11,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 61,
+     "median_home_value": 446856.0,
+     "median_sale_price": 315000.0,
+     "supply_months": 11.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "20695",
+     "inv_trans_6mo": 103,
+     "homes_on_market": 152,
+     "homes_sold_last_month": 39,
+     "median_days_on_market": 66,
+     "median_home_value": 492347.0,
+     "median_sale_price": 506785.0,
+     "supply_months": 3.9,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "20603",
+     "inv_trans_6mo": 37,
+     "homes_on_market": 164,
+     "homes_sold_last_month": 56,
+     "median_days_on_market": 60,
+     "median_home_value": 474356.0,
+     "median_sale_price": 468414.0,
+     "supply_months": 2.93,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "20601",
+     "inv_trans_6mo": 23,
+     "homes_on_market": 150,
+     "homes_sold_last_month": 23,
+     "median_days_on_market": 63,
+     "median_home_value": 421172.0,
+     "median_sale_price": 414818.0,
+     "supply_months": 6.52,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20602",
+     "inv_trans_6mo": 21,
+     "homes_on_market": 128,
+     "homes_sold_last_month": 24,
+     "median_days_on_market": 54,
+     "median_home_value": 371850.0,
+     "median_sale_price": 361442.0,
+     "supply_months": 5.33,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20646",
+     "inv_trans_6mo": 14,
+     "homes_on_market": 198,
+     "homes_sold_last_month": 56,
+     "median_days_on_market": 65,
+     "median_home_value": 489105.0,
+     "median_sale_price": 484589.0,
+     "supply_months": 3.54,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20640",
+     "inv_trans_6mo": 11,
+     "homes_on_market": 87,
+     "homes_sold_last_month": 17,
+     "median_days_on_market": 76,
+     "median_home_value": 354778.0,
+     "median_sale_price": 316718.0,
+     "supply_months": 5.12,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20637",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 46,
+     "homes_sold_last_month": 11,
+     "median_days_on_market": 71,
+     "median_home_value": 573810.0,
+     "median_sale_price": 506000.0,
+     "supply_months": 4.18,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20616",
+     "inv_trans_6mo": 5,
+     "homes_on_market": 71,
+     "homes_sold_last_month": 15,
+     "median_days_on_market": 67,
+     "median_home_value": 426886.0,
+     "median_sale_price": 406533.0,
+     "supply_months": 4.73,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20662",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 24,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 53,
+     "median_home_value": 414320.0,
+     "median_sale_price": 268800.0,
+     "supply_months": 12.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20664",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 29,
+     "homes_sold_last_month": 6,
+     "median_days_on_market": 50,
+     "median_home_value": 460622.0,
+     "median_sale_price": 235000.0,
+     "supply_months": 4.83,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20677",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 10,
+     "homes_sold_last_month": 4,
+     "median_days_on_market": 55,
+     "median_home_value": 567442.0,
+     "median_sale_price": 490000.0,
+     "supply_months": 2.5,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20658",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 10,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 56,
+     "median_home_value": 376977.0,
+     "median_sale_price": 280000.0,
+     "supply_months": 5.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20675",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 11,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 61,
+     "median_home_value": 446856.0,
+     "median_sale_price": 315000.0,
+     "supply_months": 11.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20611",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 4,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 86,
+     "median_home_value": 482781.0,
+     "median_sale_price": 278500.0,
+     "supply_months": 2.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20617",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 9,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 70,
+     "median_home_value": 560615.0,
+     "median_sale_price": 730000.0,
+     "supply_months": 9.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20622",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 14,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 57,
+     "median_home_value": 544946.0,
+     "median_sale_price": 495000.0,
+     "supply_months": 7.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20612",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 0,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 64,
+     "median_home_value": 402000.0,
+     "median_sale_price": 336000.0,
+     "supply_months": 0.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20613",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 14,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 75,
+     "median_home_value": 527057.0,
+     "median_sale_price": 530000.0,
+     "supply_months": 14.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20625",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 4,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 46,
+     "median_home_value": 362000.0,
+     "median_sale_price": 306200.0,
+     "supply_months": 4.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20645",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 35,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 66,
+     "median_home_value": 496000.0,
+     "median_sale_price": 487500.0,
+     "supply_months": 11.67,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20659",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 0,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": null,
+     "median_home_value": 492000.0,
+     "median_sale_price": 507500.0,
+     "supply_months": 0.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "District of Columbia": {
+   "fips": "11001",
+   "status": "measured_from_siftmap",
+   "selected": [
+    "20002",
+    "20011",
+    "20009",
+    "20001",
+    "20019"
+   ],
+   "ranked": [
+    "20002",
+    "20011",
+    "20009",
+    "20001",
+    "20019",
+    "20007",
+    "20020",
+    "20016",
+    "20003",
+    "20008",
+    "20010",
+    "20017",
+    "20018",
+    "20032",
+    "20015",
+    "20012",
+    "20005",
+    "20037",
+    "20024",
+    "20036",
+    "20004",
+    "20006"
+   ],
+   "all": [
+    {
+     "value": "20002",
+     "count": 23698,
+     "status": "ok"
+    },
+    {
+     "value": "20011",
+     "count": 19871,
+     "status": "ok"
+    },
+    {
+     "value": "20009",
+     "count": 17873,
+     "status": "ok"
+    },
+    {
+     "value": "20001",
+     "count": 16462,
+     "status": "ok"
+    },
+    {
+     "value": "20019",
+     "count": 16158,
+     "status": "ok"
+    },
+    {
+     "value": "20007",
+     "count": 12828,
+     "status": "ok"
+    },
+    {
+     "value": "20020",
+     "count": 12653,
+     "status": "ok"
+    },
+    {
+     "value": "20016",
+     "count": 12633,
+     "status": "ok"
+    },
+    {
+     "value": "20003",
+     "count": 10933,
+     "status": "ok"
+    },
+    {
+     "value": "20008",
+     "count": 9386,
+     "status": "ok"
+    },
+    {
+     "value": "20010",
+     "count": 8460,
+     "status": "ok"
+    },
+    {
+     "value": "20017",
+     "count": 7557,
+     "status": "ok"
+    },
+    {
+     "value": "20018",
+     "count": 7286,
+     "status": "ok"
+    },
+    {
+     "value": "20032",
+     "count": 6627,
+     "status": "ok"
+    },
+    {
+     "value": "20015",
+     "count": 5863,
+     "status": "ok"
+    },
+    {
+     "value": "20012",
+     "count": 5315,
+     "status": "ok"
+    },
+    {
+     "value": "20005",
+     "count": 4917,
+     "status": "ok"
+    },
+    {
+     "value": "20037",
+     "count": 4648,
+     "status": "ok"
+    },
+    {
+     "value": "20024",
+     "count": 4471,
+     "status": "ok"
+    },
+    {
+     "value": "20036",
+     "count": 3658,
+     "status": "ok"
+    },
+    {
+     "value": "20004",
+     "count": 1294,
+     "status": "ok"
+    },
+    {
+     "value": "20006",
+     "count": 480,
+     "status": "ok"
+    }
+   ],
+   "note": "Market Finder publishes no sub-county data for DC, so these are ranked by live SiftMap property count rather than by the four market checks the other 13 counties use. Volume only -- no supply, DOM or price-band screening was possible."
+  },
+  "Fairfax, VA": {
+   "fips": "51059",
+   "status": "ok",
+   "price_band_60pct": [
+    662255.8,
+    982652.3999999999
+   ],
+   "dom_baseline": 37.5,
+   "competition_cutoff": 36.500000000000014,
+   "counts": {
+    "total": 97,
+    "real_markets": 44,
+    "dropped_no_market": 53,
+    "eligible": 7,
+    "set_aside_contested": 5
+   },
+   "selected": [
+    "22042",
+    "22015",
+    "20120",
+    "22031",
+    "22030"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "22042",
+     "inv_trans_6mo": 25,
+     "homes_on_market": 76,
+     "homes_sold_last_month": 37,
+     "median_days_on_market": 35,
+     "median_home_value": 707150.0,
+     "median_sale_price": 671800.0,
+     "supply_months": 2.05,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22015",
+     "inv_trans_6mo": 23,
+     "homes_on_market": 72,
+     "homes_sold_last_month": 62,
+     "median_days_on_market": 33,
+     "median_home_value": 743925.0,
+     "median_sale_price": 742780.0,
+     "supply_months": 1.16,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20120",
+     "inv_trans_6mo": 20,
+     "homes_on_market": 90,
+     "homes_sold_last_month": 64,
+     "median_days_on_market": 36,
+     "median_home_value": 718101.0,
+     "median_sale_price": 687512.0,
+     "supply_months": 1.41,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22031",
+     "inv_trans_6mo": 20,
+     "homes_on_market": 71,
+     "homes_sold_last_month": 35,
+     "median_days_on_market": 34,
+     "median_home_value": 828596.0,
+     "median_sale_price": 813916.0,
+     "supply_months": 2.03,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22030",
+     "inv_trans_6mo": 16,
+     "homes_on_market": 52,
+     "homes_sold_last_month": 30,
+     "median_days_on_market": 35,
+     "median_home_value": 910743.0,
+     "median_sale_price": 877136.0,
+     "supply_months": 1.73,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "22101",
+     "inv_trans_6mo": 82,
+     "homes_on_market": 171,
+     "homes_sold_last_month": 68,
+     "median_days_on_market": 48,
+     "median_home_value": 1628209.0,
+     "median_sale_price": 1817553.0,
+     "supply_months": 2.51,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "22180",
+     "inv_trans_6mo": 48,
+     "homes_on_market": 89,
+     "homes_sold_last_month": 47,
+     "median_days_on_market": 41,
+     "median_home_value": 1023861.0,
+     "median_sale_price": 1221076.0,
+     "supply_months": 1.89,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "22003",
+     "inv_trans_6mo": 41,
+     "homes_on_market": 130,
+     "homes_sold_last_month": 83,
+     "median_days_on_market": 35,
+     "median_home_value": 719239.0,
+     "median_sale_price": 730969.0,
+     "supply_months": 1.57,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "22102",
+     "inv_trans_6mo": 39,
+     "homes_on_market": 141,
+     "homes_sold_last_month": 52,
+     "median_days_on_market": 50,
+     "median_home_value": 1093586.0,
+     "median_sale_price": 1210475.0,
+     "supply_months": 2.71,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "20190",
+     "inv_trans_6mo": 38,
+     "homes_on_market": 100,
+     "homes_sold_last_month": 46,
+     "median_days_on_market": 44,
+     "median_home_value": 550331.0,
+     "median_sale_price": 781078.0,
+     "supply_months": 2.17,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "22043",
+     "inv_trans_6mo": 33,
+     "homes_on_market": 76,
+     "homes_sold_last_month": 27,
+     "median_days_on_market": 41,
+     "median_home_value": 949857.0,
+     "median_sale_price": 974130.0,
+     "supply_months": 2.81,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20191",
+     "inv_trans_6mo": 29,
+     "homes_on_market": 96,
+     "homes_sold_last_month": 60,
+     "median_days_on_market": 36,
+     "median_home_value": 668884.0,
+     "median_sale_price": 670486.0,
+     "supply_months": 1.6,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20171",
+     "inv_trans_6mo": 27,
+     "homes_on_market": 129,
+     "homes_sold_last_month": 64,
+     "median_days_on_market": 38,
+     "median_home_value": 817146.0,
+     "median_sale_price": 788569.0,
+     "supply_months": 2.02,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22308",
+     "inv_trans_6mo": 26,
+     "homes_on_market": 46,
+     "homes_sold_last_month": 30,
+     "median_days_on_market": 45,
+     "median_home_value": 955180.0,
+     "median_sale_price": 1005864.0,
+     "supply_months": 1.53,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22042",
+     "inv_trans_6mo": 25,
+     "homes_on_market": 76,
+     "homes_sold_last_month": 37,
+     "median_days_on_market": 35,
+     "median_home_value": 707150.0,
+     "median_sale_price": 671800.0,
+     "supply_months": 2.05,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22015",
+     "inv_trans_6mo": 23,
+     "homes_on_market": 72,
+     "homes_sold_last_month": 62,
+     "median_days_on_market": 33,
+     "median_home_value": 743925.0,
+     "median_sale_price": 742780.0,
+     "supply_months": 1.16,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22310",
+     "inv_trans_6mo": 23,
+     "homes_on_market": 72,
+     "homes_sold_last_month": 57,
+     "median_days_on_market": 36,
+     "median_home_value": 669784.0,
+     "median_sale_price": 793402.0,
+     "supply_months": 1.26,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20120",
+     "inv_trans_6mo": 20,
+     "homes_on_market": 90,
+     "homes_sold_last_month": 64,
+     "median_days_on_market": 36,
+     "median_home_value": 718101.0,
+     "median_sale_price": 687512.0,
+     "supply_months": 1.41,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22031",
+     "inv_trans_6mo": 20,
+     "homes_on_market": 71,
+     "homes_sold_last_month": 35,
+     "median_days_on_market": 34,
+     "median_home_value": 828596.0,
+     "median_sale_price": 813916.0,
+     "supply_months": 2.03,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22079",
+     "inv_trans_6mo": 20,
+     "homes_on_market": 95,
+     "homes_sold_last_month": 34,
+     "median_days_on_market": 41,
+     "median_home_value": 701516.0,
+     "median_sale_price": 717061.0,
+     "supply_months": 2.79,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22152",
+     "inv_trans_6mo": 19,
+     "homes_on_market": 77,
+     "homes_sold_last_month": 46,
+     "median_days_on_market": 36,
+     "median_home_value": 681386.0,
+     "median_sale_price": 681997.0,
+     "supply_months": 1.67,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22182",
+     "inv_trans_6mo": 18,
+     "homes_on_market": 58,
+     "homes_sold_last_month": 35,
+     "median_days_on_market": 37,
+     "median_home_value": 1261378.0,
+     "median_sale_price": 1311653.0,
+     "supply_months": 1.66,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22309",
+     "inv_trans_6mo": 18,
+     "homes_on_market": 115,
+     "homes_sold_last_month": 49,
+     "median_days_on_market": 42,
+     "median_home_value": 607501.0,
+     "median_sale_price": 675786.0,
+     "supply_months": 2.35,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22315",
+     "inv_trans_6mo": 18,
+     "homes_on_market": 69,
+     "homes_sold_last_month": 40,
+     "median_days_on_market": 38,
+     "median_home_value": 695770.0,
+     "median_sale_price": 706946.0,
+     "supply_months": 1.73,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22030",
+     "inv_trans_6mo": 16,
+     "homes_on_market": 52,
+     "homes_sold_last_month": 30,
+     "median_days_on_market": 35,
+     "median_home_value": 910743.0,
+     "median_sale_price": 877136.0,
+     "supply_months": 1.73,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22124",
+     "inv_trans_6mo": 16,
+     "homes_on_market": 74,
+     "homes_sold_last_month": 30,
+     "median_days_on_market": 34,
+     "median_home_value": 1049773.0,
+     "median_sale_price": 1106060.0,
+     "supply_months": 2.47,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22303",
+     "inv_trans_6mo": 16,
+     "homes_on_market": 60,
+     "homes_sold_last_month": 19,
+     "median_days_on_market": 47,
+     "median_home_value": 530646.0,
+     "median_sale_price": 495653.0,
+     "supply_months": 3.16,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22306",
+     "inv_trans_6mo": 16,
+     "homes_on_market": 77,
+     "homes_sold_last_month": 44,
+     "median_days_on_market": 40,
+     "median_home_value": 630898.0,
+     "median_sale_price": 672386.0,
+     "supply_months": 1.75,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22153",
+     "inv_trans_6mo": 15,
+     "homes_on_market": 69,
+     "homes_sold_last_month": 60,
+     "median_days_on_market": 35,
+     "median_home_value": 745278.0,
+     "median_sale_price": 783481.0,
+     "supply_months": 1.15,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22032",
+     "inv_trans_6mo": 14,
+     "homes_on_market": 67,
+     "homes_sold_last_month": 51,
+     "median_days_on_market": 33,
+     "median_home_value": 822089.0,
+     "median_sale_price": 875566.0,
+     "supply_months": 1.31,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22041",
+     "inv_trans_6mo": 14,
+     "homes_on_market": 82,
+     "homes_sold_last_month": 28,
+     "median_days_on_market": 47,
+     "median_home_value": 564201.0,
+     "median_sale_price": 573834.0,
+     "supply_months": 2.93,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22066",
+     "inv_trans_6mo": 14,
+     "homes_on_market": 91,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 47,
+     "median_home_value": 1650409.0,
+     "median_sale_price": 1666869.0,
+     "supply_months": 3.64,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20170",
+     "inv_trans_6mo": 13,
+     "homes_on_market": 85,
+     "homes_sold_last_month": 57,
+     "median_days_on_market": 38,
+     "median_home_value": 653926.0,
+     "median_sale_price": 658769.0,
+     "supply_months": 1.49,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22033",
+     "inv_trans_6mo": 13,
+     "homes_on_market": 108,
+     "homes_sold_last_month": 48,
+     "median_days_on_market": 38,
+     "median_home_value": 718488.0,
+     "median_sale_price": 696098.0,
+     "supply_months": 2.25,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22150",
+     "inv_trans_6mo": 13,
+     "homes_on_market": 36,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 35,
+     "median_home_value": 649475.0,
+     "median_sale_price": 668476.0,
+     "supply_months": 1.44,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22151",
+     "inv_trans_6mo": 13,
+     "homes_on_market": 27,
+     "homes_sold_last_month": 26,
+     "median_days_on_market": 35,
+     "median_home_value": 694779.0,
+     "median_sale_price": 735302.0,
+     "supply_months": 1.04,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22181",
+     "inv_trans_6mo": 11,
+     "homes_on_market": 43,
+     "homes_sold_last_month": 36,
+     "median_days_on_market": 33,
+     "median_home_value": 1066215.0,
+     "median_sale_price": 1035767.0,
+     "supply_months": 1.19,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20194",
+     "inv_trans_6mo": 10,
+     "homes_on_market": 31,
+     "homes_sold_last_month": 27,
+     "median_days_on_market": 32,
+     "median_home_value": 851512.0,
+     "median_sale_price": 823601.0,
+     "supply_months": 1.15,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22307",
+     "inv_trans_6mo": 10,
+     "homes_on_market": 40,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 46,
+     "median_home_value": 781015.0,
+     "median_sale_price": 724028.0,
+     "supply_months": 1.6,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20124",
+     "inv_trans_6mo": 9,
+     "homes_on_market": 38,
+     "homes_sold_last_month": 10,
+     "median_days_on_market": 42,
+     "median_home_value": 949928.0,
+     "median_sale_price": 926615.0,
+     "supply_months": 3.8,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22046",
+     "inv_trans_6mo": 9,
+     "homes_on_market": 18,
+     "homes_sold_last_month": 9,
+     "median_days_on_market": 39,
+     "median_home_value": 885428.0,
+     "median_sale_price": 879415.0,
+     "supply_months": 2.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22312",
+     "inv_trans_6mo": 9,
+     "homes_on_market": 47,
+     "homes_sold_last_month": 29,
+     "median_days_on_market": 41,
+     "median_home_value": 667809.0,
+     "median_sale_price": 662365.0,
+     "supply_months": 1.62,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20151",
+     "inv_trans_6mo": 8,
+     "homes_on_market": 49,
+     "homes_sold_last_month": 29,
+     "median_days_on_market": 35,
+     "median_home_value": 787936.0,
+     "median_sale_price": 751698.0,
+     "supply_months": 1.69,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22039",
+     "inv_trans_6mo": 8,
+     "homes_on_market": 28,
+     "homes_sold_last_month": 34,
+     "median_days_on_market": 35,
+     "median_home_value": 1174644.0,
+     "median_sale_price": 1231548.0,
+     "supply_months": 0.82,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20121",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 51,
+     "homes_sold_last_month": 29,
+     "median_days_on_market": 37,
+     "median_home_value": 597687.0,
+     "median_sale_price": 559004.0,
+     "supply_months": 1.76,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22044",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 36,
+     "homes_sold_last_month": 14,
+     "median_days_on_market": 35,
+     "median_home_value": 645678.0,
+     "median_sale_price": 748175.0,
+     "supply_months": 2.57,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22027",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 7,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 24,
+     "median_home_value": 1318868.0,
+     "median_sale_price": 1372500.0,
+     "supply_months": 3.5,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22311",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 4,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 40,
+     "median_home_value": 776550.0,
+     "median_sale_price": 847500.0,
+     "supply_months": 2.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22060",
+     "inv_trans_6mo": 0,
+     "homes_on_market": 1,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 54,
+     "median_home_value": 821174.0,
+     "median_sale_price": 805000.0,
+     "supply_months": 1.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "Prince William, VA": {
+   "fips": "51153",
+   "status": "ok",
+   "price_band_60pct": [
+    540502.6,
+    717820.2
+   ],
+   "dom_baseline": 42.0,
+   "competition_cutoff": 57.4,
+   "counts": {
+    "total": 25,
+    "real_markets": 15,
+    "dropped_no_market": 10,
+    "eligible": 1,
+    "set_aside_contested": 2
+   },
+   "selected": [
+    "20136",
+    "22192",
+    "20112",
+    "20111",
+    "22025"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "20136",
+     "inv_trans_6mo": 17,
+     "homes_on_market": 72,
+     "homes_sold_last_month": 48,
+     "median_days_on_market": 37,
+     "median_home_value": 716825.0,
+     "median_sale_price": 709943.0,
+     "supply_months": 1.5,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22192",
+     "inv_trans_6mo": 35,
+     "homes_on_market": 157,
+     "homes_sold_last_month": 86,
+     "median_days_on_market": 42,
+     "median_home_value": 549492.0,
+     "median_sale_price": 682822.0,
+     "supply_months": 1.83,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20112",
+     "inv_trans_6mo": 28,
+     "homes_on_market": 102,
+     "homes_sold_last_month": 41,
+     "median_days_on_market": 38,
+     "median_home_value": 675693.0,
+     "median_sale_price": 713973.0,
+     "supply_months": 2.49,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20111",
+     "inv_trans_6mo": 16,
+     "homes_on_market": 48,
+     "homes_sold_last_month": 22,
+     "median_days_on_market": 41,
+     "median_home_value": 595279.0,
+     "median_sale_price": 635899.0,
+     "supply_months": 2.18,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22025",
+     "inv_trans_6mo": 12,
+     "homes_on_market": 54,
+     "homes_sold_last_month": 32,
+     "median_days_on_market": 41,
+     "median_home_value": 572356.0,
+     "median_sale_price": 583836.0,
+     "supply_months": 1.69,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "20169",
+     "inv_trans_6mo": 75,
+     "homes_on_market": 155,
+     "homes_sold_last_month": 69,
+     "median_days_on_market": 43,
+     "median_home_value": 804132.0,
+     "median_sale_price": 825798.0,
+     "supply_months": 2.25,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "22193",
+     "inv_trans_6mo": 59,
+     "homes_on_market": 203,
+     "homes_sold_last_month": 97,
+     "median_days_on_market": 48,
+     "median_home_value": 504545.0,
+     "median_sale_price": 579218.0,
+     "supply_months": 2.09,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "22026",
+     "inv_trans_6mo": 55,
+     "homes_on_market": 117,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 50,
+     "median_home_value": 566980.0,
+     "median_sale_price": 758613.0,
+     "supply_months": 4.68,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20155",
+     "inv_trans_6mo": 54,
+     "homes_on_market": 120,
+     "homes_sold_last_month": 71,
+     "median_days_on_market": 37,
+     "median_home_value": 721801.0,
+     "median_sale_price": 894938.0,
+     "supply_months": 1.69,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20109",
+     "inv_trans_6mo": 38,
+     "homes_on_market": 91,
+     "homes_sold_last_month": 39,
+     "median_days_on_market": 40,
+     "median_home_value": 459711.0,
+     "median_sale_price": 467076.0,
+     "supply_months": 2.33,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22192",
+     "inv_trans_6mo": 35,
+     "homes_on_market": 157,
+     "homes_sold_last_month": 86,
+     "median_days_on_market": 42,
+     "median_home_value": 549492.0,
+     "median_sale_price": 682822.0,
+     "supply_months": 1.83,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20112",
+     "inv_trans_6mo": 28,
+     "homes_on_market": 102,
+     "homes_sold_last_month": 41,
+     "median_days_on_market": 38,
+     "median_home_value": 675693.0,
+     "median_sale_price": 713973.0,
+     "supply_months": 2.49,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22191",
+     "inv_trans_6mo": 28,
+     "homes_on_market": 167,
+     "homes_sold_last_month": 77,
+     "median_days_on_market": 44,
+     "median_home_value": 485927.0,
+     "median_sale_price": 489890.0,
+     "supply_months": 2.17,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20181",
+     "inv_trans_6mo": 20,
+     "homes_on_market": 49,
+     "homes_sold_last_month": 13,
+     "median_days_on_market": 52,
+     "median_home_value": 776807.0,
+     "median_sale_price": 1032311.0,
+     "supply_months": 3.77,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20136",
+     "inv_trans_6mo": 17,
+     "homes_on_market": 72,
+     "homes_sold_last_month": 48,
+     "median_days_on_market": 37,
+     "median_home_value": 716825.0,
+     "median_sale_price": 709943.0,
+     "supply_months": 1.5,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20111",
+     "inv_trans_6mo": 16,
+     "homes_on_market": 48,
+     "homes_sold_last_month": 22,
+     "median_days_on_market": 41,
+     "median_home_value": 595279.0,
+     "median_sale_price": 635899.0,
+     "supply_months": 2.18,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22025",
+     "inv_trans_6mo": 12,
+     "homes_on_market": 54,
+     "homes_sold_last_month": 32,
+     "median_days_on_market": 41,
+     "median_home_value": 572356.0,
+     "median_sale_price": 583836.0,
+     "supply_months": 1.69,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22172",
+     "inv_trans_6mo": 6,
+     "homes_on_market": 59,
+     "homes_sold_last_month": 8,
+     "median_days_on_market": 45,
+     "median_home_value": 549840.0,
+     "median_sale_price": 469778.0,
+     "supply_months": 7.38,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22125",
+     "inv_trans_6mo": 4,
+     "homes_on_market": 2,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 48,
+     "median_home_value": 588622.0,
+     "median_sale_price": 575545.0,
+     "supply_months": 2.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "20110",
+     "inv_trans_6mo": 3,
+     "homes_on_market": 12,
+     "homes_sold_last_month": 6,
+     "median_days_on_market": 37,
+     "median_home_value": 639589.0,
+     "median_sale_price": 684392.0,
+     "supply_months": 2.0,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "Arlington, VA": {
+   "fips": "51013",
+   "status": "ok",
+   "price_band_60pct": [
+    642518.6,
+    1144078.6
+   ],
+   "dom_baseline": 41.0,
+   "competition_cutoff": 32.0,
+   "counts": {
+    "total": 45,
+    "real_markets": 9,
+    "dropped_no_market": 36,
+    "eligible": 1,
+    "set_aside_contested": 1
+   },
+   "selected": [
+    "22203",
+    "22201",
+    "22206",
+    "22204",
+    "22202"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "22203",
+     "inv_trans_6mo": 19,
+     "homes_on_market": 63,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 39,
+     "median_home_value": 740615.0,
+     "median_sale_price": 609543.0,
+     "supply_months": 2.52,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22201",
+     "inv_trans_6mo": 30,
+     "homes_on_market": 114,
+     "homes_sold_last_month": 49,
+     "median_days_on_market": 41,
+     "median_home_value": 903224.0,
+     "median_sale_price": 940198.0,
+     "supply_months": 2.33,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22206",
+     "inv_trans_6mo": 11,
+     "homes_on_market": 53,
+     "homes_sold_last_month": 28,
+     "median_days_on_market": 38,
+     "median_home_value": 610865.0,
+     "median_sale_price": 575426.0,
+     "supply_months": 1.89,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22204",
+     "inv_trans_6mo": 18,
+     "homes_on_market": 138,
+     "homes_sold_last_month": 41,
+     "median_days_on_market": 44,
+     "median_home_value": 663621.0,
+     "median_sale_price": 603393.0,
+     "supply_months": 3.37,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22202",
+     "inv_trans_6mo": 8,
+     "homes_on_market": 72,
+     "homes_sold_last_month": 12,
+     "median_days_on_market": 53,
+     "median_home_value": 859661.0,
+     "median_sale_price": 785564.0,
+     "supply_months": 6.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "22207",
+     "inv_trans_6mo": 40,
+     "homes_on_market": 106,
+     "homes_sold_last_month": 50,
+     "median_days_on_market": 40,
+     "median_home_value": 1393168.0,
+     "median_sale_price": 1440504.0,
+     "supply_months": 2.12,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "22201",
+     "inv_trans_6mo": 30,
+     "homes_on_market": 114,
+     "homes_sold_last_month": 49,
+     "median_days_on_market": 41,
+     "median_home_value": 903224.0,
+     "median_sale_price": 940198.0,
+     "supply_months": 2.33,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22203",
+     "inv_trans_6mo": 19,
+     "homes_on_market": 63,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 39,
+     "median_home_value": 740615.0,
+     "median_sale_price": 609543.0,
+     "supply_months": 2.52,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22204",
+     "inv_trans_6mo": 18,
+     "homes_on_market": 138,
+     "homes_sold_last_month": 41,
+     "median_days_on_market": 44,
+     "median_home_value": 663621.0,
+     "median_sale_price": 603393.0,
+     "supply_months": 3.37,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22209",
+     "inv_trans_6mo": 14,
+     "homes_on_market": 130,
+     "homes_sold_last_month": 20,
+     "median_days_on_market": 53,
+     "median_home_value": 556733.0,
+     "median_sale_price": 846724.0,
+     "supply_months": 6.5,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 0,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22206",
+     "inv_trans_6mo": 11,
+     "homes_on_market": 53,
+     "homes_sold_last_month": 28,
+     "median_days_on_market": 38,
+     "median_home_value": 610865.0,
+     "median_sale_price": 575426.0,
+     "supply_months": 1.89,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22202",
+     "inv_trans_6mo": 8,
+     "homes_on_market": 72,
+     "homes_sold_last_month": 12,
+     "median_days_on_market": 53,
+     "median_home_value": 859661.0,
+     "median_sale_price": 785564.0,
+     "supply_months": 6.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22205",
+     "inv_trans_6mo": 7,
+     "homes_on_market": 40,
+     "homes_sold_last_month": 28,
+     "median_days_on_market": 33,
+     "median_home_value": 1219210.0,
+     "median_sale_price": 1284340.0,
+     "supply_months": 1.43,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22213",
+     "inv_trans_6mo": 5,
+     "homes_on_market": 12,
+     "homes_sold_last_month": 7,
+     "median_days_on_market": 45,
+     "median_home_value": 1093991.0,
+     "median_sale_price": 1173636.0,
+     "supply_months": 1.71,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "Stafford, VA": {
+   "fips": "51179",
+   "status": "ok",
+   "price_band_60pct": [
+    517086.2,
+    568084.2
+   ],
+   "dom_baseline": 47.0,
+   "competition_cutoff": 59.800000000000004,
+   "counts": {
+    "total": 16,
+    "real_markets": 4,
+    "dropped_no_market": 12,
+    "eligible": 1,
+    "set_aside_contested": 1
+   },
+   "selected": [
+    "22556",
+    "22405",
+    "22406"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "22556",
+     "inv_trans_6mo": 23,
+     "homes_on_market": 105,
+     "homes_sold_last_month": 54,
+     "median_days_on_market": 44,
+     "median_home_value": 539787.0,
+     "median_sale_price": 513499.0,
+     "supply_months": 1.94,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22405",
+     "inv_trans_6mo": 40,
+     "homes_on_market": 160,
+     "homes_sold_last_month": 66,
+     "median_days_on_market": 47,
+     "median_home_value": 483035.0,
+     "median_sale_price": 479276.0,
+     "supply_months": 2.42,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22406",
+     "inv_trans_6mo": 43,
+     "homes_on_market": 152,
+     "homes_sold_last_month": 58,
+     "median_days_on_market": 53,
+     "median_home_value": 569433.0,
+     "median_sale_price": 625569.0,
+     "supply_months": 2.62,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "22554",
+     "inv_trans_6mo": 67,
+     "homes_on_market": 285,
+     "homes_sold_last_month": 94,
+     "median_days_on_market": 47,
+     "median_home_value": 567185.0,
+     "median_sale_price": 602529.0,
+     "supply_months": 3.03,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "22406",
+     "inv_trans_6mo": 43,
+     "homes_on_market": 152,
+     "homes_sold_last_month": 58,
+     "median_days_on_market": 53,
+     "median_home_value": 569433.0,
+     "median_sale_price": 625569.0,
+     "supply_months": 2.62,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": false,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22405",
+     "inv_trans_6mo": 40,
+     "homes_on_market": 160,
+     "homes_sold_last_month": 66,
+     "median_days_on_market": 47,
+     "median_home_value": 483035.0,
+     "median_sale_price": 479276.0,
+     "supply_months": 2.42,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22556",
+     "inv_trans_6mo": 23,
+     "homes_on_market": 105,
+     "homes_sold_last_month": 54,
+     "median_days_on_market": 44,
+     "median_home_value": 539787.0,
+     "median_sale_price": 513499.0,
+     "supply_months": 1.94,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "Spotsylvania, VA": {
+   "fips": "51177",
+   "status": "ok",
+   "price_band_60pct": [
+    396680.4,
+    523377.0
+   ],
+   "dom_baseline": 55.5,
+   "competition_cutoff": 69.0,
+   "counts": {
+    "total": 17,
+    "real_markets": 10,
+    "dropped_no_market": 7,
+    "eligible": 1,
+    "set_aside_contested": 1
+   },
+   "selected": [
+    "22553",
+    "22960",
+    "22407",
+    "22551",
+    "23117"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "22553",
+     "inv_trans_6mo": 68,
+     "homes_on_market": 99,
+     "homes_sold_last_month": 104,
+     "median_days_on_market": 47,
+     "median_home_value": 479480.0,
+     "median_sale_price": 145325.0,
+     "supply_months": 0.95,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22960",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 3,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 143,
+     "median_home_value": 511490.0,
+     "median_sale_price": 465430.0,
+     "supply_months": 1.5,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22407",
+     "inv_trans_6mo": 62,
+     "homes_on_market": 327,
+     "homes_sold_last_month": 108,
+     "median_days_on_market": 46,
+     "median_home_value": 458789.0,
+     "median_sale_price": 492717.0,
+     "supply_months": 3.03,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22551",
+     "inv_trans_6mo": 44,
+     "homes_on_market": 206,
+     "homes_sold_last_month": 47,
+     "median_days_on_market": 54,
+     "median_home_value": 439046.0,
+     "median_sale_price": 471956.0,
+     "supply_months": 4.38,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "23117",
+     "inv_trans_6mo": 14,
+     "homes_on_market": 39,
+     "homes_sold_last_month": 10,
+     "median_days_on_market": 52,
+     "median_home_value": 570925.0,
+     "median_sale_price": 410513.0,
+     "supply_months": 3.9,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "22408",
+     "inv_trans_6mo": 78,
+     "homes_on_market": 156,
+     "homes_sold_last_month": 70,
+     "median_days_on_market": 44,
+     "median_home_value": 441688.0,
+     "median_sale_price": 457255.0,
+     "supply_months": 2.23,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": true
+    },
+    {
+     "zip_code": "22553",
+     "inv_trans_6mo": 68,
+     "homes_on_market": 99,
+     "homes_sold_last_month": 104,
+     "median_days_on_market": 47,
+     "median_home_value": 479480.0,
+     "median_sale_price": 145325.0,
+     "supply_months": 0.95,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 4,
+     "passed_all_four": true,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22407",
+     "inv_trans_6mo": 62,
+     "homes_on_market": 327,
+     "homes_sold_last_month": 108,
+     "median_days_on_market": 46,
+     "median_home_value": 458789.0,
+     "median_sale_price": 492717.0,
+     "supply_months": 3.03,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22551",
+     "inv_trans_6mo": 44,
+     "homes_on_market": 206,
+     "homes_sold_last_month": 47,
+     "median_days_on_market": 54,
+     "median_home_value": 439046.0,
+     "median_sale_price": 471956.0,
+     "supply_months": 4.38,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": false,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "23117",
+     "inv_trans_6mo": 14,
+     "homes_on_market": 39,
+     "homes_sold_last_month": 10,
+     "median_days_on_market": 52,
+     "median_home_value": 570925.0,
+     "median_sale_price": 410513.0,
+     "supply_months": 3.9,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "23024",
+     "inv_trans_6mo": 9,
+     "homes_on_market": 23,
+     "homes_sold_last_month": 6,
+     "median_days_on_market": 67,
+     "median_home_value": 584761.0,
+     "median_sale_price": 368574.0,
+     "supply_months": 3.83,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22534",
+     "inv_trans_6mo": 7,
+     "homes_on_market": 21,
+     "homes_sold_last_month": 5,
+     "median_days_on_market": 75,
+     "median_home_value": 401531.0,
+     "median_sale_price": 296300.0,
+     "supply_months": 4.2,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22960",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 3,
+     "homes_sold_last_month": 2,
+     "median_days_on_market": 143,
+     "median_home_value": 511490.0,
+     "median_sale_price": 465430.0,
+     "supply_months": 1.5,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "23015",
+     "inv_trans_6mo": 2,
+     "homes_on_market": 5,
+     "homes_sold_last_month": 3,
+     "median_days_on_market": 74,
+     "median_home_value": 372892.0,
+     "median_sale_price": 322417.0,
+     "supply_months": 1.67,
+     "checks": {
+      "supply_under_3mo": true,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 2,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    },
+    {
+     "zip_code": "22508",
+     "inv_trans_6mo": 1,
+     "homes_on_market": 7,
+     "homes_sold_last_month": 1,
+     "median_days_on_market": 57,
+     "median_home_value": 377278.0,
+     "median_sale_price": 333417.0,
+     "supply_months": 7.0,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": false,
+      "sale_below_value": true,
+      "in_price_band": false
+     },
+     "checks_passed": 1,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  },
+  "Fredericksburg City, VA": {
+   "fips": "51630",
+   "status": "ok",
+   "price_band_60pct": [
+    493122.0,
+    493122.0
+   ],
+   "dom_baseline": 46,
+   "competition_cutoff": 26,
+   "counts": {
+    "total": 1,
+    "real_markets": 1,
+    "dropped_no_market": 0,
+    "eligible": 0,
+    "set_aside_contested": 0
+   },
+   "selected": [
+    "22401"
+   ],
+   "selected_detail": [
+    {
+     "zip_code": "22401",
+     "inv_trans_6mo": 26,
+     "homes_on_market": 111,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 46,
+     "median_home_value": 493122.0,
+     "median_sale_price": 468319.0,
+     "supply_months": 4.44,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ],
+   "all": [
+    {
+     "zip_code": "22401",
+     "inv_trans_6mo": 26,
+     "homes_on_market": 111,
+     "homes_sold_last_month": 25,
+     "median_days_on_market": 46,
+     "median_home_value": 493122.0,
+     "median_sale_price": 468319.0,
+     "supply_months": 4.44,
+     "checks": {
+      "supply_under_3mo": false,
+      "dom_not_slow": true,
+      "sale_below_value": true,
+      "in_price_band": true
+     },
+     "checks_passed": 3,
+     "passed_all_four": false,
+     "over_competition_cutoff": false
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,1294 @@
+{
+ "generated_at": "2026-08-27T15:23:37",
+ "fips": "11001",
+ "jurisdiction": "District of Columbia",
+ "state_abbr": "DC",
+ "source": "11001-District-of-Columbia-DC-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "District of Columbia County, DC",
+  "county": "District of Columbia",
+  "state": "DC",
+  "counties": [
+   {
+    "fips": "11001",
+    "county_name": "District of Columbia"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": 2046,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 2050,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 2050
+ },
+ "presets": [
+  {
+   "name": "DC P1-01 Absentee + Notice of Foreclosure",
+   "priority": 1,
+   "rank": 1,
+   "signal": "Absentee + Notice of Foreclosure",
+   "signals": [
+    "Absentee",
+    "Notice of Foreclosure"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_notice_of_foreclosure"
+   ],
+   "lift": 76.8,
+   "dpd": 1,
+   "deals": 24,
+   "workbook_list_size": 23,
+   "typical_gross": 183500,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_foreclosure_notice_type=NF"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&extra_foreclosure_notice_type=NF&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&extra_foreclosure_notice_type=NF&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 0,
+   "measured_not_in_account": 0,
+   "measure_status": "measured_zero"
+  },
+  {
+   "name": "DC P1-03 Free & Clear + Notice of Foreclosure",
+   "priority": 1,
+   "rank": 3,
+   "signal": "Free & Clear + Notice of Foreclosure",
+   "signals": [
+    "Free & Clear",
+    "Notice of Foreclosure"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_notice_of_foreclosure"
+   ],
+   "lift": 76.8,
+   "dpd": 1,
+   "deals": 15,
+   "workbook_list_size": 15,
+   "typical_gross": 198000,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_foreclosure_notice_type=NF"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_free_clear=true&extra_foreclosure_notice_type=NF&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_free_clear=true&extra_foreclosure_notice_type=NF&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1,
+   "measured_not_in_account": 1,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P1-04 Notice of Foreclosure",
+   "priority": 1,
+   "rank": 4,
+   "signal": "Notice of Foreclosure",
+   "signals": [
+    "Notice of Foreclosure"
+   ],
+   "keys": [
+    "is_notice_of_foreclosure"
+   ],
+   "lift": 36.6,
+   "dpd": 2.1,
+   "deals": 38,
+   "workbook_list_size": 78,
+   "typical_gross": 186000,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_foreclosure_notice_type=NF"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_foreclosure_notice_type=NF&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_foreclosure_notice_type=NF&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 5,
+   "measured_not_in_account": 5,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P1-05 Notice of Default",
+   "priority": 1,
+   "rank": 5,
+   "signal": "Notice of Default",
+   "signals": [
+    "Notice of Default"
+   ],
+   "keys": [
+    "is_notice_of_default"
+   ],
+   "lift": 32,
+   "dpd": 2.4,
+   "deals": 28,
+   "workbook_list_size": 66,
+   "typical_gross": 95000,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_foreclosure_notice_type=ND"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_foreclosure_notice_type=ND&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_foreclosure_notice_type=ND&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 19,
+   "measured_not_in_account": 19,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P1-12 Free & Clear + Out-of-State",
+   "priority": 1,
+   "rank": 12,
+   "signal": "Free & Clear + Out-of-State",
+   "signals": [
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 6,
+   "dpd": 12.8,
+   "deals": 103,
+   "workbook_list_size": 1321,
+   "typical_gross": 160000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1307,
+   "measured_not_in_account": 1271,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P1-14 Absentee + Free & Clear + Out-of-State",
+   "priority": 1,
+   "rank": 14,
+   "signal": "Absentee + Free & Clear + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 5.2,
+   "dpd": 14.7,
+   "deals": 85,
+   "workbook_list_size": 1248,
+   "typical_gross": 146500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1230,
+   "measured_not_in_account": 1200,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P1-17 Absentee + Free & Clear",
+   "priority": 1,
+   "rank": 17,
+   "signal": "Absentee + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "lift": 4.6,
+   "dpd": 16.8,
+   "deals": 174,
+   "workbook_list_size": 2920,
+   "typical_gross": 149000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2921,
+   "measured_not_in_account": 2855,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P1-18 Out-of-State",
+   "priority": 1,
+   "rank": 18,
+   "signal": "Out-of-State",
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "lift": 3.7,
+   "dpd": 20.8,
+   "deals": 165,
+   "workbook_list_size": 3434,
+   "typical_gross": 143000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3416,
+   "measured_not_in_account": 3343,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P1-19 Out-of-State + Tired Landlord (proxy)",
+   "priority": 1,
+   "rank": 19,
+   "signal": "Out-of-State + Tired Landlord",
+   "signals": [
+    "Out-of-State",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_oos_owners",
+    "is_tired_landlord"
+   ],
+   "lift": 3.2,
+   "dpd": 23.7,
+   "deals": 40,
+   "workbook_list_size": 949,
+   "typical_gross": 136500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 945,
+   "measured_not_in_account": 936,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P1-20 High Equity + Out-of-State + Tired Landlord (proxy)",
+   "priority": 1,
+   "rank": 20,
+   "signal": "High Equity + Out-of-State + Tired Landlord",
+   "signals": [
+    "High Equity",
+    "Out-of-State",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_oos_owners",
+    "is_tired_landlord"
+   ],
+   "lift": 3.2,
+   "dpd": 23.8,
+   "deals": 24,
+   "workbook_list_size": 572,
+   "typical_gross": 130000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_high_equity=true",
+    "extra_absentee_in_state=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 566,
+   "measured_not_in_account": 561,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P1-21 Absentee + Out-of-State",
+   "priority": 1,
+   "rank": 21,
+   "signal": "Absentee + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_oos_owners"
+   ],
+   "lift": 3,
+   "dpd": 25.2,
+   "deals": 120,
+   "workbook_list_size": 3019,
+   "typical_gross": 146500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2987,
+   "measured_not_in_account": 2932,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-04 Lis Pendens",
+   "priority": 2,
+   "rank": 4,
+   "signal": "Lis Pendens",
+   "signals": [
+    "Lis Pendens"
+   ],
+   "keys": [
+    "is_lis_pendens"
+   ],
+   "lift": 8.1,
+   "dpd": 9.5,
+   "deals": 37,
+   "workbook_list_size": 351,
+   "typical_gross": 157500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_foreclosure_notice_type=LP"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_foreclosure_notice_type=LP&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_foreclosure_notice_type=LP&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 906,
+   "measured_not_in_account": 833,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-05 High Equity + Lis Pendens",
+   "priority": 2,
+   "rank": 5,
+   "signal": "High Equity + Lis Pendens",
+   "signals": [
+    "High Equity",
+    "Lis Pendens"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_lis_pendens"
+   ],
+   "lift": 7.9,
+   "dpd": 9.7,
+   "deals": 19,
+   "workbook_list_size": 184,
+   "typical_gross": 194000,
+   "caveat": "small live list: quick and cheap to market in full",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_high_equity=true",
+    "extra_foreclosure_notice_type=LP"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_high_equity=true&extra_foreclosure_notice_type=LP&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_high_equity=true&extra_foreclosure_notice_type=LP&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 402,
+   "measured_not_in_account": 375,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-06 Free & Clear + Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 6,
+   "signal": "Free & Clear + Tired Landlord",
+   "signals": [
+    "Free & Clear",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_tired_landlord"
+   ],
+   "lift": 2.9,
+   "dpd": 26.2,
+   "deals": 21,
+   "workbook_list_size": 550,
+   "typical_gross": 200000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 561,
+   "measured_not_in_account": 551,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-07 Out-of-State + Senior",
+   "priority": 2,
+   "rank": 7,
+   "signal": "Out-of-State + Senior",
+   "signals": [
+    "Out-of-State",
+    "Senior"
+   ],
+   "keys": [
+    "is_oos_owners",
+    "is_senior_homeowners"
+   ],
+   "lift": 2.9,
+   "dpd": 26.8,
+   "deals": 34,
+   "workbook_list_size": 911,
+   "typical_gross": 187000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_absentee_in_state=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_absentee_in_state=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 906,
+   "measured_not_in_account": 877,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-08 Absentee + Free & Clear + Senior",
+   "priority": 2,
+   "rank": 8,
+   "signal": "Absentee + Free & Clear + Senior",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Senior"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_senior_homeowners"
+   ],
+   "lift": 2.8,
+   "dpd": 27.6,
+   "deals": 28,
+   "workbook_list_size": 774,
+   "typical_gross": 187000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 767,
+   "measured_not_in_account": 744,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-09 Absentee",
+   "priority": 2,
+   "rank": 9,
+   "signal": "Absentee",
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "lift": 2.7,
+   "dpd": 28.4,
+   "deals": 254,
+   "workbook_list_size": 7206,
+   "typical_gross": 138000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 7165,
+   "measured_not_in_account": 7037,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-10 High Equity + Out-of-State",
+   "priority": 2,
+   "rank": 10,
+   "signal": "High Equity + Out-of-State",
+   "signals": [
+    "High Equity",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_oos_owners"
+   ],
+   "lift": 2.5,
+   "dpd": 30.9,
+   "deals": 47,
+   "workbook_list_size": 1451,
+   "typical_gross": 130000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_high_equity=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1415,
+   "measured_not_in_account": 1392,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-12 Senior + Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 12,
+   "signal": "Senior + Tired Landlord",
+   "signals": [
+    "Senior",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_senior_homeowners",
+    "is_tired_landlord"
+   ],
+   "lift": 2.4,
+   "dpd": 32.1,
+   "deals": 15,
+   "workbook_list_size": 482,
+   "typical_gross": 38500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "extra_owner_age_min=65",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 483,
+   "measured_not_in_account": 474,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-14 Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 14,
+   "signal": "Tired Landlord",
+   "signals": [
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_tired_landlord"
+   ],
+   "lift": 2.1,
+   "dpd": 35.9,
+   "deals": 57,
+   "workbook_list_size": 2046,
+   "typical_gross": 68950,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2050,
+   "measured_not_in_account": 2023,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-15 Free & Clear",
+   "priority": 2,
+   "rank": 15,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 2,
+   "dpd": 38.2,
+   "deals": 297,
+   "workbook_list_size": 11350,
+   "typical_gross": 148500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 11433,
+   "measured_not_in_account": 11076,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-16 High Equity + Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 16,
+   "signal": "High Equity + Tired Landlord",
+   "signals": [
+    "High Equity",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_tired_landlord"
+   ],
+   "lift": 2,
+   "dpd": 38.4,
+   "deals": 33,
+   "workbook_list_size": 1268,
+   "typical_gross": 54000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_high_equity=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1252,
+   "measured_not_in_account": 1236,
+   "measure_status": "ok"
+  },
+  {
+   "name": "DC P2-17 Absentee + Senior",
+   "priority": 2,
+   "rank": 17,
+   "signal": "Absentee + Senior",
+   "signals": [
+    "Absentee",
+    "Senior"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_senior_homeowners"
+   ],
+   "lift": 1.8,
+   "dpd": 42.5,
+   "deals": 37,
+   "workbook_list_size": 1573,
+   "typical_gross": 182000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_absentee_owners=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1565,
+   "measured_not_in_account": 1520,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": {
+  "name": "DC T2 Top ZIPs 20019 20020 20011 20002 20032",
+  "tier": "Tier 2",
+  "zips": [
+   {
+    "zip": "20019",
+    "stars": 5,
+    "deals": 92,
+    "typical_gross": 142500,
+    "dpd": 86.6,
+    "momentum": 0.92
+   },
+   {
+    "zip": "20020",
+    "stars": 5,
+    "deals": 80,
+    "typical_gross": 126225,
+    "dpd": 52.7,
+    "momentum": 2.72
+   },
+   {
+    "zip": "20011",
+    "stars": 4,
+    "deals": 61,
+    "typical_gross": 169250,
+    "dpd": 108.5,
+    "momentum": 1
+   },
+   {
+    "zip": "20002",
+    "stars": 4,
+    "deals": 37,
+    "typical_gross": 180000,
+    "dpd": 14.5,
+    "momentum": 1.07
+   },
+   {
+    "zip": "20032",
+    "stars": 4,
+    "deals": 30,
+    "typical_gross": 142000,
+    "dpd": 72.8,
+    "momentum": 1.25
+   }
+  ],
+  "params": [
+   "zip_codes=%5B%2220019%22%2C%20%2220020%22%2C%20%2220011%22%2C%20%2220002%22%2C%20%2220032%22%5D"
+  ],
+  "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&zip_codes=%5B%2220019%22%2C%20%2220020%22%2C%20%2220011%22%2C%20%2220002%22%2C%20%2220032%22%5D&type_single_family=true",
+  "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&zip_codes=%5B%2220019%22%2C%20%2220020%22%2C%20%2220011%22%2C%20%2220002%22%2C%20%2220032%22%5D&type_single_family=true&in_my_account_mode=not_in",
+  "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
+  "measured_count": 21519,
+  "measured_not_in_account": 21028,
+  "measure_status": "ok"
+ },
+ "gaps": [
+  {
+   "name": "DC P1-02 Absentee + HOA Lien",
+   "priority": 1,
+   "rank": 2,
+   "signal": "Absentee + HOA Lien",
+   "signals": [
+    "Absentee",
+    "HOA Lien"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_hoa_lien"
+   ],
+   "lift": 76.8,
+   "dpd": 1,
+   "deals": 23,
+   "workbook_list_size": 22,
+   "typical_gross": 199000,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "HOA Lien"
+   ],
+   "reason": "no SiftMap filter (badge only on property cards)"
+  },
+  {
+   "name": "DC P1-06 HOA Lien",
+   "priority": 1,
+   "rank": 6,
+   "signal": "HOA Lien",
+   "signals": [
+    "HOA Lien"
+   ],
+   "keys": [
+    "is_hoa_lien"
+   ],
+   "lift": 21.3,
+   "dpd": 3.6,
+   "deals": 32,
+   "workbook_list_size": 115,
+   "typical_gross": 170500,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "HOA Lien"
+   ],
+   "reason": "no SiftMap filter (badge only on property cards)"
+  },
+  {
+   "name": "DC P1-07 Lis Pendens + Other Lien",
+   "priority": 1,
+   "rank": 7,
+   "signal": "Lis Pendens + Other Lien",
+   "signals": [
+    "Lis Pendens",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_lis_pendens",
+    "is_other_lien"
+   ],
+   "lift": 15.1,
+   "dpd": 5.1,
+   "deals": 15,
+   "workbook_list_size": 77,
+   "typical_gross": 157500,
+   "caveat": "small live list: quick and cheap to market in full",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Other Lien"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "DC P1-08 Free & Clear + Other Lien",
+   "priority": 1,
+   "rank": 8,
+   "signal": "Free & Clear + Other Lien",
+   "signals": [
+    "Free & Clear",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_other_lien"
+   ],
+   "lift": 7.8,
+   "dpd": 9.9,
+   "deals": 43,
+   "workbook_list_size": 425,
+   "typical_gross": 149000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Other Lien"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "DC P1-09 Absentee + Other Lien",
+   "priority": 1,
+   "rank": 9,
+   "signal": "Absentee + Other Lien",
+   "signals": [
+    "Absentee",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_other_lien"
+   ],
+   "lift": 7,
+   "dpd": 10.9,
+   "deals": 44,
+   "workbook_list_size": 478,
+   "typical_gross": 143500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Other Lien"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "DC P1-10 Other Lien + Senior",
+   "priority": 1,
+   "rank": 10,
+   "signal": "Other Lien + Senior",
+   "signals": [
+    "Other Lien",
+    "Senior"
+   ],
+   "keys": [
+    "is_other_lien",
+    "is_senior_homeowners"
+   ],
+   "lift": 6.7,
+   "dpd": 11.5,
+   "deals": 38,
+   "workbook_list_size": 436,
+   "typical_gross": 152000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Other Lien"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "DC P1-11 AI Score 90-100",
+   "priority": 1,
+   "rank": 11,
+   "signal": "AI Score 90-100",
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 6.4,
+   "dpd": 12,
+   "deals": 152,
+   "workbook_list_size": 1819,
+   "typical_gross": 156750,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 90-100"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "DC P1-13 Other Lien",
+   "priority": 1,
+   "rank": 13,
+   "signal": "Other Lien",
+   "signals": [
+    "Other Lien"
+   ],
+   "keys": [
+    "is_other_lien"
+   ],
+   "lift": 5.6,
+   "dpd": 13.7,
+   "deals": 105,
+   "workbook_list_size": 1439,
+   "typical_gross": 150000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Other Lien"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "DC P1-15 High Equity + Other Lien",
+   "priority": 1,
+   "rank": 15,
+   "signal": "High Equity + Other Lien",
+   "signals": [
+    "High Equity",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_other_lien"
+   ],
+   "lift": 5.1,
+   "dpd": 15,
+   "deals": 40,
+   "workbook_list_size": 600,
+   "typical_gross": 136000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Other Lien"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "DC P1-16 Low Income",
+   "priority": 1,
+   "rank": 16,
+   "signal": "Low Income",
+   "signals": [
+    "Low Income"
+   ],
+   "keys": [
+    "is_low_income"
+   ],
+   "lift": 4.6,
+   "dpd": 16.6,
+   "deals": 28,
+   "workbook_list_size": 466,
+   "typical_gross": 137750,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "DC P1-22 Obituary",
+   "priority": 1,
+   "rank": 22,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 2.3,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 129,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  },
+  {
+   "name": "DC P2-01 Absentee + Free & Clear + Other Lien",
+   "priority": 2,
+   "rank": 1,
+   "signal": "Absentee + Free & Clear + Other Lien",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_other_lien"
+   ],
+   "lift": 9.8,
+   "dpd": 7.8,
+   "deals": 24,
+   "workbook_list_size": 188,
+   "typical_gross": 149000,
+   "caveat": "small live list: quick and cheap to market in full",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Other Lien"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "DC P2-02 High Equity + Other Lien + Senior",
+   "priority": 2,
+   "rank": 2,
+   "signal": "High Equity + Other Lien + Senior",
+   "signals": [
+    "High Equity",
+    "Other Lien",
+    "Senior"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_other_lien",
+    "is_senior_homeowners"
+   ],
+   "lift": 8.8,
+   "dpd": 8.7,
+   "deals": 20,
+   "workbook_list_size": 174,
+   "typical_gross": 143500,
+   "caveat": "small live list: quick and cheap to market in full",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Other Lien"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "DC P2-03 Out-of-State + Other Lien",
+   "priority": 2,
+   "rank": 3,
+   "signal": "Out-of-State + Other Lien",
+   "signals": [
+    "Out-of-State",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_oos_owners",
+    "is_other_lien"
+   ],
+   "lift": 8.7,
+   "dpd": 8.8,
+   "deals": 27,
+   "workbook_list_size": 237,
+   "typical_gross": 182000,
+   "caveat": "small live list: quick and cheap to market in full",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Other Lien"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "DC P2-11 AI Score 80-90",
+   "priority": 2,
+   "rank": 11,
+   "signal": "AI Score 80-90",
+   "signals": [
+    "AI Score 80-90"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 2.4,
+   "dpd": 31.6,
+   "deals": 59,
+   "workbook_list_size": 1865,
+   "typical_gross": 120000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 80-90"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "DC P2-13 Bad Credit",
+   "priority": 2,
+   "rank": 13,
+   "signal": "Bad Credit",
+   "signals": [
+    "Bad Credit"
+   ],
+   "keys": [
+    "is_bad_credit"
+   ],
+   "lift": 2.2,
+   "dpd": 35.2,
+   "deals": 15,
+   "workbook_list_size": 528,
+   "typical_gross": 190000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit"
+   ],
+   "reason": "no SiftMap filter"
+  }
+ ],
+ "baseline_single_family": 48530,
+ "measured_at": "2026-08-27T15:32:37"
+}

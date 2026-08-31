@@ -1,0 +1,665 @@
+{
+ "searched_at": "2026-08-26T10:48:37",
+ "band": [
+  200,
+  500
+ ],
+ "counties": {
+  "Baltimore County, MD": {
+   "status": "found",
+   "choice": {
+    "signal": "Vacant",
+    "lift": 11.1,
+    "workbook_list_size": 780,
+    "stack_only_count": 756,
+    "depth_search": {
+     "status": "in_band",
+     "depth": 48,
+     "count": 206
+    },
+    "verdict": "in_band_after_narrowing",
+    "chosen_count": 206,
+    "depth": 48,
+    "neighborhoods": [
+     "Arbutus",
+     "California Grove",
+     "Milford Mill",
+     "Woodbridge Valley",
+     "Hamiltowne",
+     "Cowdensville",
+     "Harford Hills",
+     "Northampton - Lutherville Timonium",
+     "Mardella Ridge",
+     "Westchester - Catonsville",
+     "Village Of Painters Mill",
+     "Catonsville Heights",
+     "Hyde Park - Essex",
+     "Shady Nook",
+     "Rodgers Forge",
+     "Worthington Place South",
+     "Lutherville",
+     "Woodlawn - Gwynn Oak",
+     "Reisterstown South",
+     "Middlesex - Essex",
+     "Silverbrook Farm",
+     "Philadelphia Heights",
+     "Courthaven",
+     "Metropolitan Homes",
+     "Wellington Valley",
+     "Dun Rovin",
+     "Overlea - Perry Hall",
+     "Worthington Glen",
+     "Kings Ridge - Parkville",
+     "Hillendale Park",
+     "Knettishall",
+     "Wiltondale",
+     "Tullamore",
+     "Town Center - Reisterstown",
+     "Olde Mill Estates",
+     "Upperco",
+     "Martindale - Essex",
+     "Nottingham - Rosedale",
+     "Timber Grove",
+     "Baltimore Highlands",
+     "Kenwood South",
+     "Silver Creek - Pikesville",
+     "The Oaks At Old Court",
+     "Tollgate",
+     "Randall Ridge",
+     "Havenwood - Lutherville Timonium",
+     "Lansdowne - Halethorpe",
+     "Crown Estates"
+    ],
+    "params": [
+     "preset_vacant=true",
+     "neighborhoods=%5B%22Arbutus%22%2C%20%22California%20Grove%22%2C%20%22Milford%20Mill%22%2C%20%22Woodbridge%20Valley%22%2C%20%22Hamiltowne%22%2C%20%22Cowdensville%22%2C%20%22Harford%20Hills%22%2C%20%22Northampton%20-%20Lutherville%20Timonium%22%2C%20%22Mardella%20Ridge%22%2C%20%22Westchester%20-%20Catonsville%22%2C%20%22Village%20Of%20Painters%20Mill%22%2C%20%22Catonsville%20Heights%22%2C%20%22Hyde%20Park%20-%20Essex%22%2C%20%22Shady%20Nook%22%2C%20%22Rodgers%20Forge%22%2C%20%22Worthington%20Place%20South%22%2C%20%22Lutherville%22%2C%20%22Woodlawn%20-%20Gwynn%20Oak%22%2C%20%22Reisterstown%20South%22%2C%20%22Middlesex%20-%20Essex%22%2C%20%22Silverbrook%20Farm%22%2C%20%22Philadelphia%20Heights%22%2C%20%22Courthaven%22%2C%20%22Metropolitan%20Homes%22%2C%20%22Wellington%20Valley%22%2C%20%22Dun%20Rovin%22%2C%20%22Overlea%20-%20Perry%20Hall%22%2C%20%22Worthington%20Glen%22%2C%20%22Kings%20Ridge%20-%20Parkville%22%2C%20%22Hillendale%20Park%22%2C%20%22Knettishall%22%2C%20%22Wiltondale%22%2C%20%22Tullamore%22%2C%20%22Town%20Center%20-%20Reisterstown%22%2C%20%22Olde%20Mill%20Estates%22%2C%20%22Upperco%22%2C%20%22Martindale%20-%20Essex%22%2C%20%22Nottingham%20-%20Rosedale%22%2C%20%22Timber%20Grove%22%2C%20%22Baltimore%20Highlands%22%2C%20%22Kenwood%20South%22%2C%20%22Silver%20Creek%20-%20Pikesville%22%2C%20%22The%20Oaks%20At%20Old%20Court%22%2C%20%22Tollgate%22%2C%20%22Randall%20Ridge%22%2C%20%22Havenwood%20-%20Lutherville%20Timonium%22%2C%20%22Lansdowne%20-%20Halethorpe%22%2C%20%22Crown%20Estates%22%5D"
+    ],
+    "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_vacant=true&neighborhoods=%5B%22Arbutus%22%2C%20%22California%20Grove%22%2C%20%22Milford%20Mill%22%2C%20%22Woodbridge%20Valley%22%2C%20%22Hamiltowne%22%2C%20%22Cowdensville%22%2C%20%22Harford%20Hills%22%2C%20%22Northampton%20-%20Lutherville%20Timonium%22%2C%20%22Mardella%20Ridge%22%2C%20%22Westchester%20-%20Catonsville%22%2C%20%22Village%20Of%20Painters%20Mill%22%2C%20%22Catonsville%20Heights%22%2C%20%22Hyde%20Park%20-%20Essex%22%2C%20%22Shady%20Nook%22%2C%20%22Rodgers%20Forge%22%2C%20%22Worthington%20Place%20South%22%2C%20%22Lutherville%22%2C%20%22Woodlawn%20-%20Gwynn%20Oak%22%2C%20%22Reisterstown%20South%22%2C%20%22Middlesex%20-%20Essex%22%2C%20%22Silverbrook%20Farm%22%2C%20%22Philadelphia%20Heights%22%2C%20%22Courthaven%22%2C%20%22Metropolitan%20Homes%22%2C%20%22Wellington%20Valley%22%2C%20%22Dun%20Rovin%22%2C%20%22Overlea%20-%20Perry%20Hall%22%2C%20%22Worthington%20Glen%22%2C%20%22Kings%20Ridge%20-%20Parkville%22%2C%20%22Hillendale%20Park%22%2C%20%22Knettishall%22%2C%20%22Wiltondale%22%2C%20%22Tullamore%22%2C%20%22Town%20Center%20-%20Reisterstown%22%2C%20%22Olde%20Mill%20Estates%22%2C%20%22Upperco%22%2C%20%22Martindale%20-%20Essex%22%2C%20%22Nottingham%20-%20Rosedale%22%2C%20%22Timber%20Grove%22%2C%20%22Baltimore%20Highlands%22%2C%20%22Kenwood%20South%22%2C%20%22Silver%20Creek%20-%20Pikesville%22%2C%20%22The%20Oaks%20At%20Old%20Court%22%2C%20%22Tollgate%22%2C%20%22Randall%20Ridge%22%2C%20%22Havenwood%20-%20Lutherville%20Timonium%22%2C%20%22Lansdowne%20-%20Halethorpe%22%2C%20%22Crown%20Estates%22%5D&type_single_family=true&in_my_account_mode=not_in"
+   },
+   "tried": [
+    {
+     "signal": "High Equity + Notice of Default",
+     "lift": 47.5,
+     "workbook_list_size": 45,
+     "stack_only_count": 1,
+     "verdict": "under band (1 < 200)"
+    },
+    {
+     "signal": "Notice of Default",
+     "lift": 38.7,
+     "workbook_list_size": 90,
+     "stack_only_count": 1,
+     "verdict": "under band (1 < 200)"
+    },
+    {
+     "signal": "Out-of-State + Vacant",
+     "lift": 24.5,
+     "workbook_list_size": 54,
+     "stack_only_count": 51,
+     "verdict": "under band (51 < 200)"
+    },
+    {
+     "signal": "High Equity + Vacant",
+     "lift": 16.6,
+     "workbook_list_size": 160,
+     "stack_only_count": 167,
+     "verdict": "under band (167 < 200)"
+    },
+    {
+     "signal": "Senior + Vacant",
+     "lift": 16.5,
+     "workbook_list_size": 192,
+     "stack_only_count": 182,
+     "verdict": "under band (182 < 200)"
+    },
+    {
+     "signal": "Free & Clear + Senior + Vacant",
+     "lift": 12.8,
+     "workbook_list_size": 143,
+     "stack_only_count": 134,
+     "verdict": "under band (134 < 200)"
+    },
+    {
+     "signal": "Vacant",
+     "lift": 11.1,
+     "workbook_list_size": 780,
+     "stack_only_count": 756,
+     "depth_search": {
+      "status": "in_band",
+      "depth": 48,
+      "count": 206
+     },
+     "verdict": "in_band_after_narrowing",
+     "chosen_count": 206,
+     "depth": 48,
+     "neighborhoods": [
+      "Arbutus",
+      "California Grove",
+      "Milford Mill",
+      "Woodbridge Valley",
+      "Hamiltowne",
+      "Cowdensville",
+      "Harford Hills",
+      "Northampton - Lutherville Timonium",
+      "Mardella Ridge",
+      "Westchester - Catonsville",
+      "Village Of Painters Mill",
+      "Catonsville Heights",
+      "Hyde Park - Essex",
+      "Shady Nook",
+      "Rodgers Forge",
+      "Worthington Place South",
+      "Lutherville",
+      "Woodlawn - Gwynn Oak",
+      "Reisterstown South",
+      "Middlesex - Essex",
+      "Silverbrook Farm",
+      "Philadelphia Heights",
+      "Courthaven",
+      "Metropolitan Homes",
+      "Wellington Valley",
+      "Dun Rovin",
+      "Overlea - Perry Hall",
+      "Worthington Glen",
+      "Kings Ridge - Parkville",
+      "Hillendale Park",
+      "Knettishall",
+      "Wiltondale",
+      "Tullamore",
+      "Town Center - Reisterstown",
+      "Olde Mill Estates",
+      "Upperco",
+      "Martindale - Essex",
+      "Nottingham - Rosedale",
+      "Timber Grove",
+      "Baltimore Highlands",
+      "Kenwood South",
+      "Silver Creek - Pikesville",
+      "The Oaks At Old Court",
+      "Tollgate",
+      "Randall Ridge",
+      "Havenwood - Lutherville Timonium",
+      "Lansdowne - Halethorpe",
+      "Crown Estates"
+     ],
+     "params": [
+      "preset_vacant=true",
+      "neighborhoods=%5B%22Arbutus%22%2C%20%22California%20Grove%22%2C%20%22Milford%20Mill%22%2C%20%22Woodbridge%20Valley%22%2C%20%22Hamiltowne%22%2C%20%22Cowdensville%22%2C%20%22Harford%20Hills%22%2C%20%22Northampton%20-%20Lutherville%20Timonium%22%2C%20%22Mardella%20Ridge%22%2C%20%22Westchester%20-%20Catonsville%22%2C%20%22Village%20Of%20Painters%20Mill%22%2C%20%22Catonsville%20Heights%22%2C%20%22Hyde%20Park%20-%20Essex%22%2C%20%22Shady%20Nook%22%2C%20%22Rodgers%20Forge%22%2C%20%22Worthington%20Place%20South%22%2C%20%22Lutherville%22%2C%20%22Woodlawn%20-%20Gwynn%20Oak%22%2C%20%22Reisterstown%20South%22%2C%20%22Middlesex%20-%20Essex%22%2C%20%22Silverbrook%20Farm%22%2C%20%22Philadelphia%20Heights%22%2C%20%22Courthaven%22%2C%20%22Metropolitan%20Homes%22%2C%20%22Wellington%20Valley%22%2C%20%22Dun%20Rovin%22%2C%20%22Overlea%20-%20Perry%20Hall%22%2C%20%22Worthington%20Glen%22%2C%20%22Kings%20Ridge%20-%20Parkville%22%2C%20%22Hillendale%20Park%22%2C%20%22Knettishall%22%2C%20%22Wiltondale%22%2C%20%22Tullamore%22%2C%20%22Town%20Center%20-%20Reisterstown%22%2C%20%22Olde%20Mill%20Estates%22%2C%20%22Upperco%22%2C%20%22Martindale%20-%20Essex%22%2C%20%22Nottingham%20-%20Rosedale%22%2C%20%22Timber%20Grove%22%2C%20%22Baltimore%20Highlands%22%2C%20%22Kenwood%20South%22%2C%20%22Silver%20Creek%20-%20Pikesville%22%2C%20%22The%20Oaks%20At%20Old%20Court%22%2C%20%22Tollgate%22%2C%20%22Randall%20Ridge%22%2C%20%22Havenwood%20-%20Lutherville%20Timonium%22%2C%20%22Lansdowne%20-%20Halethorpe%22%2C%20%22Crown%20Estates%22%5D"
+     ],
+     "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_vacant=true&neighborhoods=%5B%22Arbutus%22%2C%20%22California%20Grove%22%2C%20%22Milford%20Mill%22%2C%20%22Woodbridge%20Valley%22%2C%20%22Hamiltowne%22%2C%20%22Cowdensville%22%2C%20%22Harford%20Hills%22%2C%20%22Northampton%20-%20Lutherville%20Timonium%22%2C%20%22Mardella%20Ridge%22%2C%20%22Westchester%20-%20Catonsville%22%2C%20%22Village%20Of%20Painters%20Mill%22%2C%20%22Catonsville%20Heights%22%2C%20%22Hyde%20Park%20-%20Essex%22%2C%20%22Shady%20Nook%22%2C%20%22Rodgers%20Forge%22%2C%20%22Worthington%20Place%20South%22%2C%20%22Lutherville%22%2C%20%22Woodlawn%20-%20Gwynn%20Oak%22%2C%20%22Reisterstown%20South%22%2C%20%22Middlesex%20-%20Essex%22%2C%20%22Silverbrook%20Farm%22%2C%20%22Philadelphia%20Heights%22%2C%20%22Courthaven%22%2C%20%22Metropolitan%20Homes%22%2C%20%22Wellington%20Valley%22%2C%20%22Dun%20Rovin%22%2C%20%22Overlea%20-%20Perry%20Hall%22%2C%20%22Worthington%20Glen%22%2C%20%22Kings%20Ridge%20-%20Parkville%22%2C%20%22Hillendale%20Park%22%2C%20%22Knettishall%22%2C%20%22Wiltondale%22%2C%20%22Tullamore%22%2C%20%22Town%20Center%20-%20Reisterstown%22%2C%20%22Olde%20Mill%20Estates%22%2C%20%22Upperco%22%2C%20%22Martindale%20-%20Essex%22%2C%20%22Nottingham%20-%20Rosedale%22%2C%20%22Timber%20Grove%22%2C%20%22Baltimore%20Highlands%22%2C%20%22Kenwood%20South%22%2C%20%22Silver%20Creek%20-%20Pikesville%22%2C%20%22The%20Oaks%20At%20Old%20Court%22%2C%20%22Tollgate%22%2C%20%22Randall%20Ridge%22%2C%20%22Havenwood%20-%20Lutherville%20Timonium%22%2C%20%22Lansdowne%20-%20Halethorpe%22%2C%20%22Crown%20Estates%22%5D&type_single_family=true&in_my_account_mode=not_in"
+    }
+   ],
+   "previous": {
+    "stack": "Out-of-State + Vacant",
+    "lift": 24.5,
+    "count": 51,
+    "state": "under_band"
+   }
+  },
+  "Calvert, MD": {
+   "status": "found",
+   "choice": {
+    "signal": "Out-of-State",
+    "lift": 3.5,
+    "workbook_list_size": 1001,
+    "stack_only_count": 990,
+    "depth_search": {
+     "status": "in_band",
+     "depth": 3,
+     "count": 202
+    },
+    "verdict": "in_band_after_narrowing",
+    "chosen_count": 202,
+    "depth": 3,
+    "neighborhoods": [
+     "North Beach",
+     "Solomons",
+     "Lake Karylbrook"
+    ],
+    "params": [
+     "extra_absentee_in_state=true",
+     "neighborhoods=%5B%22North%20Beach%22%2C%20%22Solomons%22%2C%20%22Lake%20Karylbrook%22%5D"
+    ],
+    "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&extra_absentee_in_state=true&neighborhoods=%5B%22North%20Beach%22%2C%20%22Solomons%22%2C%20%22Lake%20Karylbrook%22%5D&type_single_family=true&in_my_account_mode=not_in"
+   },
+   "tried": [
+    {
+     "signal": "Absentee + Free & Clear",
+     "lift": 4,
+     "workbook_list_size": 3958,
+     "stack_only_count": 3949,
+     "depth_search": {
+      "status": "band_skipped",
+      "depth": 2,
+      "count": 536,
+      "reason": "depth 1 measures 278 (under 200) and depth 2 measures 536 (over 500); no depth lands in the band because one neighbourhood is larger than the band is wide"
+     },
+     "verdict": "over band (3949) and band_skipped"
+    },
+    {
+     "signal": "Out-of-State",
+     "lift": 3.5,
+     "workbook_list_size": 1001,
+     "stack_only_count": 990,
+     "depth_search": {
+      "status": "in_band",
+      "depth": 3,
+      "count": 202
+     },
+     "verdict": "in_band_after_narrowing",
+     "chosen_count": 202,
+     "depth": 3,
+     "neighborhoods": [
+      "North Beach",
+      "Solomons",
+      "Lake Karylbrook"
+     ],
+     "params": [
+      "extra_absentee_in_state=true",
+      "neighborhoods=%5B%22North%20Beach%22%2C%20%22Solomons%22%2C%20%22Lake%20Karylbrook%22%5D"
+     ],
+     "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&extra_absentee_in_state=true&neighborhoods=%5B%22North%20Beach%22%2C%20%22Solomons%22%2C%20%22Lake%20Karylbrook%22%5D&type_single_family=true&in_my_account_mode=not_in"
+    }
+   ],
+   "previous": {
+    "stack": "Absentee",
+    "lift": 3.2,
+    "count": 2614,
+    "state": "no_depth_in_band"
+   }
+  },
+  "District of Columbia": {
+   "status": "found",
+   "choice": {
+    "signal": "High Equity + Lis Pendens",
+    "lift": 7.9,
+    "workbook_list_size": 184,
+    "stack_only_count": 370,
+    "verdict": "in_band",
+    "chosen_count": 370,
+    "depth": null,
+    "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_high_equity=true&extra_foreclosure_notice_type=LP&type_single_family=true&in_my_account_mode=not_in",
+    "params": [
+     "preset_high_equity=true",
+     "extra_foreclosure_notice_type=LP"
+    ]
+   },
+   "tried": [
+    {
+     "signal": "Absentee + Notice of Foreclosure",
+     "lift": 76.8,
+     "workbook_list_size": 23,
+     "stack_only_count": 0,
+     "verdict": "under band (0 < 200)"
+    },
+    {
+     "signal": "Free & Clear + Notice of Foreclosure",
+     "lift": 76.8,
+     "workbook_list_size": 15,
+     "stack_only_count": 1,
+     "verdict": "under band (1 < 200)"
+    },
+    {
+     "signal": "Notice of Foreclosure",
+     "lift": 36.6,
+     "workbook_list_size": 78,
+     "stack_only_count": 2,
+     "verdict": "under band (2 < 200)"
+    },
+    {
+     "signal": "Notice of Default",
+     "lift": 32,
+     "workbook_list_size": 66,
+     "stack_only_count": 18,
+     "verdict": "under band (18 < 200)"
+    },
+    {
+     "signal": "Lis Pendens",
+     "lift": 8.1,
+     "workbook_list_size": 351,
+     "stack_only_count": 833,
+     "depth_search": {
+      "status": "unreachable_high",
+      "depth": 14,
+      "count": 104,
+      "reason": "including all 14 ranked neighbourhoods still measures 104, under 200; geography cannot fill this band"
+     },
+     "verdict": "over band (833) and unreachable_high"
+    },
+    {
+     "signal": "High Equity + Lis Pendens",
+     "lift": 7.9,
+     "workbook_list_size": 184,
+     "stack_only_count": 370,
+     "verdict": "in_band",
+     "chosen_count": 370,
+     "depth": null,
+     "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22District%20of%20Columbia%20County%2C%20DC%22%2C%20%22county%22%3A%20%22District%20of%20Columbia%22%2C%20%22state%22%3A%20%22DC%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2211001%22%2C%20%22county_name%22%3A%20%22District%20of%20Columbia%22%7D%5D%7D&preset_high_equity=true&extra_foreclosure_notice_type=LP&type_single_family=true&in_my_account_mode=not_in",
+     "params": [
+      "preset_high_equity=true",
+      "extra_foreclosure_notice_type=LP"
+     ]
+    }
+   ],
+   "previous": {
+    "stack": "Absentee + Notice of Foreclosure",
+    "lift": 76.8,
+    "count": 0,
+    "state": "under_band"
+   }
+  },
+  "Fairfax, VA": {
+   "status": "found",
+   "choice": {
+    "signal": "Free & Clear + Out-of-State",
+    "lift": 8.6,
+    "workbook_list_size": 1516,
+    "stack_only_count": 1490,
+    "depth_search": {
+     "status": "in_band",
+     "depth": 44,
+     "count": 202
+    },
+    "verdict": "in_band_after_narrowing",
+    "chosen_count": 202,
+    "depth": 44,
+    "neighborhoods": [
+     "Ravensworth Grove",
+     "Generation",
+     "Devonshire - Reston",
+     "Burke Centre East",
+     "Keene Mill Manor",
+     "Lynbrook - Springfield",
+     "Southport - Burke",
+     "Virginia Center",
+     "Stoneybrooke",
+     "Laurel Hill - Lorton",
+     "Greenway Downs",
+     "Pleasant Ridge - Annandale",
+     "Hebron Park",
+     "Lewinsville",
+     "Lincolnia Heights",
+     "Fenwick Park",
+     "Country Club Manor",
+     "McNair - Herndon",
+     "Glen Alden",
+     "Fair Lakes Court",
+     "Camelot - Annandale",
+     "Hybla Valley",
+     "Boulevard Estates",
+     "Jefferson Manor",
+     "Little Rocky Run",
+     "Chantilly Green",
+     "Kingstream",
+     "Floris",
+     "Sleepy Hollow Woods",
+     "Clifton Townes",
+     "Spring Lake Estates",
+     "Devereux West",
+     "Sully Station",
+     "Burgoyne Forest West",
+     "Villaridge",
+     "Idylwood",
+     "Random Hills",
+     "Wilton Woods",
+     "Mercer - Reston",
+     "Greenbriar - Fairfax",
+     "Lee Meadows",
+     "Newgate",
+     "West Springfield",
+     "Woodley"
+    ],
+    "params": [
+     "preset_free_clear=true",
+     "extra_absentee_in_state=true",
+     "neighborhoods=%5B%22Ravensworth%20Grove%22%2C%20%22Generation%22%2C%20%22Devonshire%20-%20Reston%22%2C%20%22Burke%20Centre%20East%22%2C%20%22Keene%20Mill%20Manor%22%2C%20%22Lynbrook%20-%20Springfield%22%2C%20%22Southport%20-%20Burke%22%2C%20%22Virginia%20Center%22%2C%20%22Stoneybrooke%22%2C%20%22Laurel%20Hill%20-%20Lorton%22%2C%20%22Greenway%20Downs%22%2C%20%22Pleasant%20Ridge%20-%20Annandale%22%2C%20%22Hebron%20Park%22%2C%20%22Lewinsville%22%2C%20%22Lincolnia%20Heights%22%2C%20%22Fenwick%20Park%22%2C%20%22Country%20Club%20Manor%22%2C%20%22McNair%20-%20Herndon%22%2C%20%22Glen%20Alden%22%2C%20%22Fair%20Lakes%20Court%22%2C%20%22Camelot%20-%20Annandale%22%2C%20%22Hybla%20Valley%22%2C%20%22Boulevard%20Estates%22%2C%20%22Jefferson%20Manor%22%2C%20%22Little%20Rocky%20Run%22%2C%20%22Chantilly%20Green%22%2C%20%22Kingstream%22%2C%20%22Floris%22%2C%20%22Sleepy%20Hollow%20Woods%22%2C%20%22Clifton%20Townes%22%2C%20%22Spring%20Lake%20Estates%22%2C%20%22Devereux%20West%22%2C%20%22Sully%20Station%22%2C%20%22Burgoyne%20Forest%20West%22%2C%20%22Villaridge%22%2C%20%22Idylwood%22%2C%20%22Random%20Hills%22%2C%20%22Wilton%20Woods%22%2C%20%22Mercer%20-%20Reston%22%2C%20%22Greenbriar%20-%20Fairfax%22%2C%20%22Lee%20Meadows%22%2C%20%22Newgate%22%2C%20%22West%20Springfield%22%2C%20%22Woodley%22%5D"
+    ],
+    "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&neighborhoods=%5B%22Ravensworth%20Grove%22%2C%20%22Generation%22%2C%20%22Devonshire%20-%20Reston%22%2C%20%22Burke%20Centre%20East%22%2C%20%22Keene%20Mill%20Manor%22%2C%20%22Lynbrook%20-%20Springfield%22%2C%20%22Southport%20-%20Burke%22%2C%20%22Virginia%20Center%22%2C%20%22Stoneybrooke%22%2C%20%22Laurel%20Hill%20-%20Lorton%22%2C%20%22Greenway%20Downs%22%2C%20%22Pleasant%20Ridge%20-%20Annandale%22%2C%20%22Hebron%20Park%22%2C%20%22Lewinsville%22%2C%20%22Lincolnia%20Heights%22%2C%20%22Fenwick%20Park%22%2C%20%22Country%20Club%20Manor%22%2C%20%22McNair%20-%20Herndon%22%2C%20%22Glen%20Alden%22%2C%20%22Fair%20Lakes%20Court%22%2C%20%22Camelot%20-%20Annandale%22%2C%20%22Hybla%20Valley%22%2C%20%22Boulevard%20Estates%22%2C%20%22Jefferson%20Manor%22%2C%20%22Little%20Rocky%20Run%22%2C%20%22Chantilly%20Green%22%2C%20%22Kingstream%22%2C%20%22Floris%22%2C%20%22Sleepy%20Hollow%20Woods%22%2C%20%22Clifton%20Townes%22%2C%20%22Spring%20Lake%20Estates%22%2C%20%22Devereux%20West%22%2C%20%22Sully%20Station%22%2C%20%22Burgoyne%20Forest%20West%22%2C%20%22Villaridge%22%2C%20%22Idylwood%22%2C%20%22Random%20Hills%22%2C%20%22Wilton%20Woods%22%2C%20%22Mercer%20-%20Reston%22%2C%20%22Greenbriar%20-%20Fairfax%22%2C%20%22Lee%20Meadows%22%2C%20%22Newgate%22%2C%20%22West%20Springfield%22%2C%20%22Woodley%22%5D&type_single_family=true&in_my_account_mode=not_in"
+   },
+   "tried": [
+    {
+     "signal": "Notice of Default",
+     "lift": 37.3,
+     "workbook_list_size": 93,
+     "stack_only_count": 91,
+     "verdict": "under band (91 < 200)"
+    },
+    {
+     "signal": "Free & Clear + Tax Delinquent + Senior",
+     "lift": 10.3,
+     "workbook_list_size": 340,
+     "stack_only_count": 0,
+     "verdict": "under band (0 < 200)"
+    },
+    {
+     "signal": "Free & Clear + Tax Delinquent",
+     "lift": 8.8,
+     "workbook_list_size": 956,
+     "stack_only_count": 0,
+     "verdict": "under band (0 < 200)"
+    },
+    {
+     "signal": "Free & Clear + Out-of-State",
+     "lift": 8.6,
+     "workbook_list_size": 1516,
+     "stack_only_count": 1490,
+     "depth_search": {
+      "status": "in_band",
+      "depth": 44,
+      "count": 202
+     },
+     "verdict": "in_band_after_narrowing",
+     "chosen_count": 202,
+     "depth": 44,
+     "neighborhoods": [
+      "Ravensworth Grove",
+      "Generation",
+      "Devonshire - Reston",
+      "Burke Centre East",
+      "Keene Mill Manor",
+      "Lynbrook - Springfield",
+      "Southport - Burke",
+      "Virginia Center",
+      "Stoneybrooke",
+      "Laurel Hill - Lorton",
+      "Greenway Downs",
+      "Pleasant Ridge - Annandale",
+      "Hebron Park",
+      "Lewinsville",
+      "Lincolnia Heights",
+      "Fenwick Park",
+      "Country Club Manor",
+      "McNair - Herndon",
+      "Glen Alden",
+      "Fair Lakes Court",
+      "Camelot - Annandale",
+      "Hybla Valley",
+      "Boulevard Estates",
+      "Jefferson Manor",
+      "Little Rocky Run",
+      "Chantilly Green",
+      "Kingstream",
+      "Floris",
+      "Sleepy Hollow Woods",
+      "Clifton Townes",
+      "Spring Lake Estates",
+      "Devereux West",
+      "Sully Station",
+      "Burgoyne Forest West",
+      "Villaridge",
+      "Idylwood",
+      "Random Hills",
+      "Wilton Woods",
+      "Mercer - Reston",
+      "Greenbriar - Fairfax",
+      "Lee Meadows",
+      "Newgate",
+      "West Springfield",
+      "Woodley"
+     ],
+     "params": [
+      "preset_free_clear=true",
+      "extra_absentee_in_state=true",
+      "neighborhoods=%5B%22Ravensworth%20Grove%22%2C%20%22Generation%22%2C%20%22Devonshire%20-%20Reston%22%2C%20%22Burke%20Centre%20East%22%2C%20%22Keene%20Mill%20Manor%22%2C%20%22Lynbrook%20-%20Springfield%22%2C%20%22Southport%20-%20Burke%22%2C%20%22Virginia%20Center%22%2C%20%22Stoneybrooke%22%2C%20%22Laurel%20Hill%20-%20Lorton%22%2C%20%22Greenway%20Downs%22%2C%20%22Pleasant%20Ridge%20-%20Annandale%22%2C%20%22Hebron%20Park%22%2C%20%22Lewinsville%22%2C%20%22Lincolnia%20Heights%22%2C%20%22Fenwick%20Park%22%2C%20%22Country%20Club%20Manor%22%2C%20%22McNair%20-%20Herndon%22%2C%20%22Glen%20Alden%22%2C%20%22Fair%20Lakes%20Court%22%2C%20%22Camelot%20-%20Annandale%22%2C%20%22Hybla%20Valley%22%2C%20%22Boulevard%20Estates%22%2C%20%22Jefferson%20Manor%22%2C%20%22Little%20Rocky%20Run%22%2C%20%22Chantilly%20Green%22%2C%20%22Kingstream%22%2C%20%22Floris%22%2C%20%22Sleepy%20Hollow%20Woods%22%2C%20%22Clifton%20Townes%22%2C%20%22Spring%20Lake%20Estates%22%2C%20%22Devereux%20West%22%2C%20%22Sully%20Station%22%2C%20%22Burgoyne%20Forest%20West%22%2C%20%22Villaridge%22%2C%20%22Idylwood%22%2C%20%22Random%20Hills%22%2C%20%22Wilton%20Woods%22%2C%20%22Mercer%20-%20Reston%22%2C%20%22Greenbriar%20-%20Fairfax%22%2C%20%22Lee%20Meadows%22%2C%20%22Newgate%22%2C%20%22West%20Springfield%22%2C%20%22Woodley%22%5D"
+     ],
+     "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&neighborhoods=%5B%22Ravensworth%20Grove%22%2C%20%22Generation%22%2C%20%22Devonshire%20-%20Reston%22%2C%20%22Burke%20Centre%20East%22%2C%20%22Keene%20Mill%20Manor%22%2C%20%22Lynbrook%20-%20Springfield%22%2C%20%22Southport%20-%20Burke%22%2C%20%22Virginia%20Center%22%2C%20%22Stoneybrooke%22%2C%20%22Laurel%20Hill%20-%20Lorton%22%2C%20%22Greenway%20Downs%22%2C%20%22Pleasant%20Ridge%20-%20Annandale%22%2C%20%22Hebron%20Park%22%2C%20%22Lewinsville%22%2C%20%22Lincolnia%20Heights%22%2C%20%22Fenwick%20Park%22%2C%20%22Country%20Club%20Manor%22%2C%20%22McNair%20-%20Herndon%22%2C%20%22Glen%20Alden%22%2C%20%22Fair%20Lakes%20Court%22%2C%20%22Camelot%20-%20Annandale%22%2C%20%22Hybla%20Valley%22%2C%20%22Boulevard%20Estates%22%2C%20%22Jefferson%20Manor%22%2C%20%22Little%20Rocky%20Run%22%2C%20%22Chantilly%20Green%22%2C%20%22Kingstream%22%2C%20%22Floris%22%2C%20%22Sleepy%20Hollow%20Woods%22%2C%20%22Clifton%20Townes%22%2C%20%22Spring%20Lake%20Estates%22%2C%20%22Devereux%20West%22%2C%20%22Sully%20Station%22%2C%20%22Burgoyne%20Forest%20West%22%2C%20%22Villaridge%22%2C%20%22Idylwood%22%2C%20%22Random%20Hills%22%2C%20%22Wilton%20Woods%22%2C%20%22Mercer%20-%20Reston%22%2C%20%22Greenbriar%20-%20Fairfax%22%2C%20%22Lee%20Meadows%22%2C%20%22Newgate%22%2C%20%22West%20Springfield%22%2C%20%22Woodley%22%5D&type_single_family=true&in_my_account_mode=not_in"
+    }
+   ],
+   "previous": {
+    "stack": "Notice of Default",
+    "lift": 37.3,
+    "count": 91,
+    "state": "under_band"
+   }
+  },
+  "Arlington, VA": {
+   "status": "found",
+   "choice": {
+    "signal": "Out-of-State + Senior",
+    "lift": 9.8,
+    "workbook_list_size": 231,
+    "stack_only_count": 232,
+    "verdict": "in_band",
+    "chosen_count": 232,
+    "depth": null,
+    "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&extra_absentee_in_state=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+    "params": [
+     "extra_absentee_in_state=true",
+     "extra_owner_age_min=65"
+    ]
+   },
+   "tried": [
+    {
+     "signal": "Free & Clear + Out-of-State + Senior",
+     "lift": 16.5,
+     "workbook_list_size": 122,
+     "stack_only_count": 123,
+     "verdict": "under band (123 < 200)"
+    },
+    {
+     "signal": "Out-of-State + Senior",
+     "lift": 9.8,
+     "workbook_list_size": 231,
+     "stack_only_count": 232,
+     "verdict": "in_band",
+     "chosen_count": 232,
+     "depth": null,
+     "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&extra_absentee_in_state=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+     "params": [
+      "extra_absentee_in_state=true",
+      "extra_owner_age_min=65"
+     ]
+    }
+   ],
+   "previous": {
+    "stack": "Free & Clear + Out-of-State + Senior",
+    "lift": 16.5,
+    "count": 123,
+    "state": "under_band"
+   }
+  },
+  "Fredericksburg City, VA": {
+   "status": "found",
+   "choice": {
+    "signal": "Out-of-State",
+    "lift": 0.0,
+    "workbook_list_size": null,
+    "stack_only_count": 274,
+    "verdict": "in_band",
+    "chosen_count": 274,
+    "depth": null,
+    "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fredericksburg%20City%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fredericksburg%20City%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251630%22%2C%20%22county_name%22%3A%20%22Fredericksburg%20City%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+    "params": [
+     "extra_absentee_in_state=true"
+    ]
+   },
+   "tried": [
+    {
+     "signal": "Free & Clear",
+     "lift": 1.9,
+     "workbook_list_size": 1928,
+     "stack_only_count": 1898,
+     "depth_search": {
+      "status": "unreachable_low",
+      "depth": 1,
+      "count": 633,
+      "reason": "even a single neighbourhood measures 633, over 500; the geography layer is too coarse here and the stack needs another distressor instead"
+     },
+     "verdict": "over band (1898) and unreachable_low"
+    },
+    {
+     "signal": "Absentee + Free & Clear",
+     "lift": 1.9,
+     "workbook_list_size": 1323,
+     "stack_only_count": 1311,
+     "depth_search": {
+      "status": "band_skipped",
+      "depth": 2,
+      "count": 664,
+      "reason": "depth 1 measures 466 (under 200) and depth 2 measures 664 (over 500); no depth lands in the band because one neighbourhood is larger than the band is wide"
+     },
+     "verdict": "over band (1311) and band_skipped"
+    },
+    {
+     "signal": "Absentee",
+     "lift": 1.2,
+     "workbook_list_size": 2845,
+     "stack_only_count": 2815,
+     "depth_search": {
+      "status": "unreachable_low",
+      "depth": 1,
+      "count": 777,
+      "reason": "even a single neighbourhood measures 777, over 500; the geography layer is too coarse here and the stack needs another distressor instead"
+     },
+     "verdict": "over band (2815) and unreachable_low"
+    },
+    {
+     "signal": "High Equity",
+     "lift": 0.7,
+     "workbook_list_size": 3662,
+     "stack_only_count": 3601,
+     "depth_search": {
+      "status": "unreachable_low",
+      "depth": 1,
+      "count": 765,
+      "reason": "even a single neighbourhood measures 765, over 500; the geography layer is too coarse here and the stack needs another distressor instead"
+     },
+     "verdict": "over band (3601) and unreachable_low"
+    },
+    {
+     "signal": "Senior",
+     "lift": 0.0,
+     "workbook_list_size": null,
+     "stack_only_count": 1654,
+     "depth_search": {
+      "status": "band_skipped",
+      "depth": 2,
+      "count": 790,
+      "reason": "depth 1 measures 436 (under 200) and depth 2 measures 790 (over 500); no depth lands in the band because one neighbourhood is larger than the band is wide"
+     },
+     "verdict": "over band (1654) and band_skipped"
+    },
+    {
+     "signal": "Out-of-State",
+     "lift": 0.0,
+     "workbook_list_size": null,
+     "stack_only_count": 274,
+     "verdict": "in_band",
+     "chosen_count": 274,
+     "depth": null,
+     "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fredericksburg%20City%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fredericksburg%20City%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251630%22%2C%20%22county_name%22%3A%20%22Fredericksburg%20City%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+     "params": [
+      "extra_absentee_in_state=true"
+     ]
+    }
+   ],
+   "previous": {
+    "stack": "Free & Clear",
+    "lift": 1.9,
+    "count": 1185,
+    "state": "no_depth_in_band"
+   }
+  }
+ },
+ "merged_with": "2026-08-26T10:27:23"
+}

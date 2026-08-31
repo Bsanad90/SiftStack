@@ -1,0 +1,6209 @@
+{
+  "by_jurisdiction": {
+    "Baltimore County, MD": [
+      {
+        "priority": 1,
+        "signal": "Out-of-State + Vacant",
+        "signals": [
+          "Out-of-State",
+          "Vacant"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 6.8,
+        "lift": 24.5,
+        "deals_6mo": 8,
+        "list_size": 54,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "High Equity + Vacant",
+        "signals": [
+          "High Equity",
+          "Vacant"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 10,
+        "lift": 16.6,
+        "deals_6mo": 16,
+        "list_size": 160,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Senior + Vacant",
+        "signals": [
+          "Senior",
+          "Vacant"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 10.1,
+        "lift": 16.5,
+        "deals_6mo": 19,
+        "list_size": 192,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Senior + Vacant",
+        "signals": [
+          "Free & Clear",
+          "Senior",
+          "Vacant"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 13,
+        "lift": 12.8,
+        "deals_6mo": 11,
+        "list_size": 143,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Vacant",
+        "signals": [
+          "Vacant"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 15,
+        "lift": 11.1,
+        "deals_6mo": 52,
+        "list_size": 780,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Vacant",
+        "signals": [
+          "Absentee",
+          "Vacant"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 19.8,
+        "lift": 8.4,
+        "deals_6mo": 24,
+        "list_size": 476,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 35.2,
+        "lift": 4.7,
+        "deals_6mo": 87,
+        "list_size": 3061,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 36.5,
+        "lift": 4.6,
+        "deals_6mo": 52,
+        "list_size": 1900,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 41.5,
+        "lift": 4,
+        "deals_6mo": 44,
+        "list_size": 1828,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 47.4,
+        "lift": 3.5,
+        "deals_6mo": 61,
+        "list_size": 2893,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Vacant",
+        "signals": [
+          "Free & Clear",
+          "Vacant"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 20.9,
+        "lift": 8,
+        "deals_6mo": 20,
+        "list_size": 417,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Bankruptcy",
+        "signals": [
+          "Bankruptcy"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 38.6,
+        "lift": 4.3,
+        "deals_6mo": 16,
+        "list_size": 617,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Out-of-State",
+        "signals": [
+          "High Equity",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 49.5,
+        "lift": 3.4,
+        "deals_6mo": 13,
+        "list_size": 643,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Senior + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 56.5,
+        "lift": 2.9,
+        "deals_6mo": 12,
+        "list_size": 678,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 62.9,
+        "lift": 2.6,
+        "deals_6mo": 343,
+        "list_size": 21558,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Out-of-State + Tired Landlord",
+        "signals": [
+          "Out-of-State",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 66.4,
+        "lift": 2.5,
+        "deals_6mo": 16,
+        "list_size": 1063,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 72.5,
+        "lift": 2.3,
+        "deals_6mo": 421,
+        "list_size": 30509,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Bad Credit + Free & Clear",
+        "signals": [
+          "Bad Credit",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 78.7,
+        "lift": 2.1,
+        "deals_6mo": 11,
+        "list_size": 866,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 82,
+        "lift": 2,
+        "deals_6mo": 29,
+        "list_size": 2378,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Senior + Tired Landlord",
+        "signals": [
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 83,
+        "lift": 2,
+        "deals_6mo": 39,
+        "list_size": 3238,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Low Income",
+        "signals": [
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 83.4,
+        "lift": 2,
+        "deals_6mo": 11,
+        "list_size": 917,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Senior + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 93.4,
+        "lift": 1.8,
+        "deals_6mo": 26,
+        "list_size": 2429,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 98,
+        "lift": 1.7,
+        "deals_6mo": 625,
+        "list_size": 61272,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 105.4,
+        "lift": 1.6,
+        "deals_6mo": 98,
+        "list_size": 10331,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Notice of Default",
+        "signals": [
+          "High Equity",
+          "Notice of Default"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 3.5,
+        "lift": 47.5,
+        "deals_6mo": 13,
+        "list_size": 45,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 4.3,
+        "lift": 38.7,
+        "deals_6mo": 21,
+        "list_size": 90,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bankruptcy + High Equity",
+        "signals": [
+          "Bankruptcy",
+          "High Equity"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 39.3,
+        "lift": 4.2,
+        "deals_6mo": 9,
+        "list_size": 354,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Out-of-State + Senior",
+        "signals": [
+          "Out-of-State",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 69,
+        "lift": 2.4,
+        "deals_6mo": 10,
+        "list_size": 690,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + High Equity",
+        "signals": [
+          "Absentee",
+          "High Equity"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 117.6,
+        "lift": 1.4,
+        "deals_6mo": 41,
+        "list_size": 4820,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 118.2,
+        "lift": 1.4,
+        "deals_6mo": 19,
+        "list_size": 2246,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 119.5,
+        "lift": 1.4,
+        "deals_6mo": 61,
+        "list_size": 7291,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 139.2,
+        "lift": 1.2,
+        "deals_6mo": 16,
+        "list_size": 2228,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 155.6,
+        "lift": 1.1,
+        "deals_6mo": 193,
+        "list_size": 30025,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 177.7,
+        "lift": 0.9,
+        "deals_6mo": 344,
+        "list_size": 61137,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit + Low Income",
+        "signals": [
+          "Bad Credit",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 205.9,
+        "lift": 0.8,
+        "deals_6mo": 8,
+        "list_size": 1647,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 223,
+        "lift": 0.7,
+        "deals_6mo": 117,
+        "list_size": 26094,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 253.7,
+        "lift": 0.7,
+        "deals_6mo": 320,
+        "list_size": 81198,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Free & Clear + Senior",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 261.9,
+        "lift": 0.6,
+        "deals_6mo": 19,
+        "list_size": 4976,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Senior",
+        "signals": [
+          "Absentee",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 274.1,
+        "lift": 0.6,
+        "deals_6mo": 23,
+        "list_size": 6304,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "HOA Lien",
+        "signals": [
+          "HOA Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 7,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Zombie",
+        "signals": [
+          "Zombie"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Other Lien",
+        "signals": [
+          "Other Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Estate Sale",
+        "signals": [
+          "Estate Sale"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Montgomery, MD": [
+      {
+        "priority": 1,
+        "signal": "Free & Clear + HOA Lien",
+        "signals": [
+          "Free & Clear",
+          "HOA Lien"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 6.2,
+        "lift": 53.6,
+        "deals_6mo": 11,
+        "list_size": 68,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "HOA Lien",
+        "signals": [
+          "HOA Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 24.6,
+        "lift": 13.5,
+        "deals_6mo": 20,
+        "list_size": 491,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 24.9,
+        "lift": 13.3,
+        "deals_6mo": 68,
+        "list_size": 1696,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 31.4,
+        "lift": 10.6,
+        "deals_6mo": 54,
+        "list_size": 1696,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 39.8,
+        "lift": 8.3,
+        "deals_6mo": 82,
+        "list_size": 3263,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 54.4,
+        "lift": 6.1,
+        "deals_6mo": 60,
+        "list_size": 3262,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Senior + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 67.7,
+        "lift": 4.9,
+        "deals_6mo": 20,
+        "list_size": 1354,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Senior + Tired Landlord",
+        "signals": [
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 69.2,
+        "lift": 4.8,
+        "deals_6mo": 32,
+        "list_size": 2214,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Out-of-State + Tired Landlord",
+        "signals": [
+          "Out-of-State",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 72.1,
+        "lift": 4.6,
+        "deals_6mo": 22,
+        "list_size": 1586,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 87.7,
+        "lift": 3.8,
+        "deals_6mo": 121,
+        "list_size": 10613,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 105.9,
+        "lift": 3.1,
+        "deals_6mo": 54,
+        "list_size": 5718,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Out-of-State + Senior",
+        "signals": [
+          "Out-of-State",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 41.2,
+        "lift": 8.1,
+        "deals_6mo": 19,
+        "list_size": 783,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Low Income",
+        "signals": [
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 76.6,
+        "lift": 4.3,
+        "deals_6mo": 11,
+        "list_size": 843,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Out-of-State",
+        "signals": [
+          "High Equity",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 117.7,
+        "lift": 2.8,
+        "deals_6mo": 10,
+        "list_size": 1177,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear + Senior",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 123.8,
+        "lift": 2.7,
+        "deals_6mo": 19,
+        "list_size": 2353,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 130.3,
+        "lift": 2.5,
+        "deals_6mo": 90,
+        "list_size": 11727,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 145.6,
+        "lift": 2.3,
+        "deals_6mo": 149,
+        "list_size": 21687,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 174.1,
+        "lift": 1.9,
+        "deals_6mo": 299,
+        "list_size": 52069,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Senior",
+        "signals": [
+          "Absentee",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 175,
+        "lift": 1.9,
+        "deals_6mo": 21,
+        "list_size": 3674,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 184.4,
+        "lift": 1.8,
+        "deals_6mo": 29,
+        "list_size": 5349,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 190.2,
+        "lift": 1.7,
+        "deals_6mo": 17,
+        "list_size": 3233,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 210.4,
+        "lift": 1.6,
+        "deals_6mo": 118,
+        "list_size": 24833,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Notice of Default",
+        "signals": [
+          "High Equity",
+          "Notice of Default"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 3.1,
+        "lift": 107.2,
+        "deals_6mo": 10,
+        "list_size": 31,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 3.8,
+        "lift": 87.4,
+        "deals_6mo": 15,
+        "list_size": 57,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit + Free & Clear",
+        "signals": [
+          "Bad Credit",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 107,
+        "lift": 3.1,
+        "deals_6mo": 8,
+        "list_size": 856,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 257.3,
+        "lift": 1.3,
+        "deals_6mo": 214,
+        "list_size": 55053,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 308.2,
+        "lift": 1.1,
+        "deals_6mo": 11,
+        "list_size": 3390,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 318.2,
+        "lift": 1,
+        "deals_6mo": 84,
+        "list_size": 26733,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit + Low Income",
+        "signals": [
+          "Bad Credit",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 320.1,
+        "lift": 1,
+        "deals_6mo": 9,
+        "list_size": 2881,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + High Equity",
+        "signals": [
+          "Absentee",
+          "High Equity"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 378.3,
+        "lift": 0.9,
+        "deals_6mo": 23,
+        "list_size": 8700,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 503.8,
+        "lift": 0.7,
+        "deals_6mo": 206,
+        "list_size": 103774,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tax Delinquent",
+        "signals": [
+          "Tax Delinquent"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 78,
+        "list_size": 0,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Tax Delinquent",
+        "signals": [
+          "Free & Clear",
+          "Tax Delinquent"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 55,
+        "list_size": 0,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tax Delinquent + Senior",
+        "signals": [
+          "Tax Delinquent",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 32,
+        "list_size": 0,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Tax Delinquent",
+        "signals": [
+          "Absentee",
+          "Tax Delinquent"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 24,
+        "list_size": 0,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Free & Clear + Tax Delinquent",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Tax Delinquent"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 21,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Tax Delinquent + Senior",
+        "signals": [
+          "Free & Clear",
+          "Tax Delinquent",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 20,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tax Delinquent + Tired Landlord",
+        "signals": [
+          "Tax Delinquent",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 16,
+        "list_size": 0,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Tax Delinquent",
+        "signals": [
+          "High Equity",
+          "Tax Delinquent"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 16,
+        "list_size": 0,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "HOA Lien + Tax Delinquent",
+        "signals": [
+          "HOA Lien",
+          "Tax Delinquent"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 9,
+        "list_size": 0,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Out-of-State + Tax Delinquent",
+        "signals": [
+          "Out-of-State",
+          "Tax Delinquent"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 9,
+        "list_size": 0,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Anne Arundel, MD": [
+      {
+        "priority": 1,
+        "signal": "HOA Lien",
+        "signals": [
+          "HOA Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 22.3,
+        "lift": 12,
+        "deals_6mo": 11,
+        "list_size": 245,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Vacant",
+        "signals": [
+          "Vacant"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 46,
+        "lift": 5.8,
+        "deals_6mo": 12,
+        "list_size": 552,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 106.4,
+        "lift": 2.5,
+        "deals_6mo": 173,
+        "list_size": 18409,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 119.5,
+        "lift": 2.2,
+        "deals_6mo": 31,
+        "list_size": 3705,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 121.8,
+        "lift": 2.2,
+        "deals_6mo": 17,
+        "list_size": 2070,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 124.3,
+        "lift": 2.2,
+        "deals_6mo": 45,
+        "list_size": 5592,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 133,
+        "lift": 2,
+        "deals_6mo": 198,
+        "list_size": 26333,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 135.9,
+        "lift": 2,
+        "deals_6mo": 314,
+        "list_size": 42678,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 152.8,
+        "lift": 1.8,
+        "deals_6mo": 60,
+        "list_size": 9169,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 169.3,
+        "lift": 1.6,
+        "deals_6mo": 11,
+        "list_size": 1862,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 174.6,
+        "lift": 1.5,
+        "deals_6mo": 10,
+        "list_size": 1746,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 178.2,
+        "lift": 1.5,
+        "deals_6mo": 11,
+        "list_size": 1960,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 4.9,
+        "lift": 54.7,
+        "deals_6mo": 11,
+        "list_size": 54,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bankruptcy",
+        "signals": [
+          "Bankruptcy"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 34,
+        "lift": 7.9,
+        "deals_6mo": 8,
+        "list_size": 272,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Out-of-State",
+        "signals": [
+          "High Equity",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 135.9,
+        "lift": 2,
+        "deals_6mo": 8,
+        "list_size": 1087,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Out-of-State + Tired Landlord",
+        "signals": [
+          "Out-of-State",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 151.2,
+        "lift": 1.8,
+        "deals_6mo": 9,
+        "list_size": 1361,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 189.6,
+        "lift": 1.4,
+        "deals_6mo": 18,
+        "list_size": 3412,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Senior + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 208.7,
+        "lift": 1.3,
+        "deals_6mo": 9,
+        "list_size": 1878,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 215.3,
+        "lift": 1.2,
+        "deals_6mo": 81,
+        "list_size": 17443,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior + Tired Landlord",
+        "signals": [
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 246.5,
+        "lift": 1.1,
+        "deals_6mo": 12,
+        "list_size": 2958,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 258.4,
+        "lift": 1,
+        "deals_6mo": 179,
+        "list_size": 46261,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 274.2,
+        "lift": 1,
+        "deals_6mo": 9,
+        "list_size": 2468,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Free & Clear + Senior",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 304,
+        "lift": 0.9,
+        "deals_6mo": 14,
+        "list_size": 4256,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 311.6,
+        "lift": 0.9,
+        "deals_6mo": 69,
+        "list_size": 21501,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Senior",
+        "signals": [
+          "Absentee",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 324.2,
+        "lift": 0.8,
+        "deals_6mo": 18,
+        "list_size": 5835,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + High Equity",
+        "signals": [
+          "Absentee",
+          "High Equity"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 410.9,
+        "lift": 0.7,
+        "deals_6mo": 12,
+        "list_size": 4931,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 439.4,
+        "lift": 0.6,
+        "deals_6mo": 166,
+        "list_size": 72946,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Other Lien",
+        "signals": [
+          "Other Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Judgment Lien",
+        "signals": [
+          "Judgment Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Zombie",
+        "signals": [
+          "Zombie"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Lis Pendens",
+        "signals": [
+          "Lis Pendens"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Frederick, MD": [
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 59.5,
+        "lift": 4.6,
+        "deals_6mo": 132,
+        "list_size": 7853,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 75.9,
+        "lift": 3.6,
+        "deals_6mo": 149,
+        "list_size": 11313,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 76.4,
+        "lift": 3.6,
+        "deals_6mo": 24,
+        "list_size": 1834,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 87.2,
+        "lift": 3.1,
+        "deals_6mo": 20,
+        "list_size": 1744,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 85.3,
+        "lift": 3.2,
+        "deals_6mo": 15,
+        "list_size": 1280,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 95.9,
+        "lift": 2.9,
+        "deals_6mo": 13,
+        "list_size": 1247,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 114.9,
+        "lift": 2.4,
+        "deals_6mo": 167,
+        "list_size": 19195,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior + Tired Landlord",
+        "signals": [
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 168.6,
+        "lift": 1.6,
+        "deals_6mo": 8,
+        "list_size": 1349,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 201.6,
+        "lift": 1.4,
+        "deals_6mo": 21,
+        "list_size": 4234,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 210.8,
+        "lift": 1.3,
+        "deals_6mo": 13,
+        "list_size": 2741,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Free & Clear + Senior",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 238.2,
+        "lift": 1.2,
+        "deals_6mo": 8,
+        "list_size": 1906,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Senior",
+        "signals": [
+          "Absentee",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 285.8,
+        "lift": 1,
+        "deals_6mo": 9,
+        "list_size": 2572,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 306.3,
+        "lift": 0.9,
+        "deals_6mo": 26,
+        "list_size": 7965,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 343.5,
+        "lift": 0.8,
+        "deals_6mo": 57,
+        "list_size": 19577,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 460.2,
+        "lift": 0.6,
+        "deals_6mo": 20,
+        "list_size": 9204,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 688.8,
+        "lift": 0.4,
+        "deals_6mo": 51,
+        "list_size": 35129,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "HOA Lien",
+        "signals": [
+          "HOA Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 4,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 4,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 3,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 3,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Vacant",
+        "signals": [
+          "Vacant"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Estate Sale",
+        "signals": [
+          "Estate Sale"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Carroll, MD": [
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 105.5,
+        "lift": 4.6,
+        "deals_6mo": 30,
+        "list_size": 3166,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 129.6,
+        "lift": 3.8,
+        "deals_6mo": 35,
+        "list_size": 4536,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Tax Delinquent",
+        "signals": [
+          "Tax Delinquent"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 158.3,
+        "lift": 3.1,
+        "deals_6mo": 22,
+        "list_size": 3482,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Tax Delinquent",
+        "signals": [
+          "Free & Clear",
+          "Tax Delinquent"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 112.3,
+        "lift": 4.3,
+        "deals_6mo": 16,
+        "list_size": 1797,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 138.4,
+        "lift": 3.5,
+        "deals_6mo": 10,
+        "list_size": 1384,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 148.3,
+        "lift": 3.3,
+        "deals_6mo": 13,
+        "list_size": 1928,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 229,
+        "lift": 2.1,
+        "deals_6mo": 64,
+        "list_size": 14658,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tax Delinquent + Senior",
+        "signals": [
+          "Tax Delinquent",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 193.9,
+        "lift": 2.5,
+        "deals_6mo": 8,
+        "list_size": 1551,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 424.2,
+        "lift": 1.1,
+        "deals_6mo": 19,
+        "list_size": 8060,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 495.3,
+        "lift": 1,
+        "deals_6mo": 35,
+        "list_size": 17336,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 555.9,
+        "lift": 0.9,
+        "deals_6mo": 15,
+        "list_size": 8338,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 921.8,
+        "lift": 0.5,
+        "deals_6mo": 32,
+        "list_size": 29499,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 5,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bankruptcy",
+        "signals": [
+          "Bankruptcy"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Calvert, MD": [
+      {
+        "priority": 1,
+        "signal": "Absentee + Bad Credit + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Bad Credit",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 1.6,
+        "lift": 218,
+        "deals_6mo": 31,
+        "list_size": 50,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Bad Credit + Low Income",
+        "signals": [
+          "Absentee",
+          "Bad Credit",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 1.8,
+        "lift": 193.8,
+        "deals_6mo": 29,
+        "list_size": 52,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear + Low Income",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 1.8,
+        "lift": 193.8,
+        "deals_6mo": 29,
+        "list_size": 51,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Bad Credit + Free & Clear + Low Income",
+        "signals": [
+          "Bad Credit",
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 2.3,
+        "lift": 151.7,
+        "deals_6mo": 29,
+        "list_size": 68,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Bad Credit",
+        "signals": [
+          "Absentee",
+          "Bad Credit"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 2.5,
+        "lift": 139.5,
+        "deals_6mo": 31,
+        "list_size": 77,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Low Income",
+        "signals": [
+          "Absentee",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 2.5,
+        "lift": 139.5,
+        "deals_6mo": 29,
+        "list_size": 73,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Bad Credit + Free & Clear",
+        "signals": [
+          "Bad Credit",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 3.2,
+        "lift": 109,
+        "deals_6mo": 31,
+        "list_size": 100,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Low Income",
+        "signals": [
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 3.6,
+        "lift": 96.9,
+        "deals_6mo": 30,
+        "list_size": 107,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Bad Credit + Low Income",
+        "signals": [
+          "Bad Credit",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 6.7,
+        "lift": 52.1,
+        "deals_6mo": 29,
+        "list_size": 195,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 8.8,
+        "lift": 39.6,
+        "deals_6mo": 31,
+        "list_size": 274,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 9.3,
+        "lift": 37.5,
+        "deals_6mo": 30,
+        "list_size": 280,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 110,
+        "lift": 3.2,
+        "deals_6mo": 54,
+        "list_size": 5941,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 88,
+        "lift": 4,
+        "deals_6mo": 45,
+        "list_size": 3958,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 100.1,
+        "lift": 3.5,
+        "deals_6mo": 10,
+        "list_size": 1001,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 149.1,
+        "lift": 2.3,
+        "deals_6mo": 63,
+        "list_size": 9391,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 120.8,
+        "lift": 2.9,
+        "deals_6mo": 8,
+        "list_size": 966,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 253.7,
+        "lift": 1.4,
+        "deals_6mo": 17,
+        "list_size": 4313,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 435.1,
+        "lift": 0.8,
+        "deals_6mo": 23,
+        "list_size": 10008,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 885.9,
+        "lift": 0.4,
+        "deals_6mo": 18,
+        "list_size": 15947,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tax Delinquent",
+        "signals": [
+          "Tax Delinquent"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 7,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 6,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 5,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bankruptcy",
+        "signals": [
+          "Bankruptcy"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Charles, MD": [
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 29.5,
+        "lift": 8.2,
+        "deals_6mo": 65,
+        "list_size": 1920,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 76.4,
+        "lift": 3.2,
+        "deals_6mo": 125,
+        "list_size": 9544,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 28.9,
+        "lift": 8.4,
+        "deals_6mo": 67,
+        "list_size": 1939,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 37.5,
+        "lift": 6.5,
+        "deals_6mo": 68,
+        "list_size": 2552,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 37.7,
+        "lift": 6.4,
+        "deals_6mo": 66,
+        "list_size": 2487,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 96.4,
+        "lift": 2.5,
+        "deals_6mo": 128,
+        "list_size": 12341,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 104.1,
+        "lift": 2.3,
+        "deals_6mo": 146,
+        "list_size": 15196,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 3.3,
+        "lift": 73.6,
+        "deals_6mo": 10,
+        "list_size": 33,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 309.9,
+        "lift": 0.8,
+        "deals_6mo": 13,
+        "list_size": 4029,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 324.6,
+        "lift": 0.7,
+        "deals_6mo": 19,
+        "list_size": 6167,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 326.2,
+        "lift": 0.7,
+        "deals_6mo": 8,
+        "list_size": 2610,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 384.5,
+        "lift": 0.6,
+        "deals_6mo": 33,
+        "list_size": 12689,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 489.7,
+        "lift": 0.5,
+        "deals_6mo": 9,
+        "list_size": 4407,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 510.3,
+        "lift": 0.5,
+        "deals_6mo": 44,
+        "list_size": 22453,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Other Lien",
+        "signals": [
+          "Other Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 5,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bankruptcy",
+        "signals": [
+          "Bankruptcy"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 4,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "HOA Lien",
+        "signals": [
+          "HOA Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 4,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tax Delinquent",
+        "signals": [
+          "Tax Delinquent"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 3,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 3,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Vacant",
+        "signals": [
+          "Vacant"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      }
+    ],
+    "District of Columbia": [
+      {
+        "priority": 1,
+        "signal": "Absentee + Notice of Foreclosure",
+        "signals": [
+          "Absentee",
+          "Notice of Foreclosure"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 1,
+        "lift": 76.8,
+        "deals_6mo": 24,
+        "list_size": 23,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + HOA Lien",
+        "signals": [
+          "Absentee",
+          "HOA Lien"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 1,
+        "lift": 76.8,
+        "deals_6mo": 23,
+        "list_size": 22,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Notice of Foreclosure",
+        "signals": [
+          "Free & Clear",
+          "Notice of Foreclosure"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 1,
+        "lift": 76.8,
+        "deals_6mo": 15,
+        "list_size": 15,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Notice of Foreclosure",
+        "signals": [
+          "Notice of Foreclosure"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 2.1,
+        "lift": 36.6,
+        "deals_6mo": 38,
+        "list_size": 78,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 2.4,
+        "lift": 32,
+        "deals_6mo": 28,
+        "list_size": 66,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "HOA Lien",
+        "signals": [
+          "HOA Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 3.6,
+        "lift": 21.3,
+        "deals_6mo": 32,
+        "list_size": 115,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Lis Pendens + Other Lien",
+        "signals": [
+          "Lis Pendens",
+          "Other Lien"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 5.1,
+        "lift": 15.1,
+        "deals_6mo": 15,
+        "list_size": 77,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Other Lien",
+        "signals": [
+          "Free & Clear",
+          "Other Lien"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 9.9,
+        "lift": 7.8,
+        "deals_6mo": 43,
+        "list_size": 425,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Other Lien",
+        "signals": [
+          "Absentee",
+          "Other Lien"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 10.9,
+        "lift": 7,
+        "deals_6mo": 44,
+        "list_size": 478,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Other Lien + Senior",
+        "signals": [
+          "Other Lien",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 11.5,
+        "lift": 6.7,
+        "deals_6mo": 38,
+        "list_size": 436,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 12.8,
+        "lift": 6,
+        "deals_6mo": 103,
+        "list_size": 1321,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Other Lien",
+        "signals": [
+          "Other Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 13.7,
+        "lift": 5.6,
+        "deals_6mo": 105,
+        "list_size": 1439,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 14.7,
+        "lift": 5.2,
+        "deals_6mo": 85,
+        "list_size": 1248,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "High Equity + Other Lien",
+        "signals": [
+          "High Equity",
+          "Other Lien"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 15,
+        "lift": 5.1,
+        "deals_6mo": 40,
+        "list_size": 600,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 16.6,
+        "lift": 4.6,
+        "deals_6mo": 28,
+        "list_size": 466,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 16.8,
+        "lift": 4.6,
+        "deals_6mo": 174,
+        "list_size": 2920,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 20.8,
+        "lift": 3.7,
+        "deals_6mo": 165,
+        "list_size": 3434,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Out-of-State + Tired Landlord",
+        "signals": [
+          "Out-of-State",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 23.7,
+        "lift": 3.2,
+        "deals_6mo": 40,
+        "list_size": 949,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "High Equity + Out-of-State + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Out-of-State",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 23.8,
+        "lift": 3.2,
+        "deals_6mo": 24,
+        "list_size": 572,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 25.2,
+        "lift": 3,
+        "deals_6mo": 120,
+        "list_size": 3019,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear + Other Lien",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Other Lien"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 7.8,
+        "lift": 9.8,
+        "deals_6mo": 24,
+        "list_size": 188,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Other Lien + Senior",
+        "signals": [
+          "High Equity",
+          "Other Lien",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 8.7,
+        "lift": 8.8,
+        "deals_6mo": 20,
+        "list_size": 174,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Out-of-State + Other Lien",
+        "signals": [
+          "Out-of-State",
+          "Other Lien"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 8.8,
+        "lift": 8.7,
+        "deals_6mo": 27,
+        "list_size": 237,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Lis Pendens",
+        "signals": [
+          "Lis Pendens"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 9.5,
+        "lift": 8.1,
+        "deals_6mo": 37,
+        "list_size": 351,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Lis Pendens",
+        "signals": [
+          "High Equity",
+          "Lis Pendens"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 9.7,
+        "lift": 7.9,
+        "deals_6mo": 19,
+        "list_size": 184,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 26.2,
+        "lift": 2.9,
+        "deals_6mo": 21,
+        "list_size": 550,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Out-of-State + Senior",
+        "signals": [
+          "Out-of-State",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 26.8,
+        "lift": 2.9,
+        "deals_6mo": 34,
+        "list_size": 911,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear + Senior",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 27.6,
+        "lift": 2.8,
+        "deals_6mo": 28,
+        "list_size": 774,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 28.4,
+        "lift": 2.7,
+        "deals_6mo": 254,
+        "list_size": 7206,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Out-of-State",
+        "signals": [
+          "High Equity",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 30.9,
+        "lift": 2.5,
+        "deals_6mo": 47,
+        "list_size": 1451,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Senior + Tired Landlord",
+        "signals": [
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 32.1,
+        "lift": 2.4,
+        "deals_6mo": 15,
+        "list_size": 482,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 35.2,
+        "lift": 2.2,
+        "deals_6mo": 15,
+        "list_size": 528,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 35.9,
+        "lift": 2.1,
+        "deals_6mo": 57,
+        "list_size": 2046,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 38.2,
+        "lift": 2,
+        "deals_6mo": 297,
+        "list_size": 11350,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 38.4,
+        "lift": 2,
+        "deals_6mo": 33,
+        "list_size": 1268,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Senior",
+        "signals": [
+          "Absentee",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 42.5,
+        "lift": 1.8,
+        "deals_6mo": 37,
+        "list_size": 1573,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "HOA Lien + Notice of Foreclosure",
+        "signals": [
+          "HOA Lien",
+          "Notice of Foreclosure"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 0.5,
+        "lift": 153.6,
+        "deals_6mo": 15,
+        "list_size": 7,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Foreclosure + Other Lien",
+        "signals": [
+          "Notice of Foreclosure",
+          "Other Lien"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 0.7,
+        "lift": 109.7,
+        "deals_6mo": 19,
+        "list_size": 13,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + High Equity + Out-of-State",
+        "signals": [
+          "Absentee",
+          "High Equity",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 56.4,
+        "lift": 1.4,
+        "deals_6mo": 22,
+        "list_size": 1241,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 63.6,
+        "lift": 1.2,
+        "deals_6mo": 83,
+        "list_size": 5275,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + High Equity",
+        "signals": [
+          "Absentee",
+          "High Equity"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 67,
+        "lift": 1.1,
+        "deals_6mo": 43,
+        "list_size": 2880,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 78.4,
+        "lift": 1,
+        "deals_6mo": 189,
+        "list_size": 14826,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 89.8,
+        "lift": 0.9,
+        "deals_6mo": 89,
+        "list_size": 7990,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 110.9,
+        "lift": 0.7,
+        "deals_6mo": 237,
+        "list_size": 26275,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Low Income",
+        "signals": [
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 15,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Lis Pendens",
+        "signals": [
+          "Absentee",
+          "Lis Pendens"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 14,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit + Low Income",
+        "signals": [
+          "Bad Credit",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 13,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + HOA Lien",
+        "signals": [
+          "High Equity",
+          "HOA Lien"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 13,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Notice of Default",
+        "signals": [
+          "Absentee",
+          "Notice of Default"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 13,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Notice of Foreclosure",
+        "signals": [
+          "High Equity",
+          "Notice of Foreclosure"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 12,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Lis Pendens + Senior",
+        "signals": [
+          "Lis Pendens",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 12,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Low Income",
+        "signals": [
+          "Absentee",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 11,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Low Income",
+        "signals": [
+          "High Equity",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 11,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "HOA Lien + Out-of-State",
+        "signals": [
+          "HOA Lien",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 11,
+        "list_size": null,
+        "source_workbook": "county-compare-24017-11001-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Fairfax, VA": [
+      {
+        "priority": 1,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 7.8,
+        "lift": 37.3,
+        "deals_6mo": 12,
+        "list_size": 93,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "HOA Lien",
+        "signals": [
+          "HOA Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 19.8,
+        "lift": 14.7,
+        "deals_6mo": 12,
+        "list_size": 237,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Tax Delinquent + Senior",
+        "signals": [
+          "Free & Clear",
+          "Tax Delinquent",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 28.3,
+        "lift": 10.3,
+        "deals_6mo": 12,
+        "list_size": 340,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Tax Delinquent",
+        "signals": [
+          "Free & Clear",
+          "Tax Delinquent"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 33,
+        "lift": 8.8,
+        "deals_6mo": 29,
+        "list_size": 956,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 33.7,
+        "lift": 8.6,
+        "deals_6mo": 45,
+        "list_size": 1516,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 43.3,
+        "lift": 6.7,
+        "deals_6mo": 35,
+        "list_size": 1516,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Tax Delinquent",
+        "signals": [
+          "Tax Delinquent"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 50.4,
+        "lift": 5.8,
+        "deals_6mo": 38,
+        "list_size": 1917,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 62.7,
+        "lift": 4.6,
+        "deals_6mo": 72,
+        "list_size": 4511,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 74.5,
+        "lift": 3.9,
+        "deals_6mo": 119,
+        "list_size": 8863,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Senior + Tired Landlord",
+        "signals": [
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 85.5,
+        "lift": 3.4,
+        "deals_6mo": 25,
+        "list_size": 2138,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 86.7,
+        "lift": 3.4,
+        "deals_6mo": 39,
+        "list_size": 3383,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 93.8,
+        "lift": 3.1,
+        "deals_6mo": 48,
+        "list_size": 4501,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Out-of-State + Tired Landlord",
+        "signals": [
+          "Out-of-State",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 98.2,
+        "lift": 3,
+        "deals_6mo": 24,
+        "list_size": 2357,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tax Delinquent + Senior",
+        "signals": [
+          "Tax Delinquent",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 35.9,
+        "lift": 8.1,
+        "deals_6mo": 17,
+        "list_size": 611,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Senior + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 93.1,
+        "lift": 3.1,
+        "deals_6mo": 12,
+        "list_size": 1117,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Out-of-State + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Out-of-State",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 120.5,
+        "lift": 2.4,
+        "deals_6mo": 13,
+        "list_size": 1567,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 136.8,
+        "lift": 2.1,
+        "deals_6mo": 282,
+        "list_size": 38589,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 138.3,
+        "lift": 2.1,
+        "deals_6mo": 166,
+        "list_size": 22962,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 139.9,
+        "lift": 2.1,
+        "deals_6mo": 81,
+        "list_size": 11332,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear + Senior",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 143.2,
+        "lift": 2,
+        "deals_6mo": 12,
+        "list_size": 1718,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 168.6,
+        "lift": 1.7,
+        "deals_6mo": 10,
+        "list_size": 1686,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 181.2,
+        "lift": 1.6,
+        "deals_6mo": 76,
+        "list_size": 13768,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Senior",
+        "signals": [
+          "Absentee",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 188.6,
+        "lift": 1.5,
+        "deals_6mo": 18,
+        "list_size": 3395,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 198.3,
+        "lift": 1.5,
+        "deals_6mo": 36,
+        "list_size": 7140,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Tax Delinquent",
+        "signals": [
+          "Absentee",
+          "Tax Delinquent"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 58.6,
+        "lift": 5,
+        "deals_6mo": 9,
+        "list_size": 527,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Out-of-State + Senior",
+        "signals": [
+          "Out-of-State",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 99.6,
+        "lift": 2.9,
+        "deals_6mo": 8,
+        "list_size": 797,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Out-of-State",
+        "signals": [
+          "High Equity",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 119.1,
+        "lift": 2.4,
+        "deals_6mo": 21,
+        "list_size": 2502,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 230.2,
+        "lift": 1.3,
+        "deals_6mo": 189,
+        "list_size": 43504,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 280.5,
+        "lift": 1,
+        "deals_6mo": 94,
+        "list_size": 26371,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + High Equity",
+        "signals": [
+          "Absentee",
+          "High Equity"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 410.2,
+        "lift": 0.7,
+        "deals_6mo": 28,
+        "list_size": 11487,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 416.6,
+        "lift": 0.7,
+        "deals_6mo": 297,
+        "list_size": 123732,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Vacant",
+        "signals": [
+          "Vacant"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 6,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 6,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Estate Sale",
+        "signals": [
+          "Estate Sale"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 5,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bankruptcy",
+        "signals": [
+          "Bankruptcy"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Foreclosure",
+        "signals": [
+          "Notice of Foreclosure"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Lis Pendens",
+        "signals": [
+          "Lis Pendens"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Probate",
+        "signals": [
+          "Probate"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Other Lien",
+        "signals": [
+          "Other Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Prince William, VA": [
+      {
+        "priority": 1,
+        "signal": "Bad Credit + Out-of-State",
+        "signals": [
+          "Bad Credit",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 1.1,
+        "lift": 196.6,
+        "deals_6mo": 30,
+        "list_size": 33,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Bad Credit + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Bad Credit",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 2.9,
+        "lift": 74.6,
+        "deals_6mo": 30,
+        "list_size": 86,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear + Low Income",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 3,
+        "lift": 72.1,
+        "deals_6mo": 32,
+        "list_size": 95,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Low Income + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Low Income",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 3,
+        "lift": 72.1,
+        "deals_6mo": 8,
+        "list_size": 24,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 4.4,
+        "lift": 49.2,
+        "deals_6mo": 98,
+        "list_size": 427,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 4.6,
+        "lift": 47,
+        "deals_6mo": 93,
+        "list_size": 426,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Low Income",
+        "signals": [
+          "Absentee",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 6.1,
+        "lift": 35.5,
+        "deals_6mo": 32,
+        "list_size": 195,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Bad Credit",
+        "signals": [
+          "Absentee",
+          "Bad Credit"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 6.5,
+        "lift": 33.3,
+        "deals_6mo": 30,
+        "list_size": 194,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Low Income + Tired Landlord",
+        "signals": [
+          "Low Income",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 7.2,
+        "lift": 30,
+        "deals_6mo": 8,
+        "list_size": 58,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Low Income",
+        "signals": [
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 8.1,
+        "lift": 26.7,
+        "deals_6mo": 41,
+        "list_size": 333,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Bad Credit + Free & Clear + Low Income",
+        "signals": [
+          "Bad Credit",
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 8.1,
+        "lift": 26.7,
+        "deals_6mo": 33,
+        "list_size": 268,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Bad Credit + Free & Clear",
+        "signals": [
+          "Bad Credit",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 9.4,
+        "lift": 23,
+        "deals_6mo": 33,
+        "list_size": 309,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 10.3,
+        "lift": 21,
+        "deals_6mo": 112,
+        "list_size": 1158,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 11.4,
+        "lift": 19,
+        "deals_6mo": 101,
+        "list_size": 1153,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 24.6,
+        "lift": 8.8,
+        "deals_6mo": 179,
+        "list_size": 4397,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 56.9,
+        "lift": 3.8,
+        "deals_6mo": 205,
+        "list_size": 11674,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 59.7,
+        "lift": 3.6,
+        "deals_6mo": 229,
+        "list_size": 13663,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Out-of-State + Tired Landlord",
+        "signals": [
+          "Out-of-State",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 49.2,
+        "lift": 4.4,
+        "deals_6mo": 11,
+        "list_size": 541,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Senior + Tired Landlord",
+        "signals": [
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 54.4,
+        "lift": 4,
+        "deals_6mo": 12,
+        "list_size": 653,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Out-of-State",
+        "signals": [
+          "High Equity",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 56.2,
+        "lift": 3.8,
+        "deals_6mo": 10,
+        "list_size": 562,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Senior",
+        "signals": [
+          "Absentee",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 76.2,
+        "lift": 2.8,
+        "deals_6mo": 20,
+        "list_size": 1523,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tax Delinquent",
+        "signals": [
+          "Tax Delinquent"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 97.8,
+        "lift": 2.2,
+        "deals_6mo": 12,
+        "list_size": 1173,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 103.6,
+        "lift": 2.1,
+        "deals_6mo": 51,
+        "list_size": 5285,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 146.1,
+        "lift": 1.5,
+        "deals_6mo": 24,
+        "list_size": 3507,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Low Income + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Low Income",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 0.4,
+        "lift": 540.8,
+        "deals_6mo": 34,
+        "list_size": 13,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Low Income + Out-of-State",
+        "signals": [
+          "Low Income",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 0.9,
+        "lift": 240.3,
+        "deals_6mo": 34,
+        "list_size": 31,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + HOA Lien",
+        "signals": [
+          "High Equity",
+          "HOA Lien"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 31.3,
+        "lift": 6.9,
+        "deals_6mo": 9,
+        "list_size": 282,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "HOA Lien",
+        "signals": [
+          "HOA Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 43.7,
+        "lift": 4.9,
+        "deals_6mo": 9,
+        "list_size": 393,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Senior",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 43.7,
+        "lift": 4.9,
+        "deals_6mo": 9,
+        "list_size": 393,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 53,
+        "lift": 4.1,
+        "deals_6mo": 41,
+        "list_size": 2174,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit + Low Income",
+        "signals": [
+          "Bad Credit",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 53,
+        "lift": 4.1,
+        "deals_6mo": 33,
+        "list_size": 1750,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 59.5,
+        "lift": 3.6,
+        "deals_6mo": 34,
+        "list_size": 2022,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 61.2,
+        "lift": 3.5,
+        "deals_6mo": 25,
+        "list_size": 1529,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Tax Delinquent",
+        "signals": [
+          "Free & Clear",
+          "Tax Delinquent"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 67.6,
+        "lift": 3.2,
+        "deals_6mo": 8,
+        "list_size": 541,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 162.5,
+        "lift": 1.3,
+        "deals_6mo": 33,
+        "list_size": 5362,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 265.7,
+        "lift": 0.8,
+        "deals_6mo": 73,
+        "list_size": 19395,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + High Equity",
+        "signals": [
+          "Absentee",
+          "High Equity"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 374.3,
+        "lift": 0.6,
+        "deals_6mo": 16,
+        "list_size": 5989,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 381.2,
+        "lift": 0.6,
+        "deals_6mo": 33,
+        "list_size": 12578,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 432.8,
+        "lift": 0.5,
+        "deals_6mo": 128,
+        "list_size": 55392,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 7,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Vacant",
+        "signals": [
+          "Vacant"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 5,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Estate Sale",
+        "signals": [
+          "Estate Sale"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bankruptcy",
+        "signals": [
+          "Bankruptcy"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Other Lien",
+        "signals": [
+          "Other Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Zombie",
+        "signals": [
+          "Zombie"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Probate",
+        "signals": [
+          "Probate"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Pre-Probate",
+        "signals": [
+          "Pre-Probate"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Arlington, VA": [
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Out-of-State + Senior",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 15.2,
+        "lift": 16.5,
+        "deals_6mo": 8,
+        "list_size": 122,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 34.1,
+        "lift": 7.4,
+        "deals_6mo": 14,
+        "list_size": 478,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 43.3,
+        "lift": 5.8,
+        "deals_6mo": 11,
+        "list_size": 476,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 75.9,
+        "lift": 3.3,
+        "deals_6mo": 16,
+        "list_size": 1215,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 110.1,
+        "lift": 2.3,
+        "deals_6mo": 11,
+        "list_size": 1211,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 120.9,
+        "lift": 2.1,
+        "deals_6mo": 28,
+        "list_size": 3386,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 122.7,
+        "lift": 2,
+        "deals_6mo": 19,
+        "list_size": 2331,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 133.4,
+        "lift": 1.9,
+        "deals_6mo": 23,
+        "list_size": 3068,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 138.2,
+        "lift": 1.8,
+        "deals_6mo": 52,
+        "list_size": 7185,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "High Equity + Tired Landlord",
+        "signals": [
+          "High Equity",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 153,
+        "lift": 1.6,
+        "deals_6mo": 15,
+        "list_size": 2295,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Out-of-State + Senior",
+        "signals": [
+          "Out-of-State",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 25.7,
+        "lift": 9.8,
+        "deals_6mo": 9,
+        "list_size": 231,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 183.7,
+        "lift": 1.4,
+        "deals_6mo": 44,
+        "list_size": 8081,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 203.7,
+        "lift": 1.2,
+        "deals_6mo": 32,
+        "list_size": 6517,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + High Equity",
+        "signals": [
+          "Absentee",
+          "High Equity"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 269,
+        "lift": 0.9,
+        "deals_6mo": 15,
+        "list_size": 4035,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 328.4,
+        "lift": 0.8,
+        "deals_6mo": 57,
+        "list_size": 18721,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 386.1,
+        "lift": 0.6,
+        "deals_6mo": 10,
+        "list_size": 3861,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tax Delinquent",
+        "signals": [
+          "Tax Delinquent"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 4,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "HOA Lien",
+        "signals": [
+          "HOA Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Estate Sale",
+        "signals": [
+          "Estate Sale"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Vacant",
+        "signals": [
+          "Vacant"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Stafford, VA": [
+      {
+        "priority": 1,
+        "signal": "Free & Clear + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 8.4,
+        "lift": 29.3,
+        "deals_6mo": 29,
+        "list_size": 245,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 9.1,
+        "lift": 27.1,
+        "deals_6mo": 27,
+        "list_size": 245,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 24.7,
+        "lift": 10,
+        "deals_6mo": 36,
+        "list_size": 889,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 39.8,
+        "lift": 6.2,
+        "deals_6mo": 90,
+        "list_size": 3582,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 64.7,
+        "lift": 3.8,
+        "deals_6mo": 104,
+        "list_size": 6732,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 72.7,
+        "lift": 3.4,
+        "deals_6mo": 118,
+        "list_size": 8579,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tax Delinquent",
+        "signals": [
+          "Tax Delinquent"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 45,
+        "lift": 5.5,
+        "deals_6mo": 12,
+        "list_size": 540,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 112.7,
+        "lift": 2.2,
+        "deals_6mo": 16,
+        "list_size": 1803,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 27.6,
+        "lift": 8.9,
+        "deals_6mo": 32,
+        "list_size": 884,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Tax Delinquent",
+        "signals": [
+          "Free & Clear",
+          "Tax Delinquent"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 29.8,
+        "lift": 8.3,
+        "deals_6mo": 9,
+        "list_size": 268,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 46.8,
+        "lift": 5.3,
+        "deals_6mo": 10,
+        "list_size": 468,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 193.9,
+        "lift": 1.3,
+        "deals_6mo": 16,
+        "list_size": 3103,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + High Equity",
+        "signals": [
+          "Absentee",
+          "High Equity"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 267.4,
+        "lift": 0.9,
+        "deals_6mo": 9,
+        "list_size": 2407,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 327.9,
+        "lift": 0.8,
+        "deals_6mo": 30,
+        "list_size": 9838,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 420.3,
+        "lift": 0.6,
+        "deals_6mo": 14,
+        "list_size": 5884,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 608.4,
+        "lift": 0.4,
+        "deals_6mo": 39,
+        "list_size": 23726,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bankruptcy",
+        "signals": [
+          "Bankruptcy"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Probate",
+        "signals": [
+          "Probate"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Other Lien",
+        "signals": [
+          "Other Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Spotsylvania, VA": [
+      {
+        "priority": 1,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 63.1,
+        "lift": 5.2,
+        "deals_6mo": 23,
+        "list_size": 1451,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear + Senior",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 87.5,
+        "lift": 3.7,
+        "deals_6mo": 20,
+        "list_size": 1751,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 92.6,
+        "lift": 3.5,
+        "deals_6mo": 25,
+        "list_size": 2314,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 104.2,
+        "lift": 3.1,
+        "deals_6mo": 67,
+        "list_size": 6982,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 1,
+        "signal": "Absentee + Senior",
+        "signals": [
+          "Absentee",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 105.5,
+        "lift": 3.1,
+        "deals_6mo": 23,
+        "list_size": 2426,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Low Income",
+        "signals": [
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 43.7,
+        "lift": 7.5,
+        "deals_6mo": 20,
+        "list_size": 874,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear + Low Income",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 44.9,
+        "lift": 7.3,
+        "deals_6mo": 16,
+        "list_size": 719,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Low Income",
+        "signals": [
+          "Absentee",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 47.1,
+        "lift": 6.9,
+        "deals_6mo": 17,
+        "list_size": 801,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Out-of-State",
+        "signals": [
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 86.1,
+        "lift": 3.8,
+        "deals_6mo": 21,
+        "list_size": 1809,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Tired Landlord",
+        "signals": [
+          "Free & Clear",
+          "Tired Landlord"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 90.8,
+        "lift": 3.6,
+        "deals_6mo": 12,
+        "list_size": 1090,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Free & Clear + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Free & Clear",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 100.4,
+        "lift": 3.3,
+        "deals_6mo": 18,
+        "list_size": 1808,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee + Out-of-State",
+        "signals": [
+          "Absentee",
+          "Out-of-State"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 110,
+        "lift": 3,
+        "deals_6mo": 21,
+        "list_size": 2310,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 142.2,
+        "lift": 2.3,
+        "deals_6mo": 77,
+        "list_size": 10948,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 149.6,
+        "lift": 2.2,
+        "deals_6mo": 97,
+        "list_size": 14516,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Free & Clear + Senior",
+        "signals": [
+          "Free & Clear",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 151.6,
+        "lift": 2.2,
+        "deals_6mo": 37,
+        "list_size": 5609,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 2,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 156.9,
+        "lift": 2.1,
+        "deals_6mo": 17,
+        "list_size": 2668,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Bad Credit + Low Income",
+        "signals": [
+          "Absentee",
+          "Bad Credit",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 74.9,
+        "lift": 4.4,
+        "deals_6mo": 9,
+        "list_size": 674,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit + Free & Clear + Low Income",
+        "signals": [
+          "Bad Credit",
+          "Free & Clear",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 78,
+        "lift": 4.2,
+        "deals_6mo": 9,
+        "list_size": 702,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Bad Credit",
+        "signals": [
+          "Absentee",
+          "Bad Credit"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 81.8,
+        "lift": 4,
+        "deals_6mo": 9,
+        "list_size": 736,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit + Free & Clear",
+        "signals": [
+          "Bad Credit",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 85.7,
+        "lift": 3.8,
+        "deals_6mo": 9,
+        "list_size": 771,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit + Low Income",
+        "signals": [
+          "Bad Credit",
+          "Low Income"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 101.6,
+        "lift": 3.2,
+        "deals_6mo": 11,
+        "list_size": 1118,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 118.4,
+        "lift": 2.8,
+        "deals_6mo": 11,
+        "list_size": 1302,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 252.9,
+        "lift": 1.3,
+        "deals_6mo": 54,
+        "list_size": 13654,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity + Senior",
+        "signals": [
+          "High Equity",
+          "Senior"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 496.1,
+        "lift": 0.7,
+        "deals_6mo": 14,
+        "list_size": 6946,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 716.4,
+        "lift": 0.5,
+        "deals_6mo": 35,
+        "list_size": 25074,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tax Delinquent",
+        "signals": [
+          "Tax Delinquent"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 5,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Notice of Default",
+        "signals": [
+          "Notice of Default"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 4,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "HOA Lien",
+        "signals": [
+          "HOA Lien"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bankruptcy",
+        "signals": [
+          "Bankruptcy"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      }
+    ],
+    "Fredericksburg City, VA": [
+      {
+        "priority": 2,
+        "signal": "Free & Clear",
+        "signals": [
+          "Free & Clear"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 148.3,
+        "lift": 1.9,
+        "deals_6mo": 13,
+        "list_size": 1928,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee + Free & Clear",
+        "signals": [
+          "Absentee",
+          "Free & Clear"
+        ],
+        "type": "Stack",
+        "evidence": "A",
+        "doors_per_deal": 147,
+        "lift": 1.9,
+        "deals_6mo": 9,
+        "list_size": 1323,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Absentee",
+        "signals": [
+          "Absentee"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 237.1,
+        "lift": 1.2,
+        "deals_6mo": 12,
+        "list_size": 2845,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "High Equity",
+        "signals": [
+          "High Equity"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": 406.9,
+        "lift": 0.7,
+        "deals_6mo": 9,
+        "list_size": 3662,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Senior",
+        "signals": [
+          "Senior"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 7,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Tired Landlord",
+        "signals": [
+          "Tired Landlord"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 3,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Out-of-State",
+        "signals": [
+          "Out-of-State"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 2,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Bad Credit",
+        "signals": [
+          "Bad Credit"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      },
+      {
+        "priority": 3,
+        "signal": "Low Income",
+        "signals": [
+          "Low Income"
+        ],
+        "type": "List",
+        "evidence": "A",
+        "doors_per_deal": null,
+        "lift": null,
+        "deals_6mo": 1,
+        "list_size": null,
+        "source_workbook": "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+      }
+    ]
+  },
+  "signal_vocabulary": {
+    "Free & Clear": 120,
+    "Absentee": 99,
+    "Senior": 83,
+    "Out-of-State": 76,
+    "High Equity": 65,
+    "Tired Landlord": 56,
+    "Low Income": 42,
+    "Bad Credit": 35,
+    "Tax Delinquent": 26,
+    "HOA Lien": 17,
+    "Notice of Default": 16,
+    "Other Lien": 16,
+    "Vacant": 13,
+    "Bankruptcy": 10,
+    "Lis Pendens": 7,
+    "Notice of Foreclosure": 7,
+    "Estate Sale": 5,
+    "Zombie": 3,
+    "Probate": 3,
+    "Judgment Lien": 1,
+    "Pre-Probate": 1
+  },
+  "unmatched_county_strings": {},
+  "source_workbooks": [
+    "county-compare-24005-24031-24003-24021-24013-24009-doors-per-deal-community.xlsx",
+    "county-compare-24017-11001-doors-per-deal-community.xlsx",
+    "county-compare-51153-51059-51013-51179-51177-51630-doors-per-deal-community.xlsx"
+  ]
+}

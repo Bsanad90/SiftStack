@@ -1,0 +1,443 @@
+{
+  "generated_at": "2026-08-28T02:42:50",
+  "type": "probate",
+  "method": "Verified each workbook URL with WebFetch, fell back to src/scrapfly_browser.py (residential-proxy render) on ECONNREFUSED/403/JS-shell pages and to plain curl for status codes, and used WebSearch only to locate official clerk record-access pages that were then fetched. Read-only: no accounts created, no forms submitted, no CAPTCHA attempted, no src/scripts run.",
+  "jurisdictions": {
+    "baltimore_county_md": {
+      "jurisdiction": "Baltimore County, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Register of Wills (statewide Estate Search, registers.maryland.gov) - county labelled 'Baltimore' in the County dropdown",
+      "url": "https://registers.maryland.gov/RowNetWeb/Estates/frmEstateSearch2.aspx",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Register of Wills - Legal Notice Search (published Notice of Appointment / Notice to Creditors / Notice to Unknown Heirs)",
+          "url": "https://registers.maryland.gov/LegalNotice/Notices/NoticeSearch.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "Register of Wills for Baltimore County - county information page (workbook URL; status ok)",
+          "url": "https://registers.maryland.gov/main/baltimore.html"
+        }
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "no",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily on court business days, one business-day lag; Estate Search footer read 'Latest data as of: 8/27/2026 4:00:00 PM (rownetweb)' on 2026-08-28; no weekend filings. Legal Notice Search lists the last 30 days by default (1,809 statewide notices on 2026-08-28) with a 'Published on MM/DD/YYYY' date per notice.",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Primary URL recorded as the statewide Estate Search app rather than the county info page. registers.maryland.gov refuses connections from the WebFetch service and from local curl (ECONNREFUSED / connection reset), and Scrapfly renders the two search apps fine but returns empty content for the static county .html pages (the Baltimore County page was the one county page that rendered, upstream 200).",
+      "notes": "Already covered by src/scripts/md_register_of_wills_pull.py: plain ASP.NET form (county dropdown, Filing Date from/to or exact date, Estate Type, Status), results grid #dgSearchResults, per-estate detail page frmDocketImages.aspx?RecordId= carries #lblPersonalReps / #lblAttorney. Exclude Estate Types SE/SJ/MV. The Legal Notice county dropdown fires its own postback - wait before clicking Search or the statewide set leaks through. No CAPTCHA, no login, no terms-of-use text seen on either app. Dropdown holds both 'Baltimore' (= Baltimore County, id 3) and 'Baltimore City' (id 24); select 'Baltimore' exactly."
+    },
+    "montgomery_md": {
+      "jurisdiction": "Montgomery, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Register of Wills (statewide Estate Search, registers.maryland.gov) - county labelled 'Montgomery' in the County dropdown",
+      "url": "https://registers.maryland.gov/RowNetWeb/Estates/frmEstateSearch2.aspx",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Register of Wills - Legal Notice Search (published Notice of Appointment / Notice to Creditors / Notice to Unknown Heirs)",
+          "url": "https://registers.maryland.gov/LegalNotice/Notices/NoticeSearch.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "Register of Wills for Montgomery - county information page (workbook URL; status not_checked)",
+          "url": "https://registers.maryland.gov/main/montgomery.html"
+        }
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "no",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily on court business days, one business-day lag; Estate Search footer read 'Latest data as of: 8/27/2026 4:00:00 PM (rownetweb)' on 2026-08-28; no weekend filings. Legal Notice Search lists the last 30 days by default (1,809 statewide notices on 2026-08-28) with a 'Published on MM/DD/YYYY' date per notice.",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Primary URL recorded as the statewide Estate Search app rather than the county info page. registers.maryland.gov refuses connections from the WebFetch service and from local curl (ECONNREFUSED / connection reset), and Scrapfly renders the two search apps fine but returns empty content for the static county .html pages - county page not confirmed this pass, workbook URL kept.",
+      "notes": "Already covered by src/scripts/md_register_of_wills_pull.py: plain ASP.NET form (county dropdown, Filing Date from/to or exact date, Estate Type, Status), results grid #dgSearchResults, per-estate detail page frmDocketImages.aspx?RecordId= carries #lblPersonalReps / #lblAttorney. Exclude Estate Types SE/SJ/MV. The Legal Notice county dropdown fires its own postback - wait before clicking Search or the statewide set leaks through. No CAPTCHA, no login, no terms-of-use text seen on either app. Register of Wills id 15."
+    },
+    "anne_arundel_md": {
+      "jurisdiction": "Anne Arundel, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Register of Wills (statewide Estate Search, registers.maryland.gov) - county labelled 'Anne Arundel' in the County dropdown",
+      "url": "https://registers.maryland.gov/RowNetWeb/Estates/frmEstateSearch2.aspx",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Register of Wills - Legal Notice Search (published Notice of Appointment / Notice to Creditors / Notice to Unknown Heirs)",
+          "url": "https://registers.maryland.gov/LegalNotice/Notices/NoticeSearch.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "Register of Wills for Anne Arundel - county information page (workbook URL; status not_checked)",
+          "url": "https://registers.maryland.gov/main/annearundel.html"
+        }
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "no",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily on court business days, one business-day lag; Estate Search footer read 'Latest data as of: 8/27/2026 4:00:00 PM (rownetweb)' on 2026-08-28; no weekend filings. Legal Notice Search lists the last 30 days by default (1,809 statewide notices on 2026-08-28) with a 'Published on MM/DD/YYYY' date per notice.",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Primary URL recorded as the statewide Estate Search app rather than the county info page. registers.maryland.gov refuses connections from the WebFetch service and from local curl (ECONNREFUSED / connection reset), and Scrapfly renders the two search apps fine but returns empty content for the static county .html pages - county page not confirmed this pass, workbook URL kept.",
+      "notes": "Already covered by src/scripts/md_register_of_wills_pull.py: plain ASP.NET form (county dropdown, Filing Date from/to or exact date, Estate Type, Status), results grid #dgSearchResults, per-estate detail page frmDocketImages.aspx?RecordId= carries #lblPersonalReps / #lblAttorney. Exclude Estate Types SE/SJ/MV. The Legal Notice county dropdown fires its own postback - wait before clicking Search or the statewide set leaks through. No CAPTCHA, no login, no terms-of-use text seen on either app. Register of Wills id 2."
+    },
+    "frederick_md": {
+      "jurisdiction": "Frederick, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Register of Wills (statewide Estate Search, registers.maryland.gov) - county labelled 'Frederick' in the County dropdown",
+      "url": "https://registers.maryland.gov/RowNetWeb/Estates/frmEstateSearch2.aspx",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Register of Wills - Legal Notice Search (published Notice of Appointment / Notice to Creditors / Notice to Unknown Heirs)",
+          "url": "https://registers.maryland.gov/LegalNotice/Notices/NoticeSearch.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "Register of Wills for Frederick - county information page (workbook URL; status not_checked)",
+          "url": "https://registers.maryland.gov/main/frederick.html"
+        }
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "no",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily on court business days, one business-day lag; Estate Search footer read 'Latest data as of: 8/27/2026 4:00:00 PM (rownetweb)' on 2026-08-28; no weekend filings. Legal Notice Search lists the last 30 days by default (1,809 statewide notices on 2026-08-28) with a 'Published on MM/DD/YYYY' date per notice.",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Primary URL recorded as the statewide Estate Search app rather than the county info page. registers.maryland.gov refuses connections from the WebFetch service and from local curl (ECONNREFUSED / connection reset), and Scrapfly renders the two search apps fine but returns empty content for the static county .html pages - county page not confirmed this pass, workbook URL kept.",
+      "notes": "Already covered by src/scripts/md_register_of_wills_pull.py: plain ASP.NET form (county dropdown, Filing Date from/to or exact date, Estate Type, Status), results grid #dgSearchResults, per-estate detail page frmDocketImages.aspx?RecordId= carries #lblPersonalReps / #lblAttorney. Exclude Estate Types SE/SJ/MV. The Legal Notice county dropdown fires its own postback - wait before clicking Search or the statewide set leaks through. No CAPTCHA, no login, no terms-of-use text seen on either app. Register of Wills id 10."
+    },
+    "carroll_md": {
+      "jurisdiction": "Carroll, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Register of Wills (statewide Estate Search, registers.maryland.gov) - county labelled 'Carroll' in the County dropdown",
+      "url": "https://registers.maryland.gov/RowNetWeb/Estates/frmEstateSearch2.aspx",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Register of Wills - Legal Notice Search (published Notice of Appointment / Notice to Creditors / Notice to Unknown Heirs)",
+          "url": "https://registers.maryland.gov/LegalNotice/Notices/NoticeSearch.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "Register of Wills for Carroll - county information page (workbook URL; status not_checked)",
+          "url": "https://registers.maryland.gov/main/carroll.html"
+        }
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "no",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily on court business days, one business-day lag; Estate Search footer read 'Latest data as of: 8/27/2026 4:00:00 PM (rownetweb)' on 2026-08-28; no weekend filings. Legal Notice Search lists the last 30 days by default (1,809 statewide notices on 2026-08-28) with a 'Published on MM/DD/YYYY' date per notice.",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Primary URL recorded as the statewide Estate Search app rather than the county info page. registers.maryland.gov refuses connections from the WebFetch service and from local curl (ECONNREFUSED / connection reset), and Scrapfly renders the two search apps fine but returns empty content for the static county .html pages - county page not confirmed this pass, workbook URL kept.",
+      "notes": "Already covered by src/scripts/md_register_of_wills_pull.py: plain ASP.NET form (county dropdown, Filing Date from/to or exact date, Estate Type, Status), results grid #dgSearchResults, per-estate detail page frmDocketImages.aspx?RecordId= carries #lblPersonalReps / #lblAttorney. Exclude Estate Types SE/SJ/MV. The Legal Notice county dropdown fires its own postback - wait before clicking Search or the statewide set leaks through. No CAPTCHA, no login, no terms-of-use text seen on either app. Register of Wills id 6."
+    },
+    "calvert_md": {
+      "jurisdiction": "Calvert, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Register of Wills (statewide Estate Search, registers.maryland.gov) - county labelled 'Calvert' in the County dropdown",
+      "url": "https://registers.maryland.gov/RowNetWeb/Estates/frmEstateSearch2.aspx",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Register of Wills - Legal Notice Search (published Notice of Appointment / Notice to Creditors / Notice to Unknown Heirs)",
+          "url": "https://registers.maryland.gov/LegalNotice/Notices/NoticeSearch.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "Register of Wills for Calvert - county information page (workbook URL; status not_checked)",
+          "url": "https://registers.maryland.gov/main/calvert.html"
+        }
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "no",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily on court business days, one business-day lag; Estate Search footer read 'Latest data as of: 8/27/2026 4:00:00 PM (rownetweb)' on 2026-08-28; no weekend filings. Legal Notice Search lists the last 30 days by default (1,809 statewide notices on 2026-08-28) with a 'Published on MM/DD/YYYY' date per notice.",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Primary URL recorded as the statewide Estate Search app rather than the county info page. registers.maryland.gov refuses connections from the WebFetch service and from local curl (ECONNREFUSED / connection reset), and Scrapfly renders the two search apps fine but returns empty content for the static county .html pages - county page not confirmed this pass, workbook URL kept.",
+      "notes": "Already covered by src/scripts/md_register_of_wills_pull.py: plain ASP.NET form (county dropdown, Filing Date from/to or exact date, Estate Type, Status), results grid #dgSearchResults, per-estate detail page frmDocketImages.aspx?RecordId= carries #lblPersonalReps / #lblAttorney. Exclude Estate Types SE/SJ/MV. The Legal Notice county dropdown fires its own postback - wait before clicking Search or the statewide set leaks through. No CAPTCHA, no login, no terms-of-use text seen on either app. Register of Wills id 4 (SDAT uses 05 - the schemes differ)."
+    },
+    "charles_md": {
+      "jurisdiction": "Charles, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Register of Wills (statewide Estate Search, registers.maryland.gov) - county labelled 'Charles' in the County dropdown",
+      "url": "https://registers.maryland.gov/RowNetWeb/Estates/frmEstateSearch2.aspx",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Maryland Register of Wills - Legal Notice Search (published Notice of Appointment / Notice to Creditors / Notice to Unknown Heirs)",
+          "url": "https://registers.maryland.gov/LegalNotice/Notices/NoticeSearch.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "Register of Wills for Charles - county information page (workbook URL; status not_checked)",
+          "url": "https://registers.maryland.gov/main/charles.html"
+        }
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "no",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily on court business days, one business-day lag; Estate Search footer read 'Latest data as of: 8/27/2026 4:00:00 PM (rownetweb)' on 2026-08-28; no weekend filings. Legal Notice Search lists the last 30 days by default (1,809 statewide notices on 2026-08-28) with a 'Published on MM/DD/YYYY' date per notice.",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Primary URL recorded as the statewide Estate Search app rather than the county info page. registers.maryland.gov refuses connections from the WebFetch service and from local curl (ECONNREFUSED / connection reset), and Scrapfly renders the two search apps fine but returns empty content for the static county .html pages - county page not confirmed this pass, workbook URL kept.",
+      "notes": "Already covered by src/scripts/md_register_of_wills_pull.py: plain ASP.NET form (county dropdown, Filing Date from/to or exact date, Estate Type, Status), results grid #dgSearchResults, per-estate detail page frmDocketImages.aspx?RecordId= carries #lblPersonalReps / #lblAttorney. Exclude Estate Types SE/SJ/MV. The Legal Notice county dropdown fires its own postback - wait before clicking Search or the statewide set leaks through. No CAPTCHA, no login, no terms-of-use text seen on either app. Register of Wills id 8."
+    },
+    "district_of_columbia": {
+      "jurisdiction": "District of Columbia",
+      "primary_source_type": "court_portal",
+      "publisher": "Superior Court of the District of Columbia, Probate Division - Tyler Odyssey 'Portal' case search (portal-dc.tylertech.cloud)",
+      "url": "https://www.dccourts.gov/superior-court/superior-court-case-search",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Tyler Odyssey Portal Smart Search (Probate case type) - AWS WAF CAPTCHA for automation per the 2026-08-27 investigation",
+          "url": "https://portal-dc.tylertech.cloud/Portal"
+        },
+        {
+          "type": "county_pdf",
+          "publisher": "DC Courts Portal Case Search Guide 2022",
+          "url": "https://www.dccourts.gov/sites/default/files/portal/Portal_Case_Search_Guide_2022.pdf"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Continuous on business days - the page's Important Notice states 'Docket information and document images are available within minutes of being entered into the court record.'",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "Re-fetched only the primary URL as instructed: plain WebFetch is 403, a rendered fetch (Scrapfly) loads it (page 'Last Updated 02/13/2026') and it still splits search into Portal (Civil, Tax, Auditor Master, PROBATE - 'view most case information anonymously without registration or sign-in') and eAccess (Criminal, DV). Carrying output/dpd_dc_ftm_investigation.md section 6: the Portal Smart Search served an AWS WAF 'confirm you are human' challenge headlessly, so every automated pull needs a 2Captcha AWS-WAF solve and .env CAPTCHA_API_KEY is still the placeholder. Property address then needs an ITSPE decedent-name match. CAPTCHA not attempted."
+    },
+    "fairfax_va": {
+      "jurisdiction": "Fairfax, VA",
+      "primary_source_type": "court_portal",
+      "publisher": "Fairfax Circuit Court Clerk - Court Public Access Network (CPAN), paid subscriber index of 'Administration of Estate (Fiduciary/Probate) Documents'",
+      "url": "https://www.fairfaxcounty.gov/circuit/online-services/court-public-access-network",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "portal",
+          "publisher": "Fairfax Circuit Court Probate Division - Administration of Estates (workbook URL, live)",
+          "url": "https://www.fairfaxcounty.gov/circuit/probate/administration-of-estates"
+        },
+        {
+          "type": "court_portal",
+          "publisher": "Fairfax eCaseSearch (ECS) - free, but Civil (CL) and Criminal (FE/MI) only, no probate; results capped at 100",
+          "url": "https://www.fairfaxcounty.gov/apps/ECS_Public/"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "publicnoticevirginia.com - Popular Search 6 'Estate Claims' (Fairfax checkbox idx 29)",
+          "url": "https://www.publicnoticevirginia.com/default.aspx"
+        }
+      ],
+      "scrapable": "yes_with_credential",
+      "access_mechanics": "login_paid",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily (workbook); CPAN describes itself as a 'constantly growing database of official Circuit Court records, from 1742 to the present'.",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "The only online probate index is the PAID CPAN ($150 setup + $150/quarter per user, account sharing prohibited); the free eCaseSearch does not carry probate. Workbook 'Medium' access understates the paywall. Workbook URL itself is live and unchanged.",
+      "notes": "A scraper needs a CPAN subscription (not created) and would log into the subscriber site; index fields and date-range support were not probed behind the paywall. Free route is the Estate Claims creditor notices on publicnoticevirginia.com via va_trustee_sale_pull.py --popular-search 6, never yet run. Probate records carry no property address; PR name + mailing address only."
+    },
+    "prince_william_va": {
+      "jurisdiction": "Prince William, VA",
+      "primary_source_type": "court_portal",
+      "publisher": "Prince William Circuit Court Clerk - Eagle Recorder public records (www4.pwcva.gov/Web): Fiduciaries (Wills, Probate, List of Heirs) index and images 1981-present",
+      "url": "https://www.pwcva.gov/department/circuit-court/access-online-records",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Eagle Recorder search portal named on the county pages (not fetched this pass; free registration required)",
+          "url": "https://www4.pwcva.gov/Web"
+        },
+        {
+          "type": "portal",
+          "publisher": "Records for Occasional Users (pay-per-use: index free, $0.50/image + $2.00 convenience fee)",
+          "url": "https://www.pwcva.gov/department/circuit-court/records-occasional-users"
+        },
+        {
+          "type": "portal",
+          "publisher": "Circuit Court Clerk's Probate Office - Probate/Qualify/Wills (workbook URL, live)",
+          "url": "https://www.pwcva.gov/department/circuit-court/probatequalifywills"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "publicnoticevirginia.com - Popular Search 6 'Estate Claims' (Prince William checkbox idx 75)",
+          "url": "https://www.publicnoticevirginia.com/default.aspx"
+        }
+      ],
+      "scrapable": "yes_with_credential",
+      "access_mechanics": "login_free",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily (workbook)",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook page says nothing about an online index, but the Clerk's 'Access to online records' page documents one: Fiduciaries (Wills, Probate, List of Heirs) indexed 1981-present on Eagle Recorder; index search is free after a free registration, images $0.50 each; unlimited subscription $240/yr.",
+      "notes": "A scraper would register a free Eagle Recorder account (not done), search the Fiduciary index by recording date, and read the index rows (decedent, fiduciary, date); images cost money. The portal's own search form, date-range support and any terms page were not fetched. Alternative free feed: Estate Claims notices via publicnoticevirginia.com."
+    },
+    "arlington_va": {
+      "jurisdiction": "Arlington, VA",
+      "primary_source_type": "court_portal",
+      "publisher": "Arlington Circuit Court Probate Office - STARR Index (wills/probate records 1997 onward, imaging from 2000)",
+      "url": "https://starr.arlingtonva.us/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "portal",
+          "publisher": "Arlington Circuit Court Probate & Wills page (workbook URL) - HTTP 403 to WebFetch and local curl, empty via Scrapfly",
+          "url": "https://www.arlingtonva.us/Government/Departments/Courts/Circuit-Court/Probate"
+        },
+        {
+          "type": "court_portal",
+          "publisher": "Virginia Judiciary - Arlington Circuit Court page (participates in Circuit Court Case Information; civil/criminal)",
+          "url": "https://www.vacourts.gov/courts/circuit/arlington/home"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "publicnoticevirginia.com - Popular Search 6 'Estate Claims' (Arlington checkbox idx 6)",
+          "url": "https://www.publicnoticevirginia.com/default.aspx"
+        }
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily (workbook)",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook URL is behind Arlington's WAF (403 to every fetcher tried; the courts.arlingtonva.us alias 301s into the same 403). The live online index is the STARR Index at starr.arlingtonva.us, which offers 'Search as a Guest' with no login - not mentioned in the workbook.",
+      "notes": "Only the STARR homepage was read (guest search offered, no CAPTCHA or terms text on it); the search form's fields, date-range filter and result layout are unverified. Pre-2000 documents are by email request to probate@arlingtonva.us. Estate Claims notices also reachable on publicnoticevirginia.com."
+    },
+    "stafford_va": {
+      "jurisdiction": "Stafford, VA",
+      "primary_source_type": "court_portal",
+      "publisher": "Stafford Circuit Court Clerk - Secure Remote Access (Logan Systems, staffordcocc.org), paid subscription covering land records and wills",
+      "url": "https://www.staffordcocc.org/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "portal",
+          "publisher": "Clerk of the Circuit Court - Probate and Estate Administration (workbook URL) - HTTP 403 to WebFetch and local curl, empty via Scrapfly",
+          "url": "https://staffordcountyva.gov/government/courts/circuit_court/probate_and_estate_administration.php"
+        },
+        {
+          "type": "court_portal",
+          "publisher": "Virginia Judiciary - Stafford Circuit Court page (participates in Circuit Court Case Information and SRA)",
+          "url": "https://www.vacourts.gov/courts/circuit/stafford/home"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "publicnoticevirginia.com - Popular Search 6 'Estate Claims' (Stafford checkbox idx 90)",
+          "url": "https://www.publicnoticevirginia.com/default.aspx"
+        }
+      ],
+      "scrapable": "yes_with_credential",
+      "access_mechanics": "login_paid",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily (workbook)",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook URL is 403 to every fetcher (county WAF). The online index is a paid Logan Systems SRA ($300 per 6 months or $600 per year, notarized application per the county land-records page) - workbook 'Easy' access overstates it. staffordcocc.org answers 200 but is a Blazor/JS app that rendered only 'An unhandled error has occurred' to WebFetch and empty to Scrapfly.",
+      "notes": "A scraper would need an SRA subscription (not created) and a real browser session against the Logan Systems app; index fields and date-range support could not be observed. Free alternative is the Estate Claims creditor notices on publicnoticevirginia.com. The reference_stafford_va_title_lookup memory covers the assessor side (owner string + deed chain)."
+    },
+    "spotsylvania_va": {
+      "jurisdiction": "Spotsylvania, VA",
+      "primary_source_type": "courthouse_only",
+      "publisher": "Spotsylvania Clerk of the Circuit Court, Probate Division (9107 Judicial Center Lane)",
+      "url": "https://www.spotsylvania.va.us/1187/Probate-Estate-Administration",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "court_portal",
+          "publisher": "Records & Recordation Services - land records by paid SRA subscription only (Va. Code 17.1-279D.1); wills/probate not listed as online",
+          "url": "https://www.spotsylvania.va.us/1210/Records-Recordation-Services"
+        },
+        {
+          "type": "court_portal",
+          "publisher": "Logan Systems SRA site (www.spotsylandrecords.org) - renders 'An unhandled error has occurred'; /Opening.asp is 404",
+          "url": "https://www.spotsylandrecords.org/"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "publicnoticevirginia.com - Popular Search 6 'Estate Claims' (Spotsylvania checkbox idx 89)",
+          "url": "https://www.publicnoticevirginia.com/default.aspx"
+        }
+      ],
+      "scrapable": "no",
+      "access_mechanics": "in_person",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily (workbook)",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "Workbook URL is live and matches. No online probate/fiduciary index was found: the county's records page puts land records behind a paid Logan Systems SRA and does not list wills, and the SRA site itself is erroring. The only scrapable feed is the Estate Claims creditor notices aggregated on publicnoticevirginia.com (va_trustee_sale_pull.py --popular-search 6, never run). Probate itself is by appointment."
+    },
+    "fredericksburg_city_va": {
+      "jurisdiction": "Fredericksburg City, VA",
+      "primary_source_type": "courthouse_only",
+      "publisher": "Fredericksburg Circuit Court Clerk's Office (Jeff Small), 701 Princess Anne St Suite 100",
+      "url": "https://www.fredericksburgva.gov/653/Wills-and-Probate",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "portal",
+          "publisher": "Circuit Court RECORDS page - HISTORIC archive only (maps.fredericksburgva.gov/HistoricCourtRecord/), not current filings",
+          "url": "https://www.fredericksburgva.gov/1005/RECORDS"
+        },
+        {
+          "type": "court_portal",
+          "publisher": "Virginia Judiciary - Fredericksburg Circuit Court page ('Estate matters are handled by appointment'; Circuit Court Case Information covers civil/criminal)",
+          "url": "https://www.vacourts.gov/courts/circuit/fredericksburg/home"
+        }
+      ],
+      "scrapable": "no",
+      "access_mechanics": "in_person",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Ongoing as estates are filed (workbook)",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "Workbook URL is live and matches. No online probate index exists for current filings (the only searchable databases are the historic archive), and Fredericksburg City has NO checkbox on publicnoticevirginia.com (verified absent from all 104 - open question whether its creditor notices fold into Spotsylvania's). Pulling new estates here means an in-person records-room visit or a FOIA-style copy request."
+    }
+  }
+}

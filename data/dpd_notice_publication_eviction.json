@@ -1,0 +1,301 @@
+{
+  "generated_at": "2026-08-28T06:37:56Z",
+  "type": "eviction",
+  "method": "Read-only verification of the 14 workbook rows. WebFetch first on every workbook URL plus the statewide court portals (Maryland Judiciary Case Search, mdcourts.gov/data and /mdec/publiccases, Virginia GDC Online Case Information System, VA OCIS, DC Courts case search); mdcourts.gov / courts.state.md.us / dccourts.gov answer 403 (Akamai) to WebFetch, so src/scrapfly_browser.py rendered the Case Search landing page (upstream 200) before Scrapfly throttled the account (429) and further Scrapfly attempts were stopped. WebSearch located replacement pages and the Maryland CAPTCHA and eviction-shielding statements; the Maryland daily statewide 'AOC - Cases Filed Report' PDF was verified by parsing the copy already on this machine (Divorce Cases/file2026-08-27.pdf, pulled by the MD Cases scheduled task) rather than re-downloading it. No accounts created, no forms submitted, no CAPTCHA solved, no Firecrawl, no src/scripts run.",
+  "jurisdictions": {
+    "baltimore_county_md": {
+      "jurisdiction": "Baltimore County, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Judiciary Case Search & Record Portal (District Court of Maryland for Baltimore County, Towson / Essex / Catonsville locations)",
+      "url": "https://casesearch.mdcourts.gov/casesearch/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "county_pdf", "publisher": "Maryland Judiciary AOC daily 'Cases Filed Report' (public cases created by MDEC courts, previous 5 days)", "url": "https://www.mdcourts.gov/data/case/"},
+        {"type": "court_portal", "publisher": "District Court of Maryland for Baltimore County (court directory page, workbook URL, Akamai 403 to automated fetch, not re-verified)", "url": "https://www.mdcourts.gov/district/baltimore"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "yes",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "yes",
+      "cadence": "Daily (one 'Cases Filed Report' PDF per court day, reporting period = the previous day; Case Search updates as cases are entered)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Case Search relaunched 2026-03-14 as the unified 'Maryland Judiciary Case Search & Record Portal' (Case Portal 1.1, Odyssey-based, Sign In / Register plus an I-Agree disclaimer gate and CAPTCHA); the workbook's claim that no bulk extraction exists is wrong: the daily statewide AOC Cases Filed Report PDF lists every District Court LT filing with the landlord as plaintiff.",
+      "notes": "The scraper route is the daily PDF, not the portal: file2026-08-27.pdf held 2,037 'Failure to Pay Rent' plus 6 'Tenant Holding Over' and 10 'Wrongful Detainer' entries statewide, each as 'D-0xx-LT-26-nnnnnn | <Landlord> vs. <Tenant> | case type | file date', sectioned by District Court location (Towson, Essex, Catonsville for this county), so 12 months of PDFs aggregated by plaintiff name yields the multiple-eviction landlord list directly; LT entries carry no property address (only criminal entries print a defendant address), so the address comes from a per-case Case Search lookup behind the CAPTCHA. Gotcha: mdcourts.gov is Akamai-fronted (403 to WebFetch, Scrapfly ASP failed), but the MD Cases scheduled task already downloads the file daily with plain PowerShell from a residential IP. Under SB 19 (eff. 2024-10-01) FTPR cases that do not end in removal are shielded within 60 days of judgment, so capture at filing, not later."
+    },
+    "montgomery_md": {
+      "jurisdiction": "Montgomery, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Judiciary Case Search & Record Portal (District Court of Maryland for Montgomery County, Rockville / Silver Spring locations)",
+      "url": "https://casesearch.mdcourts.gov/casesearch/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "county_pdf", "publisher": "Maryland Judiciary AOC daily 'Cases Filed Report' (public cases created by MDEC courts, previous 5 days)", "url": "https://www.mdcourts.gov/data/case/"},
+        {"type": "court_portal", "publisher": "Maryland Judiciary Case Search (workbook URL, redirects into the new portal; mdcourts.gov 403 to automated fetch)", "url": "https://www.mdcourts.gov/casesearch"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "yes",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "yes",
+      "cadence": "Daily (one 'Cases Filed Report' PDF per court day; Case Search updates as cases are entered)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook names the Circuit Court clerk as the office; evictions are District Court (Rockville and Silver Spring sections in the daily PDF, D-06 court code, 106 FTPR filings on 2026-08-26 alone). Case Search relaunched 2026-03-14 as the unified portal with CAPTCHA; bulk daily PDF exists contrary to the workbook.",
+      "notes": "Same mechanics as Baltimore County: aggregate the daily statewide PDF's LT entries by plaintiff name (the 'X vs. Y' style prints the landlord first, e.g. 'Bay Hills, LLLP TA Bay Hills Apartments vs. ...'), then resolve property addresses per case through the CAPTCHA-gated portal. Montgomery is the heaviest of the seven target counties in the file, so a 12-month plaintiff aggregation is meaningful here. Portal disclaimer prohibits attempts to interfere with the Judiciary's systems and the Judiciary states CAPTCHA exists 'to confirm users are not robots or other automated systems'; non-profit legal providers may request a non-CAPTCHA route, investors may not."
+    },
+    "anne_arundel_md": {
+      "jurisdiction": "Anne Arundel, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Judiciary Case Search & Record Portal (District Court of Maryland for Anne Arundel County, Glen Burnie / Annapolis locations)",
+      "url": "https://casesearch.mdcourts.gov/casesearch/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "county_pdf", "publisher": "Maryland Judiciary AOC daily 'Cases Filed Report' (public cases created by MDEC courts, previous 5 days)", "url": "https://www.mdcourts.gov/data/case/"},
+        {"type": "court_portal", "publisher": "District Court of Maryland for Anne Arundel County (court directory page, workbook URL, Akamai 403 to automated fetch, not re-verified)", "url": "http://www.mdcourts.gov/district/directories/annearundel"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "yes",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "yes",
+      "cadence": "Daily (one 'Cases Filed Report' PDF per court day; Case Search updates as cases are entered)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook URL casesearch.courts.state.md.us/casesearch/ now lands on the relaunched unified portal (2026-03-14) with CAPTCHA; bulk daily PDF exists contrary to the workbook. Glen Burnie is the single largest District Court section in the daily file (39 section headers on 2026-08-27).",
+      "notes": "Sample entries from the 2026-08-27 file show exactly the target shape: 'D-071-LT-26-116232 | Downtown Annapolis LP TA BOWMAN PLACE vs. J. DOE, et al. | Failure to Pay Rent | 08/26/2026', and the same plaintiff repeats across consecutive case numbers, so multiple-filing landlords fall out of a plaintiff GROUP BY with no name list needed up front. Property address requires the per-case portal lookup behind the CAPTCHA. Note the LLC 'TA <apartment complex>' pattern: most repeat filers are professional apartment operators, so filter to individual or small-LLC plaintiffs to find tired landlords rather than REITs."
+    },
+    "frederick_md": {
+      "jurisdiction": "Frederick, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Judiciary Case Search & Record Portal (District Court of Maryland for Frederick County)",
+      "url": "https://casesearch.mdcourts.gov/casesearch/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "county_pdf", "publisher": "Maryland Judiciary AOC daily 'Cases Filed Report' (public cases created by MDEC courts, previous 5 days)", "url": "https://www.mdcourts.gov/data/case/"},
+        {"type": "court_portal", "publisher": "Maryland Judiciary Case Search (workbook URL, now redirects into the new portal)", "url": "https://casesearch.courts.state.md.us/"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "yes",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "yes",
+      "cadence": "Daily (one 'Cases Filed Report' PDF per court day; Case Search updates as cases are entered)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Portal relaunched 2026-03-14 with CAPTCHA and Sign In / Register (public summary search still free); bulk daily PDF exists contrary to the workbook. Workbook says 'unlawful detainer' but Maryland's LT case types are Failure to Pay Rent, Tenant Holding Over, Wrongful Detainer and Breach of Lease.",
+      "notes": "Frederick appears as its own 'Frederick' District Court section in the daily PDF (7 section headers on 2026-08-27) alongside a separate 'Frederick Circuit Court' section; take only the District Court section. Aggregate plaintiff names across 12 months of PDFs, then look up addresses per case in the CAPTCHA-gated portal. Files older than 5 days drop off the public index page, so the local archive (87 daily PDFs on disk from the MD Cases task) is the only backfill source."
+    },
+    "carroll_md": {
+      "jurisdiction": "Carroll, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Judiciary Case Search & Record Portal (District Court of Maryland for Carroll County, Westminster)",
+      "url": "https://casesearch.mdcourts.gov/casesearch/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "county_pdf", "publisher": "Maryland Judiciary AOC daily 'Cases Filed Report' (public cases created by MDEC courts, previous 5 days)", "url": "https://www.mdcourts.gov/data/case/"},
+        {"type": "court_portal", "publisher": "Carroll County District Court (workbook court page, Akamai 403 to automated fetch, not re-verified)", "url": "http://www.mdcourts.gov/courts/carroll/district"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "yes",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "yes",
+      "cadence": "Daily (one 'Cases Filed Report' PDF per court day; Case Search updates as cases are entered)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Portal relaunched 2026-03-14 with CAPTCHA; bulk daily PDF exists contrary to the workbook. Workbook court-page URL could not be verified (mdcourts.gov 403s automated fetches).",
+      "notes": "Carroll has its own 'Carroll' District Court section in the daily PDF (3 headers on 2026-08-27) with low LT volume, so a 12-month window is needed before any landlord shows 2+ filings. Same plaintiff-aggregation route as the other MD counties; addresses per case via the CAPTCHA-gated portal."
+    },
+    "calvert_md": {
+      "jurisdiction": "Calvert, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Judiciary Case Search & Record Portal (District Court of Maryland for Calvert County, Prince Frederick)",
+      "url": "https://casesearch.mdcourts.gov/casesearch/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "county_pdf", "publisher": "Maryland Judiciary AOC daily 'Cases Filed Report' (public cases created by MDEC courts, previous 5 days)", "url": "https://www.mdcourts.gov/data/case/"},
+        {"type": "court_portal", "publisher": "Maryland Courts records page (workbook URL, Akamai 403 to automated fetch, not re-verified)", "url": "http://www.mdcourts.gov/courts/courtrecords"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "yes",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "yes",
+      "cadence": "Daily (one 'Cases Filed Report' PDF per court day; Case Search updates as cases are entered)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook names the Clerk of the Circuit Court as the office; LT cases are District Court ('Calvert' District Court section in the daily PDF, 10 headers on 2026-08-27, separate from 'Calvert Circuit Court'). Portal relaunched 2026-03-14 with CAPTCHA; bulk daily PDF exists contrary to the workbook.",
+      "notes": "Same route: plaintiff aggregation over the daily PDFs, per-case address lookup in the CAPTCHA-gated portal. The workbook FOIA URL (courts.state.md.us/clerks/calvert/judicialrecordsrequests) was not re-fetched; MD Judiciary records requests are governed by the Maryland Rules on Access to Court Records, which the portal disclaimer cites."
+    },
+    "charles_md": {
+      "jurisdiction": "Charles, MD",
+      "primary_source_type": "court_portal",
+      "publisher": "Maryland Judiciary Case Search & Record Portal (District Court of Maryland for Charles County, La Plata)",
+      "url": "https://casesearch.mdcourts.gov/casesearch/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "county_pdf", "publisher": "Maryland Judiciary AOC daily 'Cases Filed Report' (public cases created by MDEC courts, previous 5 days)", "url": "https://www.mdcourts.gov/data/case/"},
+        {"type": "court_portal", "publisher": "District Court of Maryland for Charles County (court directory page, workbook URL, Akamai 403 to automated fetch, not re-verified)", "url": "http://www.mdcourts.gov/district/directories/charles"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "yes",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "yes",
+      "cadence": "Daily (one 'Cases Filed Report' PDF per court day; Case Search updates as cases are entered)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Portal relaunched 2026-03-14 with CAPTCHA; bulk daily PDF exists contrary to the workbook. Workbook says 'summary ejectment/unlawful detainer'; Maryland's actual LT case types are Failure to Pay Rent, Tenant Holding Over, Wrongful Detainer, Breach of Lease.",
+      "notes": "Charles has its own 'Charles' District Court section in the daily PDF (9 headers on 2026-08-27), separate from 'Charles Circuit Court'. Same plaintiff-aggregation route; addresses per case via the CAPTCHA-gated portal. Capture at filing: FTPR cases not ending in removal are shielded within 60 days (SB 19, eff. 2024-10-01), so a late backfill undercounts."
+    },
+    "district_of_columbia": {
+      "jurisdiction": "District of Columbia",
+      "primary_source_type": "court_portal",
+      "publisher": "Superior Court of the District of Columbia, Civil Division - Landlord and Tenant Branch (Tyler eAccess portal)",
+      "url": "https://www.dccourts.gov/superior-court/superior-court-case-search",
+      "url_status": "blocked",
+      "secondary_sources": [
+        {"type": "court_portal", "publisher": "DC Courts eAccess (Tyler) portal, JS shell only to a plain fetch", "url": "https://eaccess.dccourts.gov/eaccess/home.page.2"}
+      ],
+      "scrapable": "no",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "Carrying output/dpd_dc_ftm_investigation.md section 10 (probed live 2026-08-27): same Tyler portal as probate, Civil Division includes L&T, gated by a CAPTCHA that blocks on the placeholder 2Captcha key; nothing in DC Open Data. Today's re-fetch of the primary URL returned 403 to WebFetch and an empty render through Scrapfly (dccourts.gov is WAF-fronted), and eaccess.dccourts.gov returned only a no-JavaScript fallback shell, so the URL could not be confirmed live from this vantage; workbook values kept. Method if the CAPTCHA is solved: search by plaintiff and filter to L&T case types."
+    },
+    "fairfax_va": {
+      "jurisdiction": "Fairfax, VA",
+      "primary_source_type": "court_portal",
+      "publisher": "Virginia General District Court Online Case Information System (Office of the Executive Secretary, Supreme Court of Virginia) - Fairfax County General District Court",
+      "url": "https://eapps.courts.state.va.us/gdcourts/welcomePage.do",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "court_portal", "publisher": "Fairfax County General District Court (county site; its Case Information link goes to the OCIS reCAPTCHA gate)", "url": "https://www.fairfaxcounty.gov/generaldistrict/"},
+        {"type": "court_portal", "publisher": "Fairfax County General District Court (vacourts.gov court page)", "url": "https://www.vacourts.gov/courts/gd/fairfax_county/home.html"},
+        {"type": "open_data", "publisher": "virginiacourtdata.org (independent, anonymized bulk CSVs of District Civil cases through 2024; party names removed)", "url": "https://virginiacourtdata.org/"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Portal is reCAPTCHA-gated (captchaVerification.do; every search page redirect-loops without the gate cookie), which the workbook's 'Medium' access does not mention. The statewide OCIS (eapps/ocis) that the vacourts court pages now point to covers only criminal/traffic for GDC; civil unlawful detainer stays in the per-court gdcourts system.",
+      "notes": "Scraper must clear the reCAPTCHA once per session, then query ONE court at a time (FIPS 059) in the Civil Division: name search (plaintiff or defendant, '*' wildcard, min 2 chars) needs a landlord name up front, so the enumeration route is the Hearing Date search per court day, keep GV-prefixed civil cases with an unlawful detainer hearing type, and GROUP BY plaintiff across 12 months. No case-type filter exists; civil is identifiable only by the GV case-number prefix. Bulk: none public at case level (OES publishes only Power BI aggregates and monthly filings PDFs), and Va. Code 16.1-69.54:1 lets OES supply aggregated data reports that 'shall not include the name ... of any party' and may not be redistributed, so the statutory bulk route cannot name landlords. No terms-of-use text about automated access appears on the gdcourts pages."
+    },
+    "prince_william_va": {
+      "jurisdiction": "Prince William, VA",
+      "primary_source_type": "court_portal",
+      "publisher": "Virginia General District Court Online Case Information System (Office of the Executive Secretary, Supreme Court of Virginia) - Prince William General District Court",
+      "url": "https://eapps.courts.state.va.us/gdcourts/welcomePage.do",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "court_portal", "publisher": "Prince William General District Court (vacourts.gov court page; replaces dead workbook URL)", "url": "https://www.vacourts.gov/courts/gd/prince_william/home.html"},
+        {"type": "open_data", "publisher": "virginiacourtdata.org (independent, anonymized bulk CSVs of District Civil cases through 2024; party names removed)", "url": "https://virginiacourtdata.org/"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook URL http://www.courts.state.va.us/courts/gd/princewilliam/home.html is dead (404); live page is vacourts.gov/courts/gd/prince_william/home.html (9311 Lee Avenue, Manassas 20110-5586; main 703-792-6141, civil 703-792-6149, not the workbook's 703-792-6000). Portal is reCAPTCHA-gated.",
+      "notes": "Same mechanics as Fairfax: clear the reCAPTCHA, select the Prince William court (FIPS 153), walk the Civil Division Hearing Date search day by day, keep GV unlawful detainer cases, aggregate plaintiffs over 12 months, then read each case detail for the premises address. Name search is per court and needs the landlord name first, so it is the second pass, not the first. No case-level bulk export; the statutory aggregated-data route strips party names."
+    },
+    "arlington_va": {
+      "jurisdiction": "Arlington, VA",
+      "primary_source_type": "court_portal",
+      "publisher": "Virginia General District Court Online Case Information System (Office of the Executive Secretary, Supreme Court of Virginia) - Arlington General District Court",
+      "url": "https://eapps.courts.state.va.us/gdcourts/welcomePage.do",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "court_portal", "publisher": "Arlington General District Court (vacourts.gov court page, workbook URL, live)", "url": "https://www.vacourts.gov/courts/gd/arlington/home.html"},
+        {"type": "open_data", "publisher": "virginiacourtdata.org (independent, anonymized bulk CSVs of District Civil cases through 2024; party names removed)", "url": "https://virginiacourtdata.org/"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook says dockets 'may require in-person visits or a subscription'; in fact the free statewide gdcourts portal covers Arlington civil cases online (reCAPTCHA-gated). Court page confirms 1425 N Courthouse Rd Suite 2400, 703-228-7900.",
+      "notes": "Same mechanics as Fairfax (court FIPS 013): reCAPTCHA once per session, Civil Division Hearing Date search per court day, GV unlawful detainer cases, GROUP BY plaintiff over 12 months, then per-case detail for the address. The Arlington court page links only to the statewide OCIS (eapps/ocis/landing), which is criminal/traffic for GDC and does not carry civil UD cases; use gdcourts."
+    },
+    "stafford_va": {
+      "jurisdiction": "Stafford, VA",
+      "primary_source_type": "court_portal",
+      "publisher": "Virginia General District Court Online Case Information System (Office of the Executive Secretary, Supreme Court of Virginia) - Stafford General District Court",
+      "url": "https://eapps.courts.state.va.us/gdcourts/welcomePage.do",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "court_portal", "publisher": "Stafford General District Court (vacourts.gov court page)", "url": "https://www.vacourts.gov/courts/gd/stafford/home.html"},
+        {"type": "open_data", "publisher": "virginiacourtdata.org (independent, anonymized bulk CSVs of District Civil cases through 2024; party names removed)", "url": "https://virginiacourtdata.org/"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook URL https://eapps.courts.state.va.us/gdcourts resolves (welcomePage.do). Portal is reCAPTCHA-gated, which the workbook does not mention. Court page confirms 1300 Courthouse Road, Stafford 22555-0940, (540) 658-8935.",
+      "notes": "Same mechanics as Fairfax (court FIPS 179): reCAPTCHA once per session, Civil Division Hearing Date search per court day, GV unlawful detainer cases, GROUP BY plaintiff over 12 months, then per-case detail for the address. Name search is one court at a time with '*' wildcard; there is no case-type filter and no filing-date range, only a single hearing date per query."
+    },
+    "spotsylvania_va": {
+      "jurisdiction": "Spotsylvania, VA",
+      "primary_source_type": "court_portal",
+      "publisher": "Virginia General District Court Online Case Information System (Office of the Executive Secretary, Supreme Court of Virginia) - Spotsylvania General District Court",
+      "url": "https://eapps.courts.state.va.us/gdcourts/welcomePage.do",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "court_portal", "publisher": "Spotsylvania General District Court (vacourts.gov court page, workbook URL, live)", "url": "https://www.vacourts.gov/courts/gd/spotsylvania/home.html"},
+        {"type": "open_data", "publisher": "virginiacourtdata.org (independent, anonymized bulk CSVs of District Civil cases through 2024; party names removed)", "url": "https://virginiacourtdata.org/"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook says online dockets 'may not be easily searchable' and access is 'Hard'; the free gdcourts portal covers Spotsylvania civil (reCAPTCHA-gated). Court page details differ from the workbook: 9111 Courthouse Road, Judicial Center 1st Floor, Spotsylvania 22553-0339 and (540) 507-7680 (workbook: 9107 Judicial Center Lane, 540-507-7650).",
+      "notes": "Court page states unlawful detainers are heard the 1st, 2nd and 3rd Tuesdays at 9:00 a.m., which makes the Hearing Date search efficient: query only those Tuesdays for court FIPS 177, keep GV cases, aggregate plaintiffs over 12 months, then read each case for the address. reCAPTCHA once per session; no case-level bulk export."
+    },
+    "fredericksburg_city_va": {
+      "jurisdiction": "Fredericksburg City, VA",
+      "primary_source_type": "court_portal",
+      "publisher": "Virginia General District Court Online Case Information System (Office of the Executive Secretary, Supreme Court of Virginia) - Fredericksburg General District Court",
+      "url": "https://eapps.courts.state.va.us/gdcourts/welcomePage.do",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "court_portal", "publisher": "Fredericksburg General District Court (vacourts.gov court page)", "url": "https://www.vacourts.gov/courts/gd/fredericksburg/home.html"},
+        {"type": "open_data", "publisher": "virginiacourtdata.org (independent, anonymized bulk CSVs of District Civil cases through 2024; party names removed)", "url": "https://virginiacourtdata.org/"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Daily",
+      "cadence_source": "inferred",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook cadence 'Ongoing.' normalized to Daily (court filings are entered as they occur; same system as the other five VA courts). Workbook phone blank; court page gives Civil (540) 372-1044, Criminal/Traffic (540) 372-1043, at 701 Princess Anne Street Suite 200, Fredericksburg 22401. Portal is reCAPTCHA-gated.",
+      "notes": "Fredericksburg City has its own General District Court and its own court entry in the gdcourts dropdown (FIPS 630), so unlike publicnoticevirginia.com this source does cover it directly and nothing folds into Spotsylvania. Same mechanics: reCAPTCHA once per session, Civil Division Hearing Date search per court day, GV unlawful detainer cases, GROUP BY plaintiff over 12 months, per-case detail for the address. Small court, so a full 12 months is needed before 2+ filings per landlord appears."
+    }
+  }
+}

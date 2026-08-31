@@ -1,0 +1,448 @@
+{
+  "generated_at": "2026-08-28T02:43:37-04:00",
+  "type": "tax_delinquent",
+  "method": "Verified the workbook URL for each of 14 jurisdictions with WebFetch (2-4 fetches each, plus WebSearch to locate replacement/list pages); pages that 403'd were retried through src/scrapfly_browser.py (residential JS render), which succeeded on Stafford and Fairfax City before the Scrapfly account was rate-limited, after which blocked pages were recorded as blocked and workbook values kept. Downloaded PDFs (Frederick, Anne Arundel, Carroll) were inspected with pypdfium2. Read-only: no accounts, forms, CAPTCHAs or Firecrawl.",
+  "jurisdictions": {
+    "baltimore_county_md": {
+      "jurisdiction": "Baltimore County, MD",
+      "primary_source_type": "portal",
+      "publisher": "Office of Budget and Finance, Taxpayer Services",
+      "url": "https://www.baltimorecountymd.gov/departments/budfin/taxpayer-services/late-unpaid-taxes",
+      "url_status": "blocked",
+      "secondary_sources": [
+        {
+          "type": "county_pdf",
+          "publisher": "Baltimore County Office of Budget and Finance (annual tax sale list, posted ~first of May)",
+          "url": "https://www.baltimorecountymd.gov/departments/budfin/taxpayer-services/tax-sale"
+        },
+        {
+          "type": "portal",
+          "publisher": "Baltimore County PropertyTaxPayment (per-parcel balance by parcel ID or street address)",
+          "url": "https://mytax.baltimorecountymd.gov/"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Annually (delinquent notices mailed in February)",
+      "cadence_source": "workbook",
+      "verified": "unreachable",
+      "changed_vs_workbook": "",
+      "notes": "baltimorecountymd.gov returns 403 to plain fetches (WAF); a Scrapfly residential render got HTTP 200 on 2026-08-28 but the text was lost to a console-encoding crash and the account was then throttled, so page content was NOT read. No pre-sale delinquent LIST is known to be published; the annual tax sale list (county PDF, ~May 1, sale in June) is the only roll, plus a per-parcel balance lookup on mytax.baltimorecountymd.gov (terms-acceptance gate, stateful 'do not press Refresh' session). Baltimore County bills for all incorporated towns, so there is no separate city list."
+    },
+    "montgomery_md": {
+      "jurisdiction": "Montgomery, MD",
+      "primary_source_type": "county_pdf",
+      "publisher": "Department of Finance, Division of Treasury",
+      "url": "https://www.montgomerycountymd.gov/department-finance/tax-sale/tax-sale-information-procedures",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "newspaper",
+          "publisher": "Washington Post (four weekly tax sale advertisements, May 14/21/28 and June 4, 2026)",
+          "url": "https://www.montgomerycountymd.gov/tax-sale-notice"
+        },
+        {
+          "type": "portal",
+          "publisher": "Montgomery County Real Property Tax bill lookup (no login; by 8-digit account/bill number or street address)",
+          "url": "https://apps.montgomerycountymd.gov/realpropertytax/"
+        },
+        {
+          "type": "county_pdf",
+          "publisher": "Tax Lien Sale Results 2003-2026 (post-sale PDFs at assets.montgomerycountymd.gov)",
+          "url": "https://www.montgomerycountymd.gov/tax-sale-results"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "pdf_download",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Annually: list advertised weekly for 4 weeks (mid-May to early June) ahead of the sale on the second Monday of June (June 8, 2026; next June 14, 2027)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Cadence sharpened from 'Ongoing / Annually updated' to a fixed 4-week advertising window; the dedicated list page /tax-sale-list-properties-0 is 404 outside the window.",
+      "notes": "No pre-sale roll is published; the tax sale list exists only during the May-June advertising window (the 'Tax Sale List of Properties' page 404s today, 2026-08-28) and is mirrored in the Washington Post. Outside that window the only route is the per-parcel bill lookup at apps.montgomerycountymd.gov/realpropertytax (open HTML, no login, no CAPTCHA seen), which is scrapable per address. Only a disclaimer ('does not warrant the accuracy'), no anti-automation clause seen."
+    },
+    "anne_arundel_md": {
+      "jurisdiction": "Anne Arundel, MD",
+      "primary_source_type": "county_pdf",
+      "publisher": "Anne Arundel County Office of Finance, Tax Sale Division",
+      "url": "https://www.aacounty.org/finance/tax-sale",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "portal",
+          "publisher": "annearundel.marylandtaxsale.com (RealAuction vendor site; pre-sale batch listings posted during the sale window)",
+          "url": "https://annearundel.marylandtaxsale.com/"
+        },
+        {
+          "type": "county_pdf",
+          "publisher": "2026 Tax Sale Remaining Liens (post-sale, dated 7/2/2026)",
+          "url": "https://www.aacounty.org/sites/default/files/2026-05/list-of-liens.pdf"
+        },
+        {
+          "type": "courthouse_only",
+          "publisher": "City of Annapolis Finance Department (own property tax; site DNS-timed out twice on 2026-08-28, not verified)",
+          "url": "https://www.annapolis.gov/173/Finance-Department"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "pdf_download",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Annually: legal notice to owner >=30 days before advertisement; list advertised ahead of the June sale (bids June 3, 2026); remaining-liens PDF re-issued after the sale",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Cadence confirmed; the only downloadable list today is the POST-sale remaining-liens PDF, not a pre-sale roll.",
+      "notes": "PDF at /sites/default/files/2026-05/list-of-liens.pdf is dated 7/2/2026 with columns LIST#, ACCOUNT#, OWNER, ASSESSMENT, BID/SALE AMOUNT, BID PREMIUM, INTEREST, TOTAL DUE - there is NO property address, so a scraper must join ACCOUNT# to SDAT. Pre-sale listings live on the RealAuction vendor site during the sale window only. No automation clause seen; standard county footer terms."
+    },
+    "frederick_md": {
+      "jurisdiction": "Frederick, MD",
+      "primary_source_type": "newspaper",
+      "publisher": "Frederick News-Post 'FNP Databases' (Frederick County Delinquent Taxes table); data from Frederick County Treasury Department",
+      "url": "https://wp.fredericknewspost.com/databases/fnp-databases/taxes/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "county_pdf",
+          "publisher": "Frederick County Treasury tax sale page (list link present but see notes)",
+          "url": "https://frederickcountymd.gov/2005/Tax-Sale"
+        },
+        {
+          "type": "portal",
+          "publisher": "frederick.marylandtaxsale.com (RealAuction vendor; sale May 11, 2026)",
+          "url": "https://frederick.marylandtaxsale.com"
+        }
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Annually: the FNP table is the tax sale advertisement (posted ~30 days before the second-Monday-in-May sale); no 'updated' date on the page",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "The workbook calls this an 'ongoing roll'; it is the annual tax sale advertisement (it carries a Sale Amount column) with no timestamp, not a continuously updated delinquent roll.",
+      "notes": "The FNP page is one static HTML table (Parcel ID, Owner Name, District, Legal Description 1-3, Assessed Value, Sale Amount; hundreds of rows, no pagination, no search, no address column) - trivially scrapable but undated. GOTCHA on the county side: the link labelled '2026 Tax Sale Property Listing 5-8-26' (/DocumentCenter/View/344460) actually serves 'Excess Tax Sale Proceeds as of 8-6-2026' (6 pp, post-sale) - the DocumentCenter id was reused, so do not trust link text there."
+    },
+    "carroll_md": {
+      "jurisdiction": "Carroll, MD",
+      "primary_source_type": "county_pdf",
+      "publisher": "Carroll County Comptroller, Collections Office (newspaper ad reproduced as PDF; ran in the Carroll County Times)",
+      "url": "https://www.carrollcountymd.gov/government/directory/comptroller/collectionstaxes/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "newspaper",
+          "publisher": "Carroll County Times (2026 Tax Sale Notice, printed Friday June 12, 2026 edition)",
+          "url": "https://www.carrollcountymd.gov/media/jv1dvca5/no-2-carroll-county-md-2026-tax-sale-notice-newspaper-ad.pdf"
+        },
+        {
+          "type": "portal",
+          "publisher": "RealAuction 'Carroll County, MD Official Tax Certificate Auction Site' (linked from the Collections page)",
+          "url": "https://www.carrollcountymd.gov/government/directory/comptroller/collectionstaxes/"
+        },
+        {
+          "type": "courthouse_only",
+          "publisher": "City of Westminster Finance (page live, no delinquent list or lookup linked)",
+          "url": "https://www.westminstermd.gov/155/Finance"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "pdf_download",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Annually (June tax sale; newspaper-ad PDFs and FY results PDFs posted per year, FY21-FY26 archived)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Cadence is annual, not 'Ongoing': the only published roll is the annual tax sale notice.",
+      "notes": "The 2026 notice PDF is a 2-page scanned newspaper image (no text layer) listing account number, owner name + mailing address, property address/description and amount due - a scraper needs OCR. Post-sale 'FY 26 Tax Sale Results' PDF is also posted. No anti-automation clause seen."
+    },
+    "calvert_md": {
+      "jurisdiction": "Calvert, MD",
+      "primary_source_type": "county_pdf",
+      "publisher": "Calvert County Treasurer's Office",
+      "url": "https://www.calvertcountymd.gov/301/Tax-Sale-Information",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "portal",
+          "publisher": "Calvert County Munis Self Service real estate lookup (per-parcel; requires cookies/session)",
+          "url": "https://calvertcountymd.munisselfservice.com/css/citizens/RealEstate/Default.aspx"
+        },
+        {
+          "type": "newspaper",
+          "publisher": "The Calvert Recorder / Southern Maryland Newspapers (somdnews.com, paywalled) - tax sale advertisement; county procedures page",
+          "url": "https://www.calvertcountymd.gov/638/Real-Estate-Taxes"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "pdf_download",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Annually: eligible-property list published on a GIS map and in the newspapers at least 30 days before the sale (May 22, 2026)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Primary page moved from /638/Real-Estate-Taxes (procedures only) to /301/Tax-Sale-Information; the list is a GIS map + newspaper ad, not a PDF roll.",
+      "notes": "Site text: 'A list of eligible properties will be available on a GIS map and in the Voice and Southern Maryland Newspapers at least 30 days prior to the sale date'; no list link is live today (post-sale). Eligibility is two years delinquent (incl. North Beach / Chesapeake Beach water-sewer). Per-parcel balances via Munis Self Service, which errors without cookies - a scraper needs a cookie jar. PIA request route stated on the page."
+    },
+    "charles_md": {
+      "jurisdiction": "Charles, MD",
+      "primary_source_type": "courthouse_only",
+      "publisher": "Charles County Treasury Division",
+      "url": "https://www.charlescountymd.gov/government/fiscal-and-administrative-services/treasury-taxes",
+      "url_status": "blocked",
+      "secondary_sources": [
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "somdnews.com 'Charles County Tax Sales' special section (paywalled: Day Pass $1.99; page rendered as an empty template on 2026-08-28)",
+          "url": "https://www.somdnews.com/special/tax_sales_charles_co/"
+        },
+        {
+          "type": "courthouse_only",
+          "publisher": "Town of La Plata (taxes billed and collected by Charles County; /finance is 404, live page is /163/Taxes)",
+          "url": "https://www.townoflaplata.org/163/Taxes"
+        }
+      ],
+      "scrapable": "no",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Annually (prior to May tax sale), ongoing",
+      "cadence_source": "workbook",
+      "verified": "unreachable",
+      "changed_vs_workbook": "La Plata secondary URL is dead (404) - replaced by /163/Taxes; La Plata does NOT maintain its own delinquent list (county bills for it).",
+      "notes": "charlescountymd.gov 403s plain fetches (WAF); Scrapfly got HTTP 200 on 2026-08-28 but content was lost before the account was throttled, so the page was not read. Search found no county-hosted tax sale list PDF for 2026; the somdnews.com aggregator is paywalled. Treat as request-by-phone/PIA until the page can be rendered."
+    },
+    "district_of_columbia": {
+      "jurisdiction": "District of Columbia",
+      "primary_source_type": "open_data",
+      "publisher": "DC Office of Tax and Revenue via DC Open Data - Integrated Tax System Public Extract (ITSPE)",
+      "url": "https://otr.cfo.dc.gov/page/real-property-tax-lien-sale-and-resources",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "open_data",
+          "publisher": "DC Open Data ITSPE CSV download (218 fields, ~221K parcels, refreshed daily)",
+          "url": "https://opendata.dc.gov/api/download/v1/items/7d5e6cabd2304e779c719a4d5515af77/csv?layers=0"
+        },
+        {
+          "type": "county_pdf",
+          "publisher": "OTR 2026 Tax Lien Sale Notices and Listings (Updated list as of 8/18/2026; Washington Times / Washington Informer ads)",
+          "url": "https://otr.cfo.dc.gov/page/real-property-tax-lien-sale-and-resources"
+        },
+        {
+          "type": "portal",
+          "publisher": "MyTax.DC.gov Real Property Tax Database Search / Redemption Report",
+          "url": "https://mytax.dc.gov/"
+        }
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "json_or_arcgis_api",
+      "bulk_export": "yes",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Daily (ITSPE open-data refresh; last modified 2026-08-27); annual tax lien sale list July-August",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "Primary OTR page re-fetched 2026-08-28 and still resolves (2026 sale began Aug 19; updated list as of 8/18/2026). Per output/dpd_dc_ftm_investigation.md: the ITSPE FeatureServer/CSV is the whole roll with owner mailing address; use CY1BAL>0 (unpaid first-half bill) or DELCODE='Y' for delinquency, NOT TOTBALAMT>0 (includes the not-yet-due second half); DELCODE and CY1TXSALE semantics still need the data dictionary. DC is a single jurisdiction, no city list."
+    },
+    "fairfax_va": {
+      "jurisdiction": "Fairfax, VA",
+      "primary_source_type": "courthouse_only",
+      "publisher": "Department of Tax Administration (DTA)",
+      "url": "https://www.fairfaxcounty.gov/taxes/pay/auction-real-property",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "portal",
+          "publisher": "Taxing Authority Consulting Services (TACS), county collection attorney - judicial sale listings (Fairfax County 'Initial Advertisement' listed Sept 2026)",
+          "url": "https://taxva.com/real-estate-tax-sales/"
+        },
+        {
+          "type": "county_pdf",
+          "publisher": "City of Fairfax Treasurer - Real Estate 'Delinquent Accounts By Name' PDF (as of 04/03/2026; separate jurisdiction)",
+          "url": "https://www.fairfaxva.gov/files/ff8bf075-60aa-4156-a888-3983fc82fee3/040326-Real-Estate-Delinquent-Accounts-By-Name.pdf"
+        },
+        {
+          "type": "portal",
+          "publisher": "City of Fairfax Delinquent Taxpayer Lists page (WAF 403 to plain fetch; renders via residential browser)",
+          "url": "https://www.fairfaxva.gov/Property-Business/Taxes/Delinquent-Taxpayer-Lists"
+        }
+      ],
+      "scrapable": "no",
+      "access_mechanics": "foia_only",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Ongoing (no published list; auctions only when a sale is scheduled)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook implies the county 'publishes information regarding properties subject to tax sale'; live page publishes NO list and defers to TACS ('You will only be notified in the event a public auction is scheduled').",
+      "notes": "Fairfax County publishes no delinquent real estate list and no standing auction list; /taxes/pay links only 'missed due date' guidance. Pre-sale delinquency is per-account via MyFairfax (login) or FOIA to DTARCD@fairfaxcounty.gov. The incorporated City of Fairfax DOES publish a quarterly-looking real estate delinquent PDF (2025 file, then 04/03/2026 file), but fairfaxva.gov 403s automated fetches including the PDFs."
+    },
+    "prince_william_va": {
+      "jurisdiction": "Prince William, VA",
+      "primary_source_type": "courthouse_only",
+      "publisher": "Tax Administration - Collections",
+      "url": "https://www.pwcva.gov/department/tax-administration/tax-enforcement-delinquent-tax-collections",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "portal",
+          "publisher": "PWC-Tax taxpayer portal (login required; connection refused to plain fetch 2026-08-28)",
+          "url": "https://tax.pwcgov.org/"
+        },
+        {
+          "type": "portal",
+          "publisher": "TACS judicial sale listings (Prince William not listed as of 2026-08-28)",
+          "url": "https://taxva.com/real-estate-tax-sales/"
+        },
+        {
+          "type": "courthouse_only",
+          "publisher": "City of Manassas Treasurer (uses TACS for delinquent collection; site 403s fetches; workbook URL /treasurer/index.html now /connect/treasurer/index.php)",
+          "url": "https://www.manassasva.gov/connect/treasurer/index.php"
+        },
+        {
+          "type": "portal",
+          "publisher": "City of Manassas self-service real estate tax lookup",
+          "url": "https://comselfservice.manassasva.gov/CSS/citizens/RealEstate/Default.aspx"
+        }
+      ],
+      "scrapable": "no",
+      "access_mechanics": "login_paid",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Ongoing: delinquent notices mailed ~2 weeks after due date; judicial sale after 2nd anniversary via TACS; no list publication cadence stated",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Manassas secondary URL moved (/treasurer/index.html -> /connect/treasurer/index.php); Manassas Park not checked.",
+      "notes": "Page is procedures only - no delinquent list, no date query, no export. Per-account status needs a PWC-Tax portal login (tax.pwcgov.org, 'Log in' page), so the pre-sale roll is effectively FOIA (taxpayer_services@pwcgov.org). access_mechanics recorded as login_paid because the portal is account-gated and the only alternative is a records request; no fee is implied."
+    },
+    "arlington_va": {
+      "jurisdiction": "Arlington, VA",
+      "primary_source_type": "county_pdf",
+      "publisher": "Arlington County Treasurer's Office",
+      "url": "https://www.arlingtonva.us/Government/Programs/Taxes/Delinquent-Tax-Account-Lists",
+      "url_status": "blocked",
+      "secondary_sources": [
+        {
+          "type": "county_pdf",
+          "publisher": "Arlington Treasurer delinquency-lists folder (sibling lists seen: Personal Property as of 03/13/2026, Business Tangible as of 07/13/2026, Business License as of 01/13 and 07/13/2026 - real estate file URL not captured)",
+          "url": "https://www.arlingtonva.us/files/sharedassets/public/v/1/taxes/documents/treasurers-office/delinquency-lists/2026-07-13-btn-delinquent-tax-list.pdf"
+        },
+        {
+          "type": "portal",
+          "publisher": "TACS judicial sale listings (Arlington 'Initial Advertisement' listed Sept 2026)",
+          "url": "https://taxva.com/real-estate-tax-sales/"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Monthly/Quarterly (PDFs updated periodically)",
+      "cadence_source": "workbook",
+      "verified": "unreachable",
+      "changed_vs_workbook": "",
+      "notes": "arlingtonva.us returns 403 to plain fetches; a Scrapfly residential render got HTTP 200 on 2026-08-28 but the text was lost before throttling, so the page itself was not read. Search-indexed sibling PDFs show the folder pattern /files/sharedassets/public/v/N/taxes/documents/treasurers-office/delinquency-lists/YYYY-MM-DD-<type>-... with 'as of' dates on the 13th of Jan/Mar/Jul 2026, consistent with the workbook's periodic-PDF cadence. Arlington has no incorporated cities."
+    },
+    "stafford_va": {
+      "jurisdiction": "Stafford, VA",
+      "primary_source_type": "county_pdf",
+      "publisher": "Stafford County Treasurer's Office",
+      "url": "https://staffordcountyva.gov/government/elected_and_appointed_officials/treasurer/taxes_search_view___pay/delinquent_tax_lists.php",
+      "url_status": "blocked",
+      "secondary_sources": [
+        {
+          "type": "county_pdf",
+          "publisher": "Stafford Treasurer Delinquent Collections page",
+          "url": "https://staffordcountyva.gov/government/elected_and_appointed_officials/treasurer/delinquent_collections.php"
+        }
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Weekly ('This list is updated on a weekly basis to reflect payments, corrections, and/or additional fees'; amounts valid through month's end)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Cadence sharpened from 'Ongoing' to weekly, quoted from the page.",
+      "notes": "Plain fetch is 403 (WAF) but a Scrapfly residential render on 2026-08-28 returned the page: 'In conformity with the Code of Virginia, section 58.1-3924, the following is a list of delinquent Real Estate taxes as of the date in the last column of the listing... updated on a weekly basis.' The listing file URL itself was not captured before Scrapfly throttled (cdn.staffordcountyva.gov hosts the Treasurer's documents). Disclaimer only ('information purposes only'), no anti-automation clause. Stafford has no incorporated cities."
+    },
+    "spotsylvania_va": {
+      "jurisdiction": "Spotsylvania, VA",
+      "primary_source_type": "courthouse_only",
+      "publisher": "Treasurer's Office (land-sale eligibility handled by Sands Anderson PC, Margaret F. Hardy, 540-373-2504)",
+      "url": "https://www.spotsylvania.va.us/412/Delinquent-Real-Estate-Taxes-Land-Sale-E",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "portal",
+          "publisher": "Public & Treasurer's Land Sale Information ('No current auction at this time')",
+          "url": "https://www.spotsylvania.va.us/435/Public-Treasurers-Land-Sale-Information"
+        },
+        {
+          "type": "portal",
+          "publisher": "Real Estate Account Balance Lookup (InvoiceCloud, per parcel)",
+          "url": "https://www.invoicecloud.com/portal/"
+        }
+      ],
+      "scrapable": "no",
+      "access_mechanics": "in_person",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Ongoing (no list published; auctions posted only when scheduled)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Primary page is /412 (delinquent/land-sale eligible), not the /435 auction page; NO delinquent list is published online - the workbook's 'Easy' rating does not hold.",
+      "notes": "The page names the eligibility rule (delinquent on Dec 31 after the 2nd anniversary) and directs to the county's outside counsel for the eligible-property list; there is no PDF, table or export, only a per-parcel InvoiceCloud balance lookup. A scraper has nothing to pull except per-parcel balances. Spotsylvania has no incorporated cities."
+    },
+    "fredericksburg_city_va": {
+      "jurisdiction": "Fredericksburg City, VA",
+      "primary_source_type": "courthouse_only",
+      "publisher": "City of Fredericksburg Treasurer's Office",
+      "url": "https://www.fredericksburgva.gov/525/Treasurer",
+      "url_status": "ok",
+      "secondary_sources": [
+        {
+          "type": "portal",
+          "publisher": "City Munis Self Service 'Research Taxes' (connection refused to plain fetch 2026-08-28)",
+          "url": "https://selfservice.fredericksburgva.gov/mss/citizens/default.aspx"
+        },
+        {
+          "type": "portal",
+          "publisher": "InvoiceCloud bill pay (the /157/Taxes page 302-redirects here)",
+          "url": "https://www.invoicecloud.com/CityofFredericksburgVA"
+        },
+        {
+          "type": "newspaper_aggregator",
+          "publisher": "For Sale At Auction - past 'City of Fredericksburg, VA Sale of Tax Delinquent Real Estate' by court-appointed Special Commissioner",
+          "url": "https://www.forsaleatauction.biz/auctions/detail/bw95211"
+        }
+      ],
+      "scrapable": "no",
+      "access_mechanics": "foia_only",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "no",
+      "cadence": "Ongoing roll (no list published)",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook had no URL; the Treasurer page is live and is the right office, but confirms no delinquent list is posted.",
+      "notes": "The Treasurer page (live, Feb 2026 content) offers only 'Research Taxes' (Munis self-service, per parcel) and payment links - no delinquent list, no judicial sale list. Delinquent sales are run by a Special Commissioner through a private auctioneer, not the city site. Pre-sale roll = FOIA request via the form linked on this page. Fredericksburg is an independent city, so this row covers all city property taxes."
+    }
+  }
+}

@@ -1,0 +1,199 @@
+[
+  {
+    "jurisdiction_key": "anne_arundel_md",
+    "jurisdiction": "Anne Arundel, MD",
+    "county_raw": "Anne Arundel County, MD",
+    "siftmap_low_or_zero": [
+      "Foreclosure notices",
+      "Tax sale list"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "arlington_va",
+    "jurisdiction": "Arlington, VA",
+    "county_raw": "Arlington County, VA",
+    "siftmap_low_or_zero": [
+      "Tax sale list",
+      "Tax delinquent roll"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "baltimore_county_md",
+    "jurisdiction": "Baltimore County, MD",
+    "county_raw": "Baltimore County, MD",
+    "siftmap_low_or_zero": [
+      "Foreclosure notices",
+      "Tax sale list"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "calvert_md",
+    "jurisdiction": "Calvert, MD",
+    "county_raw": "Calvert County, MD",
+    "siftmap_low_or_zero": [
+      "Foreclosure notices",
+      "Tax sale list",
+      "Tax delinquent roll"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "carroll_md",
+    "jurisdiction": "Carroll, MD",
+    "county_raw": "Carroll County, MD",
+    "siftmap_low_or_zero": [
+      "Tax sale list"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "charles_md",
+    "jurisdiction": "Charles, MD",
+    "county_raw": "Charles County, MD",
+    "siftmap_low_or_zero": [
+      "Foreclosure notices",
+      "Tax sale list"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "district_of_columbia",
+    "jurisdiction": "District of Columbia",
+    "county_raw": "District of Columbia County, DC",
+    "siftmap_low_or_zero": [
+      "Tax sale list"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "fairfax_va",
+    "jurisdiction": "Fairfax, VA",
+    "county_raw": "Fairfax County, VA",
+    "siftmap_low_or_zero": [
+      "Foreclosure notices",
+      "Tax sale list",
+      "Tax delinquent roll",
+      "Probate filings"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "frederick_md",
+    "jurisdiction": "Frederick, MD",
+    "county_raw": "Frederick County, MD",
+    "siftmap_low_or_zero": [
+      "Tax sale list"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "fredericksburg_city_va",
+    "jurisdiction": "Fredericksburg City, VA",
+    "county_raw": "Fredericksburg City County, VA",
+    "siftmap_low_or_zero": [
+      "Tax sale list"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "montgomery_md",
+    "jurisdiction": "Montgomery, MD",
+    "county_raw": "Montgomery County, MD",
+    "siftmap_low_or_zero": [
+      "Foreclosure notices",
+      "Tax sale list",
+      "Tax delinquent roll"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "prince_william_va",
+    "jurisdiction": "Prince William, VA",
+    "county_raw": "Prince William County, VA",
+    "siftmap_low_or_zero": [
+      "Foreclosure notices",
+      "Tax sale list"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "spotsylvania_va",
+    "jurisdiction": "Spotsylvania, VA",
+    "county_raw": "Spotsylvania County, VA",
+    "siftmap_low_or_zero": [
+      "Foreclosure notices",
+      "Tax sale list",
+      "Tax delinquent roll"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  },
+  {
+    "jurisdiction_key": "stafford_va",
+    "jurisdiction": "Stafford, VA",
+    "county_raw": "Stafford County, VA",
+    "siftmap_low_or_zero": [
+      "Tax sale list",
+      "Tax delinquent roll"
+    ],
+    "siftmap_absent": [
+      "Eviction filings",
+      "Code violations",
+      "Divorce filings"
+    ]
+  }
+]

@@ -1,0 +1,1636 @@
+{
+  "generated_at": "2026-08-26T08:55:55",
+  "rules": {
+    "max_supply_months": 3.0,
+    "price_band_pct": [
+      20,
+      80
+    ],
+    "competition_pct": 90,
+    "top_n": 5,
+    "dead_max_inv_trans": 1
+  },
+  "counties": {
+    "Baltimore County, MD": {
+      "fips": "24005",
+      "status": "ok",
+      "count": 44,
+      "dead": [
+        {
+          "neighborhood": "Rodgers Forge",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Edgemere - Sparrows Point",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Milford Mill South",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Windwood - Catonsville",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Armagh - Towson",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Carney Grove",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Worthington Place South",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Timonium Heights",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "The Falls - Pikesville",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Hebbville",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Scotts Hill - Gwynn Oak",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Necker",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Wynnewood - Halethorpe",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Villa Nova - Pikesville",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Cranwood - Pikesville",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Lutherville",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "West Edmondale",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Yorktowne - Towson",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Greentop Manor",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Freeland",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "English Consul",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Baldwin",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Colonial Park - Gwynn Oak",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Glen Falls",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Anneslie",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Downtown Catonsville",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Bacon Hall",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Hillendale Farms",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Towson University",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Kempnar Woods",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Carlton Square",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "University of Maryland Baltimore County",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Chestnut Hill - Towson",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Daniels - Windsor Mill",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Woodmoor - Gwynn Oak",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Edmondson Ridge",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Kenilworth at Charles",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Maryland Line",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Westowne - Catonsville",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Stoneleigh - Towson",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Lansdowne West - Halethorpe",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Ilchester",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Harbor Tunnel Throughway",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Tartan Hill",
+          "inv_trans_6mo": 0
+        }
+      ]
+    },
+    "Montgomery, MD": {
+      "fips": "24031",
+      "status": "ok",
+      "count": 93,
+      "dead": [
+        {
+          "neighborhood": "Cedar Village",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Wheaton View",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Connecticut Avenue Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Hallowell - Olney",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Quince Orchard Park",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Pine Knolls",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Silver Spring Country Club",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Oakview - Silver Spring",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Brighton Village",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Potomac Chase",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Cashell Manor",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Olney Square",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Orchardale",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Fairknoll",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Gatestone",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Wexford - Germantown",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Norbrook Village",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Parkridge Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Cloverleaf - Germantown",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Highland View - Silver Spring",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Valley Stream Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Little Bennett Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Newport Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Wheaton Forest",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Wheaton Hills",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Olde Carriage Hill",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Argyle Club Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "North Kensington",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Clifton Park Village",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Bou Ave",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Cedar Grove - Clarksburg",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Hillandale - Silver Spring",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Bandermill",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Kings Square",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Milestone - Germantown",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Glenmont Village",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Deer Park - Silver Spring",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Burnt Mills Hills",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Saddle Creek - Burtonsville",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Chevy Chase Village",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Clarksburg Town Center",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Blair Portal",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Fernshire Farms",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Kensington View",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Observatory Heights",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "James Creek",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Downtown Silver Spring Southeast",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Holly Hill Farm",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Goodacre Knolls",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Montgomery Chase",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Kemp Mill Estates",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Cross Country Ln",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Downtown Silver Spring",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "New Hampshire Estates",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Aspen Hill Park",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "South Frederick Avenue Commercial",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Damascus Valley Park",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Promenade Towers",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Piney Glen Village",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Barnesville",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Jefferson at Congressional",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Saybrooke",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Downtown Silver Spring Southwest",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Derwood Station",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Running Brook Acres",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Lakewood Estates - Rockville",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Clarksburg Village",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Seneca Springs - Damascus",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Parker Farm",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Asbury Methodist Village",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Clopper",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Washingtonian Woods",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Emory Grove",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Meem's Addition",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Connecticut Gardens",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "County View",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Olney West - Olney",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Cambridge Walk I",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Montrose - Rockville",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Natalie Estates - Gaithersburg",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "The Forest - Rockville",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Dufief",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Mary J Boland",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Takoma Park North",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Fallsgrove",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Boyds",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Fairland East",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Grove - Gaithersburg",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Deer Park - Gaithersburg",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "South Bethesda",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Glenwaye Gardens",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Cedar Creek Estates",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Warther",
+          "inv_trans_6mo": 0
+        }
+      ]
+    },
+    "Anne Arundel, MD": {
+      "fips": "24003",
+      "status": "ok",
+      "count": 26,
+      "dead": [
+        {
+          "neighborhood": "New Cut Farms",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Gambrills",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Magothy Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Courts Of Four Seasons",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Parkwood - Severn",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Rippling Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Turkey Point",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Lions Gate",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Severn Lea",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Andorick Acres",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Harwood",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Round Bay",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Sylvan View",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Oak Hollow - Severna Park",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Tyler Heights - Annapolis",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "The Highlands - Glen Burnie",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "McPherson - Linthicum Heights",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "House of Correction Rd",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Glen Burnie East",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "South Gate",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Woods Edge - Glen Burnie",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Harbour Gates",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Fort Meade East",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Patuxent",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Naval Academy",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Glen Burnie Park",
+          "inv_trans_6mo": 0
+        }
+      ]
+    },
+    "Frederick, MD": {
+      "fips": "24021",
+      "status": "ok",
+      "count": 24,
+      "dead": [
+        {
+          "neighborhood": "Downtown Frederick West",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "New Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Selwyn Farms",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Willow Brook",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Jefferson View",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Linganore",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Villages Of Urbana",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Sherwood Forest - Mount Airy",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Stonegate - Frederick",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Point of Rocks",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Five Forks Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Clemsonville",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Orchard at New Market",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Downtown Frederick North",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Spring Ridge - Frederick",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Pleasant Heights - Frederick",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Libertytown",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Baker Park - Frederick",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Ijamsville",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Sun Meadow - Walkersville",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Ballenger Run Villas",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Rocky Ridge",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Kidwiler Park",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Linganore View",
+          "inv_trans_6mo": 0
+        }
+      ]
+    },
+    "Carroll, MD": {
+      "fips": "24013",
+      "status": "ok",
+      "count": 11,
+      "dead": [
+        {
+          "neighborhood": "Arthur Ridge",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Wakefield Valley",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Sullivan Heights",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Nottingham Village",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Strawbridge Estates",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Parrs Ridge",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Presidential Park - Sykesville",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Clipper Hill Estates",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Belmar Estates",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Bark Hill",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Eldersburg",
+          "inv_trans_6mo": 0
+        }
+      ]
+    },
+    "Calvert, MD": {
+      "fips": "24009",
+      "status": "ok",
+      "count": 3,
+      "dead": [
+        {
+          "neighborhood": "Windward Key",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Dares Beach",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Meadow Oaks - Prince Frederick",
+          "inv_trans_6mo": 1
+        }
+      ]
+    },
+    "Charles, MD": {
+      "fips": "24017",
+      "status": "ok",
+      "count": 5,
+      "dead": [
+        {
+          "neighborhood": "Wilkersons Inheritance",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Indian Head Manor",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Thomas Manor - Charlotte Hall",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Villages of Potomac",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Bryantown",
+          "inv_trans_6mo": 0
+        }
+      ]
+    },
+    "District of Columbia": {
+      "fips": "11001",
+      "status": "no_data",
+      "reason": "grid shows county_rollup after selecting the county - this jurisdiction has no sub-county breakdown in Market Finder",
+      "dead": []
+    },
+    "Fairfax, VA": {
+      "fips": "51059",
+      "status": "ok",
+      "count": 96,
+      "dead": [
+        {
+          "neighborhood": "Merrifield",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Old Courthouse",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Lincolnia Park",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Village at Herndon Mills",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Kings Glen",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Brookland Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Mill Run Acres",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Green Trails - Centreville",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Keene Mill Station",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Flint Hill Manor",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Rockland Village",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Chantilly Green",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Kingstream",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Floris",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Sleepy Hollow Woods",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Oakwood Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Great Oak",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Little Rocky Run South",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Huntington - Alexandria",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Clifton Townes",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Lake Barcroft East",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Keene Mill Village",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Lorfax Heights",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Centerpointe",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Waverly Crossing",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Gunston Corner",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Polo Fields",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Herndon Woods",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Cedar Lakes",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "The Grove at Huntley Meadows",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Cherry Run - Burke",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Kingston Chase",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Sequoyah - Alexandria",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Tysons Woods",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Spring Lake Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Cabells Mill",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Country Club View",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Idylwood South",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Maymont Estates",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Courtland Park",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Holmes Run Park",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Burke Centre",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Estates at Roseland",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Pimmit",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Devereux West",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Mcnair Farms",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Franconia East",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Hunt Chase",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Heming Ave",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Sully Station",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Singletons Grove",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Bren Mar Park",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Dranesville",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Penderwood",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Chantilly Highlands",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Reston West",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Mount Vernon Lakes",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Fox Mill Estates",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "London Towne",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Annandale Acres",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "City Center - Fairfax",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Fort Belvoir North",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Accotink",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Burke Station Square",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Wood Russell",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Burgoyne Forest West",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Oakton South",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Westhampton - McLean",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Springfield Oaks",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Providence Park - Vienna",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Heatherbrook - Fairfax",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Springfield Southwest",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Lake Barcroft",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Langley Fork Park",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Springfield Estates",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Kings Park West",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Hickory Farms",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Hayfield - Alexandria",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Newgate Forest",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Summer Ridge",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Seven Corners East",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Center Park",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Reston South",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Treeside",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Old Clifton Park",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Post Corners Trail",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Queens Gate - Burke",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Carriage Park - Fairfax",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Springfield South - Springfield",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Stonecroft",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Edgewater - Burke",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Woodlynne Community",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Century Oak",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Sully Plantation",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Glen Forest - Falls Church",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Kingstowne",
+          "inv_trans_6mo": 0
+        }
+      ]
+    },
+    "Prince William, VA": {
+      "fips": "51153",
+      "status": "ok",
+      "count": 26,
+      "dead": [
+        {
+          "neighborhood": "Coventry Glen",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Brightwood Forest",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Quantico Town of",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Marumsco Hills West",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Lake Ridge Northwest",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Lakeview Estates - Gainesville",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Ridgedale - Woodbridge",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Marumsco Acres",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Princeton Woods - Dumfries",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Greenwich Hill",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Meadows at Morris Farm",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Marumsco Village",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Braemar P3 S1",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Westridge - Woodbridge",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Mayfield Trace",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Beaver Creek - Woodbridge",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Quantico Base",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Forest Park P2 S3",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Blackburn L1b",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Orchard Glen S5",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "River Ridge - Woodbridge",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Botts Overlook",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Old Bridge Estates",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Marumsco Hills",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Port Potomac",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Combat Village",
+          "inv_trans_6mo": 0
+        }
+      ]
+    },
+    "Arlington, VA": {
+      "fips": "51013",
+      "status": "ok",
+      "count": 40,
+      "dead": [
+        {
+          "neighborhood": "Arlington Forest",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "North Highland West",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Virginia Square South",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Glencarlyn",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Buckingham West",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Douglass Park",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Columbia Forest",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Courthouse Square",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Claremont - Arlington",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Foxcroft Heights",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Court House South",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Arlington Ridge",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "High View Park",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Ashton Heights West",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Pentagon City",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Eclipse On Center Park",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "North Highland",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Prospect House",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Shirlington",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Ashton Heights Northwest",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Court House",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "The Representative",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Crystal City - Arlington",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Shirlington West",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Columbia Heights - Arlington",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Westover - Arlington",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Arlington Views",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Crystal Towers - Arlington",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Bluemont - Arlington",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Fort Myer",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Virginia Square Southwest",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "West Village at Shirlington",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Crystal City North",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Post Pentagon Row",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Ronald Reagan Washington National Airport",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Fort Myer East",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Colonial Village - Arlington",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Barcroft",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Aurora Highlands East",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "River Place - Arlington",
+          "inv_trans_6mo": 0
+        }
+      ]
+    },
+    "Stafford, VA": {
+      "fips": "51179",
+      "status": "ok",
+      "count": 4,
+      "dead": [
+        {
+          "neighborhood": "Bald Eagle Hills",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Stowe of Amyclae",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Park Ridge - Stafford",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Quantico Corporate Center",
+          "inv_trans_6mo": 0
+        }
+      ]
+    },
+    "Spotsylvania, VA": {
+      "fips": "51177",
+      "status": "ok",
+      "count": 7,
+      "dead": [
+        {
+          "neighborhood": "Creekwood - Spotsylvania",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Walnut Hills - Fredericksburg",
+          "inv_trans_6mo": 1
+        },
+        {
+          "neighborhood": "Sheraton Hills East",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Maple Grove - Fredericksburg",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Massaponax",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "South Oaks",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "Estates At Kingswood",
+          "inv_trans_6mo": 0
+        }
+      ]
+    },
+    "Fredericksburg City, VA": {
+      "fips": "51630",
+      "status": "ok",
+      "count": 2,
+      "dead": [
+        {
+          "neighborhood": "The Hills at Snowden",
+          "inv_trans_6mo": 0
+        },
+        {
+          "neighborhood": "University of Mary Washington",
+          "inv_trans_6mo": 0
+        }
+      ]
+    }
+  }
+}

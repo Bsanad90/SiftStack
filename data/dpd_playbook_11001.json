@@ -1,0 +1,4476 @@
+{
+ "source_xlsx": "11001-District-of-Columbia-DC-doors-per-deal.xlsx",
+ "title": "District of Columbia County, District of Columbia (FIPS 11001)",
+ "fips_in_title": "11001",
+ "overview": {
+  "Foreclosure regime": "Non-judicial: Notice of Default / Notice of Foreclosure ARE the reliable court-clock signals",
+  "Disclosure": "Disclosure state: sale prices are public record",
+  "Data window": "2026-01 .. 2026-06 (6 complete months)",
+  "Data depth": "national sweep measurement",
+  "Investor purchases (6mo)": 632,
+  "Baseline doors/deal (whole county)": 76.8,
+  "County SFR supply": 48530,
+  "Typical built-in equity (median gross)": 111250,
+  "Typical margin %": 18.7,
+  "Median purchase price": 451000,
+  "Median AVM value": 609500,
+  "Institutional / portfolio share %": 11.6,
+  "Priority 1": "lift of 3x baseline or better: pull these first",
+  "Priority 2": "lift of 1.5x baseline or better: strong second wave",
+  "Priority 3": "coverage plays and caution rows",
+  "Verify rule": "verify supply first when v2.1 coverage-aware: verify reasons annotate (churn: doors/deal < 5; small: list < 250) without demoting; only judicial notice lists and churn artifacts (doors/deal < 1) force P3. Volume floors: P1 needs >=2% of county deal flow or >=25 deals, P2 >=1% or >=12 deals",
+  "Evidence A": "from this county's own sold deals",
+  "Evidence B": "cross-market benchmark",
+  "Evidence C": "single-market anchor (Knox + Blount TN AI measurement)",
+  "Live page": "https://learn.datasift.ai/county-list-playbook#11001",
+  "Exported": "2026-08-27"
+ },
+ "rows": [
+  {
+   "priority": 1,
+   "signal": "Absentee + Notice of Foreclosure",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 1,
+   "lift": 76.8,
+   "deals": 24,
+   "deal_share_pct": 3.8,
+   "coverage": "niche",
+   "list_size": 23,
+   "typical_gross": 183500,
+   "caveats": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "rank": 1,
+   "signals": [
+    "Absentee",
+    "Notice of Foreclosure"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_notice_of_foreclosure"
+   ],
+   "verify": true,
+   "verify_reason": "churn",
+   "conf": "Medium"
+  },
+  {
+   "priority": 1,
+   "signal": "Absentee + HOA Lien",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 1,
+   "lift": 76.8,
+   "deals": 23,
+   "deal_share_pct": 3.6,
+   "coverage": "niche",
+   "list_size": 22,
+   "typical_gross": 199000,
+   "caveats": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "rank": 2,
+   "signals": [
+    "Absentee",
+    "HOA Lien"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_hoa_lien"
+   ],
+   "verify": true,
+   "verify_reason": "churn",
+   "conf": "Medium"
+  },
+  {
+   "priority": 1,
+   "signal": "Free & Clear + Notice of Foreclosure",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 1,
+   "lift": 76.8,
+   "deals": 15,
+   "deal_share_pct": 2.4,
+   "coverage": "niche",
+   "list_size": 15,
+   "typical_gross": 198000,
+   "caveats": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "rank": 3,
+   "signals": [
+    "Free & Clear",
+    "Notice of Foreclosure"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_notice_of_foreclosure"
+   ],
+   "verify": true,
+   "verify_reason": "churn",
+   "conf": "Medium"
+  },
+  {
+   "priority": 1,
+   "signal": "Notice of Foreclosure",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 2.1,
+   "lift": 36.6,
+   "deals": 38,
+   "deal_share_pct": 6,
+   "coverage": "core",
+   "list_size": 78,
+   "typical_gross": 186000,
+   "caveats": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "rank": 4,
+   "signals": [
+    "Notice of Foreclosure"
+   ],
+   "keys": [
+    "is_notice_of_foreclosure"
+   ],
+   "verify": true,
+   "verify_reason": "churn",
+   "conf": "Medium"
+  },
+  {
+   "priority": 1,
+   "signal": "Notice of Default",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 2.4,
+   "lift": 32,
+   "deals": 28,
+   "deal_share_pct": 4.4,
+   "coverage": "niche",
+   "list_size": 66,
+   "typical_gross": 95000,
+   "caveats": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "rank": 5,
+   "signals": [
+    "Notice of Default"
+   ],
+   "keys": [
+    "is_notice_of_default"
+   ],
+   "verify": true,
+   "verify_reason": "churn",
+   "conf": "Medium"
+  },
+  {
+   "priority": 1,
+   "signal": "HOA Lien",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 3.6,
+   "lift": 21.3,
+   "deals": 32,
+   "deal_share_pct": 5.1,
+   "coverage": "core",
+   "list_size": 115,
+   "typical_gross": 170500,
+   "caveats": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "rank": 6,
+   "signals": [
+    "HOA Lien"
+   ],
+   "keys": [
+    "is_hoa_lien"
+   ],
+   "verify": true,
+   "verify_reason": "churn",
+   "conf": "Medium"
+  },
+  {
+   "priority": 1,
+   "signal": "Lis Pendens + Other Lien",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 5.1,
+   "lift": 15.1,
+   "deals": 15,
+   "deal_share_pct": 2.4,
+   "coverage": "niche",
+   "list_size": 77,
+   "typical_gross": 157500,
+   "caveats": "small live list: quick and cheap to market in full",
+   "rank": 7,
+   "signals": [
+    "Lis Pendens",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_lis_pendens",
+    "is_other_lien"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 1,
+   "signal": "Free & Clear + Other Lien",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 9.9,
+   "lift": 7.8,
+   "deals": 43,
+   "deal_share_pct": 6.8,
+   "coverage": "core",
+   "list_size": 425,
+   "typical_gross": 149000,
+   "caveats": null,
+   "rank": 8,
+   "signals": [
+    "Free & Clear",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_other_lien"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "Absentee + Other Lien",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 10.9,
+   "lift": 7,
+   "deals": 44,
+   "deal_share_pct": 7,
+   "coverage": "core",
+   "list_size": 478,
+   "typical_gross": 143500,
+   "caveats": null,
+   "rank": 9,
+   "signals": [
+    "Absentee",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_other_lien"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "Other Lien + Senior",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 11.5,
+   "lift": 6.7,
+   "deals": 38,
+   "deal_share_pct": 6,
+   "coverage": "core",
+   "list_size": 436,
+   "typical_gross": 152000,
+   "caveats": null,
+   "rank": 10,
+   "signals": [
+    "Other Lien",
+    "Senior"
+   ],
+   "keys": [
+    "is_other_lien",
+    "is_senior_homeowners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "AI Score 90-100",
+   "type": "AI score",
+   "plan": "AI plan",
+   "evidence": "A",
+   "dpd": 12,
+   "lift": 6.4,
+   "deals": 152,
+   "deal_share_pct": 24.1,
+   "coverage": "broad",
+   "list_size": 1819,
+   "typical_gross": 156750,
+   "caveats": null,
+   "rank": 11,
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "Free & Clear + Out-of-State",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 12.8,
+   "lift": 6,
+   "deals": 103,
+   "deal_share_pct": 16.3,
+   "coverage": "core",
+   "list_size": 1321,
+   "typical_gross": 160000,
+   "caveats": null,
+   "rank": 12,
+   "signals": [
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "Other Lien",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 13.7,
+   "lift": 5.6,
+   "deals": 105,
+   "deal_share_pct": 16.6,
+   "coverage": "core",
+   "list_size": 1439,
+   "typical_gross": 150000,
+   "caveats": null,
+   "rank": 13,
+   "signals": [
+    "Other Lien"
+   ],
+   "keys": [
+    "is_other_lien"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "Absentee + Free & Clear + Out-of-State",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 14.7,
+   "lift": 5.2,
+   "deals": 85,
+   "deal_share_pct": 13.5,
+   "coverage": "core",
+   "list_size": 1248,
+   "typical_gross": 146500,
+   "caveats": null,
+   "rank": 14,
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "High Equity + Other Lien",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 15,
+   "lift": 5.1,
+   "deals": 40,
+   "deal_share_pct": 6.3,
+   "coverage": "core",
+   "list_size": 600,
+   "typical_gross": 136000,
+   "caveats": null,
+   "rank": 15,
+   "signals": [
+    "High Equity",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_other_lien"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "Low Income",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 16.6,
+   "lift": 4.6,
+   "deals": 28,
+   "deal_share_pct": 4.4,
+   "coverage": "niche",
+   "list_size": 466,
+   "typical_gross": 137750,
+   "caveats": null,
+   "rank": 16,
+   "signals": [
+    "Low Income"
+   ],
+   "keys": [
+    "is_low_income"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "Absentee + Free & Clear",
+   "type": "Stack",
+   "plan": "All plans",
+   "evidence": "A",
+   "dpd": 16.8,
+   "lift": 4.6,
+   "deals": 174,
+   "deal_share_pct": 27.5,
+   "coverage": "broad",
+   "list_size": 2920,
+   "typical_gross": 149000,
+   "caveats": null,
+   "rank": 17,
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "Out-of-State",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 20.8,
+   "lift": 3.7,
+   "deals": 165,
+   "deal_share_pct": 26.1,
+   "coverage": "broad",
+   "list_size": 3434,
+   "typical_gross": 143000,
+   "caveats": null,
+   "rank": 18,
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "Out-of-State + Tired Landlord",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 23.7,
+   "lift": 3.2,
+   "deals": 40,
+   "deal_share_pct": 6.3,
+   "coverage": "core",
+   "list_size": 949,
+   "typical_gross": 136500,
+   "caveats": null,
+   "rank": 19,
+   "signals": [
+    "Out-of-State",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_oos_owners",
+    "is_tired_landlord"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "High Equity + Out-of-State + Tired Landlord",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 23.8,
+   "lift": 3.2,
+   "deals": 24,
+   "deal_share_pct": 3.8,
+   "coverage": "niche",
+   "list_size": 572,
+   "typical_gross": 130000,
+   "caveats": null,
+   "rank": 20,
+   "signals": [
+    "High Equity",
+    "Out-of-State",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_oos_owners",
+    "is_tired_landlord"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "Absentee + Out-of-State",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 25.2,
+   "lift": 3,
+   "deals": 120,
+   "deal_share_pct": 19,
+   "coverage": "core",
+   "list_size": 3019,
+   "typical_gross": 146500,
+   "caveats": null,
+   "rank": 21,
+   "signals": [
+    "Absentee",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_oos_owners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 1,
+   "signal": "Obituary",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": null,
+   "dpd": 34,
+   "lift": 2.3,
+   "deals": null,
+   "deal_share_pct": null,
+   "coverage": null,
+   "list_size": 129,
+   "typical_gross": null,
+   "caveats": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "rank": 22,
+   "signals": [
+    "Obituary"
+   ]
+  },
+  {
+   "priority": 2,
+   "signal": "Absentee + Free & Clear + Other Lien",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 7.8,
+   "lift": 9.8,
+   "deals": 24,
+   "deal_share_pct": 3.8,
+   "coverage": "niche",
+   "list_size": 188,
+   "typical_gross": 149000,
+   "caveats": "small live list: quick and cheap to market in full",
+   "rank": 1,
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_other_lien"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 2,
+   "signal": "High Equity + Other Lien + Senior",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 8.7,
+   "lift": 8.8,
+   "deals": 20,
+   "deal_share_pct": 3.2,
+   "coverage": "niche",
+   "list_size": 174,
+   "typical_gross": 143500,
+   "caveats": "small live list: quick and cheap to market in full",
+   "rank": 2,
+   "signals": [
+    "High Equity",
+    "Other Lien",
+    "Senior"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_other_lien",
+    "is_senior_homeowners"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 2,
+   "signal": "Out-of-State + Other Lien",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 8.8,
+   "lift": 8.7,
+   "deals": 27,
+   "deal_share_pct": 4.3,
+   "coverage": "niche",
+   "list_size": 237,
+   "typical_gross": 182000,
+   "caveats": "small live list: quick and cheap to market in full",
+   "rank": 3,
+   "signals": [
+    "Out-of-State",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_oos_owners",
+    "is_other_lien"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 2,
+   "signal": "Lis Pendens",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 9.5,
+   "lift": 8.1,
+   "deals": 37,
+   "deal_share_pct": 5.9,
+   "coverage": "core",
+   "list_size": 351,
+   "typical_gross": 157500,
+   "caveats": null,
+   "rank": 4,
+   "signals": [
+    "Lis Pendens"
+   ],
+   "keys": [
+    "is_lis_pendens"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "Medium"
+  },
+  {
+   "priority": 2,
+   "signal": "High Equity + Lis Pendens",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 9.7,
+   "lift": 7.9,
+   "deals": 19,
+   "deal_share_pct": 3,
+   "coverage": "niche",
+   "list_size": 184,
+   "typical_gross": 194000,
+   "caveats": "small live list: quick and cheap to market in full",
+   "rank": 5,
+   "signals": [
+    "High Equity",
+    "Lis Pendens"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_lis_pendens"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 2,
+   "signal": "Free & Clear + Tired Landlord",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 26.2,
+   "lift": 2.9,
+   "deals": 21,
+   "deal_share_pct": 3.3,
+   "coverage": "niche",
+   "list_size": 550,
+   "typical_gross": 200000,
+   "caveats": null,
+   "rank": 6,
+   "signals": [
+    "Free & Clear",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_tired_landlord"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 2,
+   "signal": "Out-of-State + Senior",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 26.8,
+   "lift": 2.9,
+   "deals": 34,
+   "deal_share_pct": 5.4,
+   "coverage": "core",
+   "list_size": 911,
+   "typical_gross": 187000,
+   "caveats": null,
+   "rank": 7,
+   "signals": [
+    "Out-of-State",
+    "Senior"
+   ],
+   "keys": [
+    "is_oos_owners",
+    "is_senior_homeowners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 2,
+   "signal": "Absentee + Free & Clear + Senior",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 27.6,
+   "lift": 2.8,
+   "deals": 28,
+   "deal_share_pct": 4.4,
+   "coverage": "niche",
+   "list_size": 774,
+   "typical_gross": 187000,
+   "caveats": null,
+   "rank": 8,
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Senior"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_senior_homeowners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 2,
+   "signal": "Absentee",
+   "type": "List",
+   "plan": "All plans",
+   "evidence": "A",
+   "dpd": 28.4,
+   "lift": 2.7,
+   "deals": 254,
+   "deal_share_pct": 40.2,
+   "coverage": "broad",
+   "list_size": 7206,
+   "typical_gross": 138000,
+   "caveats": null,
+   "rank": 9,
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 2,
+   "signal": "High Equity + Out-of-State",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 30.9,
+   "lift": 2.5,
+   "deals": 47,
+   "deal_share_pct": 7.4,
+   "coverage": "core",
+   "list_size": 1451,
+   "typical_gross": 130000,
+   "caveats": null,
+   "rank": 10,
+   "signals": [
+    "High Equity",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_oos_owners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 2,
+   "signal": "AI Score 80-90",
+   "type": "AI score",
+   "plan": "AI plan",
+   "evidence": "A",
+   "dpd": 31.6,
+   "lift": 2.4,
+   "deals": 59,
+   "deal_share_pct": 9.3,
+   "coverage": "core",
+   "list_size": 1865,
+   "typical_gross": 120000,
+   "caveats": null,
+   "rank": 11,
+   "signals": [
+    "AI Score 80-90"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 2,
+   "signal": "Senior + Tired Landlord",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 32.1,
+   "lift": 2.4,
+   "deals": 15,
+   "deal_share_pct": 2.4,
+   "coverage": "niche",
+   "list_size": 482,
+   "typical_gross": 38500,
+   "caveats": null,
+   "rank": 12,
+   "signals": [
+    "Senior",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_senior_homeowners",
+    "is_tired_landlord"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "Medium"
+  },
+  {
+   "priority": 2,
+   "signal": "Bad Credit",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 35.2,
+   "lift": 2.2,
+   "deals": 15,
+   "deal_share_pct": 2.4,
+   "coverage": "niche",
+   "list_size": 528,
+   "typical_gross": 190000,
+   "caveats": null,
+   "rank": 13,
+   "signals": [
+    "Bad Credit"
+   ],
+   "keys": [
+    "is_bad_credit"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "Medium"
+  },
+  {
+   "priority": 2,
+   "signal": "Tired Landlord",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 35.9,
+   "lift": 2.1,
+   "deals": 57,
+   "deal_share_pct": 9,
+   "coverage": "core",
+   "list_size": 2046,
+   "typical_gross": 68950,
+   "caveats": null,
+   "rank": 14,
+   "signals": [
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_tired_landlord"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 2,
+   "signal": "Free & Clear",
+   "type": "List",
+   "plan": "All plans",
+   "evidence": "A",
+   "dpd": 38.2,
+   "lift": 2,
+   "deals": 297,
+   "deal_share_pct": 47,
+   "coverage": "broad",
+   "list_size": 11350,
+   "typical_gross": 148500,
+   "caveats": null,
+   "rank": 15,
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 2,
+   "signal": "High Equity + Tired Landlord",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 38.4,
+   "lift": 2,
+   "deals": 33,
+   "deal_share_pct": 5.2,
+   "coverage": "core",
+   "list_size": 1268,
+   "typical_gross": 54000,
+   "caveats": null,
+   "rank": 16,
+   "signals": [
+    "High Equity",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_tired_landlord"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 2,
+   "signal": "Absentee + Senior",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 42.5,
+   "lift": 1.8,
+   "deals": 37,
+   "deal_share_pct": 5.9,
+   "coverage": "core",
+   "list_size": 1573,
+   "typical_gross": 182000,
+   "caveats": null,
+   "rank": 17,
+   "signals": [
+    "Absentee",
+    "Senior"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_senior_homeowners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 3,
+   "signal": "HOA Lien + Notice of Foreclosure",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 0.5,
+   "lift": 153.6,
+   "deals": 15,
+   "deal_share_pct": 2.4,
+   "coverage": "niche",
+   "list_size": 7,
+   "typical_gross": 205500,
+   "caveats": "live list smaller than its own deal count (extreme churn): doors/deal unmeasurable, demand signal only",
+   "rank": 1,
+   "signals": [
+    "HOA Lien",
+    "Notice of Foreclosure"
+   ],
+   "keys": [
+    "is_hoa_lien",
+    "is_notice_of_foreclosure"
+   ],
+   "verify": true,
+   "verify_reason": "impossible",
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "Notice of Foreclosure + Other Lien",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 0.7,
+   "lift": 109.7,
+   "deals": 19,
+   "deal_share_pct": 3,
+   "coverage": "niche",
+   "list_size": 13,
+   "typical_gross": 156000,
+   "caveats": "live list smaller than its own deal count (extreme churn): doors/deal unmeasurable, demand signal only",
+   "rank": 2,
+   "signals": [
+    "Notice of Foreclosure",
+    "Other Lien"
+   ],
+   "keys": [
+    "is_notice_of_foreclosure",
+    "is_other_lien"
+   ],
+   "verify": true,
+   "verify_reason": "impossible",
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "AI Score 50+ (coverage layer)",
+   "type": "AI score",
+   "plan": "AI plan",
+   "evidence": "A",
+   "dpd": 33.8,
+   "lift": 2.3,
+   "deals": 446,
+   "deal_share_pct": 70.6,
+   "coverage": "broad",
+   "list_size": 15079,
+   "typical_gross": 148100,
+   "caveats": "coverage layer: run broad, expect volume not precision",
+   "rank": 3,
+   "signals": [
+    "AI Score 50+ (coverage layer)"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 3,
+   "signal": "Absentee + High Equity + Out-of-State",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 56.4,
+   "lift": 1.4,
+   "deals": 22,
+   "deal_share_pct": 3.5,
+   "coverage": "niche",
+   "list_size": 1241,
+   "typical_gross": 181000,
+   "caveats": null,
+   "rank": 4,
+   "signals": [
+    "Absentee",
+    "High Equity",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_high_equity",
+    "is_oos_owners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 3,
+   "signal": "Free & Clear + Senior",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 63.6,
+   "lift": 1.2,
+   "deals": 83,
+   "deal_share_pct": 13.1,
+   "coverage": "core",
+   "list_size": 5275,
+   "typical_gross": 180500,
+   "caveats": null,
+   "rank": 5,
+   "signals": [
+    "Free & Clear",
+    "Senior"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_senior_homeowners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 3,
+   "signal": "Absentee + High Equity",
+   "type": "Stack",
+   "plan": "All plans",
+   "evidence": "A",
+   "dpd": 67,
+   "lift": 1.1,
+   "deals": 43,
+   "deal_share_pct": 6.8,
+   "coverage": "core",
+   "list_size": 2880,
+   "typical_gross": 81390,
+   "caveats": null,
+   "rank": 6,
+   "signals": [
+    "Absentee",
+    "High Equity"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_high_equity"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 3,
+   "signal": "Senior",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 78.4,
+   "lift": 1,
+   "deals": 189,
+   "deal_share_pct": 29.9,
+   "coverage": "broad",
+   "list_size": 14826,
+   "typical_gross": 148000,
+   "caveats": null,
+   "rank": 7,
+   "signals": [
+    "Senior"
+   ],
+   "keys": [
+    "is_senior_homeowners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 3,
+   "signal": "High Equity + Senior",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": 89.8,
+   "lift": 0.9,
+   "deals": 89,
+   "deal_share_pct": 14.1,
+   "coverage": "core",
+   "list_size": 7990,
+   "typical_gross": 135500,
+   "caveats": null,
+   "rank": 8,
+   "signals": [
+    "High Equity",
+    "Senior"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_senior_homeowners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 3,
+   "signal": "High Equity",
+   "type": "List",
+   "plan": "All plans",
+   "evidence": "A",
+   "dpd": 110.9,
+   "lift": 0.7,
+   "deals": 237,
+   "deal_share_pct": 37.5,
+   "coverage": "broad",
+   "list_size": 26275,
+   "typical_gross": 85890,
+   "caveats": null,
+   "rank": 9,
+   "signals": [
+    "High Equity"
+   ],
+   "keys": [
+    "is_high_equity"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "High"
+  },
+  {
+   "priority": 3,
+   "signal": "Free & Clear + Low Income",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 15,
+   "deal_share_pct": 2.4,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 182500,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 10,
+   "signals": [
+    "Free & Clear",
+    "Low Income"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_low_income"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "Absentee + Lis Pendens",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 14,
+   "deal_share_pct": 2.2,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 93940,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 11,
+   "signals": [
+    "Absentee",
+    "Lis Pendens"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_lis_pendens"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "Bad Credit + Low Income",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 13,
+   "deal_share_pct": 2.1,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 190000,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 12,
+   "signals": [
+    "Bad Credit",
+    "Low Income"
+   ],
+   "keys": [
+    "is_bad_credit",
+    "is_low_income"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "High Equity + HOA Lien",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 13,
+   "deal_share_pct": 2.1,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 152000,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 13,
+   "signals": [
+    "High Equity",
+    "HOA Lien"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_hoa_lien"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "Absentee + Notice of Default",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 13,
+   "deal_share_pct": 2.1,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 63500,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 14,
+   "signals": [
+    "Absentee",
+    "Notice of Default"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_notice_of_default"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "High Equity + Notice of Foreclosure",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 12,
+   "deal_share_pct": 1.9,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 190500,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 15,
+   "signals": [
+    "High Equity",
+    "Notice of Foreclosure"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_notice_of_foreclosure"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "Lis Pendens + Senior",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 12,
+   "deal_share_pct": 1.9,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 142000,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 16,
+   "signals": [
+    "Lis Pendens",
+    "Senior"
+   ],
+   "keys": [
+    "is_lis_pendens",
+    "is_senior_homeowners"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "Absentee + Low Income",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 11,
+   "deal_share_pct": 1.7,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 179000,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 17,
+   "signals": [
+    "Absentee",
+    "Low Income"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_low_income"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "High Equity + Low Income",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 11,
+   "deal_share_pct": 1.7,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 71000,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 18,
+   "signals": [
+    "High Equity",
+    "Low Income"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_low_income"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "HOA Lien + Out-of-State",
+   "type": "Stack",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 11,
+   "deal_share_pct": 1.7,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 210281,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 19,
+   "signals": [
+    "HOA Lien",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_hoa_lien",
+    "is_oos_owners"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Medium"
+  }
+ ],
+ "ai_score": {
+  "cutoffs": [
+   {
+    "cutoff": "AI >= 50",
+    "deals": 446,
+    "coverage_pct": 70.6,
+    "dpd": 33.8,
+    "typical_gross": 148100
+   },
+   {
+    "cutoff": "AI >= 60",
+    "deals": 382,
+    "coverage_pct": 60.4,
+    "dpd": 26.2,
+    "typical_gross": 149000
+   },
+   {
+    "cutoff": "AI >= 70",
+    "deals": 316,
+    "coverage_pct": 50,
+    "dpd": 20.6,
+    "typical_gross": 152000
+   },
+   {
+    "cutoff": "AI >= 80",
+    "deals": 211,
+    "coverage_pct": 33.4,
+    "dpd": 17.5,
+    "typical_gross": 152000
+   },
+   {
+    "cutoff": "AI >= 90",
+    "deals": 152,
+    "coverage_pct": 24.1,
+    "dpd": 12,
+    "typical_gross": 156750
+   },
+   {
+    "cutoff": "AI >= 95",
+    "deals": 124,
+    "coverage_pct": 19.6,
+    "dpd": 10.5,
+    "typical_gross": 156000
+   }
+  ],
+  "bands": [
+   {
+    "band": "90-100",
+    "deals": 152,
+    "coverage_pct": 24.1,
+    "typical_gross": 156750
+   },
+   {
+    "band": "80-90",
+    "deals": 59,
+    "coverage_pct": 9.3,
+    "typical_gross": 120000
+   },
+   {
+    "band": "70-80",
+    "deals": 105,
+    "coverage_pct": 16.6,
+    "typical_gross": 152000
+   },
+   {
+    "band": "60-70",
+    "deals": 66,
+    "coverage_pct": 10.4,
+    "typical_gross": 136000
+   },
+   {
+    "band": "50-60",
+    "deals": 64,
+    "coverage_pct": 10.1,
+    "typical_gross": 132000
+   },
+   {
+    "band": "0-50",
+    "deals": 186,
+    "coverage_pct": 29.4,
+    "typical_gross": 43000
+   }
+  ]
+ },
+ "top_zips": [
+  {
+   "zip": "20019",
+   "stars": 5,
+   "deals": 92,
+   "typical_gross": 142500,
+   "dpd": 86.6,
+   "momentum": 0.92
+  },
+  {
+   "zip": "20020",
+   "stars": 5,
+   "deals": 80,
+   "typical_gross": 126225,
+   "dpd": 52.7,
+   "momentum": 2.72
+  },
+  {
+   "zip": "20011",
+   "stars": 4,
+   "deals": 61,
+   "typical_gross": 169250,
+   "dpd": 108.5,
+   "momentum": 1
+  },
+  {
+   "zip": "20002",
+   "stars": 4,
+   "deals": 37,
+   "typical_gross": 180000,
+   "dpd": 14.5,
+   "momentum": 1.07
+  },
+  {
+   "zip": "20032",
+   "stars": 4,
+   "deals": 30,
+   "typical_gross": 142000,
+   "dpd": 72.8,
+   "momentum": 1.25
+  },
+  {
+   "zip": "20007",
+   "stars": 3,
+   "deals": 48,
+   "typical_gross": 34000,
+   "dpd": 45.6,
+   "momentum": 2.6
+  },
+  {
+   "zip": "20018",
+   "stars": 3,
+   "deals": 29,
+   "typical_gross": 135500,
+   "dpd": 119.9,
+   "momentum": 2.57
+  },
+  {
+   "zip": "20009",
+   "stars": 3,
+   "deals": 27,
+   "typical_gross": 21000,
+   "dpd": null,
+   "momentum": 3.2
+  },
+  {
+   "zip": "20010",
+   "stars": 3,
+   "deals": 26,
+   "typical_gross": 315000,
+   "dpd": null,
+   "momentum": 0.73
+  },
+  {
+   "zip": "20001",
+   "stars": 3,
+   "deals": 22,
+   "typical_gross": 67750,
+   "dpd": null,
+   "momentum": 3.67
+  },
+  {
+   "zip": "20017",
+   "stars": 3,
+   "deals": 14,
+   "typical_gross": 215500,
+   "dpd": null,
+   "momentum": 3.5
+  },
+  {
+   "zip": "20003",
+   "stars": 3,
+   "deals": 12,
+   "typical_gross": 197000,
+   "dpd": null,
+   "momentum": 1.2
+  },
+  {
+   "zip": "20015",
+   "stars": 2,
+   "deals": 22,
+   "typical_gross": 66294,
+   "dpd": null,
+   "momentum": 2.17
+  },
+  {
+   "zip": "20008",
+   "stars": 2,
+   "deals": 21,
+   "typical_gross": 90000,
+   "dpd": null,
+   "momentum": 0.67
+  },
+  {
+   "zip": "20016",
+   "stars": 1,
+   "deals": 46,
+   "typical_gross": -1000,
+   "dpd": 135,
+   "momentum": 3
+  },
+  {
+   "zip": "20037",
+   "stars": 1,
+   "deals": 19,
+   "typical_gross": -28000,
+   "dpd": null,
+   "momentum": 1.43
+  },
+  {
+   "zip": "20005",
+   "stars": 1,
+   "deals": 12,
+   "typical_gross": 12000,
+   "dpd": null,
+   "momentum": 0.5
+  },
+  {
+   "zip": "20012",
+   "stars": 1,
+   "deals": 11,
+   "typical_gross": 38500,
+   "dpd": null,
+   "momentum": 0.6
+  }
+ ],
+ "price_bands": [
+  {
+   "band": "< $150k",
+   "deals": 27,
+   "live_sfr_supply": 0,
+   "dpd": null
+  },
+  {
+   "band": "$150k-$200k",
+   "deals": 9,
+   "live_sfr_supply": 1,
+   "dpd": null
+  },
+  {
+   "band": "$200k-$250k",
+   "deals": 13,
+   "live_sfr_supply": 107,
+   "dpd": null
+  },
+  {
+   "band": "$250k-$300k",
+   "deals": 31,
+   "live_sfr_supply": 734,
+   "dpd": null
+  },
+  {
+   "band": "$300k-$400k",
+   "deals": 98,
+   "live_sfr_supply": 6068,
+   "dpd": null
+  },
+  {
+   "band": "$400k-$500k",
+   "deals": 75,
+   "live_sfr_supply": 5567,
+   "dpd": null
+  },
+  {
+   "band": "$500k+",
+   "deals": 377,
+   "live_sfr_supply": 36094,
+   "dpd": null
+  }
+ ],
+ "ftm": [
+  {
+   "priority": "Pull first (A)",
+   "data_type": "Foreclosure (first public signal)",
+   "office_official": "Office of the Recorder of Deeds",
+   "phone": "(202) 727-4TAX (4829)",
+   "source_url": "https://washington.dc.publicsearch.us/",
+   "office_address": "1101 4th Street, SW, Suite 270 West, Washington, DC 20024",
+   "records_foia": "otr@dc.gov",
+   "access": "Medium",
+   "updates": "Daily",
+   "verified": "Verified",
+   "notes": "DC is a nonjudicial foreclosure state. The first public signal is typically a Notice of Default or Trustee Sale filed with the Recorder of Deeds. Online public records search is available for registered users. Index and document images are available from August 1921 to present."
+  },
+  {
+   "priority": "Pull first (A)",
+   "data_type": "Recorder / Register of Deeds - Lien & Deed Index",
+   "office_official": "Office of the Recorder of Deeds",
+   "phone": "(202) 727-4TAX (4829)",
+   "source_url": "https://washington.dc.publicsearch.us/",
+   "office_address": "1101 4th Street, SW, Suite 270 West, Washington, DC 20024",
+   "records_foia": "otr@dc.gov",
+   "access": "Medium",
+   "updates": "Daily",
+   "verified": "Verified",
+   "notes": "This office records all property-related documents, including deeds, mortgages, mechanic's liens, IRS and state tax liens, HOA liens, child-support liens, and lis pendens. Online public records search is available for registered users. Tax and child-support liens are indexed against the person, requiring a name-match to the assessor roll."
+  },
+  {
+   "priority": "Pull first (A)",
+   "data_type": "Tax Sale / Delinquent Tax Auction",
+   "office_official": "Office of Tax and Revenue (OTR)",
+   "phone": "(202) 727-4TAX (4829)",
+   "source_url": "https://otr.cfo.dc.gov/page/real-property-tax-lien-sale-and-resources",
+   "office_address": "1101 4th Street, SW, Suite 270 West, Washington, DC 20024",
+   "records_foia": "otr@dc.gov",
+   "access": "Easy",
+   "updates": "Annually (July)",
+   "verified": "Verified",
+   "notes": "DC is a tax lien state. The OTR conducts an annual tax lien sale, typically in July. A list of properties eligible for the tax sale is published weeks in advance. This list is the 'upstream edge' for marketing to owners before the auction. The list is usually available on the OTR website."
+  },
+  {
+   "priority": "Pull first (A)",
+   "data_type": "County Tax Delinquency (pre-sale roll)",
+   "office_official": "Office of Tax and Revenue (OTR)",
+   "phone": "(202) 727-4TAX (4829)",
+   "source_url": "https://otr.cfo.dc.gov/page/real-property-tax-lien-sale-and-resources",
+   "office_address": "1101 4th Street, SW, Suite 270 West, Washington, DC 20024",
+   "records_foia": "otr@dc.gov",
+   "access": "Easy",
+   "updates": "Annually (pre-sale list), ongoing roll",
+   "verified": "Verified",
+   "notes": "The OTR maintains a list of delinquent properties prior to the annual tax lien sale. This list is published on their website. The District of Columbia is a single jurisdiction, so there is no separate 'city' vs 'county' tax delinquency list."
+  },
+  {
+   "priority": "Pull first (A)",
+   "data_type": "City Tax Delinquency",
+   "office_official": "N/A (District of Columbia is a single jurisdiction)",
+   "phone": null,
+   "source_url": null,
+   "office_address": null,
+   "records_foia": null,
+   "access": null,
+   "updates": null,
+   "verified": "Verified",
+   "notes": "The District of Columbia operates as a unified city-county government. There are no separate incorporated cities within the District, therefore no separate city tax delinquency lists."
+  },
+  {
+   "priority": "Pull first (A)",
+   "data_type": "Probate / Estates / Unknown Heirs",
+   "office_official": "Superior Court of the District of Columbia, Probate Division",
+   "phone": "(202) 879-1499",
+   "source_url": "https://www.dccourts.gov/superior-court/superior-court-case-search",
+   "office_address": "515 5th Street, NW, Washington, DC 20001",
+   "records_foia": null,
+   "access": "Medium",
+   "updates": "Daily",
+   "verified": "Verify locally",
+   "notes": "Online case search available. New case filings can be tracked here. Notice to Creditors and other probate documents are part of the case file. Property address often requires a separate assessor lookup."
+  },
+  {
+   "priority": "Pull next (B)",
+   "data_type": "Code Violations - Unincorporated County",
+   "office_official": "N/A (District of Columbia is a single jurisdiction)",
+   "phone": null,
+   "source_url": null,
+   "office_address": null,
+   "records_foia": null,
+   "access": null,
+   "updates": null,
+   "verified": "Verified",
+   "notes": "The District of Columbia operates as a unified city-county government. There are no unincorporated areas within the District, therefore no separate unincorporated county code violation office."
+  },
+  {
+   "priority": "Pull next (B)",
+   "data_type": "Code Violations - City",
+   "office_official": "Department of Buildings (DOB)",
+   "phone": "(202) 671-3500",
+   "source_url": "https://dob.dc.gov/page/dob-online-permits-and-inspections",
+   "office_address": "1100 4th Street SW, Washington, DC 20024",
+   "records_foia": "dob@dc.gov",
+   "access": "Medium",
+   "updates": "Daily",
+   "verified": "Verify locally",
+   "notes": "The Department of Buildings handles code violations for the entire District. They utilize an online portal for permits and inspections, which may include code violation information. Look for a public search or reporting tool. Accela Citizen Access is a common platform for this type of data."
+  },
+  {
+   "priority": "Pull next (B)",
+   "data_type": "Condemned / Unsafe Structures / Demolition",
+   "office_official": "Department of Buildings (DOB)",
+   "phone": "(202) 671-3500",
+   "source_url": "https://dob.dc.gov/page/dob-online-permits-and-inspections",
+   "office_address": "1100 4th Street SW, Washington, DC 20024",
+   "records_foia": "dob@dc.gov",
+   "access": "Medium",
+   "updates": "Varies",
+   "verified": "Verify locally",
+   "notes": "Information regarding condemned, unsafe structures, or demolition orders would likely be managed by the Department of Buildings. This data may be accessible through their online permit and inspection portal or via a public records request."
+  },
+  {
+   "priority": "Pull last (C)",
+   "data_type": "Multiple-Eviction Landlords",
+   "office_official": "Superior Court of the District of Columbia, Landlord and Tenant Branch",
+   "phone": "(202) 879-1010",
+   "source_url": "https://www.dccourts.gov/superior-court/superior-court-case-search",
+   "office_address": "510 3rd Street NW, Washington, DC 20001",
+   "records_foia": null,
+   "access": "Medium",
+   "updates": "Daily",
+   "verified": "Verify locally",
+   "notes": "Eviction (unlawful detainer) filings are handled by the Landlord and Tenant Branch of the Superior Court. The online case search can be used to identify landlords (plaintiffs) with multiple filings. Searching by plaintiff name and filtering for eviction case types would be the method."
+  }
+ ],
+ "ftm_narrative": [
+  "Data gaps to know about: SiftMap data (provider data) is low or zero in District of Columbia County, DC for: Tax sale list. These are proven deal-makers nationally, and nobody can buy them here, so the county pulls below are not a backup, they are the only way in: treat them as priority pulls. Also not in SiftMap here: Eviction filings, Code violations, Divorce filings.",
+  "Sources pulled straight from the county the day records publish, 30 to 90 days before paid data. 'Verify locally' means confirm the link before you work it."
+ ],
+ "siftmap_gaps": {
+  "low_or_zero": [
+   "Tax sale list"
+  ],
+  "absent": [
+   "Eviction filings",
+   "Code violations",
+   "Divorce filings"
+  ],
+  "verbatim": "Data gaps to know about: SiftMap data (provider data) is low or zero in District of Columbia County, DC for: Tax sale list. These are proven deal-makers nationally, and nobody can buy them here, so the county pulls below are not a backup, they are the only way in: treat them as priority pulls. Also not in SiftMap here: Eviction filings, Code violations, Divorce filings."
+ },
+ "read_me": {
+  "Doors/deal": "Live list size divided by the deals that list produced in the window. Lower is better: fewer doors to work per closed deal.",
+  "Lift": "County baseline doors/deal divided by the signal's doors/deal. 3.0 means three times sharper than pulling the whole county.",
+  "Baseline": "The whole county unfiltered, counted the same way; the denominator every signal is judged against.",
+  "Stack": "Records sitting on two distress lists at once. Stacks are distress plus distress; AI is never AND-stacked on distress.",
+  "AI score": "DataSift Investor AI likelihood-to-sell score, 0-100, a PARALLEL pull alongside the distress lists.",
+  "score-gated": "Live AI-scored supply counts are provisioned per account, so a local doors/deal cannot be computed in this view. The deals and coverage are this county's own data.",
+  "Verify supply": "The row tripped the verify rule (v2.1 coverage-aware: verify reasons annotate (churn: doors/deal < 5; small: list < 250) without demoting; only judicial notice lists and churn artifacts (doors/deal < 1) force P3. Volume floors: P1 needs >=2% of county deal flow or >=25 deals, P2 >=1% or >=12 deals): demand is real, treat the efficiency as directional until you price the live list.",
+  "Evidence A / B / C": "from this county's own sold deals / cross-market benchmark / single-market anchor (Knox + Blount TN AI measurement)",
+  "Typical gross": "Median of AVM value minus purchase price on clean deals: acquisition spread, not net profit.",
+  "Non-disclosure states": "Sale prices are not public there, so deal-dollar columns are omitted; doors/deal and lift never use dollars."
+ },
+ "shard_check": {
+  "status": "ok",
+  "mismatches": [],
+  "workbook_rows": 58,
+  "shard_rows": 57,
+  "rows_matched_by_signal": 57,
+  "workbook_only": [
+   "Obituary"
+  ],
+  "shard_only": []
+ },
+ "shard_extra": {
+  "coverage": {
+   "p1": 0.568,
+   "p1p2": 0.771,
+   "all": 0.956
+  },
+  "obit_supply": 129,
+  "ai_demand": {
+   "cutoffs": [
+    {
+     "seg": "AI >= 50",
+     "cutoff": 50,
+     "deals": 446,
+     "coverage_pct": 70.6,
+     "median_gross": 148100,
+     "margin_pct": null,
+     "list_size": 15079,
+     "dpd": 33.8
+    },
+    {
+     "seg": "AI >= 60",
+     "cutoff": 60,
+     "deals": 382,
+     "coverage_pct": 60.4,
+     "median_gross": 149000,
+     "margin_pct": null,
+     "list_size": 10019,
+     "dpd": 26.2
+    },
+    {
+     "seg": "AI >= 70",
+     "cutoff": 70,
+     "deals": 316,
+     "coverage_pct": 50.0,
+     "median_gross": 152000,
+     "margin_pct": null,
+     "list_size": 6512,
+     "dpd": 20.6
+    },
+    {
+     "seg": "AI >= 80",
+     "cutoff": 80,
+     "deals": 211,
+     "coverage_pct": 33.4,
+     "median_gross": 152000,
+     "margin_pct": null,
+     "list_size": 3684,
+     "dpd": 17.5
+    },
+    {
+     "seg": "AI >= 90",
+     "cutoff": 90,
+     "deals": 152,
+     "coverage_pct": 24.1,
+     "median_gross": 156750,
+     "margin_pct": null,
+     "list_size": 1819,
+     "dpd": 12.0
+    },
+    {
+     "seg": "AI >= 95",
+     "cutoff": 95,
+     "deals": 124,
+     "coverage_pct": 19.6,
+     "median_gross": 156000,
+     "margin_pct": null,
+     "list_size": 1305,
+     "dpd": 10.5
+    }
+   ],
+   "bands": [
+    {
+     "band": "90-100",
+     "deals": 152,
+     "coverage_pct": 24.1,
+     "median_gross": 156750,
+     "margin_pct": null
+    },
+    {
+     "band": "80-90",
+     "deals": 59,
+     "coverage_pct": 9.3,
+     "median_gross": 120000,
+     "margin_pct": null
+    },
+    {
+     "band": "70-80",
+     "deals": 105,
+     "coverage_pct": 16.6,
+     "median_gross": 152000,
+     "margin_pct": null
+    },
+    {
+     "band": "60-70",
+     "deals": 66,
+     "coverage_pct": 10.4,
+     "median_gross": 136000,
+     "margin_pct": null
+    },
+    {
+     "band": "50-60",
+     "deals": 64,
+     "coverage_pct": 10.1,
+     "median_gross": 132000,
+     "margin_pct": null
+    },
+    {
+     "band": "0-50",
+     "deals": 186,
+     "coverage_pct": 29.4,
+     "median_gross": 43000,
+     "margin_pct": null
+    }
+   ]
+  },
+  "ftm_verdicts": [
+   {
+    "k": "foreclosure",
+    "v": "covered",
+    "rec": 1,
+    "fresh": 1,
+    "ls": 351,
+    "deals": 38,
+    "src": "the recorder's trustee-sale filings and the published notice feed"
+   },
+   {
+    "k": "tax_sale",
+    "v": "no_provider",
+    "rec": 1,
+    "src": "the county treasurer / tax collector's lien-sale list"
+   },
+   {
+    "k": "tax_delinquent",
+    "v": "unknown",
+    "rec": 0
+   },
+   {
+    "k": "probate",
+    "v": "unknown",
+    "rec": 0,
+    "deals": 2
+   },
+   {
+    "k": "eviction",
+    "v": "no_provider",
+    "rec": 1,
+    "src": "the county eviction / unlawful-detainer docket"
+   },
+   {
+    "k": "code_violation",
+    "v": "no_provider",
+    "rec": 1,
+    "src": "the city code-enforcement docket (city-level; often a public records request)"
+   },
+   {
+    "k": "divorce",
+    "v": "no_provider",
+    "rec": 1,
+    "src": "the family / domestic-relations court docket (property sits on the asset schedule)"
+   }
+  ],
+  "zips_detail": [
+   {
+    "zip": "20019",
+    "deals": 92,
+    "median_gross": 142500,
+    "momentum": 0.92,
+    "months": [
+     23,
+     16,
+     17,
+     22,
+     14,
+     0
+    ],
+    "med_avm": 357500,
+    "med_buy": 214000,
+    "ai_hi_share": 0.54,
+    "list_size": 7967,
+    "dpd": 86.6,
+    "stars": 5,
+    "p_deals": 97,
+    "p_gross": 69,
+    "p_mom": 25,
+    "signals": [
+     {
+      "label": "Other Lien",
+      "share": 0.27,
+      "lift": 1.61
+     },
+     {
+      "label": "Tired Landlord",
+      "share": 0.14,
+      "lift": 1.54
+     }
+    ]
+   },
+   {
+    "zip": "20020",
+    "deals": 80,
+    "median_gross": 126225,
+    "momentum": 2.72,
+    "months": [
+     6,
+     12,
+     13,
+     36,
+     13,
+     0
+    ],
+    "med_avm": 363500,
+    "med_buy": 198560,
+    "ai_hi_share": 0.61,
+    "list_size": 4219,
+    "dpd": 52.7,
+    "stars": 5,
+    "p_deals": 92,
+    "p_gross": 53,
+    "p_mom": 75,
+    "signals": [
+     {
+      "label": "Absentee",
+      "share": 0.64,
+      "lift": 1.56
+     },
+     {
+      "label": "Free & Clear",
+      "share": 0.64,
+      "lift": 1.34
+     },
+     {
+      "label": "Other Lien",
+      "share": 0.21,
+      "lift": 1.26
+     }
+    ]
+   },
+   {
+    "zip": "20011",
+    "deals": 61,
+    "median_gross": 169250,
+    "momentum": 1.0,
+    "months": [
+     15,
+     10,
+     11,
+     16,
+     9,
+     0
+    ],
+    "med_avm": 701000,
+    "med_buy": 497000,
+    "ai_hi_share": 0.34,
+    "list_size": 6616,
+    "dpd": 108.5,
+    "stars": 4,
+    "p_deals": 86,
+    "p_gross": 75,
+    "p_mom": 31,
+    "signals": [
+     {
+      "label": "Other Lien",
+      "share": 0.33,
+      "lift": 1.95
+     }
+    ]
+   },
+   {
+    "zip": "20002",
+    "deals": 37,
+    "median_gross": 180000,
+    "momentum": 1.07,
+    "months": [
+     9,
+     5,
+     8,
+     10,
+     5,
+     0
+    ],
+    "med_avm": 700000,
+    "med_buy": 472448,
+    "ai_hi_share": 0.32,
+    "list_size": 537,
+    "dpd": 14.5,
+    "stars": 4,
+    "p_deals": 69,
+    "p_gross": 81,
+    "p_mom": 36,
+    "signals": [
+     {
+      "label": "HOA Lien",
+      "share": 0.14,
+      "lift": 2.63
+     },
+     {
+      "label": "Notice of Foreclosure",
+      "share": 0.14,
+      "lift": 2.22
+     }
+    ]
+   },
+   {
+    "zip": "20032",
+    "deals": 30,
+    "median_gross": 142000,
+    "momentum": 1.25,
+    "months": [
+     6,
+     6,
+     3,
+     10,
+     5,
+     0
+    ],
+    "med_avm": 372000,
+    "med_buy": 214000,
+    "ai_hi_share": 0.4,
+    "list_size": 2185,
+    "dpd": 72.8,
+    "stars": 4,
+    "p_deals": 64,
+    "p_gross": 64,
+    "p_mom": 47,
+    "signals": [
+     {
+      "label": "Lis Pendens",
+      "share": 0.2,
+      "lift": 3.37
+     },
+     {
+      "label": "Low Income",
+      "share": 0.13,
+      "lift": 2.97
+     },
+     {
+      "label": "Other Lien",
+      "share": 0.37,
+      "lift": 2.18
+     },
+     {
+      "label": "Senior",
+      "share": 0.4,
+      "lift": 1.32
+     }
+    ]
+   },
+   {
+    "zip": "20007",
+    "deals": 48,
+    "median_gross": 34000,
+    "momentum": 2.6,
+    "months": [
+     7,
+     3,
+     12,
+     15,
+     11,
+     0
+    ],
+    "med_avm": 1572500,
+    "med_buy": 1310000,
+    "ai_hi_share": 0.12,
+    "list_size": 2190,
+    "dpd": 45.6,
+    "stars": 3,
+    "p_deals": 81,
+    "p_gross": 25,
+    "p_mom": 69,
+    "signals": [
+     {
+      "label": "Tired Landlord",
+      "share": 0.12,
+      "lift": 1.37
+     }
+    ]
+   },
+   {
+    "zip": "20018",
+    "deals": 29,
+    "median_gross": 135500,
+    "momentum": 2.57,
+    "months": [
+     6,
+     1,
+     4,
+     11,
+     7,
+     0
+    ],
+    "med_avm": 581500,
+    "med_buy": 482450,
+    "ai_hi_share": 0.48,
+    "list_size": 3476,
+    "dpd": 119.9,
+    "stars": 3,
+    "p_deals": 58,
+    "p_gross": 58,
+    "p_mom": 64,
+    "signals": [
+     {
+      "label": "Other Lien",
+      "share": 0.24,
+      "lift": 1.43
+     }
+    ]
+   },
+   {
+    "zip": "20009",
+    "deals": 27,
+    "median_gross": 21000,
+    "momentum": 3.2,
+    "months": [
+     2,
+     3,
+     6,
+     10,
+     6,
+     0
+    ],
+    "med_avm": 614000,
+    "med_buy": 565000,
+    "ai_hi_share": 0.11,
+    "stars": 3,
+    "p_deals": 53,
+    "p_gross": 19,
+    "p_mom": 86,
+    "signals": [
+     {
+      "label": "Tired Landlord",
+      "share": 0.15,
+      "lift": 1.62
+     },
+     {
+      "label": "High Equity",
+      "share": 0.52,
+      "lift": 1.36
+     }
+    ]
+   },
+   {
+    "zip": "20010",
+    "deals": 26,
+    "median_gross": 315000,
+    "momentum": 0.73,
+    "months": [
+     1,
+     10,
+     7,
+     4,
+     4,
+     0
+    ],
+    "med_avm": 616500,
+    "med_buy": 385000,
+    "ai_hi_share": 0.42,
+    "stars": 3,
+    "p_deals": 47,
+    "p_gross": 97,
+    "p_mom": 19,
+    "signals": [
+     {
+      "label": "Bad Credit",
+      "share": 0.15,
+      "lift": 6.39
+     },
+     {
+      "label": "Low Income",
+      "share": 0.19,
+      "lift": 4.28
+     },
+     {
+      "label": "Notice of Foreclosure",
+      "share": 0.23,
+      "lift": 3.78
+     },
+     {
+      "label": "HOA Lien",
+      "share": 0.19,
+      "lift": 3.74
+     }
+    ]
+   },
+   {
+    "zip": "20001",
+    "deals": 22,
+    "median_gross": 67750,
+    "momentum": 3.67,
+    "months": [
+     1,
+     2,
+     8,
+     5,
+     6,
+     0
+    ],
+    "med_avm": 823500,
+    "med_buy": 684000,
+    "ai_hi_share": 0.23,
+    "stars": 3,
+    "p_deals": 39,
+    "p_gross": 42,
+    "p_mom": 97,
+    "signals": [
+     {
+      "label": "Out-of-State",
+      "share": 0.36,
+      "lift": 1.37
+     },
+     {
+      "label": "High Equity",
+      "share": 0.5,
+      "lift": 1.31
+     }
+    ]
+   },
+   {
+    "zip": "20017",
+    "deals": 14,
+    "median_gross": 215500,
+    "momentum": 3.5,
+    "months": [
+     1,
+     1,
+     5,
+     3,
+     4,
+     0
+    ],
+    "med_avm": 654000,
+    "med_buy": 412550,
+    "ai_hi_share": 0.21,
+    "stars": 3,
+    "p_deals": 19,
+    "p_gross": 92,
+    "p_mom": 92,
+    "signals": [
+     {
+      "label": "Other Lien",
+      "share": 0.5,
+      "lift": 2.97
+     }
+    ]
+   },
+   {
+    "zip": "20003",
+    "deals": 12,
+    "median_gross": 197000,
+    "momentum": 1.2,
+    "months": [
+     2,
+     3,
+     1,
+     2,
+     4,
+     0
+    ],
+    "med_avm": 1004000,
+    "med_buy": 678500,
+    "ai_hi_share": 0.17,
+    "stars": 3,
+    "p_deals": 11,
+    "p_gross": 86,
+    "p_mom": 42,
+    "signals": [
+     {
+      "label": "Senior",
+      "share": 0.58,
+      "lift": 1.92
+     },
+     {
+      "label": "High Equity",
+      "share": 0.58,
+      "lift": 1.53
+     },
+     {
+      "label": "Out-of-State",
+      "share": 0.33,
+      "lift": 1.26
+     }
+    ]
+   },
+   {
+    "zip": "20015",
+    "deals": 22,
+    "median_gross": 66294,
+    "momentum": 2.17,
+    "months": [
+     4,
+     2,
+     3,
+     4,
+     9,
+     0
+    ],
+    "med_avm": 1548000,
+    "med_buy": 1250000,
+    "ai_hi_share": 0.05,
+    "stars": 2,
+    "p_deals": 39,
+    "p_gross": 36,
+    "p_mom": 58
+   },
+   {
+    "zip": "20008",
+    "deals": 21,
+    "median_gross": 90000,
+    "momentum": 0.67,
+    "months": [
+     7,
+     5,
+     1,
+     3,
+     5,
+     0
+    ],
+    "med_avm": 1726000,
+    "med_buy": 1905000,
+    "ai_hi_share": 0.0,
+    "stars": 2,
+    "p_deals": 31,
+    "p_gross": 47,
+    "p_mom": 14
+   },
+   {
+    "zip": "20016",
+    "deals": 46,
+    "median_gross": -1000,
+    "momentum": 3.0,
+    "months": [
+     6,
+     5,
+     2,
+     12,
+     21,
+     0
+    ],
+    "med_avm": 1366500,
+    "med_buy": 1275000,
+    "ai_hi_share": 0.11,
+    "list_size": 6210,
+    "dpd": 135.0,
+    "stars": 1,
+    "p_deals": 75,
+    "p_gross": 8,
+    "p_mom": 81,
+    "signals": [
+     {
+      "label": "High Equity",
+      "share": 0.48,
+      "lift": 1.26
+     }
+    ]
+   },
+   {
+    "zip": "20037",
+    "deals": 19,
+    "median_gross": -28000,
+    "momentum": 1.43,
+    "months": [
+     4,
+     3,
+     2,
+     6,
+     4,
+     0
+    ],
+    "med_avm": 1076000,
+    "med_buy": 1300000,
+    "ai_hi_share": 0.11,
+    "stars": 1,
+    "p_deals": 25,
+    "p_gross": 3,
+    "p_mom": 53,
+    "signals": [
+     {
+      "label": "Tired Landlord",
+      "share": 0.26,
+      "lift": 2.88
+     },
+     {
+      "label": "High Equity",
+      "share": 0.63,
+      "lift": 1.66
+     },
+     {
+      "label": "Out-of-State",
+      "share": 0.37,
+      "lift": 1.39
+     }
+    ]
+   },
+   {
+    "zip": "20005",
+    "deals": 12,
+    "median_gross": 12000,
+    "momentum": 0.5,
+    "months": [
+     1,
+     5,
+     3,
+     1,
+     2,
+     0
+    ],
+    "med_avm": 589500,
+    "med_buy": 600000,
+    "ai_hi_share": 0.33,
+    "stars": 1,
+    "p_deals": 11,
+    "p_gross": 14,
+    "p_mom": 3,
+    "signals": [
+     {
+      "label": "Out-of-State",
+      "share": 0.42,
+      "lift": 1.57
+     },
+     {
+      "label": "Absentee",
+      "share": 0.58,
+      "lift": 1.43
+     }
+    ]
+   },
+   {
+    "zip": "20012",
+    "deals": 11,
+    "median_gross": 38500,
+    "momentum": 0.6,
+    "months": [
+     3,
+     2,
+     3,
+     0,
+     3,
+     0
+    ],
+    "med_avm": 715000,
+    "med_buy": 661020,
+    "ai_hi_share": 0.18,
+    "stars": 1,
+    "p_deals": 3,
+    "p_gross": 31,
+    "p_mom": 8,
+    "signals": [
+     {
+      "label": "High Equity",
+      "share": 0.55,
+      "lift": 1.43
+     }
+    ]
+   }
+  ],
+  "trend": [
+   105,
+   102,
+   112,
+   177,
+   136,
+   0
+  ],
+  "capture_ladder": {
+   "fips": "11001",
+   "name": "District of Columbia",
+   "st": "DC",
+   "deals": 771,
+   "base_supply": 48530,
+   "window": "2026-01 .. 2026-06 (6 complete months)",
+   "built": "2026-08-13",
+   "ai_provisioned": true,
+   "variants": {
+    "lists": [
+     {
+      "label": "Absentee + Notice of Foreclosure",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners",
+       "is_notice_of_foreclosure"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 24,
+      "marg_deals": 24,
+      "marg_supply": 24,
+      "marg_dpd": 1.0,
+      "cum_deals": 24,
+      "cum_share": 3.1,
+      "cum_supply": 24,
+      "cum_dpd": 1.0,
+      "median_gross": 183500
+     },
+     {
+      "label": "Absentee + HOA Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_absentee_owners",
+       "is_hoa_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 21,
+      "marg_deals": 11,
+      "marg_supply": 17,
+      "marg_dpd": 1.5,
+      "cum_deals": 35,
+      "cum_share": 4.5,
+      "cum_supply": 41,
+      "cum_dpd": 1.2,
+      "median_gross": 190000
+     },
+     {
+      "label": "High Equity + Notice of Default",
+      "plan": "Starter",
+      "keys": [
+       "is_high_equity",
+       "is_notice_of_default"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 22,
+      "marg_deals": 12,
+      "marg_supply": 19,
+      "marg_dpd": 1.6,
+      "cum_deals": 47,
+      "cum_share": 6.1,
+      "cum_supply": 60,
+      "cum_dpd": 1.3,
+      "median_gross": 152000
+     },
+     {
+      "label": "HOA Lien + Notice of Foreclosure",
+      "plan": "Expert",
+      "keys": [
+       "is_hoa_lien",
+       "is_notice_of_foreclosure"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 9,
+      "marg_deals": 3,
+      "marg_supply": 4,
+      "marg_dpd": 1.3,
+      "cum_deals": 50,
+      "cum_share": 6.5,
+      "cum_supply": 64,
+      "cum_dpd": 1.3,
+      "median_gross": 207000
+     },
+     {
+      "label": "High Equity + Notice of Foreclosure",
+      "plan": "Starter",
+      "keys": [
+       "is_high_equity",
+       "is_notice_of_foreclosure"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 34,
+      "marg_deals": 7,
+      "marg_supply": 14,
+      "marg_dpd": 2.0,
+      "cum_deals": 57,
+      "cum_share": 7.4,
+      "cum_supply": 78,
+      "cum_dpd": 1.4,
+      "median_gross": 144682
+     },
+     {
+      "label": "Notice of Foreclosure + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_notice_of_foreclosure",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 12,
+      "marg_deals": 4,
+      "marg_supply": 4,
+      "marg_dpd": 1.0,
+      "cum_deals": 61,
+      "cum_share": 7.9,
+      "cum_supply": 82,
+      "cum_dpd": 1.3,
+      "median_gross": 209250
+     },
+     {
+      "label": "Notice of Default",
+      "plan": "Starter",
+      "keys": [
+       "is_notice_of_default"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 59,
+      "marg_deals": 9,
+      "marg_supply": 33,
+      "marg_dpd": 3.7,
+      "cum_deals": 70,
+      "cum_share": 9.1,
+      "cum_supply": 115,
+      "cum_dpd": 1.6,
+      "median_gross": 174000
+     },
+     {
+      "label": "Absentee + Low Income",
+      "plan": "Expert",
+      "keys": [
+       "is_absentee_owners",
+       "is_low_income"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 49,
+      "marg_deals": 13,
+      "marg_supply": 49,
+      "marg_dpd": 3.8,
+      "cum_deals": 83,
+      "cum_share": 10.8,
+      "cum_supply": 164,
+      "cum_dpd": 2.0,
+      "median_gross": 160750
+     },
+     {
+      "label": "Lis Pendens + Senior",
+      "plan": "Expert",
+      "keys": [
+       "is_lis_pendens",
+       "is_senior_homeowners"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 112,
+      "marg_deals": 15,
+      "marg_supply": 108,
+      "marg_dpd": 7.2,
+      "cum_deals": 98,
+      "cum_share": 12.7,
+      "cum_supply": 272,
+      "cum_dpd": 2.8,
+      "median_gross": 157500
+     },
+     {
+      "label": "Free & Clear + Out-of-State + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_free_and_clear",
+       "is_oos_owners",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 103,
+      "marg_deals": 12,
+      "marg_supply": 99,
+      "marg_dpd": 8.2,
+      "cum_deals": 110,
+      "cum_share": 14.3,
+      "cum_supply": 371,
+      "cum_dpd": 3.4,
+      "median_gross": 187000
+     },
+     {
+      "label": "Absentee + Free & Clear + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_absentee_owners",
+       "is_free_and_clear",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 185,
+      "marg_deals": 12,
+      "marg_supply": 81,
+      "marg_dpd": 6.8,
+      "cum_deals": 122,
+      "cum_share": 15.8,
+      "cum_supply": 452,
+      "cum_dpd": 3.7,
+      "median_gross": 101000
+     },
+     {
+      "label": "High Equity + Other Lien + Senior",
+      "plan": "Expert",
+      "keys": [
+       "is_high_equity",
+       "is_other_lien",
+       "is_senior_homeowners"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 174,
+      "marg_deals": 18,
+      "marg_supply": 157,
+      "marg_dpd": 8.7,
+      "cum_deals": 140,
+      "cum_share": 18.2,
+      "cum_supply": 609,
+      "cum_dpd": 4.3,
+      "median_gross": 144000
+     },
+     {
+      "label": "Free & Clear + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_free_and_clear",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 412,
+      "marg_deals": 24,
+      "marg_supply": 217,
+      "marg_dpd": 9.0,
+      "cum_deals": 164,
+      "cum_share": 21.3,
+      "cum_supply": 826,
+      "cum_dpd": 5.0,
+      "median_gross": 188000
+     },
+     {
+      "label": "Absentee + Lis Pendens",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners",
+       "is_lis_pendens"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 90,
+      "marg_deals": 5,
+      "marg_supply": 52,
+      "marg_dpd": 10.4,
+      "cum_deals": 169,
+      "cum_share": 21.9,
+      "cum_supply": 878,
+      "cum_dpd": 5.2,
+      "median_gross": 41000
+     },
+     {
+      "label": "High Equity + Lis Pendens",
+      "plan": "Starter",
+      "keys": [
+       "is_high_equity",
+       "is_lis_pendens"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 177,
+      "marg_deals": 9,
+      "marg_supply": 90,
+      "marg_dpd": 10.0,
+      "cum_deals": 178,
+      "cum_share": 23.1,
+      "cum_supply": 968,
+      "cum_dpd": 5.4,
+      "median_gross": 194000
+     },
+     {
+      "label": "Free & Clear + Out-of-State",
+      "plan": "Expert",
+      "keys": [
+       "is_free_and_clear",
+       "is_oos_owners"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 1316,
+      "marg_deals": 88,
+      "marg_supply": 1196,
+      "marg_dpd": 13.6,
+      "cum_deals": 266,
+      "cum_share": 34.5,
+      "cum_supply": 2164,
+      "cum_dpd": 8.1,
+      "median_gross": 146500
+     },
+     {
+      "label": "Lis Pendens",
+      "plan": "Starter",
+      "keys": [
+       "is_lis_pendens"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 369,
+      "marg_deals": 6,
+      "marg_supply": 84,
+      "marg_dpd": 14.0,
+      "cum_deals": 272,
+      "cum_share": 35.3,
+      "cum_supply": 2248,
+      "cum_dpd": 8.3,
+      "median_gross": 199000
+     },
+     {
+      "label": "Zombie",
+      "plan": "Starter",
+      "keys": [
+       "is_zombie_property"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 140,
+      "marg_deals": 7,
+      "marg_supply": 105,
+      "marg_dpd": 15.0,
+      "cum_deals": 279,
+      "cum_share": 36.2,
+      "cum_supply": 2353,
+      "cum_dpd": 8.4,
+      "median_gross": 241821
+     },
+     {
+      "label": "High Equity + HOA Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_high_equity",
+       "is_hoa_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 101,
+      "marg_deals": 3,
+      "marg_supply": 50,
+      "marg_dpd": 16.7,
+      "cum_deals": 282,
+      "cum_share": 36.6,
+      "cum_supply": 2403,
+      "cum_dpd": 8.5,
+      "median_gross": 127000
+     },
+     {
+      "label": "Free & Clear + Low Income",
+      "plan": "Expert",
+      "keys": [
+       "is_free_and_clear",
+       "is_low_income"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 145,
+      "marg_deals": 7,
+      "marg_supply": 117,
+      "marg_dpd": 16.7,
+      "cum_deals": 289,
+      "cum_share": 37.5,
+      "cum_supply": 2520,
+      "cum_dpd": 8.7,
+      "median_gross": 133000
+     },
+     {
+      "label": "Out-of-State + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_oos_owners",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 238,
+      "marg_deals": 6,
+      "marg_supply": 104,
+      "marg_dpd": 17.3,
+      "cum_deals": 295,
+      "cum_share": 38.3,
+      "cum_supply": 2624,
+      "cum_dpd": 8.9,
+      "median_gross": 120500
+     },
+     {
+      "label": "Other Lien + Senior",
+      "plan": "Expert",
+      "keys": [
+       "is_other_lien",
+       "is_senior_homeowners"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 421,
+      "marg_deals": 3,
+      "marg_supply": 52,
+      "marg_dpd": 17.3,
+      "cum_deals": 298,
+      "cum_share": 38.7,
+      "cum_supply": 2676,
+      "cum_dpd": 9.0,
+      "median_gross": 239000
+     },
+     {
+      "label": "Absentee + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_absentee_owners",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 473,
+      "marg_deals": 8,
+      "marg_supply": 137,
+      "marg_dpd": 17.1,
+      "cum_deals": 306,
+      "cum_share": 39.7,
+      "cum_supply": 2813,
+      "cum_dpd": 9.2,
+      "median_gross": 77000
+     },
+     {
+      "label": "Absentee + Free & Clear",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners",
+       "is_free_and_clear"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 2926,
+      "marg_deals": 83,
+      "marg_supply": 1559,
+      "marg_dpd": 18.8,
+      "cum_deals": 389,
+      "cum_share": 50.5,
+      "cum_supply": 4372,
+      "cum_dpd": 11.2,
+      "median_gross": 149000
+     },
+     {
+      "label": "High Equity + Out-of-State + Tired Landlord",
+      "plan": "Expert",
+      "keys": [
+       "is_high_equity",
+       "is_oos_owners",
+       "is_tired_landlord"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 568,
+      "marg_deals": 21,
+      "marg_supply": 529,
+      "marg_dpd": 25.2,
+      "cum_deals": 410,
+      "cum_share": 53.2,
+      "cum_supply": 4901,
+      "cum_dpd": 12.0,
+      "median_gross": 82500
+     },
+     {
+      "label": "High Equity + Out-of-State",
+      "plan": "Expert",
+      "keys": [
+       "is_high_equity",
+       "is_oos_owners"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 1418,
+      "marg_deals": 20,
+      "marg_supply": 769,
+      "marg_dpd": 38.5,
+      "cum_deals": 430,
+      "cum_share": 55.8,
+      "cum_supply": 5670,
+      "cum_dpd": 13.2,
+      "median_gross": 169000
+     },
+     {
+      "label": "Free & Clear + Vacant",
+      "plan": "Starter",
+      "keys": [
+       "is_free_and_clear",
+       "is_vacant_property"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 455,
+      "marg_deals": 3,
+      "marg_supply": 126,
+      "marg_dpd": 42.0,
+      "cum_deals": 433,
+      "cum_share": 56.2,
+      "cum_supply": 5796,
+      "cum_dpd": 13.4,
+      "median_gross": 340000
+     },
+     {
+      "label": "Senior + Tired Landlord",
+      "plan": "Expert",
+      "keys": [
+       "is_senior_homeowners",
+       "is_tired_landlord"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 483,
+      "marg_deals": 4,
+      "marg_supply": 192,
+      "marg_dpd": 48.0,
+      "cum_deals": 437,
+      "cum_share": 56.7,
+      "cum_supply": 5988,
+      "cum_dpd": 13.7,
+      "median_gross": 36500
+     },
+     {
+      "label": "Tired Landlord",
+      "plan": "Expert",
+      "keys": [
+       "is_tired_landlord"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 2047,
+      "marg_deals": 14,
+      "marg_supply": 674,
+      "marg_dpd": 48.1,
+      "cum_deals": 451,
+      "cum_share": 58.5,
+      "cum_supply": 6662,
+      "cum_dpd": 14.8,
+      "median_gross": 21945
+     },
+     {
+      "label": "Absentee + High Equity",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners",
+       "is_high_equity"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": false,
+      "list_size": 2778,
+      "marg_deals": 15,
+      "marg_supply": 799,
+      "marg_dpd": 53.3,
+      "cum_deals": 466,
+      "cum_share": 60.4,
+      "cum_supply": 7461,
+      "cum_dpd": 16.0,
+      "median_gross": 117050
+     },
+     {
+      "label": "Absentee",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": true,
+      "list_size": 7183,
+      "marg_deals": 19,
+      "marg_supply": 1029,
+      "marg_dpd": 54.2,
+      "cum_deals": 485,
+      "cum_share": 62.9,
+      "cum_supply": 8490,
+      "cum_dpd": 17.5,
+      "median_gross": 22000
+     },
+     {
+      "label": "Low Income",
+      "plan": "Expert",
+      "keys": [
+       "is_low_income"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": false,
+      "list_size": 488,
+      "marg_deals": 5,
+      "marg_supply": 306,
+      "marg_dpd": 61.2,
+      "cum_deals": 490,
+      "cum_share": 63.6,
+      "cum_supply": 8796,
+      "cum_dpd": 18.0,
+      "median_gross": 89000
+     },
+     {
+      "label": "Free & Clear",
+      "plan": "Starter",
+      "keys": [
+       "is_free_and_clear"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": true,
+      "list_size": 11433,
+      "marg_deals": 92,
+      "marg_supply": 7775,
+      "marg_dpd": 84.5,
+      "cum_deals": 582,
+      "cum_share": 75.5,
+      "cum_supply": 16571,
+      "cum_dpd": 28.5,
+      "median_gross": 134500
+     },
+     {
+      "label": "Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": false,
+      "list_size": 1410,
+      "marg_deals": 5,
+      "marg_supply": 448,
+      "marg_dpd": 89.6,
+      "cum_deals": 587,
+      "cum_share": 76.1,
+      "cum_supply": 17019,
+      "cum_dpd": 29.0,
+      "median_gross": 70500
+     },
+     {
+      "label": "High Equity + Senior",
+      "plan": "Expert",
+      "keys": [
+       "is_high_equity",
+       "is_senior_homeowners"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": true,
+      "list_size": 7898,
+      "marg_deals": 58,
+      "marg_supply": 7013,
+      "marg_dpd": 120.9,
+      "cum_deals": 645,
+      "cum_share": 83.7,
+      "cum_supply": 24032,
+      "cum_dpd": 37.3,
+      "median_gross": 168000
+     },
+     {
+      "label": "High Equity",
+      "plan": "Starter",
+      "keys": [
+       "is_high_equity"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": true,
+      "list_size": 25371,
+      "marg_deals": 81,
+      "marg_supply": 21238,
+      "marg_dpd": 262.2,
+      "cum_deals": 726,
+      "cum_share": 94.2,
+      "cum_supply": 45270,
+      "cum_dpd": 62.4,
+      "median_gross": 27710
+     },
+     {
+      "label": "Negative Equity",
+      "plan": "Starter",
+      "keys": [
+       "preset_negative_equity"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": false,
+      "list_size": 1505,
+      "marg_deals": 4,
+      "marg_supply": 1102,
+      "marg_dpd": 275.5,
+      "cum_deals": 730,
+      "cum_share": 94.7,
+      "cum_supply": 46372,
+      "cum_dpd": 63.5,
+      "median_gross": 108500
+     },
+     {
+      "label": "Low Equity",
+      "plan": "Starter",
+      "keys": [
+       "preset_low_equity"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": true,
+      "list_size": 6665,
+      "marg_deals": 16,
+      "marg_supply": 4517,
+      "marg_dpd": 282.3,
+      "cum_deals": 746,
+      "cum_share": 96.8,
+      "cum_supply": 48530,
+      "cum_dpd": 65.1,
+      "median_gross": 8000
+     },
+     {
+      "label": "Owner Occupied",
+      "plan": "Starter",
+      "keys": [
+       "preset_owner_occupied"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": true,
+      "list_size": 41347,
+      "marg_deals": 25,
+      "marg_supply": 29999,
+      "marg_dpd": 1200.0,
+      "cum_deals": 771,
+      "cum_share": 100.0,
+      "cum_supply": 48530,
+      "cum_dpd": 62.9,
+      "median_gross": 2000
+     }
+    ],
+    "ai": [
+     {
+      "label": "Absentee + Notice of Foreclosure",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners",
+       "is_notice_of_foreclosure"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 24,
+      "marg_deals": 24,
+      "marg_supply": 24,
+      "marg_dpd": 1.0,
+      "cum_deals": 24,
+      "cum_share": 3.1,
+      "cum_supply": 24,
+      "cum_dpd": 1.0,
+      "median_gross": 183500
+     },
+     {
+      "label": "Absentee + HOA Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_absentee_owners",
+       "is_hoa_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 21,
+      "marg_deals": 11,
+      "marg_supply": 17,
+      "marg_dpd": 1.5,
+      "cum_deals": 35,
+      "cum_share": 4.5,
+      "cum_supply": 41,
+      "cum_dpd": 1.2,
+      "median_gross": 190000
+     },
+     {
+      "label": "High Equity + Notice of Default",
+      "plan": "Starter",
+      "keys": [
+       "is_high_equity",
+       "is_notice_of_default"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 22,
+      "marg_deals": 12,
+      "marg_supply": 19,
+      "marg_dpd": 1.6,
+      "cum_deals": 47,
+      "cum_share": 6.1,
+      "cum_supply": 60,
+      "cum_dpd": 1.3,
+      "median_gross": 152000
+     },
+     {
+      "label": "HOA Lien + Notice of Foreclosure",
+      "plan": "Expert",
+      "keys": [
+       "is_hoa_lien",
+       "is_notice_of_foreclosure"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 9,
+      "marg_deals": 3,
+      "marg_supply": 4,
+      "marg_dpd": 1.3,
+      "cum_deals": 50,
+      "cum_share": 6.5,
+      "cum_supply": 64,
+      "cum_dpd": 1.3,
+      "median_gross": 207000
+     },
+     {
+      "label": "High Equity + Notice of Foreclosure",
+      "plan": "Starter",
+      "keys": [
+       "is_high_equity",
+       "is_notice_of_foreclosure"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 34,
+      "marg_deals": 7,
+      "marg_supply": 14,
+      "marg_dpd": 2.0,
+      "cum_deals": 57,
+      "cum_share": 7.4,
+      "cum_supply": 78,
+      "cum_dpd": 1.4,
+      "median_gross": 144682
+     },
+     {
+      "label": "Notice of Foreclosure + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_notice_of_foreclosure",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 12,
+      "marg_deals": 4,
+      "marg_supply": 4,
+      "marg_dpd": 1.0,
+      "cum_deals": 61,
+      "cum_share": 7.9,
+      "cum_supply": 82,
+      "cum_dpd": 1.3,
+      "median_gross": 209250
+     },
+     {
+      "label": "Notice of Default",
+      "plan": "Starter",
+      "keys": [
+       "is_notice_of_default"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 59,
+      "marg_deals": 9,
+      "marg_supply": 33,
+      "marg_dpd": 3.7,
+      "cum_deals": 70,
+      "cum_share": 9.1,
+      "cum_supply": 115,
+      "cum_dpd": 1.6,
+      "median_gross": 174000
+     },
+     {
+      "label": "Absentee + Low Income",
+      "plan": "Expert",
+      "keys": [
+       "is_absentee_owners",
+       "is_low_income"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 49,
+      "marg_deals": 13,
+      "marg_supply": 49,
+      "marg_dpd": 3.8,
+      "cum_deals": 83,
+      "cum_share": 10.8,
+      "cum_supply": 164,
+      "cum_dpd": 2.0,
+      "median_gross": 160750
+     },
+     {
+      "label": "Lis Pendens + Senior",
+      "plan": "Expert",
+      "keys": [
+       "is_lis_pendens",
+       "is_senior_homeowners"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 112,
+      "marg_deals": 15,
+      "marg_supply": 108,
+      "marg_dpd": 7.2,
+      "cum_deals": 98,
+      "cum_share": 12.7,
+      "cum_supply": 272,
+      "cum_dpd": 2.8,
+      "median_gross": 157500
+     },
+     {
+      "label": "Free & Clear + Out-of-State + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_free_and_clear",
+       "is_oos_owners",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 103,
+      "marg_deals": 12,
+      "marg_supply": 99,
+      "marg_dpd": 8.2,
+      "cum_deals": 110,
+      "cum_share": 14.3,
+      "cum_supply": 371,
+      "cum_dpd": 3.4,
+      "median_gross": 187000
+     },
+     {
+      "label": "Absentee + Free & Clear + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_absentee_owners",
+       "is_free_and_clear",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 185,
+      "marg_deals": 12,
+      "marg_supply": 81,
+      "marg_dpd": 6.8,
+      "cum_deals": 122,
+      "cum_share": 15.8,
+      "cum_supply": 452,
+      "cum_dpd": 3.7,
+      "median_gross": 101000
+     },
+     {
+      "label": "High Equity + Other Lien + Senior",
+      "plan": "Expert",
+      "keys": [
+       "is_high_equity",
+       "is_other_lien",
+       "is_senior_homeowners"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 174,
+      "marg_deals": 18,
+      "marg_supply": 157,
+      "marg_dpd": 8.7,
+      "cum_deals": 140,
+      "cum_share": 18.2,
+      "cum_supply": 609,
+      "cum_dpd": 4.3,
+      "median_gross": 144000
+     },
+     {
+      "label": "Free & Clear + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_free_and_clear",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 412,
+      "marg_deals": 24,
+      "marg_supply": 217,
+      "marg_dpd": 9.0,
+      "cum_deals": 164,
+      "cum_share": 21.3,
+      "cum_supply": 826,
+      "cum_dpd": 5.0,
+      "median_gross": 188000
+     },
+     {
+      "label": "AI score 95+",
+      "plan": "AI",
+      "keys": [],
+      "ai": 95,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 1162,
+      "marg_deals": 76,
+      "marg_supply": 788,
+      "marg_dpd": 10.4,
+      "cum_deals": 240,
+      "cum_share": 31.1,
+      "cum_supply": 1614,
+      "cum_dpd": 6.7,
+      "median_gross": 241821
+     },
+     {
+      "label": "Absentee + Lis Pendens",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners",
+       "is_lis_pendens"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 90,
+      "marg_deals": 4,
+      "marg_supply": 6,
+      "marg_dpd": 1.5,
+      "cum_deals": 244,
+      "cum_share": 31.6,
+      "cum_supply": 1620,
+      "cum_dpd": 6.6,
+      "median_gross": 15995
+     },
+     {
+      "label": "High Equity + Lis Pendens",
+      "plan": "Starter",
+      "keys": [
+       "is_high_equity",
+       "is_lis_pendens"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 177,
+      "marg_deals": 8,
+      "marg_supply": 32,
+      "marg_dpd": 4.0,
+      "cum_deals": 252,
+      "cum_share": 32.7,
+      "cum_supply": 1652,
+      "cum_dpd": 6.6,
+      "median_gross": 175000
+     },
+     {
+      "label": "Zombie",
+      "plan": "Starter",
+      "keys": [
+       "is_zombie_property"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 140,
+      "marg_deals": 4,
+      "marg_supply": 27,
+      "marg_dpd": 6.8,
+      "cum_deals": 256,
+      "cum_share": 33.2,
+      "cum_supply": 1679,
+      "cum_dpd": 6.6,
+      "median_gross": 176500
+     },
+     {
+      "label": "Lis Pendens",
+      "plan": "Starter",
+      "keys": [
+       "is_lis_pendens"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 369,
+      "marg_deals": 6,
+      "marg_supply": 46,
+      "marg_dpd": 7.7,
+      "cum_deals": 262,
+      "cum_share": 34.0,
+      "cum_supply": 1725,
+      "cum_dpd": 6.6,
+      "median_gross": 199000
+     },
+     {
+      "label": "High Equity + HOA Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_high_equity",
+       "is_hoa_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 101,
+      "marg_deals": 3,
+      "marg_supply": 43,
+      "marg_dpd": 14.3,
+      "cum_deals": 265,
+      "cum_share": 34.4,
+      "cum_supply": 1768,
+      "cum_dpd": 6.7,
+      "median_gross": 127000
+     },
+     {
+      "label": "Free & Clear + Low Income",
+      "plan": "Expert",
+      "keys": [
+       "is_free_and_clear",
+       "is_low_income"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 145,
+      "marg_deals": 8,
+      "marg_supply": 118,
+      "marg_dpd": 14.8,
+      "cum_deals": 273,
+      "cum_share": 35.4,
+      "cum_supply": 1886,
+      "cum_dpd": 6.9,
+      "median_gross": 129500
+     },
+     {
+      "label": "Bad Credit + Free & Clear",
+      "plan": "Expert",
+      "keys": [
+       "is_bad_credit",
+       "is_free_and_clear"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 174,
+      "marg_deals": 3,
+      "marg_supply": 43,
+      "marg_dpd": 14.3,
+      "cum_deals": 276,
+      "cum_share": 35.8,
+      "cum_supply": 1929,
+      "cum_dpd": 7.0,
+      "median_gross": 281190
+     },
+     {
+      "label": "Out-of-State + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_oos_owners",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 238,
+      "marg_deals": 5,
+      "marg_supply": 77,
+      "marg_dpd": 15.4,
+      "cum_deals": 281,
+      "cum_share": 36.4,
+      "cum_supply": 2006,
+      "cum_dpd": 7.1,
+      "median_gross": 182000
+     },
+     {
+      "label": "Other Lien + Senior",
+      "plan": "Expert",
+      "keys": [
+       "is_other_lien",
+       "is_senior_homeowners"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 421,
+      "marg_deals": 3,
+      "marg_supply": 44,
+      "marg_dpd": 14.7,
+      "cum_deals": 284,
+      "cum_share": 36.8,
+      "cum_supply": 2050,
+      "cum_dpd": 7.2,
+      "median_gross": 239000
+     },
+     {
+      "label": "Absentee + Other Lien",
+      "plan": "Expert",
+      "keys": [
+       "is_absentee_owners",
+       "is_other_lien"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 473,
+      "marg_deals": 7,
+      "marg_supply": 109,
+      "marg_dpd": 15.6,
+      "cum_deals": 291,
+      "cum_share": 37.7,
+      "cum_supply": 2159,
+      "cum_dpd": 7.4,
+      "median_gross": 44000
+     },
+     {
+      "label": "Free & Clear + Out-of-State",
+      "plan": "Expert",
+      "keys": [
+       "is_free_and_clear",
+       "is_oos_owners"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 1316,
+      "marg_deals": 56,
+      "marg_supply": 1052,
+      "marg_dpd": 18.8,
+      "cum_deals": 347,
+      "cum_share": 45.0,
+      "cum_supply": 3211,
+      "cum_dpd": 9.3,
+      "median_gross": 143000
+     },
+     {
+      "label": "Absentee + Free & Clear + Senior",
+      "plan": "Expert",
+      "keys": [
+       "is_absentee_owners",
+       "is_free_and_clear",
+       "is_senior_homeowners"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 775,
+      "marg_deals": 10,
+      "marg_supply": 270,
+      "marg_dpd": 27.0,
+      "cum_deals": 357,
+      "cum_share": 46.3,
+      "cum_supply": 3481,
+      "cum_dpd": 9.8,
+      "median_gross": 201500
+     },
+     {
+      "label": "AI score 90-94",
+      "plan": "AI",
+      "keys": [],
+      "ai": 90,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 528,
+      "marg_deals": 10,
+      "marg_supply": 250,
+      "marg_dpd": 25.0,
+      "cum_deals": 367,
+      "cum_share": 47.6,
+      "cum_supply": 3731,
+      "cum_dpd": 10.2,
+      "median_gross": 123500
+     },
+     {
+      "label": "Free & Clear + Tired Landlord",
+      "plan": "Expert",
+      "keys": [
+       "is_free_and_clear",
+       "is_tired_landlord"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 561,
+      "marg_deals": 8,
+      "marg_supply": 208,
+      "marg_dpd": 26.0,
+      "cum_deals": 375,
+      "cum_share": 48.6,
+      "cum_supply": 3939,
+      "cum_dpd": 10.5,
+      "median_gross": 24000
+     },
+     {
+      "label": "Absentee + Free & Clear",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners",
+       "is_free_and_clear"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 2926,
+      "marg_deals": 35,
+      "marg_supply": 891,
+      "marg_dpd": 25.5,
+      "cum_deals": 410,
+      "cum_share": 53.2,
+      "cum_supply": 4830,
+      "cum_dpd": 11.8,
+      "median_gross": 135500
+     },
+     {
+      "label": "High Equity + Out-of-State + Tired Landlord",
+      "plan": "Expert",
+      "keys": [
+       "is_high_equity",
+       "is_oos_owners",
+       "is_tired_landlord"
+      ],
+      "ai": null,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 568,
+      "marg_deals": 17,
+      "marg_supply": 498,
+      "marg_dpd": 29.3,
+      "cum_deals": 427,
+      "cum_share": 55.4,
+      "cum_supply": 5328,
+      "cum_dpd": 12.5,
+      "median_gross": 29000
+     },
+     {
+      "label": "AI score 70-89",
+      "plan": "AI",
+      "keys": [],
+      "ai": 70,
+      "priority": 1,
+      "thin": false,
+      "est": false,
+      "list_size": 4416,
+      "marg_deals": 56,
+      "marg_supply": 2176,
+      "marg_dpd": 38.9,
+      "cum_deals": 483,
+      "cum_share": 62.6,
+      "cum_supply": 7504,
+      "cum_dpd": 15.5,
+      "median_gross": 165125
+     },
+     {
+      "label": "Low Income",
+      "plan": "Expert",
+      "keys": [
+       "is_low_income"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": false,
+      "list_size": 488,
+      "marg_deals": 5,
+      "marg_supply": 258,
+      "marg_dpd": 51.6,
+      "cum_deals": 488,
+      "cum_share": 63.3,
+      "cum_supply": 7762,
+      "cum_dpd": 15.9,
+      "median_gross": 89000
+     },
+     {
+      "label": "High Equity + Out-of-State",
+      "plan": "Expert",
+      "keys": [
+       "is_high_equity",
+       "is_oos_owners"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": false,
+      "list_size": 1418,
+      "marg_deals": 7,
+      "marg_supply": 457,
+      "marg_dpd": 65.3,
+      "cum_deals": 495,
+      "cum_share": 64.2,
+      "cum_supply": 8219,
+      "cum_dpd": 16.6,
+      "median_gross": 168500
+     },
+     {
+      "label": "Out-of-State",
+      "plan": "Expert",
+      "keys": [
+       "is_oos_owners"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": false,
+      "list_size": 3428,
+      "marg_deals": 6,
+      "marg_supply": 439,
+      "marg_dpd": 73.2,
+      "cum_deals": 501,
+      "cum_share": 65.0,
+      "cum_supply": 8658,
+      "cum_dpd": 17.3,
+      "median_gross": 38740
+     },
+     {
+      "label": "Free & Clear",
+      "plan": "Starter",
+      "keys": [
+       "is_free_and_clear"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": true,
+      "list_size": 11433,
+      "marg_deals": 78,
+      "marg_supply": 7000,
+      "marg_dpd": 89.7,
+      "cum_deals": 579,
+      "cum_share": 75.1,
+      "cum_supply": 15658,
+      "cum_dpd": 27.0,
+      "median_gross": 125000
+     },
+     {
+      "label": "Tired Landlord",
+      "plan": "Expert",
+      "keys": [
+       "is_tired_landlord"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": false,
+      "list_size": 2047,
+      "marg_deals": 7,
+      "marg_supply": 641,
+      "marg_dpd": 91.6,
+      "cum_deals": 586,
+      "cum_share": 76.0,
+      "cum_supply": 16299,
+      "cum_dpd": 27.8,
+      "median_gross": 19000
+     },
+     {
+      "label": "Absentee + High Equity",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners",
+       "is_high_equity"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": false,
+      "list_size": 2778,
+      "marg_deals": 8,
+      "marg_supply": 460,
+      "marg_dpd": 57.5,
+      "cum_deals": 594,
+      "cum_share": 77.0,
+      "cum_supply": 16759,
+      "cum_dpd": 28.2,
+      "median_gross": 57500
+     },
+     {
+      "label": "High Equity + Senior",
+      "plan": "Expert",
+      "keys": [
+       "is_high_equity",
+       "is_senior_homeowners"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": true,
+      "list_size": 7898,
+      "marg_deals": 50,
+      "marg_supply": 6521,
+      "marg_dpd": 130.4,
+      "cum_deals": 644,
+      "cum_share": 83.5,
+      "cum_supply": 23280,
+      "cum_dpd": 36.1,
+      "median_gross": 132000
+     },
+     {
+      "label": "Absentee",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": true,
+      "list_size": 7183,
+      "marg_deals": 4,
+      "marg_supply": 672,
+      "marg_dpd": 168.0,
+      "cum_deals": 648,
+      "cum_share": 84.0,
+      "cum_supply": 23952,
+      "cum_dpd": 37.0,
+      "median_gross": -13000
+     },
+     {
+      "label": "High Equity",
+      "plan": "Starter",
+      "keys": [
+       "is_high_equity"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": true,
+      "list_size": 25371,
+      "marg_deals": 81,
+      "marg_supply": 20913,
+      "marg_dpd": 258.2,
+      "cum_deals": 729,
+      "cum_share": 94.6,
+      "cum_supply": 44865,
+      "cum_dpd": 61.5,
+      "median_gross": 27710
+     },
+     {
+      "label": "Low Equity",
+      "plan": "Starter",
+      "keys": [
+       "preset_low_equity"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": true,
+      "list_size": 6665,
+      "marg_deals": 16,
+      "marg_supply": 5533,
+      "marg_dpd": 345.8,
+      "cum_deals": 745,
+      "cum_share": 96.6,
+      "cum_supply": 48530,
+      "cum_dpd": 65.1,
+      "median_gross": 8000
+     },
+     {
+      "label": "Owner Occupied",
+      "plan": "Starter",
+      "keys": [
+       "preset_owner_occupied"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": true,
+      "list_size": 41347,
+      "marg_deals": 26,
+      "marg_supply": 30437,
+      "marg_dpd": 1170.7,
+      "cum_deals": 771,
+      "cum_share": 100.0,
+      "cum_supply": 48530,
+      "cum_dpd": 62.9,
+      "median_gross": 1500
+     }
+    ]
+   },
+   "baseline_gross": 117500,
+   "deals_fresh": 771,
+   "gross_patched": true
+  }
+ },
+ "fips": "11001",
+ "jurisdiction": "District of Columbia",
+ "state_abbr": "DC",
+ "extracted_at": "2026-08-28T12:31:05"
+}

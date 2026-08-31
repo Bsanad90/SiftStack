@@ -1,0 +1,303 @@
+{
+  "generated_at": "2026-08-28T02:38:38-04:00",
+  "type": "code_violation",
+  "method": "Read-only verification of the 14 workbook code-violation rows: WebFetch on every workbook URL, WebSearch to locate replacements on the same official domain when a URL was dead, scrapfly_browser.py on WAF-blocked pages until Scrapfly throttled (429) mid-run, then WebFetch on the case-search portals themselves (Accela, EnerGov CSS, eTRAKiT, Socrata metadata JSON). No accounts created, no forms submitted, no Firecrawl, no src/scripts run.",
+  "jurisdictions": {
+    "baltimore_county_md": {
+      "jurisdiction": "Baltimore County, MD",
+      "primary_source_type": "portal",
+      "publisher": "Baltimore County Dept. of Permits, Approvals and Inspections (PAI), Code Enforcement - Accela Citizen Access",
+      "url": "https://citizenaccess.baltimorecountymd.gov/CitizenAccess/Cap/CapHome.aspx?module=Enforcement&TabName=Enforcement",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "open_data", "publisher": "Baltimore County BCSTAT - Code Enforcement Data Dashboard (Power BI, 2018-present)", "url": "https://app.powerbigov.us/view?r=eyJrIjoiNDEzM2JiMDQtZWZmNS00MTk0LWFmZjctYzhiY2RiNzljNmUyIiwidCI6Ijk0NGZhOWJhLTg0NTQtNDEzZC1iOWU2LWJmNDBhZjFkNmE5YiJ9"},
+        {"type": "portal", "publisher": "PAI Code Enforcement department page (workbook URL; WAF 403 to fetchers)", "url": "https://www.baltimorecountymd.gov/departments/pai/code-enforcement"}
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "unknown",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily (county release: dashboard 'expected to be updated daily'; Accela search is the live case system)",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook said no address-search portal was apparent; there IS an anonymous Accela enforcement case search (street, ZIP, case number, start/end date) plus a daily Power BI dashboard. Workbook department URL now WAF-blocks fetchers (403; Scrapfly returned empty). Cadence 'Ongoing' -> Daily.",
+      "notes": "Scraper drives the Accela ASP.NET WebForms search (ViewState postbacks) by date range and/or ZIP with no login; a Login link exists but the search form renders anonymously. Power BI dashboard is a JS shell (loading spinner to WebFetch) and the county news page carrying the 'updated daily' statement is itself 403 to fetchers - the cadence quote comes from that release as surfaced in search results. Accela's post-search 'Download results' export was not verified."
+    },
+    "montgomery_md": {
+      "jurisdiction": "Montgomery, MD",
+      "primary_source_type": "open_data",
+      "publisher": "dataMontgomery (Socrata) - Housing Code Violations, Dept. of Housing and Community Affairs (DHCA)",
+      "url": "https://data.montgomerycountymd.gov/Consumer-Housing/Housing-Code-Violations/k9nj-z35d",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "portal", "publisher": "DPS Data DPS case search (address / ZIP / application date; covers permits and complaint cases)", "url": "https://permittingservices.montgomerycountymd.gov/DPS/online/eSearch.aspx?by=Address&SearchType=DataSearch"},
+        {"type": "open_data", "publisher": "dataMontgomery - OCA Code Enforcement (Office of the County Attorney code-violation citations, monthly)", "url": "https://data.montgomerycountymd.gov/d/qdey-wt67"},
+        {"type": "portal", "publisher": "DPS Code Compliance department page (replacement for dead workbook URL)", "url": "https://www.montgomerycountymd.gov/department-permitting-services/about-us/divisions/customer-support-outreach-division/code-compliance"}
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "json_or_arcgis_api",
+      "bulk_export": "yes",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Weekly (Housing Code Violations, per Socrata metadata; rowsUpdatedAt 2026-01-20); Monthly (OCA citations, rowsUpdatedAt 2026-02-03); DPS Data DPS is live",
+      "cadence_source": "site",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook URL 404 (dead); DPS code compliance page moved. Two open-data mirrors exist that the workbook missed (DHCA Housing Code Violations weekly since 2013 with street_address/zip/violation/dates; OCA citations monthly). Cadence 'Ongoing' -> Weekly/Monthly.",
+      "notes": "Pull Housing Code Violations via Socrata SODA (https://data.montgomerycountymd.gov/resource/k9nj-z35d.json with $where on date_filed) - fields case_number, date_filed, date_closed, disposition, street_address, unit_number, city, zip_code, violation_id, inspection_date, corrected, code_reference, condition, lat/lon; NO owner field (join on address). Gotchas: DHCA housing code = rental/housing enforcement, while zoning/building code cases live in DPS Data DPS (open ASP.NET search, no login); the OCA citation set carries citation/department/status/amount but no address column in its schema, so it cannot be geocoded alone. Socrata HTML landing pages render as JS shells - read metadata from /api/views/<id>.json."
+    },
+    "anne_arundel_md": {
+      "jurisdiction": "Anne Arundel, MD",
+      "primary_source_type": "portal",
+      "publisher": "Anne Arundel County Land Use Navigator (Accela Citizen Access) - Complaints/Violations module (Zoning Complaint Form, Zoning Enforcement Case)",
+      "url": "https://aca-prod.accela.com/aaco/Cap/CapHome.aspx?module=Enforcement&TabName=Enforcement",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "portal", "publisher": "Land Use Navigator landing (modules: Permits, Licensing, Planning and Zoning, Complaints/Violations, Public Works; 'Users do not have to register for an account to search')", "url": "https://aca-prod.accela.com/aaco/Default.aspx"},
+        {"type": "portal", "publisher": "Inspections & Permits - Code Violations page (penalties + reporting; replacement for dead workbook URL)", "url": "https://www.aacounty.org/inspections-and-permits/code-compliance/code-violations"},
+        {"type": "portal", "publisher": "City of Annapolis Planning & Zoning Code Enforcement (workbook city row; DNS timeout x2, unverified)", "url": "https://www.annapolis.gov/300/Code-Enforcement"}
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "unknown",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Ongoing (live case-management system)",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook county URL 404 (dead). Workbook said a portal 'may' exist - it does: Land Use Navigator (Accela) has an anonymous Complaints/Violations search with record type + start/end date + address. Annapolis workbook URL could not be resolved (DNS timeout).",
+      "notes": "Scraper drives the Accela WebForms search by record type (Zoning Complaint Form / Zoning Enforcement Case) and date range, no login. Building (B) and Environmental (E) case ids are also searchable per the county help pages. Inspections & Permits' own code-violations page is about penalties and how to REPORT, not a lookup. Export not verified."
+    },
+    "frederick_md": {
+      "jurisdiction": "Frederick, MD",
+      "primary_source_type": "portal",
+      "publisher": "City of Frederick Code Enforcement - OpenGov (complaint portal, Code Enforcement Complaint Dashboard, historical violations report)",
+      "url": "https://www.cityoffrederickmd.gov/157/Code-Enforcement",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "open_data", "publisher": "City of Frederick - Code Enforcement Complaint Dashboard (OpenGov Stories; 403 to fetchers)", "url": "https://stories.opengov.com/frederickmd/published/BRgOy5BBe"},
+        {"type": "open_data", "publisher": "City of Frederick - historical violations prior to 2024-05-01 (OpenGov transparency report)", "url": "https://controlpanel.opengov.com/transparency-reporting/frederickmd/b27c5aeb-2290-4799-bedb-842c192c6da6/b86fcc8b-3ff6-44eb-be66-b7515c0409ba"},
+        {"type": "foia_only", "publisher": "Frederick County Division of Housing - Livability Code Enforcement (rental units only, complaint-based, no portal)", "url": "https://frederickcountymd.gov/6376/Livability-Code-Enforcement"},
+        {"type": "portal", "publisher": "Frederick County Permits & Inspections application portal (software/public case search unverified - loaded as a shell)", "url": "https://planningandpermitting.frederickcountymd.gov/"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "unknown",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily (workbook, both rows); city dashboard does not state a refresh cadence",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "BOTH workbook URLs dead: county /112 404s; city frederickmd.gov now 302s to a Bitly branded-short-domain landing page (real domain is cityoffrederickmd.gov, phone 301-600-3825 not 301-600-1474, office 140 W Patrick St not 111 Airport Dr). City runs OpenGov, not Accela. County unincorporated code enforcement is the Division of Housing livability code (RENTALS ONLY, complaint basis) - not a general property-maintenance list.",
+      "notes": "The city is the only structured source: OpenGov complaint dashboard + a historical violations report, but stories.opengov.com returned 403 to WebFetch so export/date-range were not verified (OpenGov Stories pages often expose an underlying dataset download - check in a browser). County unincorporated violations require a PIA request to Permits & Inspections / Division of Housing. Check parcel jurisdiction (city vs county) first."
+    },
+    "carroll_md": {
+      "jurisdiction": "Carroll, MD",
+      "primary_source_type": "foia_only",
+      "publisher": "Carroll County Dept. of Planning & Land Management, Zoning Administration (enforcement) - records by PIA request; complaints via See Click Report",
+      "url": "https://www.carrollcountymd.gov/government/directory/planning-land-management/zoning-administration/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "portal", "publisher": "Carroll County Zoning Administration Case Files - Board of Zoning Appeals VARIANCE cases (ZA-1..ZA-1287), NOT enforcement/violation cases; public, filter by case/applicant/address", "url": "https://ccg.carrollcountymd.gov/ZoningCases/"},
+        {"type": "portal", "publisher": "City of Westminster Code Enforcement & Inspection (45 W Main St, 410-848-2261) - complaints via Citizenserve", "url": "https://www.westminstermd.gov/133/Code-Enforcement"},
+        {"type": "portal", "publisher": "Westminster Citizenserve complaint portal (public case search not verified)", "url": "https://www.citizenserve.com/westminstermd"}
+      ],
+      "scrapable": "no",
+      "access_mechanics": "foia_only",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "unknown",
+      "cadence": "As violations occur",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook county URL 404 (department renamed Planning & Land Management; enforcement sits in Zoning Administration). Workbook Westminster URL /165 now serves the POLICE department page - the code enforcement page is /133 (office 45 W Main St, 410-848-2261, not 363 Charles St / 410-848-9000).",
+      "notes": "No enforcement-case search exists at county level; the one public database (ZoningCases) is BZA variance decisions and must not be mistaken for violations. Westminster's Citizenserve portal may expose a public case search (Citizenserve often does) but that was not verified. Plan on a PIA request to zoningadministration@carrollcountymd.gov (410-386-2980) and to Westminster."
+    },
+    "calvert_md": {
+      "jurisdiction": "Calvert, MD",
+      "primary_source_type": "foia_only",
+      "publisher": "Calvert County Dept. of Planning & Zoning - Zoning Enforcement (codeenforcement@calvertcountymd.gov)",
+      "url": "https://www.calvertcountymd.gov/814/Code-Enforcement",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "foia_only", "publisher": "Calvert County Public Information Act requests (workbook FOIA link, not re-fetched)", "url": "https://www.calvertcountymd.gov/155/Public-Information-Act-Requests"}
+      ],
+      "scrapable": "no",
+      "access_mechanics": "foia_only",
+      "bulk_export": "no",
+      "date_range_query": "no",
+      "terms_restrict_automation": "unknown",
+      "cadence": "As needed / Ongoing",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook URL /146 now resolves to the county Boards & Commissions directory (page moved); live code enforcement page is /814. Contacts now Chris Breedlove (Chief, 410-535-1600 x2370) / Craig Stillwell (Zoning Code Enforcer, x2661).",
+      "notes": "Zoning enforcement only, complaint-driven by email, no case portal, no open data. Records need a PIA request. North Beach / Chesapeake Beach town rows not probed (budget)."
+    },
+    "charles_md": {
+      "jurisdiction": "Charles, MD",
+      "primary_source_type": "portal",
+      "publisher": "Charles County Planning & Growth Management, Codes, Permits and Inspection Services (CPIS) - Tyler EnerGov Citizen Self Service",
+      "url": "https://land.charlescountymd.gov/EnerGov_Prod/SelfService",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "portal", "publisher": "Charles County PGM code enforcement page (workbook URL; 404 confirmed via rendered page, whole charlescountymd.gov WAFs fetchers with 403)", "url": "https://www.charlescountymd.gov/government/planning-and-growth-management/code-enforcement"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "open_html",
+      "bulk_export": "unknown",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "As needed, ongoing",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook URL 404 (confirmed on the rendered 'Page Not Found'). The county's system of record is Tyler EnerGov CSS (land.charlescountymd.gov), not SeeClickFix as the workbook implied; SeeClickReport is only the complaint intake. Main county domain blocks fetchers (403), which the workbook did not note.",
+      "notes": "EnerGov CSS loaded only as an un-rendered Angular template (Login/Register visible), so whether the public Search exposes a 'Code Case' type was NOT verified - EnerGov CSS deployments usually do, via the JSON endpoint /EnerGov_Prod/SelfService/api/energov/search/search (POST), which is the scrape target if enabled. Otherwise PIA request to PGM (PGMadmin@charlescountymd.gov). Scrapfly was throttled before a rendered pass could be made."
+    },
+    "district_of_columbia": {
+      "jurisdiction": "District of Columbia",
+      "primary_source_type": "portal",
+      "publisher": "DC Department of Buildings (DOB) - eRecords (sign-in-only records explorer)",
+      "url": "https://doberecords.dc.gov/eRecordsSearch/",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "portal", "publisher": "DOB Enforcement Action page (Office of Strategic Code Enforcement; narrative, no data)", "url": "https://dob.dc.gov/page/enforcement-action"},
+        {"type": "open_data", "publisher": "Open Data DC - Integrated Tax System Public Extract Vacant Property (9,242 parcels, daily; owner names + address)", "url": "https://opendata.dc.gov/datasets/78b51eb5125044989d214cbc8bc0eea3"},
+        {"type": "open_data", "publisher": "Open Data DC - ITSPE Vacant and Blighted (2,396 parcels, daily)", "url": "https://opendata.dc.gov/datasets/acf4305c684e45df86b5ea83ba2d9f80"},
+        {"type": "open_data", "publisher": "Open Data DC - Vacant and Blighted Building Addresses (2,470, daily)", "url": "https://opendata.dc.gov/datasets/da48e51ca21e450f9bcd1a39f098f2ca"},
+        {"type": "portal", "publisher": "Workbook URL - DOB Online Permits and Inspections (404, page moved)", "url": "https://dob.dc.gov/page/dob-online-permits-and-inspections"}
+      ],
+      "scrapable": "yes_with_credential",
+      "access_mechanics": "login_free",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily (workbook); vacant/blighted open-data sets refresh daily",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook URL 404 (re-confirmed 2026-08-28). Violations proper sit behind DOB eRecords (registration required; cost unknown) or a FOIA to dob@dc.gov; Open Data DC has NO code-violation / notice-of-infraction dataset. Nearest free signal is the vacant/blighted registry.",
+      "notes": "Carried from output/dpd_dc_ftm_investigation.md (2026-08-27, items 7 and 9); this pass only re-fetched the primary URL (eRecords resolves, renders as a JS shell titled 'DOB eRecords' - consistent with the sign-in-only finding) and the enforcement-action page (live, links eRecords + a general NOI page, no searchable list). A scraper needs an eRecords account (not created here) or works the three daily ArcGIS FeatureServer/CSV vacant-blighted sets, which carry SSL + owner names and are bulk-downloadable."
+    },
+    "fairfax_va": {
+      "jurisdiction": "Fairfax, VA",
+      "primary_source_type": "portal",
+      "publisher": "Fairfax County Department of Code Compliance - PLUS (Accela Citizen Access) Enforcement module",
+      "url": "https://plus.fairfaxcounty.gov/CitizenAccess/Cap/CapHome.aspx?module=Enforcement&TabName=Enforcement",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "portal", "publisher": "Fairfax County Dept. of Code Compliance department page (workbook URL, live, links 'Search Cases' and 'Report a Violation')", "url": "https://www.fairfaxcounty.gov/code/"},
+        {"type": "portal", "publisher": "City of Fairfax Code Administration (workbook city row; WAF 403 to fetchers, unverified)", "url": "https://www.fairfaxva.gov/Government/Departments/Fire-Department/Code-Administration"}
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "unknown",
+      "date_range_query": "yes",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily (workbook; PLUS is the live case system)",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "PLUS Enforcement search renders without login: Record Number, Record Type (DCC Complaint, Grass Investigation, Zoning Investigation, ...), Start/End Date, full site address, Parcel ID. Scraper drives Accela WebForms postbacks by record type + date window; post-search 'Download results' export not verified. Disclaimer text is only a wire-fraud scam alert; no automated-access clause seen. Records older than PLUS live on the Land Development Information History page."
+    },
+    "prince_william_va": {
+      "jurisdiction": "Prince William, VA",
+      "primary_source_type": "portal",
+      "publisher": "Prince William County Development Services ePortal (permits, inspections, plans, code enforcement) / Neighborhood Services Property Code Enforcement",
+      "url": "https://www.pwcva.gov/department/code-enforcement",
+      "url_status": "blocked",
+      "secondary_sources": [
+        {"type": "portal", "publisher": "City of Manassas Code Enforcement (workbook city row; WAF 403, unverified)", "url": "https://www.manassasva.gov/code_enforcement/index.html"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "unknown",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Daily / As reported",
+      "cadence_source": "workbook",
+      "verified": "unreachable",
+      "changed_vs_workbook": "Workbook URL returns 403 to WebFetch and an empty render via Scrapfly (WAF); pwcgov.org/ePortal also 403. Search results place property code enforcement under Neighborhood Services (/department/neighborhood-services/pce-overview) with PCE case numbers trackable on the ePortal/Citizen Portal - not fetched, so workbook values are kept.",
+      "notes": "Both county domains (pwcva.gov, pwcgov.org) and manassasva.gov WAF-block automated fetchers, so nothing here was seen live. Per the county's own ePortal pages (search snippets), public users can search permit/plan/inspection records and code enforcement cases; a free registration is needed to file requests. Treat as a browser-session or FOIA (codeenforcement@pwcgov.org) job until the ePortal host is probed from a real browser."
+    },
+    "arlington_va": {
+      "jurisdiction": "Arlington, VA",
+      "primary_source_type": "portal",
+      "publisher": "Arlington County CPHD Code Enforcement - Permit Arlington (Accela Citizen Access) Enforcement module",
+      "url": "https://aca-prod.accela.com/ARLINGTONCO/Cap/CapHome.aspx?module=Enforcement&TabName=Enforcement",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "portal", "publisher": "Permit Arlington landing", "url": "https://aca-prod.accela.com/ARLINGTONCO/Default.aspx"},
+        {"type": "portal", "publisher": "CPHD Code Enforcement department page (workbook URL; WAF 403 / empty render)", "url": "https://www.arlingtonva.us/Government/Departments/CPHD/Code-Enforcement"}
+      ],
+      "scrapable": "yes",
+      "access_mechanics": "open_html",
+      "bulk_export": "unknown",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Ongoing",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook said no address-search portal was apparent; Permit Arlington's Enforcement module renders an anonymous search form (site address fields plus a 'Record Information' block). Workbook department URL WAF-blocks fetchers (403, Scrapfly empty); search results show the live code page moved to /Government/Programs/Building/Enforcement-Appeals/Code (not fetched).",
+      "notes": "Accela WebForms search, no login. The Record Information fields (record type list, start/end date) sat under a 'Loading...' state in the fetch so date-range support is unverified; the CodeEnforcement module name returns an Accela error page, only module=Enforcement works. Export not verified."
+    },
+    "stafford_va": {
+      "jurisdiction": "Stafford, VA",
+      "primary_source_type": "foia_only",
+      "publisher": "Stafford County Planning and Zoning - Zoning Division / Code Administration (FOIA@staffordcountyva.gov)",
+      "url": "https://staffordcountyva.gov/government/departments_p-z/planning_and_zoning/code_administration/index.php",
+      "url_status": "404",
+      "secondary_sources": [],
+      "scrapable": "no",
+      "access_mechanics": "foia_only",
+      "bulk_export": "no",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "As reported/investigated",
+      "cadence_source": "workbook",
+      "verified": "unreachable",
+      "changed_vs_workbook": "Workbook URL is dead (site 404 page confirmed on a rendered fetch). Candidate replacements found by search on the same domain (staffordcountyva.gov/violation_types.php and /643/Zoning-Division: Zoning Division enforces Chapter 28 zoning + selected nuisance violations, complaint-driven via Stafford Citizens Assistance) but every staffordcountyva.gov fetch returned WAF 403, so workbook values are kept.",
+      "notes": "Nothing on this domain was readable by WebFetch (403 on both apex and www) and Scrapfly was throttled after confirming the 404. No evidence of a public code-case search; the site's 'Inspection/Permit Status' link points at a permit system whose software was not identified. Plan on FOIA (FOIA@staffordcountyva.gov) or a browser-session probe of the two candidate pages."
+    },
+    "spotsylvania_va": {
+      "jurisdiction": "Spotsylvania, VA",
+      "primary_source_type": "portal",
+      "publisher": "Spotsylvania County Building Safety Dept., Inspections Office / Code Enforcement - eTRAKiT (CentralSquare) portal",
+      "url": "https://etrakit.spotsylvania.va.us/etrakit/",
+      "url_status": "blocked",
+      "secondary_sources": [
+        {"type": "portal", "publisher": "Building Safety - Inspections page (live; lists Code Enforcement Officers Michael Walton 540-507-7247, Phillip Joines 540-507-7484; links eTRAKiT and a 'Report a Building Violation' form)", "url": "https://www.spotsylvania.va.us/266/Inspections"},
+        {"type": "portal", "publisher": "Staff directory - Code Enforcement (under Building; 540-507-7252)", "url": "https://www.spotsylvania.va.us/directory.aspx?did=24"},
+        {"type": "portal", "publisher": "Workbook URL - Community Development Code Enforcement (404)", "url": "https://www.spotsylvania.va.us/165/Code-Enforcement"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "captcha_or_waf",
+      "bulk_export": "unknown",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "As reported/investigated",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "Workbook URL 404 (dead). Code enforcement now sits under the Building Safety Department's Inspections Office (540-507-7252), not 'Community Development' at 540-507-7222. An eTRAKiT permit/case portal exists that the workbook did not list.",
+      "notes": "eTRAKiT refused the TCP connection on three attempts (root and /Search/case.aspx), which reads as IP/geo allow-listing rather than a 404 - eTRAKiT normally exposes an anonymous Code Enforcement case search by address/case number, so probe it from a US residential browser before falling back to FOIA. County CivicPlus pages fetched fine."
+    },
+    "fredericksburg_city_va": {
+      "jurisdiction": "Fredericksburg City, VA",
+      "primary_source_type": "portal",
+      "publisher": "City of Fredericksburg Building Services Division (Community Planning and Building) - Tyler EnerGov Citizen Self Service",
+      "url": "https://www.fredericksburgva.gov/814/Building-Services",
+      "url_status": "ok",
+      "secondary_sources": [
+        {"type": "portal", "publisher": "EnerGov Citizen Self Service (linked as 'Permit Applications'; connection refused to WebFetch, empty via Scrapfly)", "url": "https://selfservice.fredericksburgva.gov/energov_prod/selfservice#/home"}
+      ],
+      "scrapable": "partial",
+      "access_mechanics": "open_html",
+      "bulk_export": "unknown",
+      "date_range_query": "unknown",
+      "terms_restrict_automation": "unknown",
+      "cadence": "Ongoing",
+      "cadence_source": "workbook",
+      "verified": "live_probe",
+      "changed_vs_workbook": "",
+      "notes": "Workbook page is live and confirms Building Services runs property-maintenance inspections (~10,000 inspections/yr) and links only the EnerGov CSS. The CSS host refused connections from both fetch paths, so whether its public Search exposes a 'Code Case' type is unverified; if it does, the scrape target is the CSS JSON search endpoint (POST /energov_prod/selfservice/api/energov/search/search). Otherwise the city FOIA portal. Not on publicnoticevirginia.com either, so this is the only Fredericksburg FTM route."
+    }
+  }
+}

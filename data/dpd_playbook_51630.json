@@ -1,0 +1,1023 @@
+{
+ "source_xlsx": "51630-Fredericksburg-City-VA-doors-per-deal.xlsx",
+ "title": "Fredericksburg City County, Virginia (FIPS 51630)",
+ "fips_in_title": "51630",
+ "overview": {
+  "Foreclosure regime": "Non-judicial: Notice of Default / Notice of Foreclosure ARE the reliable court-clock signals",
+  "Disclosure": "Disclosure state: sale prices are public record",
+  "Data window": "2026-01 .. 2026-06 (6 complete months)",
+  "Data depth": "national sweep measurement",
+  "Investor purchases (6mo)": 25,
+  "Baseline doors/deal (whole county)": 283.5,
+  "County SFR supply": 7087,
+  "Typical built-in equity (median gross)": 62000,
+  "Typical margin %": 12.7,
+  "Median purchase price": 250000,
+  "Median AVM value": 322000,
+  "Institutional / portfolio share %": 0,
+  "Priority 1": "lift of 3x baseline or better: pull these first",
+  "Priority 2": "lift of 1.5x baseline or better: strong second wave",
+  "Priority 3": "coverage plays and caution rows",
+  "Verify rule": "verify supply first when v2.1 coverage-aware: verify reasons annotate (churn: doors/deal < 5; small: list < 250) without demoting; only judicial notice lists and churn artifacts (doors/deal < 1) force P3. Volume floors: P1 needs >=2% of county deal flow or >=25 deals, P2 >=1% or >=12 deals",
+  "Evidence A": "from this county's own sold deals",
+  "Evidence B": "cross-market benchmark",
+  "Evidence C": "single-market anchor (Knox + Blount TN AI measurement)",
+  "Live page": "https://learn.datasift.ai/county-list-playbook#51630",
+  "Exported": "2026-08-28"
+ },
+ "rows": [
+  {
+   "priority": 1,
+   "signal": "Obituary",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": null,
+   "dpd": 34,
+   "lift": 8.3,
+   "deals": null,
+   "deal_share_pct": null,
+   "coverage": null,
+   "list_size": 20,
+   "typical_gross": null,
+   "caveats": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "rank": 1,
+   "signals": [
+    "Obituary"
+   ]
+  },
+  {
+   "priority": 2,
+   "signal": "Free & Clear",
+   "type": "List",
+   "plan": "All plans",
+   "evidence": "A",
+   "dpd": 148.3,
+   "lift": 1.9,
+   "deals": 13,
+   "deal_share_pct": 52,
+   "coverage": "broad",
+   "list_size": 1928,
+   "typical_gross": 72000,
+   "caveats": null,
+   "rank": 1,
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "AI Score 90-100",
+   "type": "AI score",
+   "plan": "AI plan",
+   "evidence": "A",
+   "dpd": 67.8,
+   "lift": 4.2,
+   "deals": 6,
+   "deal_share_pct": 24,
+   "coverage": "broad",
+   "list_size": 407,
+   "typical_gross": 67500,
+   "caveats": null,
+   "rank": 1,
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "Low"
+  },
+  {
+   "priority": 3,
+   "signal": "Absentee + Free & Clear",
+   "type": "Stack",
+   "plan": "All plans",
+   "evidence": "A",
+   "dpd": 147,
+   "lift": 1.9,
+   "deals": 9,
+   "deal_share_pct": 36,
+   "coverage": "broad",
+   "list_size": 1323,
+   "typical_gross": 48000,
+   "caveats": null,
+   "rank": 2,
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "Low"
+  },
+  {
+   "priority": 3,
+   "signal": "AI Score 50+ (coverage layer)",
+   "type": "AI score",
+   "plan": "AI plan",
+   "evidence": "A",
+   "dpd": 171.4,
+   "lift": 1.7,
+   "deals": 16,
+   "deal_share_pct": 64,
+   "coverage": "broad",
+   "list_size": 2742,
+   "typical_gross": 67000,
+   "caveats": "coverage layer: run broad, expect volume not precision",
+   "rank": 3,
+   "signals": [
+    "AI Score 50+ (coverage layer)"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "Absentee",
+   "type": "List",
+   "plan": "All plans",
+   "evidence": "A",
+   "dpd": 237.1,
+   "lift": 1.2,
+   "deals": 12,
+   "deal_share_pct": 48,
+   "coverage": "broad",
+   "list_size": 2845,
+   "typical_gross": 55000,
+   "caveats": null,
+   "rank": 4,
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "Medium"
+  },
+  {
+   "priority": 3,
+   "signal": "High Equity",
+   "type": "List",
+   "plan": "All plans",
+   "evidence": "A",
+   "dpd": 406.9,
+   "lift": 0.7,
+   "deals": 9,
+   "deal_share_pct": 36,
+   "coverage": "broad",
+   "list_size": 3662,
+   "typical_gross": 62000,
+   "caveats": null,
+   "rank": 5,
+   "signals": [
+    "High Equity"
+   ],
+   "keys": [
+    "is_high_equity"
+   ],
+   "verify": false,
+   "verify_reason": null,
+   "conf": "Low"
+  },
+  {
+   "priority": 3,
+   "signal": "Senior",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 7,
+   "deal_share_pct": 28,
+   "coverage": "broad",
+   "list_size": null,
+   "typical_gross": 71000,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 6,
+   "signals": [
+    "Senior"
+   ],
+   "keys": [
+    "is_senior_homeowners"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Low"
+  },
+  {
+   "priority": 3,
+   "signal": "Tired Landlord",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 3,
+   "deal_share_pct": 12,
+   "coverage": "core",
+   "list_size": null,
+   "typical_gross": 34000,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 7,
+   "signals": [
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_tired_landlord"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Low"
+  },
+  {
+   "priority": 3,
+   "signal": "Out-of-State",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 2,
+   "deal_share_pct": 8,
+   "coverage": "core",
+   "list_size": null,
+   "typical_gross": 48000,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 8,
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Low"
+  },
+  {
+   "priority": 3,
+   "signal": "Bad Credit",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 1,
+   "deal_share_pct": 4,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 63000,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 9,
+   "signals": [
+    "Bad Credit"
+   ],
+   "keys": [
+    "is_bad_credit"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Low"
+  },
+  {
+   "priority": 3,
+   "signal": "Low Income",
+   "type": "List",
+   "plan": "Expert plan",
+   "evidence": "A",
+   "dpd": null,
+   "lift": null,
+   "deals": 1,
+   "deal_share_pct": 4,
+   "coverage": "niche",
+   "list_size": null,
+   "typical_gross": 63000,
+   "caveats": "demand context only: live supply not counted",
+   "rank": 10,
+   "signals": [
+    "Low Income"
+   ],
+   "keys": [
+    "is_low_income"
+   ],
+   "verify": true,
+   "verify_reason": "small",
+   "conf": "Low"
+  }
+ ],
+ "ai_score": {
+  "cutoffs": [
+   {
+    "cutoff": "AI >= 50",
+    "deals": 16,
+    "coverage_pct": 64,
+    "dpd": 171.4,
+    "typical_gross": 67000
+   },
+   {
+    "cutoff": "AI >= 60",
+    "deals": 15,
+    "coverage_pct": 60,
+    "dpd": 138.1,
+    "typical_gross": 63000
+   },
+   {
+    "cutoff": "AI >= 70",
+    "deals": 10,
+    "coverage_pct": 40,
+    "dpd": 149.5,
+    "typical_gross": 80500
+   },
+   {
+    "cutoff": "AI >= 80",
+    "deals": 6,
+    "coverage_pct": 24,
+    "dpd": 130,
+    "typical_gross": 67500
+   },
+   {
+    "cutoff": "AI >= 90",
+    "deals": 6,
+    "coverage_pct": 24,
+    "dpd": 67.8,
+    "typical_gross": 67500
+   },
+   {
+    "cutoff": "AI >= 95",
+    "deals": 2,
+    "coverage_pct": 8,
+    "dpd": 115,
+    "typical_gross": 193000
+   }
+  ],
+  "bands": [
+   {
+    "band": "90-100",
+    "deals": 6,
+    "coverage_pct": 24,
+    "typical_gross": 67500
+   },
+   {
+    "band": "80-90",
+    "deals": 0,
+    "coverage_pct": 0,
+    "typical_gross": null
+   },
+   {
+    "band": "70-80",
+    "deals": 4,
+    "coverage_pct": 16,
+    "typical_gross": 91000
+   },
+   {
+    "band": "60-70",
+    "deals": 5,
+    "coverage_pct": 20,
+    "typical_gross": 21000
+   },
+   {
+    "band": "50-60",
+    "deals": 1,
+    "coverage_pct": 4,
+    "typical_gross": 104000
+   },
+   {
+    "band": "0-50",
+    "deals": 9,
+    "coverage_pct": 36,
+    "typical_gross": 18000
+   }
+  ]
+ },
+ "top_zips": [
+  {
+   "zip": "22401",
+   "stars": 3,
+   "deals": 25,
+   "typical_gross": 62000,
+   "dpd": null,
+   "momentum": 2.33
+  }
+ ],
+ "price_bands": [
+  {
+   "band": "< $150k",
+   "deals": 0,
+   "live_sfr_supply": 6,
+   "dpd": null
+  },
+  {
+   "band": "$150k-$200k",
+   "deals": 0,
+   "live_sfr_supply": 8,
+   "dpd": null
+  },
+  {
+   "band": "$200k-$250k",
+   "deals": 3,
+   "live_sfr_supply": 256,
+   "dpd": null
+  },
+  {
+   "band": "$250k-$300k",
+   "deals": 8,
+   "live_sfr_supply": 465,
+   "dpd": null
+  },
+  {
+   "band": "$300k-$400k",
+   "deals": 4,
+   "live_sfr_supply": 1090,
+   "dpd": null
+  },
+  {
+   "band": "$400k-$500k",
+   "deals": 3,
+   "live_sfr_supply": 1809,
+   "dpd": null
+  },
+  {
+   "band": "$500k+",
+   "deals": 7,
+   "live_sfr_supply": 3492,
+   "dpd": null
+  }
+ ],
+ "ftm": [
+  {
+   "priority": "Pull first (A)",
+   "data_type": "Probate / Estates / Unknown Heirs",
+   "office_official": "Fredericksburg Circuit Court Clerk's Office - Jeff Small, Clerk of the Circuit Court",
+   "phone": "540-372-1066",
+   "source_url": "https://www.fredericksburgva.gov/653/Wills-and-Probate",
+   "office_address": "701 Princess Anne St Suite 100, Fredericksburg, VA",
+   "records_foia": "Not explicitly listed for probate, but the city has a FOIA portal.",
+   "access": "Moderate",
+   "updates": "Ongoing as estates are filed.",
+   "verified": "Verified",
+   "notes": "Probate is by appointment only. Requires submitting a probate packet form, copy of will (if any), death certificate, and list of heirs. The Clerk's office cannot assist with preparing or correcting files. Small Estate Affidavit (personal property < $75,000) and Real Estate Affidavit forms are available but not filed with the court. The Commissioner of Accounts oversees estate administration."
+  },
+  {
+   "priority": "Pull first (A)",
+   "data_type": "Tax Sale / Delinquent Tax Auction",
+   "office_official": "City of Fredericksburg Treasurer's Office",
+   "phone": "540-372-1001",
+   "source_url": null,
+   "office_address": "715 Princess Anne Street Room 118, Fredericksburg, VA 22401",
+   "records_foia": "https://www.fredericksburgva.gov/525/Treasurer (FOIA Request Form link available on this page)",
+   "access": "High",
+   "updates": "Annually, but specific dates vary.",
+   "verified": "Verified",
+   "notes": "Virginia is a tax deed state. The list publishes as a legal notice weeks before the sale. Likely requires direct contact with the Treasurer's office or monitoring local legal notices."
+  },
+  {
+   "priority": "Pull first (A)",
+   "data_type": "County Tax Delinquency (pre-sale roll)",
+   "office_official": "City of Fredericksburg Treasurer's Office",
+   "phone": "540-372-1001",
+   "source_url": null,
+   "office_address": "715 Princess Anne Street Room 118, Fredericksburg, VA 22401",
+   "records_foia": "https://www.fredericksburgva.gov/525/Treasurer (FOIA Request Form link available on this page)",
+   "access": "High",
+   "updates": "Ongoing roll.",
+   "verified": "Verified",
+   "notes": "This is the pre-sale roll for owners who owe but no auction date is set yet. Likely requires direct contact with the Treasurer's office."
+  },
+  {
+   "priority": "Pull first (A)",
+   "data_type": "City Tax Delinquency (each incorporated city)",
+   "office_official": "City of Fredericksburg Treasurer's Office",
+   "phone": "540-372-1001",
+   "source_url": null,
+   "office_address": "715 Princess Anne Street Room 118, Fredericksburg, VA 22401",
+   "records_foia": "https://www.fredericksburgva.gov/525/Treasurer (FOIA Request Form link available on this page)",
+   "access": "High",
+   "updates": "Ongoing roll.",
+   "verified": "Verified",
+   "notes": "Fredericksburg is an independent city, so this covers all city property taxes. Likely requires direct contact with the Treasurer's office."
+  },
+  {
+   "priority": "Pull first (A)",
+   "data_type": "Foreclosure (first public signal for this state's process)",
+   "office_official": "Fredericksburg Circuit Court Clerk (Land Records Division)",
+   "phone": "540-372-1066",
+   "source_url": null,
+   "office_address": "701 Princess Anne St Suite 100, Fredericksburg, VA",
+   "records_foia": "Not explicitly listed for land records, but the city has a FOIA portal.",
+   "access": "Moderate",
+   "updates": "Ongoing as foreclosures are filed.",
+   "verified": "Verify locally",
+   "notes": "Virginia is a non-judicial foreclosure state. The first public signal is a recorder-filed notice of default or a published trustee-sale notice. These hit the recorder index before newspaper ads."
+  },
+  {
+   "priority": "Pull first (A)",
+   "data_type": "Recorder / Register of Deeds - Lien & Deed Index (mechanic's, tax, HOA, child-support liens; lis pendens)",
+   "office_official": "Fredericksburg Circuit Court Clerk (Land Records Division) - Jeff Small, Clerk of the Circuit Court",
+   "phone": "540-372-1066",
+   "source_url": "https://www.fredericksburgva.gov/653/Wills-and-Probate",
+   "office_address": "701 Princess Anne St Suite 100, Fredericksburg, VA",
+   "records_foia": "Not explicitly listed for land records, but the city has a FOIA portal.",
+   "access": "Moderate",
+   "updates": "Ongoing.",
+   "verified": "Verify locally",
+   "notes": "Liens (mechanic's, IRS & state tax, HOA, child-support liens, lis pendens) are recorded in the land records. Tax and child-support liens are indexed against the person, not the parcel. Likely requires in-person search or a paid subscription service for a comprehensive index."
+  },
+  {
+   "priority": "Pull next (B)",
+   "data_type": "Code Violations - City",
+   "office_official": "City of Fredericksburg Building Services Division (Community Planning and Building Department)",
+   "phone": "540-372-1080",
+   "source_url": "https://www.fredericksburgva.gov/814/Building-Services",
+   "office_address": "601 Caroline Street Suite 400, Fredericksburg, VA 22401",
+   "records_foia": "Not explicitly listed for Building Services, but the city has a FOIA portal.",
+   "access": "High",
+   "updates": "Ongoing.",
+   "verified": "Verified",
+   "notes": "The Building Services Division administers the Virginia Uniform Statewide Building Code and Property Maintenance Code. Likely requires a public records request for specific violation lists."
+  },
+  {
+   "priority": "Pull next (B)",
+   "data_type": "Code Violations - Unincorporated County",
+   "office_official": "Not Applicable",
+   "phone": null,
+   "source_url": null,
+   "office_address": null,
+   "records_foia": null,
+   "access": null,
+   "updates": null,
+   "verified": "Verified",
+   "notes": "Fredericksburg City is an independent city and does not have unincorporated county areas."
+  },
+  {
+   "priority": "Pull next (B)",
+   "data_type": "Condemned / Unsafe Structures / Demolition",
+   "office_official": "City of Fredericksburg Building Services Division (Community Planning and Building Department)",
+   "phone": "540-372-1080",
+   "source_url": "https://www.fredericksburgva.gov/814/Building-Services",
+   "office_address": "601 Caroline Street Suite 400, Fredericksburg, VA 22401",
+   "records_foia": "Not explicitly listed for Building Services, but the city has a FOIA portal.",
+   "access": "High",
+   "updates": "Ongoing.",
+   "verified": "Verified",
+   "notes": "These records are typically handled by code enforcement or building departments. Likely requires a public records request."
+  },
+  {
+   "priority": "Pull last (C)",
+   "data_type": "Multiple-Eviction Landlords",
+   "office_official": "Fredericksburg General District Court Clerk",
+   "phone": null,
+   "source_url": "https://eapps.courts.state.va.us/gdcourts",
+   "office_address": "701 Princess Anne St, Fredericksburg, VA",
+   "records_foia": "Not explicitly listed, but the city has a FOIA portal.",
+   "access": "High",
+   "updates": "Ongoing.",
+   "verified": "Verify locally",
+   "notes": "Hunt the PLAINTIFF (landlord), not the tenant. Two or more filings in 12 months can indicate a \"tired landlord.\" The state portal allows searching by name, case number, or hearing date."
+  }
+ ],
+ "ftm_narrative": [
+  "Data gaps to know about: SiftMap data (provider data) is low or zero in Fredericksburg City County, VA for: Tax sale list. These are proven deal-makers nationally, and nobody can buy them here, so the county pulls below are not a backup, they are the only way in: treat them as priority pulls. Also not in SiftMap here: Eviction filings, Code violations, Divorce filings.",
+  "Sources pulled straight from the county the day records publish, 30 to 90 days before paid data. 'Verify locally' means confirm the link before you work it."
+ ],
+ "siftmap_gaps": {
+  "low_or_zero": [
+   "Tax sale list"
+  ],
+  "absent": [
+   "Eviction filings",
+   "Code violations",
+   "Divorce filings"
+  ],
+  "verbatim": "Data gaps to know about: SiftMap data (provider data) is low or zero in Fredericksburg City County, VA for: Tax sale list. These are proven deal-makers nationally, and nobody can buy them here, so the county pulls below are not a backup, they are the only way in: treat them as priority pulls. Also not in SiftMap here: Eviction filings, Code violations, Divorce filings."
+ },
+ "read_me": {
+  "Doors/deal": "Live list size divided by the deals that list produced in the window. Lower is better: fewer doors to work per closed deal.",
+  "Lift": "County baseline doors/deal divided by the signal's doors/deal. 3.0 means three times sharper than pulling the whole county.",
+  "Baseline": "The whole county unfiltered, counted the same way; the denominator every signal is judged against.",
+  "Stack": "Records sitting on two distress lists at once. Stacks are distress plus distress; AI is never AND-stacked on distress.",
+  "AI score": "DataSift Investor AI likelihood-to-sell score, 0-100, a PARALLEL pull alongside the distress lists.",
+  "score-gated": "Live AI-scored supply counts are provisioned per account, so a local doors/deal cannot be computed in this view. The deals and coverage are this county's own data.",
+  "Verify supply": "The row tripped the verify rule (v2.1 coverage-aware: verify reasons annotate (churn: doors/deal < 5; small: list < 250) without demoting; only judicial notice lists and churn artifacts (doors/deal < 1) force P3. Volume floors: P1 needs >=2% of county deal flow or >=25 deals, P2 >=1% or >=12 deals): demand is real, treat the efficiency as directional until you price the live list.",
+  "Evidence A / B / C": "from this county's own sold deals / cross-market benchmark / single-market anchor (Knox + Blount TN AI measurement)",
+  "Typical gross": "Median of AVM value minus purchase price on clean deals: acquisition spread, not net profit.",
+  "Non-disclosure states": "Sale prices are not public there, so deal-dollar columns are omitted; doors/deal and lift never use dollars."
+ },
+ "shard_check": {
+  "status": "ok",
+  "mismatches": [],
+  "workbook_rows": 12,
+  "shard_rows": 11,
+  "rows_matched_by_signal": 11,
+  "workbook_only": [
+   "Obituary"
+  ],
+  "shard_only": []
+ },
+ "shard_extra": {
+  "coverage": {
+   "p1": 0.0,
+   "p1p2": 0.52,
+   "all": 0.88
+  },
+  "obit_supply": 20,
+  "ai_demand": {
+   "cutoffs": [
+    {
+     "seg": "AI >= 50",
+     "cutoff": 50,
+     "deals": 16,
+     "coverage_pct": 64.0,
+     "median_gross": 67000,
+     "margin_pct": null,
+     "list_size": 2742,
+     "dpd": 171.4
+    },
+    {
+     "seg": "AI >= 60",
+     "cutoff": 60,
+     "deals": 15,
+     "coverage_pct": 60.0,
+     "median_gross": 63000,
+     "margin_pct": null,
+     "list_size": 2071,
+     "dpd": 138.1
+    },
+    {
+     "seg": "AI >= 70",
+     "cutoff": 70,
+     "deals": 10,
+     "coverage_pct": 40.0,
+     "median_gross": 80500,
+     "margin_pct": null,
+     "list_size": 1495,
+     "dpd": 149.5
+    },
+    {
+     "seg": "AI >= 80",
+     "cutoff": 80,
+     "deals": 6,
+     "coverage_pct": 24.0,
+     "median_gross": 67500,
+     "margin_pct": null,
+     "list_size": 780,
+     "dpd": 130.0
+    },
+    {
+     "seg": "AI >= 90",
+     "cutoff": 90,
+     "deals": 6,
+     "coverage_pct": 24.0,
+     "median_gross": 67500,
+     "margin_pct": null,
+     "list_size": 407,
+     "dpd": 67.8
+    },
+    {
+     "seg": "AI >= 95",
+     "cutoff": 95,
+     "deals": 2,
+     "coverage_pct": 8.0,
+     "median_gross": 193000,
+     "margin_pct": null,
+     "list_size": 230,
+     "dpd": 115.0
+    }
+   ],
+   "bands": [
+    {
+     "band": "90-100",
+     "deals": 6,
+     "coverage_pct": 24.0,
+     "median_gross": 67500,
+     "margin_pct": null
+    },
+    {
+     "band": "80-90",
+     "deals": 0,
+     "coverage_pct": 0.0,
+     "median_gross": null,
+     "margin_pct": null
+    },
+    {
+     "band": "70-80",
+     "deals": 4,
+     "coverage_pct": 16.0,
+     "median_gross": 91000,
+     "margin_pct": null
+    },
+    {
+     "band": "60-70",
+     "deals": 5,
+     "coverage_pct": 20.0,
+     "median_gross": 21000,
+     "margin_pct": null
+    },
+    {
+     "band": "50-60",
+     "deals": 1,
+     "coverage_pct": 4.0,
+     "median_gross": 104000,
+     "margin_pct": null
+    },
+    {
+     "band": "0-50",
+     "deals": 9,
+     "coverage_pct": 36.0,
+     "median_gross": 18000,
+     "margin_pct": null
+    }
+   ]
+  },
+  "ftm_verdicts": [
+   {
+    "k": "foreclosure",
+    "v": "unknown",
+    "rec": 0
+   },
+   {
+    "k": "tax_sale",
+    "v": "no_provider",
+    "rec": 1,
+    "src": "the county treasurer / tax collector's tax-sale auction list"
+   },
+   {
+    "k": "tax_delinquent",
+    "v": "unknown",
+    "rec": 0
+   },
+   {
+    "k": "probate",
+    "v": "unknown",
+    "rec": 0
+   },
+   {
+    "k": "eviction",
+    "v": "no_provider",
+    "rec": 1,
+    "src": "the county eviction / unlawful-detainer docket"
+   },
+   {
+    "k": "code_violation",
+    "v": "no_provider",
+    "rec": 1,
+    "src": "the city code-enforcement docket (city-level; often a public records request)"
+   },
+   {
+    "k": "divorce",
+    "v": "no_provider",
+    "rec": 1,
+    "src": "the family / domestic-relations court docket (property sits on the asset schedule)"
+   }
+  ],
+  "zips_detail": [
+   {
+    "zip": "22401",
+    "deals": 25,
+    "median_gross": 62000,
+    "momentum": 2.33,
+    "months": [
+     5,
+     1,
+     5,
+     8,
+     6,
+     0
+    ],
+    "med_avm": 322000,
+    "med_buy": 250000,
+    "ai_hi_share": 0.24,
+    "stars": 3,
+    "p_deals": 50,
+    "p_gross": 50,
+    "p_mom": 50
+   }
+  ],
+  "trend": [
+   5,
+   1,
+   5,
+   8,
+   6,
+   0
+  ],
+  "capture_ladder": {
+   "fips": "51630",
+   "name": "Fredericksburg City",
+   "st": "VA",
+   "deals": 27,
+   "base_supply": 7087,
+   "window": "2026-01 .. 2026-06 (6 complete months)",
+   "built": "2026-08-11",
+   "ai_provisioned": true,
+   "variants": {
+    "lists": [
+     {
+      "label": "Absentee + Free & Clear",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners",
+       "is_free_and_clear"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": false,
+      "list_size": 1326,
+      "marg_deals": 10,
+      "marg_supply": 1326,
+      "marg_dpd": 132.6,
+      "cum_deals": 10,
+      "cum_share": 37.0,
+      "cum_supply": 1326,
+      "cum_dpd": 132.6,
+      "median_gross": 70500
+     },
+     {
+      "label": "Free & Clear",
+      "plan": "Starter",
+      "keys": [
+       "is_free_and_clear"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": false,
+      "list_size": 1932,
+      "marg_deals": 4,
+      "marg_supply": 606,
+      "marg_dpd": 151.5,
+      "cum_deals": 14,
+      "cum_share": 51.9,
+      "cum_supply": 1932,
+      "cum_dpd": 138.0,
+      "median_gross": 80500
+     },
+     {
+      "label": "Senior",
+      "plan": "Expert",
+      "keys": [
+       "is_senior_homeowners"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": false,
+      "list_size": 1694,
+      "marg_deals": 6,
+      "marg_supply": 1066,
+      "marg_dpd": 177.7,
+      "cum_deals": 20,
+      "cum_share": 74.1,
+      "cum_supply": 2998,
+      "cum_dpd": 149.9,
+      "median_gross": 43500
+     },
+     {
+      "label": "Absentee",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": false,
+      "list_size": 2847,
+      "marg_deals": 3,
+      "marg_supply": 1299,
+      "marg_dpd": 433.0,
+      "cum_deals": 23,
+      "cum_share": 85.2,
+      "cum_supply": 4297,
+      "cum_dpd": 186.8,
+      "median_gross": 62000
+     },
+     {
+      "label": "Owner Occupied",
+      "plan": "Starter",
+      "keys": [
+       "preset_owner_occupied"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": true,
+      "list_size": 4240,
+      "marg_deals": 4,
+      "marg_supply": 2781,
+      "marg_dpd": 695.2,
+      "cum_deals": 27,
+      "cum_share": 100.0,
+      "cum_supply": 7078,
+      "cum_dpd": 262.1,
+      "median_gross": 66500
+     }
+    ],
+    "ai": [
+     {
+      "label": "AI score 90+",
+      "plan": "AI",
+      "keys": [],
+      "ai": 90,
+      "priority": 2,
+      "thin": false,
+      "est": false,
+      "list_size": 453,
+      "marg_deals": 7,
+      "marg_supply": 453,
+      "marg_dpd": 64.7,
+      "cum_deals": 7,
+      "cum_share": 25.9,
+      "cum_supply": 453,
+      "cum_dpd": 64.7,
+      "median_gross": 72000
+     },
+     {
+      "label": "Absentee + Free & Clear",
+      "plan": "Starter",
+      "keys": [
+       "is_absentee_owners",
+       "is_free_and_clear"
+      ],
+      "ai": null,
+      "priority": 2,
+      "thin": false,
+      "est": false,
+      "list_size": 1326,
+      "marg_deals": 7,
+      "marg_supply": 982,
+      "marg_dpd": 140.3,
+      "cum_deals": 14,
+      "cum_share": 51.9,
+      "cum_supply": 1435,
+      "cum_dpd": 102.5,
+      "median_gross": 26000
+     },
+     {
+      "label": "Tired Landlord",
+      "plan": "Expert",
+      "keys": [
+       "is_tired_landlord"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": true,
+      "est": false,
+      "list_size": 809,
+      "marg_deals": 4,
+      "marg_supply": 604,
+      "marg_dpd": 151.0,
+      "cum_deals": 18,
+      "cum_share": 66.7,
+      "cum_supply": 2039,
+      "cum_dpd": 113.3,
+      "median_gross": 21000
+     },
+     {
+      "label": "Owner Occupied",
+      "plan": "Starter",
+      "keys": [
+       "preset_owner_occupied"
+      ],
+      "ai": null,
+      "priority": 3,
+      "thin": false,
+      "est": true,
+      "list_size": 4240,
+      "marg_deals": 8,
+      "marg_supply": 4207,
+      "marg_dpd": 525.9,
+      "cum_deals": 26,
+      "cum_share": 96.3,
+      "cum_supply": 6246,
+      "cum_dpd": 240.2,
+      "median_gross": 87500
+     }
+    ]
+   },
+   "gross_patched": true
+  }
+ },
+ "fips": "51630",
+ "jurisdiction": "Fredericksburg City, VA",
+ "state_abbr": "VA",
+ "extracted_at": "2026-08-28T12:31:16"
+}
