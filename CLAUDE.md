@@ -152,7 +152,12 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
   container. Zero notices is a FAILURE, not a quiet day. → [history](docs/history/tn-ftm-pipeline.md)
 - **MDDC Trustee's Sale** — saved search 41 is GONE from the live site; default is now `["43"]`.
   Always run `--list-searches` first. `BATCH_TAG` now stamps `FTM` (changed 2026-08-28, not yet
-  run; the next upload lands in the FTM lane). → [history](docs/history/mddc-va-md.md)
+  run; the next upload lands in the FTM lane; the browser pipeline imports the same constant).
+  On the next real pull: **eyeball `notice_id` uniqueness before trusting the id-first dedup** —
+  the `BARE_ID_RE` fallback is unconfirmed against live HTML, and a shared per-page `ID=` param
+  would collapse every row on a page to one. Dropped rows (off-type/out-of-footprint, incl. the
+  `order_nisi` reclassifications) now land in `<out>_dropped.csv`; review it, don't trust the
+  count. `--hide-read-notices` defaults OFF as of 2026-08-31. → [history](docs/history/mddc-va-md.md)
 - **VA Public Notice** — works unauthenticated via the Popular Searches widget, **one county per
   Firecrawl call with adaptive date-window splitting** (multi-county selection cancels its own
   postbacks; Fairfax + 60 days exceeds Firecrawl's budget). Pagination was broken until 2026-08-28
