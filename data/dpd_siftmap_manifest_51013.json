@@ -1,0 +1,486 @@
+{
+ "generated_at": "2026-08-31T07:28:02",
+ "fips": "51013",
+ "jurisdiction": "Arlington, VA",
+ "state_abbr": "VA",
+ "source": "51013-Arlington-VA-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "Arlington County, VA",
+  "county": "Arlington",
+  "state": "VA",
+  "counties": [
+   {
+    "fips": "51013",
+    "county_name": "Arlington"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": 3068,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 3081,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 3081
+ },
+ "presets": [
+  {
+   "name": "Arlington P1-01 Free & Clear + Out-of-State + Senior",
+   "priority": 1,
+   "rank": 1,
+   "signal": "Free & Clear + Out-of-State + Senior",
+   "signals": [
+    "Free & Clear",
+    "Out-of-State",
+    "Senior"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_oos_owners",
+    "is_senior_homeowners"
+   ],
+   "lift": 16.5,
+   "dpd": 15.2,
+   "deals": 8,
+   "workbook_list_size": 122,
+   "typical_gross": 52375,
+   "caveat": "small live list: quick and cheap to market in full; extreme efficiency on a thin sample (8 deals): verify locally, then work the full list",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 126,
+   "measured_not_in_account": 122,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Arlington P2-01 Free & Clear + Out-of-State",
+   "priority": 2,
+   "rank": 1,
+   "signal": "Free & Clear + Out-of-State",
+   "signals": [
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 7.4,
+   "dpd": 34.1,
+   "deals": 14,
+   "workbook_list_size": 478,
+   "typical_gross": 48000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 483,
+   "measured_not_in_account": 476,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Arlington P2-02 Absentee + Free & Clear + Out-of-State",
+   "priority": 2,
+   "rank": 2,
+   "signal": "Absentee + Free & Clear + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 5.8,
+   "dpd": 43.3,
+   "deals": 11,
+   "workbook_list_size": 476,
+   "typical_gross": 55000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 481,
+   "measured_not_in_account": 474,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Arlington P2-04 Out-of-State",
+   "priority": 2,
+   "rank": 4,
+   "signal": "Out-of-State",
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "lift": 3.3,
+   "dpd": 75.9,
+   "deals": 16,
+   "workbook_list_size": 1215,
+   "typical_gross": 48000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1209,
+   "measured_not_in_account": 1198,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Arlington P2-05 Absentee + Out-of-State",
+   "priority": 2,
+   "rank": 5,
+   "signal": "Absentee + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_oos_owners"
+   ],
+   "lift": 2.3,
+   "dpd": 110.1,
+   "deals": 11,
+   "workbook_list_size": 1211,
+   "typical_gross": 55000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1205,
+   "measured_not_in_account": 1194,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Arlington P2-06 Absentee + Free & Clear",
+   "priority": 2,
+   "rank": 6,
+   "signal": "Absentee + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "lift": 2.1,
+   "dpd": 120.9,
+   "deals": 28,
+   "workbook_list_size": 3386,
+   "typical_gross": 50500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3293,
+   "measured_not_in_account": 3234,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Arlington P2-07 Free & Clear + Senior",
+   "priority": 2,
+   "rank": 7,
+   "signal": "Free & Clear + Senior",
+   "signals": [
+    "Free & Clear",
+    "Senior"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_senior_homeowners"
+   ],
+   "lift": 2,
+   "dpd": 122.7,
+   "deals": 19,
+   "workbook_list_size": 2331,
+   "typical_gross": 47000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2301,
+   "measured_not_in_account": 2231,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Arlington P2-08 Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 8,
+   "signal": "Tired Landlord",
+   "signals": [
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_tired_landlord"
+   ],
+   "lift": 1.9,
+   "dpd": 133.4,
+   "deals": 23,
+   "workbook_list_size": 3068,
+   "typical_gross": 65000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3081,
+   "measured_not_in_account": 3050,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Arlington P2-09 Free & Clear",
+   "priority": 2,
+   "rank": 9,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 1.8,
+   "dpd": 138.2,
+   "deals": 52,
+   "workbook_list_size": 7185,
+   "typical_gross": 46000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 7020,
+   "measured_not_in_account": 6874,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Arlington P2-10 High Equity + Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 10,
+   "signal": "High Equity + Tired Landlord",
+   "signals": [
+    "High Equity",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_tired_landlord"
+   ],
+   "lift": 1.6,
+   "dpd": 153,
+   "deals": 15,
+   "workbook_list_size": 2295,
+   "typical_gross": 81200,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_high_equity=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2351,
+   "measured_not_in_account": 2331,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": {
+  "name": "Arlington T2 Top ZIPs 22207 22204",
+  "tier": "Tier 2",
+  "zips": [
+   {
+    "zip": "22207",
+    "stars": 4,
+    "deals": 32,
+    "typical_gross": 48550,
+    "dpd": 303.8,
+    "momentum": 2.67
+   },
+   {
+    "zip": "22204",
+    "stars": 5,
+    "deals": 15,
+    "typical_gross": 75400,
+    "dpd": 406.2,
+    "momentum": 3.33
+   }
+  ],
+  "params": [
+   "zip_codes=%5B%2222207%22%2C%20%2222204%22%5D"
+  ],
+  "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&zip_codes=%5B%2222207%22%2C%20%2222204%22%5D&type_single_family=true",
+  "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Arlington%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Arlington%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251013%22%2C%20%22county_name%22%3A%20%22Arlington%22%7D%5D%7D&zip_codes=%5B%2222207%22%2C%20%2222204%22%5D&type_single_family=true&in_my_account_mode=not_in",
+  "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
+  "measured_count": 15741,
+  "measured_not_in_account": 15540,
+  "measure_status": "ok"
+ },
+ "gaps": [
+  {
+   "name": "Arlington P1-02 AI Score 90-100",
+   "priority": 1,
+   "rank": 2,
+   "signal": "AI Score 90-100",
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 10.1,
+   "dpd": 24.8,
+   "deals": 17,
+   "workbook_list_size": 421,
+   "typical_gross": 5000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 90-100"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Arlington P1-03 Obituary",
+   "priority": 1,
+   "rank": 3,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 7.4,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 92,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  },
+  {
+   "name": "Arlington P2-03 AI Score 80-90",
+   "priority": 2,
+   "rank": 3,
+   "signal": "AI Score 80-90",
+   "signals": [
+    "AI Score 80-90"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 3.9,
+   "dpd": 64.5,
+   "deals": 11,
+   "workbook_list_size": 710,
+   "typical_gross": 30000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 80-90"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  }
+ ],
+ "baseline_single_family": 30088,
+ "measured_at": "2026-08-31T07:32:29"
+}

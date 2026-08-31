@@ -1,0 +1,546 @@
+{
+ "generated_at": "2026-08-31T07:08:38",
+ "fips": "24003",
+ "jurisdiction": "Anne Arundel, MD",
+ "state_abbr": "MD",
+ "source": "24003-Anne-Arundel-MD-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "Anne Arundel County, MD",
+  "county": "Anne Arundel",
+  "state": "MD",
+  "counties": [
+   {
+    "fips": "24003",
+    "county_name": "Anne Arundel"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": 9169,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 9186,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 9186
+ },
+ "presets": [
+  {
+   "name": "Anne Arundel P2-01 Vacant",
+   "priority": 2,
+   "rank": 1,
+   "signal": "Vacant",
+   "signals": [
+    "Vacant"
+   ],
+   "keys": [
+    "is_vacant_property"
+   ],
+   "lift": 5.8,
+   "dpd": 46,
+   "deals": 12,
+   "workbook_list_size": 552,
+   "typical_gross": 182000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_vacant=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_vacant=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_vacant=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 543,
+   "measured_not_in_account": 527,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Anne Arundel P2-02 Absentee + Free & Clear",
+   "priority": 2,
+   "rank": 2,
+   "signal": "Absentee + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "lift": 2.5,
+   "dpd": 106.4,
+   "deals": 173,
+   "workbook_list_size": 18409,
+   "typical_gross": 29250,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 18348,
+   "measured_not_in_account": 18206,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Anne Arundel P2-03 Out-of-State",
+   "priority": 2,
+   "rank": 3,
+   "signal": "Out-of-State",
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "lift": 2.2,
+   "dpd": 119.5,
+   "deals": 31,
+   "workbook_list_size": 3705,
+   "typical_gross": 23750,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3684,
+   "measured_not_in_account": 3634,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Anne Arundel P2-04 Free & Clear + Out-of-State",
+   "priority": 2,
+   "rank": 4,
+   "signal": "Free & Clear + Out-of-State",
+   "signals": [
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 2.2,
+   "dpd": 121.8,
+   "deals": 17,
+   "workbook_list_size": 2070,
+   "typical_gross": 9650,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2070,
+   "measured_not_in_account": 2042,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Anne Arundel P2-05 Free & Clear + Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 5,
+   "signal": "Free & Clear + Tired Landlord",
+   "signals": [
+    "Free & Clear",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_tired_landlord"
+   ],
+   "lift": 2.2,
+   "dpd": 124.3,
+   "deals": 45,
+   "workbook_list_size": 5592,
+   "typical_gross": 141000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 5606,
+   "measured_not_in_account": 5543,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Anne Arundel P2-07 Absentee",
+   "priority": 2,
+   "rank": 7,
+   "signal": "Absentee",
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "lift": 2,
+   "dpd": 133,
+   "deals": 198,
+   "workbook_list_size": 26333,
+   "typical_gross": 15000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 26234,
+   "measured_not_in_account": 26020,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Anne Arundel P2-08 Free & Clear",
+   "priority": 2,
+   "rank": 8,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 2,
+   "dpd": 135.9,
+   "deals": 314,
+   "workbook_list_size": 42678,
+   "typical_gross": 78000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 43100,
+   "measured_not_in_account": 42244,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Anne Arundel P2-09 Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 9,
+   "signal": "Tired Landlord",
+   "signals": [
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_tired_landlord"
+   ],
+   "lift": 1.8,
+   "dpd": 152.8,
+   "deals": 60,
+   "workbook_list_size": 9169,
+   "typical_gross": 141000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 9186,
+   "measured_not_in_account": 9090,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Anne Arundel P2-12 Absentee + Free & Clear + Out-of-State",
+   "priority": 2,
+   "rank": 12,
+   "signal": "Absentee + Free & Clear + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 1.5,
+   "dpd": 178.2,
+   "deals": 11,
+   "workbook_list_size": 1960,
+   "typical_gross": 9650,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1953,
+   "measured_not_in_account": 1931,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": {
+  "name": "Anne Arundel T2 Top ZIPs 21122 21403 21401 21061 21060",
+  "tier": "Tier 2",
+  "zips": [
+   {
+    "zip": "21122",
+    "stars": 5,
+    "deals": 64,
+    "typical_gross": 90000,
+    "dpd": 312,
+    "momentum": 0.67
+   },
+   {
+    "zip": "21403",
+    "stars": 5,
+    "deals": 51,
+    "typical_gross": 63500,
+    "dpd": 152.6,
+    "momentum": 1.43
+   },
+   {
+    "zip": "21401",
+    "stars": 4,
+    "deals": 50,
+    "typical_gross": 38000,
+    "dpd": 173.1,
+    "momentum": 2.15
+   },
+   {
+    "zip": "21061",
+    "stars": 4,
+    "deals": 37,
+    "typical_gross": 87750,
+    "dpd": 292.4,
+    "momentum": 0.87
+   },
+   {
+    "zip": "21060",
+    "stars": 4,
+    "deals": 34,
+    "typical_gross": 106500,
+    "dpd": 279.8,
+    "momentum": 0.77
+   }
+  ],
+  "params": [
+   "zip_codes=%5B%2221122%22%2C%20%2221403%22%2C%20%2221401%22%2C%20%2221061%22%2C%20%2221060%22%5D"
+  ],
+  "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&zip_codes=%5B%2221122%22%2C%20%2221403%22%2C%20%2221401%22%2C%20%2221061%22%2C%20%2221060%22%5D&type_single_family=true",
+  "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Anne%20Arundel%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Anne%20Arundel%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224003%22%2C%20%22county_name%22%3A%20%22Anne%20Arundel%22%7D%5D%7D&zip_codes=%5B%2221122%22%2C%20%2221403%22%2C%20%2221401%22%2C%20%2221061%22%2C%20%2221060%22%5D&type_single_family=true&in_my_account_mode=not_in",
+  "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
+  "measured_count": 56702,
+  "measured_not_in_account": 55739,
+  "measure_status": "ok"
+ },
+ "gaps": [
+  {
+   "name": "Anne Arundel P1-01 HOA Lien",
+   "priority": 1,
+   "rank": 1,
+   "signal": "HOA Lien",
+   "signals": [
+    "HOA Lien"
+   ],
+   "keys": [
+    "is_hoa_lien"
+   ],
+   "lift": 12,
+   "dpd": 22.3,
+   "deals": 11,
+   "workbook_list_size": 245,
+   "typical_gross": 74000,
+   "caveat": "small live list: quick and cheap to market in full",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "HOA Lien"
+   ],
+   "reason": "no SiftMap filter (badge only on property cards)"
+  },
+  {
+   "name": "Anne Arundel P1-02 Obituary",
+   "priority": 1,
+   "rank": 2,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 7.9,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 545,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  },
+  {
+   "name": "Anne Arundel P1-03 AI Score 90-100",
+   "priority": 1,
+   "rank": 3,
+   "signal": "AI Score 90-100",
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 7.8,
+   "dpd": 34.4,
+   "deals": 191,
+   "workbook_list_size": 6562,
+   "typical_gross": 99000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 90-100"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Anne Arundel P2-06 AI Score 80-90",
+   "priority": 2,
+   "rank": 6,
+   "signal": "AI Score 80-90",
+   "signals": [
+    "AI Score 80-90"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 2.1,
+   "dpd": 129.8,
+   "deals": 41,
+   "workbook_list_size": 5321,
+   "typical_gross": 109000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 80-90"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Anne Arundel P2-10 Low Income",
+   "priority": 2,
+   "rank": 10,
+   "signal": "Low Income",
+   "signals": [
+    "Low Income"
+   ],
+   "keys": [
+    "is_low_income"
+   ],
+   "lift": 1.6,
+   "dpd": 169.3,
+   "deals": 11,
+   "workbook_list_size": 1862,
+   "typical_gross": 115000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Anne Arundel P2-11 Bad Credit",
+   "priority": 2,
+   "rank": 11,
+   "signal": "Bad Credit",
+   "signals": [
+    "Bad Credit"
+   ],
+   "keys": [
+    "is_bad_credit"
+   ],
+   "lift": 1.5,
+   "dpd": 174.6,
+   "deals": 10,
+   "workbook_list_size": 1746,
+   "typical_gross": 116772,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit"
+   ],
+   "reason": "no SiftMap filter"
+  }
+ ],
+ "baseline_single_family": 147986,
+ "measured_at": "2026-08-31T07:12:43"
+}

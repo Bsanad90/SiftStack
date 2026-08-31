@@ -1,0 +1,587 @@
+{
+ "generated_at": "2026-08-31T06:18:08",
+ "fips": "24009",
+ "jurisdiction": "Calvert, MD",
+ "state_abbr": "MD",
+ "source": "24009-Calvert-MD-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "Calvert County, MD",
+  "county": "Calvert",
+  "state": "MD",
+  "counties": [
+   {
+    "fips": "24009",
+    "county_name": "Calvert"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": null,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 3077,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 3077
+ },
+ "presets": [
+  {
+   "name": "Calvert P1-15 Absentee",
+   "priority": 1,
+   "rank": 15,
+   "signal": "Absentee",
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "lift": 3.2,
+   "dpd": 110,
+   "deals": 54,
+   "workbook_list_size": 5941,
+   "typical_gross": 158000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 5953,
+   "measured_not_in_account": 5888,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Calvert P2-01 Absentee + Free & Clear",
+   "priority": 2,
+   "rank": 1,
+   "signal": "Absentee + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "lift": 4,
+   "dpd": 88,
+   "deals": 45,
+   "workbook_list_size": 3958,
+   "typical_gross": 158000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3464,
+   "measured_not_in_account": 3427,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Calvert P2-02 Out-of-State",
+   "priority": 2,
+   "rank": 2,
+   "signal": "Out-of-State",
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "lift": 3.5,
+   "dpd": 100.1,
+   "deals": 10,
+   "workbook_list_size": 1001,
+   "typical_gross": 129000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1005,
+   "measured_not_in_account": 990,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Calvert P2-03 Free & Clear",
+   "priority": 2,
+   "rank": 3,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 2.3,
+   "dpd": 149.1,
+   "deals": 63,
+   "workbook_list_size": 9391,
+   "typical_gross": 133500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 8348,
+   "measured_not_in_account": 8171,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": {
+  "name": "Calvert T2 Top ZIPs 20657",
+  "tier": "Tier 2",
+  "zips": [
+   {
+    "zip": "20657",
+    "stars": 4,
+    "deals": 20,
+    "typical_gross": 113000,
+    "dpd": null,
+    "momentum": 2
+   }
+  ],
+  "params": [
+   "zip_codes=%5B%2220657%22%5D"
+  ],
+  "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&zip_codes=%5B%2220657%22%5D&type_single_family=true",
+  "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Calvert%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Calvert%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224009%22%2C%20%22county_name%22%3A%20%22Calvert%22%7D%5D%7D&zip_codes=%5B%2220657%22%5D&type_single_family=true&in_my_account_mode=not_in",
+  "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
+  "measured_count": 8448,
+  "measured_not_in_account": 8315,
+  "measure_status": "ok"
+ },
+ "gaps": [
+  {
+   "name": "Calvert P1-01 Absentee + Bad Credit + Free & Clear",
+   "priority": 1,
+   "rank": 1,
+   "signal": "Absentee + Bad Credit + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Bad Credit",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_bad_credit",
+    "is_free_and_clear"
+   ],
+   "lift": 218,
+   "dpd": 1.6,
+   "deals": 31,
+   "workbook_list_size": 50,
+   "typical_gross": null,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Calvert P1-02 Absentee + Bad Credit + Low Income",
+   "priority": 1,
+   "rank": 2,
+   "signal": "Absentee + Bad Credit + Low Income",
+   "signals": [
+    "Absentee",
+    "Bad Credit",
+    "Low Income"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_bad_credit",
+    "is_low_income"
+   ],
+   "lift": 193.8,
+   "dpd": 1.8,
+   "deals": 29,
+   "workbook_list_size": 52,
+   "typical_gross": null,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit",
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter; no SiftMap filter"
+  },
+  {
+   "name": "Calvert P1-03 Absentee + Free & Clear + Low Income",
+   "priority": 1,
+   "rank": 3,
+   "signal": "Absentee + Free & Clear + Low Income",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Low Income"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_low_income"
+   ],
+   "lift": 193.8,
+   "dpd": 1.8,
+   "deals": 29,
+   "workbook_list_size": 51,
+   "typical_gross": null,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Calvert P1-04 Bad Credit + Free & Clear + Low Income",
+   "priority": 1,
+   "rank": 4,
+   "signal": "Bad Credit + Free & Clear + Low Income",
+   "signals": [
+    "Bad Credit",
+    "Free & Clear",
+    "Low Income"
+   ],
+   "keys": [
+    "is_bad_credit",
+    "is_free_and_clear",
+    "is_low_income"
+   ],
+   "lift": 151.7,
+   "dpd": 2.3,
+   "deals": 29,
+   "workbook_list_size": 68,
+   "typical_gross": null,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit",
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter; no SiftMap filter"
+  },
+  {
+   "name": "Calvert P1-05 Absentee + Bad Credit",
+   "priority": 1,
+   "rank": 5,
+   "signal": "Absentee + Bad Credit",
+   "signals": [
+    "Absentee",
+    "Bad Credit"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_bad_credit"
+   ],
+   "lift": 139.5,
+   "dpd": 2.5,
+   "deals": 31,
+   "workbook_list_size": 77,
+   "typical_gross": 216500,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally; extreme efficiency on a thin sample (31 deals): verify locally, then work the full list",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Calvert P1-06 Absentee + Low Income",
+   "priority": 1,
+   "rank": 6,
+   "signal": "Absentee + Low Income",
+   "signals": [
+    "Absentee",
+    "Low Income"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_low_income"
+   ],
+   "lift": 139.5,
+   "dpd": 2.5,
+   "deals": 29,
+   "workbook_list_size": 73,
+   "typical_gross": 216500,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally; extreme efficiency on a thin sample (29 deals): verify locally, then work the full list",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Calvert P1-07 Bad Credit + Free & Clear",
+   "priority": 1,
+   "rank": 7,
+   "signal": "Bad Credit + Free & Clear",
+   "signals": [
+    "Bad Credit",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_bad_credit",
+    "is_free_and_clear"
+   ],
+   "lift": 109,
+   "dpd": 3.2,
+   "deals": 31,
+   "workbook_list_size": 100,
+   "typical_gross": 216500,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally; extreme efficiency on a thin sample (31 deals): verify locally, then work the full list",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Calvert P1-08 Free & Clear + Low Income",
+   "priority": 1,
+   "rank": 8,
+   "signal": "Free & Clear + Low Income",
+   "signals": [
+    "Free & Clear",
+    "Low Income"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_low_income"
+   ],
+   "lift": 96.9,
+   "dpd": 3.6,
+   "deals": 30,
+   "workbook_list_size": 107,
+   "typical_gross": 228000,
+   "caveat": "high-churn list: live count is a snapshot while deals span the full window, so doors/deal reads optimistic; verify locally; extreme efficiency on a thin sample (30 deals): verify locally, then work the full list",
+   "verify_reason": "churn",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Calvert P1-09 Bad Credit + Low Income",
+   "priority": 1,
+   "rank": 9,
+   "signal": "Bad Credit + Low Income",
+   "signals": [
+    "Bad Credit",
+    "Low Income"
+   ],
+   "keys": [
+    "is_bad_credit",
+    "is_low_income"
+   ],
+   "lift": 52.1,
+   "dpd": 6.7,
+   "deals": 29,
+   "workbook_list_size": 195,
+   "typical_gross": 216500,
+   "caveat": "small live list: quick and cheap to market in full; extreme efficiency on a thin sample (29 deals): verify locally, then work the full list",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit",
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter; no SiftMap filter"
+  },
+  {
+   "name": "Calvert P1-10 AI Score 90-100",
+   "priority": 1,
+   "rank": 10,
+   "signal": "AI Score 90-100",
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 48.4,
+   "dpd": 7.2,
+   "deals": 32,
+   "workbook_list_size": 230,
+   "typical_gross": 158000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 90-100"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Calvert P1-11 Bad Credit",
+   "priority": 1,
+   "rank": 11,
+   "signal": "Bad Credit",
+   "signals": [
+    "Bad Credit"
+   ],
+   "keys": [
+    "is_bad_credit"
+   ],
+   "lift": 39.6,
+   "dpd": 8.8,
+   "deals": 31,
+   "workbook_list_size": 274,
+   "typical_gross": 216500,
+   "caveat": "extreme efficiency on a thin sample (31 deals): verify locally, then work the full list",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bad Credit"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Calvert P1-12 Low Income",
+   "priority": 1,
+   "rank": 12,
+   "signal": "Low Income",
+   "signals": [
+    "Low Income"
+   ],
+   "keys": [
+    "is_low_income"
+   ],
+   "lift": 37.5,
+   "dpd": 9.3,
+   "deals": 30,
+   "workbook_list_size": 280,
+   "typical_gross": 228000,
+   "caveat": "extreme efficiency on a thin sample (30 deals): verify locally, then work the full list",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Calvert P1-13 Obituary",
+   "priority": 1,
+   "rank": 13,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 10.3,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 107,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  },
+  {
+   "name": "Calvert P1-14 AI Score 80-90",
+   "priority": 1,
+   "rank": 14,
+   "signal": "AI Score 80-90",
+   "signals": [
+    "AI Score 80-90"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 10,
+   "dpd": 34.9,
+   "deals": 11,
+   "workbook_list_size": 384,
+   "typical_gross": 83125,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 80-90"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  }
+ ],
+ "baseline_single_family": 32490,
+ "measured_at": "2026-08-31T06:20:30"
+}

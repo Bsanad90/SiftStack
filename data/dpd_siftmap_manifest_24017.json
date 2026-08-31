@@ -1,0 +1,356 @@
+{
+ "generated_at": "2026-08-31T06:35:58",
+ "fips": "24017",
+ "jurisdiction": "Charles, MD",
+ "state_abbr": "MD",
+ "source": "24017-Charles-MD-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "Charles County, MD",
+  "county": "Charles",
+  "state": "MD",
+  "counties": [
+   {
+    "fips": "24017",
+    "county_name": "Charles"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": null,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 4042,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 4042
+ },
+ "presets": [
+  {
+   "name": "Charles P1-01 Absentee + Free & Clear + Out-of-State",
+   "priority": 1,
+   "rank": 1,
+   "signal": "Absentee + Free & Clear + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 8.2,
+   "dpd": 29.5,
+   "deals": 65,
+   "workbook_list_size": 1920,
+   "typical_gross": 511000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1899,
+   "measured_not_in_account": 1890,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Charles P1-04 Absentee + Free & Clear",
+   "priority": 1,
+   "rank": 4,
+   "signal": "Absentee + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "lift": 3.2,
+   "dpd": 76.4,
+   "deals": 125,
+   "workbook_list_size": 9544,
+   "typical_gross": 206436,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 9491,
+   "measured_not_in_account": 9440,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Charles P2-01 Free & Clear + Out-of-State",
+   "priority": 2,
+   "rank": 1,
+   "signal": "Free & Clear + Out-of-State",
+   "signals": [
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 8.4,
+   "dpd": 28.9,
+   "deals": 67,
+   "workbook_list_size": 1939,
+   "typical_gross": 487047,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1920,
+   "measured_not_in_account": 1911,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Charles P2-02 Out-of-State",
+   "priority": 2,
+   "rank": 2,
+   "signal": "Out-of-State",
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "lift": 6.5,
+   "dpd": 37.5,
+   "deals": 68,
+   "workbook_list_size": 2552,
+   "typical_gross": 463094,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2542,
+   "measured_not_in_account": 2526,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Charles P2-03 Absentee + Out-of-State",
+   "priority": 2,
+   "rank": 3,
+   "signal": "Absentee + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_oos_owners"
+   ],
+   "lift": 6.4,
+   "dpd": 37.7,
+   "deals": 66,
+   "workbook_list_size": 2487,
+   "typical_gross": 487047,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2471,
+   "measured_not_in_account": 2457,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Charles P2-04 Absentee",
+   "priority": 2,
+   "rank": 4,
+   "signal": "Absentee",
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "lift": 2.5,
+   "dpd": 96.4,
+   "deals": 128,
+   "workbook_list_size": 12341,
+   "typical_gross": 205718,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 12318,
+   "measured_not_in_account": 12227,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Charles P2-05 Free & Clear",
+   "priority": 2,
+   "rank": 5,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 2.3,
+   "dpd": 104.1,
+   "deals": 146,
+   "workbook_list_size": 15196,
+   "typical_gross": 147000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 15262,
+   "measured_not_in_account": 15030,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": {
+  "name": "Charles T2 Top ZIPs 20603 20602",
+  "tier": "Tier 2",
+  "zips": [
+   {
+    "zip": "20603",
+    "stars": 5,
+    "deals": 29,
+    "typical_gross": 90000,
+    "dpd": 274.4,
+    "momentum": 1.67
+   },
+   {
+    "zip": "20602",
+    "stars": 4,
+    "deals": 19,
+    "typical_gross": 120000,
+    "dpd": 294.2,
+    "momentum": 1.14
+   }
+  ],
+  "params": [
+   "zip_codes=%5B%2220603%22%2C%20%2220602%22%5D"
+  ],
+  "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&zip_codes=%5B%2220603%22%2C%20%2220602%22%5D&type_single_family=true",
+  "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Charles%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Charles%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224017%22%2C%20%22county_name%22%3A%20%22Charles%22%7D%5D%7D&zip_codes=%5B%2220603%22%2C%20%2220602%22%5D&type_single_family=true&in_my_account_mode=not_in",
+  "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
+  "measured_count": 13390,
+  "measured_not_in_account": 13185,
+  "measure_status": "ok"
+ },
+ "gaps": [
+  {
+   "name": "Charles P1-02 AI Score 90-100",
+   "priority": 1,
+   "rank": 2,
+   "signal": "AI Score 90-100",
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 7.6,
+   "dpd": 31.8,
+   "deals": 136,
+   "workbook_list_size": 4320,
+   "typical_gross": 145908,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 90-100"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Charles P1-03 Obituary",
+   "priority": 1,
+   "rank": 3,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 7.1,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 181,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  }
+ ],
+ "baseline_single_family": 50056,
+ "measured_at": "2026-08-31T06:39:22"
+}

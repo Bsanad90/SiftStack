@@ -1,0 +1,105 @@
+{
+ "generated_at": "2026-08-31T06:15:12",
+ "fips": "51630",
+ "jurisdiction": "Fredericksburg City, VA",
+ "state_abbr": "VA",
+ "source": "51630-Fredericksburg-City-VA-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "Fredericksburg City County, VA",
+  "county": "Fredericksburg City",
+  "state": "VA",
+  "counties": [
+   {
+    "fips": "51630",
+    "county_name": "Fredericksburg City"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fredericksburg%20City%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fredericksburg%20City%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251630%22%2C%20%22county_name%22%3A%20%22Fredericksburg%20City%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": null,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 819,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 819
+ },
+ "presets": [
+  {
+   "name": "Fredericksburg City P2-01 Free & Clear",
+   "priority": 2,
+   "rank": 1,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 1.9,
+   "dpd": 148.3,
+   "deals": 13,
+   "workbook_list_size": 1928,
+   "typical_gross": 72000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fredericksburg%20City%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fredericksburg%20City%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251630%22%2C%20%22county_name%22%3A%20%22Fredericksburg%20City%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fredericksburg%20City%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fredericksburg%20City%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251630%22%2C%20%22county_name%22%3A%20%22Fredericksburg%20City%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1932,
+   "measured_not_in_account": 1898,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": null,
+ "gaps": [
+  {
+   "name": "Fredericksburg City P1-01 Obituary",
+   "priority": 1,
+   "rank": 1,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 8.3,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 20,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  }
+ ],
+ "baseline_single_family": 7087,
+ "measured_at": "2026-08-31T06:16:11"
+}

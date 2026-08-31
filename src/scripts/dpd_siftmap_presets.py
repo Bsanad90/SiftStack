@@ -762,6 +762,16 @@ async def save_one(page, url: str, name: str, out_row: dict, description: str = 
 async def reload_check(page, base_url: str, name: str, src_url: str, expect_count) -> dict:
     await goto_map(page, base_url)
     names = await saved_filter_names(page) or []
+    if name not in names:
+        # The popover can fail to open mid-session (2026-08-31, Anne Arundel: after four
+        # clean reloads every later saved_filter_names() came back EMPTY while commit's own
+        # read-back had just enumerated all the rows). One fresh navigation + retry before
+        # declaring absence; screenshot the persistent case for diagnosis.
+        await goto_map(page, base_url)
+        names = await saved_filter_names(page) or []
+        if not names:
+            SHOTS.mkdir(parents=True, exist_ok=True)
+            await page.screenshot(path=str(SHOTS / "verify_popover_empty.png"))
     row = {"present": name in names}
     if not row["present"]:
         row["prefix_present"] = any(n and (name.startswith(n) or n.startswith(name)) for n in names)

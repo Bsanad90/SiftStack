@@ -1,0 +1,886 @@
+{
+ "generated_at": "2026-08-31T08:15:58",
+ "fips": "24031",
+ "jurisdiction": "Montgomery, MD",
+ "state_abbr": "MD",
+ "source": "24031-Montgomery-MD-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "Montgomery County, MD",
+  "county": "Montgomery",
+  "state": "MD",
+  "counties": [
+   {
+    "fips": "24031",
+    "county_name": "Montgomery"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": 11727,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 11856,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 11856
+ },
+ "presets": [
+  {
+   "name": "Montgomery P1-04 Free & Clear + Out-of-State",
+   "priority": 1,
+   "rank": 4,
+   "signal": "Free & Clear + Out-of-State",
+   "signals": [
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 13.3,
+   "dpd": 24.9,
+   "deals": 68,
+   "workbook_list_size": 1696,
+   "typical_gross": 80000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1752,
+   "measured_not_in_account": 1716,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P1-05 Absentee + Free & Clear + Out-of-State",
+   "priority": 1,
+   "rank": 5,
+   "signal": "Absentee + Free & Clear + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 10.6,
+   "dpd": 31.4,
+   "deals": 54,
+   "workbook_list_size": 1696,
+   "typical_gross": 85482,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1752,
+   "measured_not_in_account": 1716,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P1-07 Out-of-State",
+   "priority": 1,
+   "rank": 7,
+   "signal": "Out-of-State",
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "lift": 8.3,
+   "dpd": 39.8,
+   "deals": 82,
+   "workbook_list_size": 3263,
+   "typical_gross": 58000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3334,
+   "measured_not_in_account": 3286,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P1-08 Absentee + Out-of-State",
+   "priority": 1,
+   "rank": 8,
+   "signal": "Absentee + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_oos_owners"
+   ],
+   "lift": 6.1,
+   "dpd": 54.4,
+   "deals": 60,
+   "workbook_list_size": 3262,
+   "typical_gross": 61500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3333,
+   "measured_not_in_account": 3285,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P1-09 Free & Clear + Senior + Tired Landlord (proxy)",
+   "priority": 1,
+   "rank": 9,
+   "signal": "Free & Clear + Senior + Tired Landlord",
+   "signals": [
+    "Free & Clear",
+    "Senior",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_senior_homeowners",
+    "is_tired_landlord"
+   ],
+   "lift": 4.9,
+   "dpd": 67.7,
+   "deals": 20,
+   "workbook_list_size": 1354,
+   "typical_gross": 58000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_owner_age_min=65",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1370,
+   "measured_not_in_account": 1346,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P1-10 Senior + Tired Landlord (proxy)",
+   "priority": 1,
+   "rank": 10,
+   "signal": "Senior + Tired Landlord",
+   "signals": [
+    "Senior",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_senior_homeowners",
+    "is_tired_landlord"
+   ],
+   "lift": 4.8,
+   "dpd": 69.2,
+   "deals": 32,
+   "workbook_list_size": 2214,
+   "typical_gross": 30000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "extra_owner_age_min=65",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2232,
+   "measured_not_in_account": 2192,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P1-11 Out-of-State + Tired Landlord (proxy)",
+   "priority": 1,
+   "rank": 11,
+   "signal": "Out-of-State + Tired Landlord",
+   "signals": [
+    "Out-of-State",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_oos_owners",
+    "is_tired_landlord"
+   ],
+   "lift": 4.6,
+   "dpd": 72.1,
+   "deals": 22,
+   "workbook_list_size": 1586,
+   "typical_gross": 52000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1640,
+   "measured_not_in_account": 1623,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P1-12 Absentee + Free & Clear",
+   "priority": 1,
+   "rank": 12,
+   "signal": "Absentee + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "lift": 3.8,
+   "dpd": 87.7,
+   "deals": 121,
+   "workbook_list_size": 10613,
+   "typical_gross": 93390,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 10665,
+   "measured_not_in_account": 10482,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P1-14 Free & Clear + Tired Landlord (proxy)",
+   "priority": 1,
+   "rank": 14,
+   "signal": "Free & Clear + Tired Landlord",
+   "signals": [
+    "Free & Clear",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_tired_landlord"
+   ],
+   "lift": 3.1,
+   "dpd": 105.9,
+   "deals": 54,
+   "workbook_list_size": 5718,
+   "typical_gross": 30000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 5762,
+   "measured_not_in_account": 5691,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P2-01 Out-of-State + Senior",
+   "priority": 2,
+   "rank": 1,
+   "signal": "Out-of-State + Senior",
+   "signals": [
+    "Out-of-State",
+    "Senior"
+   ],
+   "keys": [
+    "is_oos_owners",
+    "is_senior_homeowners"
+   ],
+   "lift": 8.1,
+   "dpd": 41.2,
+   "deals": 19,
+   "workbook_list_size": 783,
+   "typical_gross": 68000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&extra_absentee_in_state=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&extra_absentee_in_state=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 811,
+   "measured_not_in_account": 792,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P2-03 High Equity + Out-of-State",
+   "priority": 2,
+   "rank": 3,
+   "signal": "High Equity + Out-of-State",
+   "signals": [
+    "High Equity",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_oos_owners"
+   ],
+   "lift": 2.8,
+   "dpd": 117.7,
+   "deals": 10,
+   "workbook_list_size": 1177,
+   "typical_gross": 20000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_high_equity=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1249,
+   "measured_not_in_account": 1242,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P2-04 Absentee + Free & Clear + Senior",
+   "priority": 2,
+   "rank": 4,
+   "signal": "Absentee + Free & Clear + Senior",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Senior"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_senior_homeowners"
+   ],
+   "lift": 2.7,
+   "dpd": 123.8,
+   "deals": 19,
+   "workbook_list_size": 2353,
+   "typical_gross": 93000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2365,
+   "measured_not_in_account": 2305,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P2-05 Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 5,
+   "signal": "Tired Landlord",
+   "signals": [
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_tired_landlord"
+   ],
+   "lift": 2.5,
+   "dpd": 130.3,
+   "deals": 90,
+   "workbook_list_size": 11727,
+   "typical_gross": 33500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 11856,
+   "measured_not_in_account": 11723,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P2-06 Absentee",
+   "priority": 2,
+   "rank": 6,
+   "signal": "Absentee",
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "lift": 2.3,
+   "dpd": 145.6,
+   "deals": 149,
+   "workbook_list_size": 21687,
+   "typical_gross": 58000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 21841,
+   "measured_not_in_account": 21522,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P2-07 Free & Clear",
+   "priority": 2,
+   "rank": 7,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 1.9,
+   "dpd": 174.1,
+   "deals": 299,
+   "workbook_list_size": 52069,
+   "typical_gross": 72000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 52029,
+   "measured_not_in_account": 51145,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P2-08 Absentee + Senior",
+   "priority": 2,
+   "rank": 8,
+   "signal": "Absentee + Senior",
+   "signals": [
+    "Absentee",
+    "Senior"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_senior_homeowners"
+   ],
+   "lift": 1.9,
+   "dpd": 175,
+   "deals": 21,
+   "workbook_list_size": 3674,
+   "typical_gross": 91000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_absentee_owners=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3691,
+   "measured_not_in_account": 3608,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P2-09 High Equity + Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 9,
+   "signal": "High Equity + Tired Landlord",
+   "signals": [
+    "High Equity",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_tired_landlord"
+   ],
+   "lift": 1.8,
+   "dpd": 184.4,
+   "deals": 29,
+   "workbook_list_size": 5349,
+   "typical_gross": 52000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_high_equity=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 5477,
+   "measured_not_in_account": 5426,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Montgomery P2-11 Free & Clear + Senior",
+   "priority": 2,
+   "rank": 11,
+   "signal": "Free & Clear + Senior",
+   "signals": [
+    "Free & Clear",
+    "Senior"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_senior_homeowners"
+   ],
+   "lift": 1.6,
+   "dpd": 210.4,
+   "deals": 118,
+   "workbook_list_size": 24833,
+   "typical_gross": 88400,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 24768,
+   "measured_not_in_account": 24258,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": {
+  "name": "Montgomery T2 Top ZIPs 20817 20815 20854 20874 20814",
+  "tier": "Tier 2",
+  "zips": [
+   {
+    "zip": "20817",
+    "stars": 4,
+    "deals": 65,
+    "typical_gross": 39000,
+    "dpd": 174.5,
+    "momentum": 1.12
+   },
+   {
+    "zip": "20815",
+    "stars": 5,
+    "deals": 46,
+    "typical_gross": 66000,
+    "dpd": 148,
+    "momentum": 1.12
+   },
+   {
+    "zip": "20854",
+    "stars": 5,
+    "deals": 31,
+    "typical_gross": 147500,
+    "dpd": 470.9,
+    "momentum": 2.83
+   },
+   {
+    "zip": "20874",
+    "stars": 4,
+    "deals": 29,
+    "typical_gross": 81000,
+    "dpd": 146,
+    "momentum": 1.18
+   },
+   {
+    "zip": "20814",
+    "stars": 4,
+    "deals": 25,
+    "typical_gross": 52000,
+    "dpd": 216.1,
+    "momentum": 3
+   }
+  ],
+  "params": [
+   "zip_codes=%5B%2220817%22%2C%20%2220815%22%2C%20%2220854%22%2C%20%2220874%22%2C%20%2220814%22%5D"
+  ],
+  "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&zip_codes=%5B%2220817%22%2C%20%2220815%22%2C%20%2220854%22%2C%20%2220874%22%2C%20%2220814%22%5D&type_single_family=true",
+  "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Montgomery%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Montgomery%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224031%22%2C%20%22county_name%22%3A%20%22Montgomery%22%7D%5D%7D&zip_codes=%5B%2220817%22%2C%20%2220815%22%2C%20%2220854%22%2C%20%2220874%22%2C%20%2220814%22%5D&type_single_family=true&in_my_account_mode=not_in",
+  "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
+  "measured_count": 42376,
+  "measured_not_in_account": 41907,
+  "measure_status": "ok"
+ },
+ "gaps": [
+  {
+   "name": "Montgomery P1-01 Free & Clear + HOA Lien",
+   "priority": 1,
+   "rank": 1,
+   "signal": "Free & Clear + HOA Lien",
+   "signals": [
+    "Free & Clear",
+    "HOA Lien"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_hoa_lien"
+   ],
+   "lift": 53.6,
+   "dpd": 6.2,
+   "deals": 11,
+   "workbook_list_size": 68,
+   "typical_gross": 105000,
+   "caveat": "small live list: quick and cheap to market in full",
+   "verify_reason": "small",
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "HOA Lien"
+   ],
+   "reason": "no SiftMap filter (badge only on property cards)"
+  },
+  {
+   "name": "Montgomery P1-02 AI Score 90-100",
+   "priority": 1,
+   "rank": 2,
+   "signal": "AI Score 90-100",
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 15.7,
+   "dpd": 21.2,
+   "deals": 94,
+   "workbook_list_size": 1989,
+   "typical_gross": 107000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 90-100"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Montgomery P1-03 HOA Lien",
+   "priority": 1,
+   "rank": 3,
+   "signal": "HOA Lien",
+   "signals": [
+    "HOA Lien"
+   ],
+   "keys": [
+    "is_hoa_lien"
+   ],
+   "lift": 13.5,
+   "dpd": 24.6,
+   "deals": 20,
+   "workbook_list_size": 491,
+   "typical_gross": 93500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "HOA Lien"
+   ],
+   "reason": "no SiftMap filter (badge only on property cards)"
+  },
+  {
+   "name": "Montgomery P1-06 Obituary",
+   "priority": 1,
+   "rank": 6,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 9.8,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 390,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  },
+  {
+   "name": "Montgomery P1-13 AI Score 80-90",
+   "priority": 1,
+   "rank": 13,
+   "signal": "AI Score 80-90",
+   "signals": [
+    "AI Score 80-90"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 3.6,
+   "dpd": 93,
+   "deals": 51,
+   "workbook_list_size": 4743,
+   "typical_gross": 101000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 80-90"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Montgomery P2-02 Free & Clear + Low Income",
+   "priority": 2,
+   "rank": 2,
+   "signal": "Free & Clear + Low Income",
+   "signals": [
+    "Free & Clear",
+    "Low Income"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_low_income"
+   ],
+   "lift": 4.3,
+   "dpd": 76.6,
+   "deals": 11,
+   "workbook_list_size": 843,
+   "typical_gross": 90000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Montgomery P2-10 Low Income",
+   "priority": 2,
+   "rank": 10,
+   "signal": "Low Income",
+   "signals": [
+    "Low Income"
+   ],
+   "keys": [
+    "is_low_income"
+   ],
+   "lift": 1.7,
+   "dpd": 190.2,
+   "deals": 17,
+   "workbook_list_size": 3233,
+   "typical_gross": 57000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Income"
+   ],
+   "reason": "no SiftMap filter"
+  }
+ ],
+ "baseline_single_family": 184869,
+ "measured_at": "2026-08-31T08:23:09"
+}

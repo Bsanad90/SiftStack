@@ -1,0 +1,356 @@
+{
+ "generated_at": "2026-08-31T06:46:31",
+ "fips": "24021",
+ "jurisdiction": "Frederick, MD",
+ "state_abbr": "MD",
+ "source": "24021-Frederick-MD-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "Frederick County, MD",
+  "county": "Frederick",
+  "state": "MD",
+  "counties": [
+   {
+    "fips": "24021",
+    "county_name": "Frederick"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": null,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 4296,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 4296
+ },
+ "presets": [
+  {
+   "name": "Frederick P1-03 Absentee + Free & Clear",
+   "priority": 1,
+   "rank": 3,
+   "signal": "Absentee + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "lift": 4.6,
+   "dpd": 59.5,
+   "deals": 132,
+   "workbook_list_size": 7853,
+   "typical_gross": 98540,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 8541,
+   "measured_not_in_account": 8470,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Frederick P1-04 Absentee",
+   "priority": 1,
+   "rank": 4,
+   "signal": "Absentee",
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "lift": 3.6,
+   "dpd": 75.9,
+   "deals": 149,
+   "workbook_list_size": 11313,
+   "typical_gross": 97000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 12103,
+   "measured_not_in_account": 11976,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Frederick P1-05 Out-of-State",
+   "priority": 1,
+   "rank": 5,
+   "signal": "Out-of-State",
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "lift": 3.6,
+   "dpd": 76.4,
+   "deals": 24,
+   "workbook_list_size": 1834,
+   "typical_gross": 44250,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2122,
+   "measured_not_in_account": 2105,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Frederick P1-06 Absentee + Out-of-State",
+   "priority": 1,
+   "rank": 6,
+   "signal": "Absentee + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_oos_owners"
+   ],
+   "lift": 3.1,
+   "dpd": 87.2,
+   "deals": 20,
+   "workbook_list_size": 1744,
+   "typical_gross": 24000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 2046,
+   "measured_not_in_account": 2031,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Frederick P2-01 Free & Clear + Out-of-State",
+   "priority": 2,
+   "rank": 1,
+   "signal": "Free & Clear + Out-of-State",
+   "signals": [
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 3.2,
+   "dpd": 85.3,
+   "deals": 15,
+   "workbook_list_size": 1280,
+   "typical_gross": 79750,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1584,
+   "measured_not_in_account": 1575,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Frederick P2-02 Absentee + Free & Clear + Out-of-State",
+   "priority": 2,
+   "rank": 2,
+   "signal": "Absentee + Free & Clear + Out-of-State",
+   "signals": [
+    "Absentee",
+    "Free & Clear",
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_oos_owners"
+   ],
+   "lift": 2.9,
+   "dpd": 95.9,
+   "deals": 13,
+   "workbook_list_size": 1247,
+   "typical_gross": 70000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true",
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1556,
+   "measured_not_in_account": 1548,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Frederick P2-03 Free & Clear",
+   "priority": 2,
+   "rank": 3,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 2.4,
+   "dpd": 114.9,
+   "deals": 167,
+   "workbook_list_size": 19195,
+   "typical_gross": 95270,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 19312,
+   "measured_not_in_account": 18969,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": {
+  "name": "Frederick T2 Top ZIPs 21702 21701",
+  "tier": "Tier 2",
+  "zips": [
+   {
+    "zip": "21702",
+    "stars": 4,
+    "deals": 59,
+    "typical_gross": 29000,
+    "dpd": 156.9,
+    "momentum": 1.22
+   },
+   {
+    "zip": "21701",
+    "stars": 5,
+    "deals": 44,
+    "typical_gross": 67000,
+    "dpd": 156.7,
+    "momentum": 1.91
+   }
+  ],
+  "params": [
+   "zip_codes=%5B%2221702%22%2C%20%2221701%22%5D"
+  ],
+  "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&zip_codes=%5B%2221702%22%2C%20%2221701%22%5D&type_single_family=true",
+  "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Frederick%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Frederick%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224021%22%2C%20%22county_name%22%3A%20%22Frederick%22%7D%5D%7D&zip_codes=%5B%2221702%22%2C%20%2221701%22%5D&type_single_family=true&in_my_account_mode=not_in",
+  "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
+  "measured_count": 16605,
+  "measured_not_in_account": 16322,
+  "measure_status": "ok"
+ },
+ "gaps": [
+  {
+   "name": "Frederick P1-01 AI Score 90-100",
+   "priority": 1,
+   "rank": 1,
+   "signal": "AI Score 90-100",
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 10.2,
+   "dpd": 26.9,
+   "deals": 130,
+   "workbook_list_size": 3503,
+   "typical_gross": 95270,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 90-100"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Frederick P1-02 Obituary",
+   "priority": 1,
+   "rank": 2,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 8.1,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 289,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  }
+ ],
+ "baseline_single_family": 68849,
+ "measured_at": "2026-08-31T06:49:54"
+}

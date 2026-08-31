@@ -1,0 +1,378 @@
+{
+ "generated_at": "2026-08-31T06:25:25",
+ "fips": "24013",
+ "jurisdiction": "Carroll, MD",
+ "state_abbr": "MD",
+ "source": "24013-Carroll-MD-doors-per-deal.xlsx",
+ "location": {
+  "searchType": "county",
+  "title": "Carroll County, MD",
+  "county": "Carroll",
+  "state": "MD",
+  "counties": [
+   {
+    "fips": "24013",
+    "county_name": "Carroll"
+   }
+  ]
+ },
+ "buy_box": [
+  "type_single_family=true"
+ ],
+ "baseline_url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&type_single_family=true",
+ "proxy": {
+  "signal": "Tired Landlord",
+  "label": "Tired Landlord (proxy)",
+  "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+  "candidates": [
+   "preset_absentee_owners=true&extra_years_owned_min=10",
+   "extra_owner_is_investor=true",
+   "preset_absentee_owners=true&extra_owner_is_investor=true",
+   "extra_owners_with_multiple_properties=true"
+  ],
+  "status": "confirmed",
+  "workbook_list_size": 1928,
+  "probes": [
+   {
+    "param": "preset_absentee_owners=true&extra_years_owned_min=10",
+    "count": 1933,
+    "verdict": "FILTERS"
+   }
+  ],
+  "count": 1933
+ },
+ "presets": [
+  {
+   "name": "Carroll P1-03 Absentee + Free & Clear",
+   "priority": 1,
+   "rank": 3,
+   "signal": "Absentee + Free & Clear",
+   "signals": [
+    "Absentee",
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_absentee_owners",
+    "is_free_and_clear"
+   ],
+   "lift": 4.6,
+   "dpd": 105.5,
+   "deals": 30,
+   "workbook_list_size": 3166,
+   "typical_gross": 11000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3163,
+   "measured_not_in_account": 3136,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Carroll P1-04 Absentee",
+   "priority": 1,
+   "rank": 4,
+   "signal": "Absentee",
+   "signals": [
+    "Absentee"
+   ],
+   "keys": [
+    "is_absentee_owners"
+   ],
+   "lift": 3.8,
+   "dpd": 129.6,
+   "deals": 35,
+   "workbook_list_size": 4536,
+   "typical_gross": 11000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 4544,
+   "measured_not_in_account": 4498,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Carroll P1-05 Tax Delinquent",
+   "priority": 1,
+   "rank": 5,
+   "signal": "Tax Delinquent",
+   "signals": [
+    "Tax Delinquent"
+   ],
+   "keys": [
+    "is_recent_deliquent"
+   ],
+   "lift": 3.1,
+   "dpd": 158.3,
+   "deals": 22,
+   "workbook_list_size": 3482,
+   "typical_gross": 134500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_tax_lien=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_tax_lien=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_tax_lien=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 0,
+   "measured_not_in_account": 0,
+   "measure_status": "measured_zero"
+  },
+  {
+   "name": "Carroll P2-02 Free & Clear + Tax Delinquent",
+   "priority": 2,
+   "rank": 2,
+   "signal": "Free & Clear + Tax Delinquent",
+   "signals": [
+    "Free & Clear",
+    "Tax Delinquent"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_recent_deliquent"
+   ],
+   "lift": 4.3,
+   "dpd": 112.3,
+   "deals": 16,
+   "workbook_list_size": 1797,
+   "typical_gross": 168000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "preset_tax_lien=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_free_clear=true&preset_tax_lien=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_free_clear=true&preset_tax_lien=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 0,
+   "measured_not_in_account": 0,
+   "measure_status": "measured_zero"
+  },
+  {
+   "name": "Carroll P2-03 Free & Clear + Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 3,
+   "signal": "Free & Clear + Tired Landlord",
+   "signals": [
+    "Free & Clear",
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_tired_landlord"
+   ],
+   "lift": 3.5,
+   "dpd": 138.4,
+   "deals": 10,
+   "workbook_list_size": 1384,
+   "typical_gross": 103500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1383,
+   "measured_not_in_account": 1372,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Carroll P2-04 Tired Landlord (proxy)",
+   "priority": 2,
+   "rank": 4,
+   "signal": "Tired Landlord",
+   "signals": [
+    "Tired Landlord"
+   ],
+   "keys": [
+    "is_tired_landlord"
+   ],
+   "lift": 3.3,
+   "dpd": 148.3,
+   "deals": 13,
+   "workbook_list_size": 1928,
+   "typical_gross": 91000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": true,
+   "buildable": true,
+   "params": [
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 1933,
+   "measured_not_in_account": 1916,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Carroll P2-05 Free & Clear",
+   "priority": 2,
+   "rank": 5,
+   "signal": "Free & Clear",
+   "signals": [
+    "Free & Clear"
+   ],
+   "keys": [
+    "is_free_and_clear"
+   ],
+   "lift": 2.1,
+   "dpd": 229,
+   "deals": 64,
+   "workbook_list_size": 14658,
+   "typical_gross": 103000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "All plans",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 14713,
+   "measured_not_in_account": 14340,
+   "measure_status": "ok"
+  }
+ ],
+ "tier2": {
+  "name": "Carroll T2 Top ZIPs 21157 21784",
+  "tier": "Tier 2",
+  "zips": [
+   {
+    "zip": "21157",
+    "stars": 5,
+    "deals": 31,
+    "typical_gross": 94000,
+    "dpd": 352.1,
+    "momentum": 0.79
+   },
+   {
+    "zip": "21784",
+    "stars": 4,
+    "deals": 13,
+    "typical_gross": 82000,
+    "dpd": 904,
+    "momentum": 0.83
+   }
+  ],
+  "params": [
+   "zip_codes=%5B%2221157%22%2C%20%2221784%22%5D"
+  ],
+  "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&zip_codes=%5B%2221157%22%2C%20%2221784%22%5D&type_single_family=true",
+  "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Carroll%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Carroll%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224013%22%2C%20%22county_name%22%3A%20%22Carroll%22%7D%5D%7D&zip_codes=%5B%2221157%22%2C%20%2221784%22%5D&type_single_family=true&in_my_account_mode=not_in",
+  "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
+  "measured_count": 21846,
+  "measured_not_in_account": 21508,
+  "measure_status": "ok"
+ },
+ "gaps": [
+  {
+   "name": "Carroll P1-01 AI Score 90-100",
+   "priority": 1,
+   "rank": 1,
+   "signal": "AI Score 90-100",
+   "signals": [
+    "AI Score 90-100"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 21,
+   "dpd": 23.2,
+   "deals": 32,
+   "workbook_list_size": 744,
+   "typical_gross": 117000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 90-100"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  },
+  {
+   "name": "Carroll P1-02 Obituary",
+   "priority": 1,
+   "rank": 2,
+   "signal": "Obituary",
+   "signals": [
+    "Obituary"
+   ],
+   "keys": null,
+   "lift": 14.3,
+   "dpd": 34,
+   "deals": null,
+   "workbook_list_size": 282,
+   "typical_gross": null,
+   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "verify_reason": null,
+   "plan": "Expert plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Obituary"
+   ],
+   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
+  },
+  {
+   "name": "Carroll P2-01 AI Score 80-90",
+   "priority": 2,
+   "rank": 1,
+   "signal": "AI Score 80-90",
+   "signals": [
+    "AI Score 80-90"
+   ],
+   "keys": [
+    "investor_score"
+   ],
+   "lift": 5.2,
+   "dpd": 93.2,
+   "deals": 13,
+   "workbook_list_size": 1211,
+   "typical_gross": 66000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "AI plan",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "AI Score 80-90"
+   ],
+   "reason": "AI data not bought on this account (decision 2026-08-26)"
+  }
+ ],
+ "baseline_single_family": 52065,
+ "measured_at": "2026-08-31T06:28:47"
+}
