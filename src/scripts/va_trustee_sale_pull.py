@@ -1084,7 +1084,7 @@ def scrapfly_preflight(scrapfly_key: str) -> tuple[bool, str]:
 
 def fetch_full_text(popular_search_value: str, counties: list, days: int, view_index: int, *,
                      captcha_api_key: str, scrapfly_key: str, session: str = "va_fulltext",
-                     date_from: str = "", date_to: str = "") -> dict:
+                     date_from: str = "", date_to: str = "", page_no: int = 1) -> dict:
     """Fetch ONE notice's full text: redo the search, click the view_index'th
     (0-based, in on-page order) result's View button, clear the Turnstile
     gate, and return the resulting page.
@@ -1141,6 +1141,15 @@ def fetch_full_text(popular_search_value: str, counties: list, days: int, view_i
         {"wait": max(3000, 700 * len(counties))},
         {"execute": {"script": _synth_click_expr("document.querySelector('#ctl00_ContentPlaceHolder1_as1_btnGo')")}},
         {"wait": 8000},
+    ]
+    # Walk to the row's own results page BEFORE clicking its View button.
+    # Scrapfly's js_scenario is used here (not Firecrawl), so neither the
+    # 50-action nor the 60s-total-wait cap applies.
+    for _ in range(max(0, int(page_no or 1) - 1)):
+        scen.append({"execute": {"script": _synth_click_expr(
+            "document.querySelector('#ctl00_ContentPlaceHolder1_WSExtendedGridNP1_GridView1_ctl01_btnNext')")}})
+        scen.append({"wait": 5000})
+    scen += [
         {"execute": {"script": _synth_click_expr(f"document.querySelectorAll('.viewButton')[{int(view_index)}]")}},
         {"wait": 5000},
         {"execute": {"script": _INJECT_TURNSTILE.replace("__TOKEN__", token)}},
@@ -1149,10 +1158,23 @@ def fetch_full_text(popular_search_value: str, counties: list, days: int, view_i
     ]
 
     client = ScrapflyClient(key=scrapfly_key)
+    # Scrapfly DOES cap a scenario: default max 30s total, and it refuses the
+    # call outright (400, itemising each reservation) rather than truncating.
+    # Paging to the row's own results page adds ~5s per page, so a page-8 fetch
+    # needs ~60s. Scale the timeout with depth; Scrapfly's ceiling is 150s.
+    # Scrapfly charges each action its own time reservation, not just the
+    # waits: a page-3 fetch reported "requires at least 77s" against a 47s
+    # budget. Measured, not estimated -- roughly 25s per page advanced.
+    budget_ms = min(150_000, 45_000 + 25_000 * max(0, int(page_no or 1) - 1))
     cfg = ScrapeConfig(
         url=SEARCH_URL, render_js=True, asp=True, country="us",
         session=session, proxy_pool="public_residential_pool",
         rendering_wait=1500, js_scenario=scen, raise_on_upstream_error=False,
+        # Scrapfly rejects a custom timeout while its own retry is on
+        # ("Timeout is not customizable when retry is enabled"), so retry is
+        # off here; the caller already treats a failed fetch as a per-row
+        # error and moves on.
+        timeout=budget_ms, retry=False,
     )
     try:
         resp = client.scrape(cfg)
@@ -1218,7 +1240,7 @@ def detected_page_number(html: str):
     return int(m.group(1)) if m else None
 
 
-def parse_grid_html(html: str, popular_search_value: str) -> list:
+def parse_grid_html(html: str, popular_search_value: str, page_no: int | None = None) -> list:
     soup = BeautifulSoup(html, "html.parser")
     rows = []
     for view_index, nested in enumerate(soup.select("table.nested")):
@@ -1274,6 +1296,12 @@ def parse_grid_html(html: str, popular_search_value: str) -> list:
                 # CSV column; popped off before writing (see main()).
                 "full_text": "",
                 "_view_index": view_index,
+                # Which RESULTS PAGE this row came from (1-based). _view_index
+                # is only meaningful within its own page, so full-text fetch
+                # must paginate here first or it clicks the same-numbered View
+                # button on page 1 and silently returns ANOTHER property's
+                # notice. Found 2026-08-31 before any bulk full-text run.
+                "_page_no": page_no,
             }
         )
     return rows
@@ -1510,7 +1538,10 @@ def main():
 
     all_rows = []
     for html in htmls:
-        all_rows.extend(parse_grid_html(html, ps))
+        # detected_page_number reads the grid's own "current page" label, so a
+        # re-captured page (the NOTE above) stamps its true number rather than
+        # its position in the list.
+        all_rows.extend(parse_grid_html(html, ps, page_no=detected_page_number(html)))
 
     in_footprint, out_of_footprint = filter_footprint(all_rows)
     if out_of_footprint:
@@ -1552,10 +1583,11 @@ def main():
         print(f"  --full-text: fetching full notice text for {len(batch)} of {len(rows)} row(s) "
               f"(each redoes the full search + one 2Captcha solve, expect ~30-90s/row)...")
         for i, row in enumerate(batch, 1):
-            print(f"    [{i}/{len(batch)}] view_index={row['_view_index']} "
+            print(f"    [{i}/{len(batch)}] page={row.get('_page_no') or 1} view_index={row['_view_index']} "
                   f"({row['street'] or row['city'] or row['publication']})...")
             result = fetch_full_text(
                 ps, counties, args.days, row["_view_index"],
+                page_no=row.get("_page_no") or 1,
                 captcha_api_key=creds["captcha_api_key"], scrapfly_key=creds["scrapfly_key"],
                 date_from=args.date_from, date_to=args.date_to,
             )

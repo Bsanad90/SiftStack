@@ -252,6 +252,63 @@ async def saved_filter_names(page) -> list[str] | None:
             and not t.startswith(("Filters that you saved", "Pre-build filters"))]
 
 
+async def account_filter_names(page, out: dict | None = None) -> list[str] | None:
+    """EVERY saved filter, read from the management page. None = page unusable.
+
+    Pass `out` to also receive the table's own reported total ("1-10 of 180")
+    as out["total_reported"] -- the only way to tell a complete read from a
+    short one.
+
+    Use this, not saved_filter_names(), for any PRESENCE or SKIP check.
+
+    saved_filter_names() reads the SiftMap Presets POPOVER, and the popover caps
+    out at ~100 rows no matter how many times "Show more" is clicked -- the
+    2026-08-31 "now exhausts Show more" fix is real but does not reach past that
+    cap. Measured 2026-08-31: the account holds 180 saved filters across 18
+    pages at 10/page, and the popover surfaced 100 of them. So a popover-based
+    presence check silently treats ~80 existing filters as absent, and --commit
+    used it exactly that way: it would re-save an existing preset as a
+    DUPLICATE. The management table is the only complete surface, and
+    --delete-name already drives it.
+    """
+    try:
+        await page.goto(PRESETS_ACCOUNT_URL, wait_until="domcontentloaded")
+    except Exception:
+        return None
+    await page.wait_for_timeout(6000)
+
+    # "1-10 of 180" -> 18 pages at 10/page. Fall back to a single page.
+    body = await page.inner_text("body")
+    m = re.search(r"\d+\s*-\s*\d+\s+of\s+(\d+)", body)
+    total = int(m.group(1)) if m else None
+    if out is not None:
+        out["total_reported"] = total
+    pages = max(1, -(-total // 10)) if total else 1
+
+    names: list[str] = []
+    for pageno in range(1, pages + 1):
+        if pageno > 1:
+            box = await page.query_selector("input[type='number']")
+            if not box:
+                break
+            await box.fill(str(pageno))
+            await box.press("Enter")
+            await page.wait_for_timeout(2600)
+        got = await page.eval_on_selector_all(
+            "[class*='PresetCardTitle']",
+            "els => els.map(e => (e.innerText || '').trim()).filter(Boolean)",
+        )
+        for n in got:
+            if n not in names:
+                names.append(n)
+
+    if not names:
+        return None
+    if total and len(names) < total:
+        print(f"    WARNING: account page listed {len(names)} of {total} saved filters")
+    return names
+
+
 async def load_saved_filter(page, name: str) -> dict:
     """Click a saved filter in the open Presets popover; return the URL params and count."""
     # The popover's list SCROLLS. With 29 saved filters a row can sit at y = -51: it still
@@ -790,7 +847,22 @@ async def reload_check(page, base_url: str, name: str, src_url: str, expect_coun
     return row
 
 
-async def run(mode: str, fips: str, headless: bool, target: str | None = None) -> dict:
+async def run(mode: str, fips: str | None, headless: bool, target: str | None = None) -> dict:
+    if mode == "list":
+        # Read-only census of the management page. No manifest, no fips, no writes.
+        out = {"mode": mode, "at": datetime.now().isoformat(timespec="seconds")}
+        email, password = get_credentials()
+        async with create_browser(headless=headless) as (_b, _c, page):
+            if not await login(page, email, password) or "/login" in page.url:
+                out["error"] = "login failed"
+                return out
+            names = await account_filter_names(page, out)
+            out["names"] = names
+            out["count"] = len(names) if names else 0
+            if names is None:
+                out["error"] = "management page unusable (no filter names read)"
+        return out
+
     man_path = ROOT / "data" / f"dpd_siftmap_manifest_{fips}.json"
     if not man_path.exists():
         raise SystemExit(f"missing {man_path}")
@@ -845,9 +917,24 @@ async def run(mode: str, fips: str, headless: bool, target: str | None = None) -
             return out
 
         if mode == "commit":
-            await goto_map(page, base_url)
-            existing = await saved_filter_names(page) or []
+            # Presence check MUST use the complete list: the popover caps at
+            # ~100 of 180, so a popover-based check re-saves duplicates. And a
+            # FAILED or SHORT read must refuse, not degrade: `or []` here once
+            # turned an unusable page into "nothing exists", which would re-save
+            # every existing preset as a duplicate -- the documented hard stop.
+            meta: dict = {}
+            existing = await account_filter_names(page, meta)
+            total = meta.get("total_reported")
+            if existing is None or (total and len(existing) < total):
+                out["error"] = (f"presence read incomplete "
+                                f"({0 if existing is None else len(existing)} of "
+                                f"{total or 'unknown'} saved filters) -- refusing to "
+                                "save: an incomplete list re-saves existing presets "
+                                "as duplicates")
+                print(f"  X {out['error']}")
+                return out
             out["existing_before"] = existing
+            await goto_map(page, base_url)
             for e in items:
                 name = e["name"]
                 row = {"name": name, "url": e["url"], "measured_count": e.get("measured_count")}
@@ -865,10 +952,20 @@ async def run(mode: str, fips: str, headless: bool, target: str | None = None) -
                     SHOTS.mkdir(parents=True, exist_ok=True)
                     await page.screenshot(path=str(SHOTS / "commit_failure.png"))
                     break
-            # Read-back from a fresh load.
+            # Read-back from the complete list, same reason as above. A failed or
+            # short read here must say so, not report every preset as missing.
+            after_meta: dict = {}
+            after = await account_filter_names(page, after_meta)
+            after_total = after_meta.get("total_reported")
+            out["existing_after"] = after or []
             await goto_map(page, base_url)
-            after = await saved_filter_names(page) or []
-            out["existing_after"] = after
+            if after is None or (after_total and len(after) < after_total):
+                out["readback_error"] = (f"read-back incomplete "
+                                         f"({0 if after is None else len(after)} of "
+                                         f"{after_total or 'unknown'}); missing_after "
+                                         "not computed -- verify on the management page")
+                print(f"  ! {out['readback_error']}")
+                return out
             missing = [e["name"] for e in items if e["name"] not in after
                        and not any(n and e["name"].startswith(n) and len(n) >= 20 for n in after)]
             out["missing_after"] = missing
@@ -890,8 +987,10 @@ async def run(mode: str, fips: str, headless: bool, target: str | None = None) -
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Save and verify SiftMap presets for one county")
-    ap.add_argument("--fips", required=True)
+    ap.add_argument("--fips")
     g = ap.add_mutually_exclusive_group(required=True)
+    g.add_argument("--list-account", action="store_true",
+                   help="read-only: list EVERY saved filter from the management page")
     g.add_argument("--discover", action="store_true")
     g.add_argument("--smoke-test", action="store_true")
     g.add_argument("--commit", action="store_true")
@@ -902,18 +1001,29 @@ def main() -> int:
                    help="delete ONE saved filter; the name must start with 'ZZ '")
     ap.add_argument("--headed", action="store_true")
     a = ap.parse_args()
-    mode = ("discover" if a.discover else "smoke" if a.smoke_test else
+    mode = ("list" if a.list_account else
+            "discover" if a.discover else "smoke" if a.smoke_test else
             "commit" if a.commit else "verify" if a.verify else
             "discover_delete" if a.discover_delete else "delete")
+    if mode != "list" and not a.fips:
+        ap.error("--fips is required for every mode except --list-account")
     target = a.discover_delete or a.delete_name
     out = asyncio.run(run(mode, a.fips, headless=not a.headed, target=target))
-    path = ROOT / "output" / f"dpd_siftmap_presets_{a.fips}_{mode}.json"
+    path = ROOT / "output" / f"dpd_siftmap_presets_{a.fips or 'account'}_{mode}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(out, indent=1), encoding="utf-8")
     print(f"\nwrote {path}")
     if out.get("error"):
         print("ERROR:", out["error"])
         return 1
+    if mode == "list":
+        total = out.get("total_reported")
+        print(f"list-account: {out['count']} saved filters read"
+              + (f" of {total} reported" if total else " (no total banner found)"))
+        if total and out["count"] < total:
+            print("   SHORT READ -- treat as a read failure, not as absent filters")
+            return 1
+        return 0
     if mode == "smoke":
         r = out["results"][0]
         rb = r.get("readback") or {}
