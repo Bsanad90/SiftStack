@@ -69,11 +69,42 @@ TAG_DP = f"Deep Prospected {MONTH_TAG}"
 TAG_DECEASED = "Deceased Owner"          # exists on the account already
 TAG_ALIVE = "Owner Alive - Spouse Deceased"
 TAG_UNVERIFIED = "DP Death Unverified"
+TAG_PRESUMED = "DP Owner Presumed Alive"
 TAG_NO_NUMBERS = f"DP No Numbers {MONTH_TAG}"
 TAG_TRUST = "DP Trust Trustee Inferred"
-# Basem 2026-08-28: the account's REL1-5 plus at most two more. REL8-13 were created and
-# deleted the same day; `schema` must never recreate them.
-MAX_REL_SLOTS = 7
+
+# The presumed-alive verdict (FTM cohorts, research --presume-alive-without-signal).
+# It deliberately CONTAINS the substring "owner alive" nowhere: score/build test for it
+# with "presumed alive" explicitly, so a grep for either phrase finds every gate.
+VERDICT_PRESUMED = "owner presumed alive (no deceased signal)"
+
+# What counts as a reason to run obituary research on a record. FTM lanes are mixed:
+# probate-sourced records likely have a dead owner, foreclosure-sourced ones a living
+# one -- research is only worth its Firecrawl/LLM spend where a signal exists.
+DECEASED_SIGNAL_LISTS = ("probate", "obituary")
+DECEASED_SIGNAL_TAGS = ("deceased owner", "owner deceased", "obituaries", "deceased")
+
+
+def deceased_signal(lists: str, tags: str, obit_date: str, pr: str) -> str:
+    """Why this record's owner might be dead, or '' if nothing suggests it."""
+    ll = (lists or "").lower()
+    for w in DECEASED_SIGNAL_LISTS:
+        if w in ll:
+            return f"list contains {w!r}"
+    tl = (tags or "").lower()
+    for w in DECEASED_SIGNAL_TAGS:
+        if w in tl:
+            return f"tag contains {w!r}"
+    if (obit_date or "").strip():
+        return "SiftMap obituary date set"
+    if (pr or "").strip():
+        return "personal representative on record"
+    return ""
+# The account's native IDI-import shape is REL1-5; Basem added two on 2026-08-28 (cap 7) and
+# raised it to 15 on 2026-08-31 so that signers and blood relatives always land in a REL field
+# rather than in the note. Measured on the first 77 records: 18 of 77 had blood relatives with
+# phones that did not fit at 7, none at 15. `schema --commit` creates whatever is missing.
+MAX_REL_SLOTS = 15
 
 STATE_NAMES = {"MD": "Maryland", "VA": "Virginia", "DC": "Washington DC",
                "DE": "Delaware", "PA": "Pennsylvania", "WV": "West Virginia"}
@@ -95,6 +126,14 @@ CORP_WORDS = {"llc", "inc", "corp", "corporation", "properties", "holdings", "co
 ORDINALS = {"2nd", "3rd", "4th", "ii", "iii", "iv", "jr", "sr", "esq", "md", "dds", "phd"}
 
 SPOUSE_RELS = {"Husband", "Wife", "Spouse"}
+
+# A phone tag this pipeline wrote. Nothing outside this pattern is ever removed.
+_OURS_RE = re.compile(r"^(Rel\d+\.\d+|Owner\.\d+)$")
+
+
+def _d10(n) -> str:
+    """Last 10 digits -- the account stores some numbers as +1XXXXXXXXXX."""
+    return "".join(c for c in str(n or "") if c.isdigit())[-10:]
 
 
 # ───────────────────────── small helpers ─────────────────────────
@@ -561,6 +600,55 @@ def _reroot_namesake(rec: dict, crm: dict) -> None:
     rec["rerooted"] = True
 
 
+def _dedupe_relatives(rec: dict) -> int:
+    """Collapse repeated people in the relatives graph, merging their phones.
+
+    SmartSkip returns some relatives on more than one row (the same person at two
+    addresses). Nothing downstream deduped them, so one person could occupy two REL
+    slots -- 101 of 619 records on this batch -- wasting the scarcest field on the
+    record and listing the same human twice on the dial sheet.
+
+    The survivor is the entry rank_record already chose as a signer, else the
+    higher-scoring one, so `dms` object identity (which the caller keys on with id())
+    is never broken.
+    """
+    ranked = rec.get("ranked") or []
+    dm_ids = {id(x) for x in (rec.get("dms") or [])}
+    keep: dict[str, dict] = {}
+    order: list[dict] = []
+    dropped = 0
+    for x in ranked:
+        k = " ".join(name_tokens(x.get("name") or "")).lower()
+        if not k:
+            order.append(x)
+            continue
+        prev = keep.get(k)
+        if prev is None:
+            keep[k] = x
+            order.append(x)
+            continue
+        # Decide which object survives: a signer always wins, then the better score.
+        if id(x) in dm_ids and id(prev) not in dm_ids:
+            keep[k] = x
+            order[order.index(prev)] = x
+            winner, loser = x, prev
+        else:
+            winner, loser = prev, x
+        have = {p.get("number") for p in (winner.get("phones") or [])}
+        for ph in loser.get("phones") or []:
+            if ph.get("number") not in have:
+                winner.setdefault("phones", []).append(ph)
+                have.add(ph.get("number"))
+        if not winner.get("age") and loser.get("age"):
+            winner["age"] = loser["age"]
+        dropped += 1
+    if dropped:
+        rec["ranked"] = order
+        rec["dms"] = [x for x in order if id(x) in dm_ids]
+        rec["duplicate_relatives_merged"] = dropped
+    return dropped
+
+
 def cmd_rank(a) -> int:
     run = Path(a.run_dir)
     from parse_smartskip import parse  # noqa: E402
@@ -645,19 +733,44 @@ def cmd_rank(a) -> int:
                     d["tracerfy"] = True
             say(f"  {gap_stats}")
 
-    # REL slots: signers first (rank_record order), then every other relative with a
-    # phone by score, then phoneless relatives so their NAMES still land in REL fields.
+    # REL slots, in the order obituary_dp_run.rank_record intends: signers (by intestacy),
+    # then the rest of the blood/unknown relatives, then in-laws LAST as dial channels.
+    #
+    # rank_record keeps in-laws deliberately -- "the way you reach a daughter who does not
+    # answer is often her husband" -- but they are never signers, so they must not displace
+    # blood kin out of the REL fields. `--max-rels` bounds the blood tier; `--channel-cap`
+    # bounds the in-law tail, which is appended after it.
+    #
+    # Only In-Law is capped, never the generic "Relative" bucket: 63% of SmartSkip labels come
+    # back generic and that is where mislabeled blood kin land (it called a husband of 62 years
+    # a plain "Relative"), so capping generics would drop real signers.
     max_n = 0
     stats = Counter()
     for key, rec in by_key.items():
+        _dedupe_relatives(rec)
         dms = rec.get("dms") or []
         dm_ids = {id(x) for x in dms}
         others = [x for x in (rec.get("ranked") or []) if id(x) not in dm_ids and not x.get("deceased")]
-        others.sort(key=lambda x: (0 if x.get("phones") else 1, -(x.get("dm_score") or 0)))
-        ordered = dms + others
+        # An in-law that rank_record put in dms stays a signer; the cap never touches it.
+        blood = [x for x in others if x.get("canon_rel") != "In-Law"]
+        inlaws = [x for x in others if x.get("canon_rel") == "In-Law"]
+        blood.sort(key=lambda x: (0 if x.get("phones") else 1, -(x.get("dm_score") or 0)))
+        inlaws.sort(key=lambda x: (0 if x.get("phones") else 1, -(x.get("dm_score") or 0)))
+        blood = blood[: a.max_rels]
+        channels = inlaws[: a.channel_cap]
+        chan_ids = {id(x) for x in channels}
+        # Keep enough of a capped in-law to stay a candidate for the spouse-obituary trap
+        # scan in `research`, which matches on surname + mailing street.
+        channels_dropped = [{"name": x.get("name"), "canon_rel": x.get("canon_rel"),
+                             "age": x.get("age"), "n_phones": len(x.get("phones") or []),
+                             "first": x.get("first"), "last": x.get("last"),
+                             "mailing_street": x.get("mailing_street"), "phones": []}
+                            for x in inlaws[a.channel_cap:]]
+        ordered = dms + blood + channels
         rels = []
-        for n, x in enumerate(ordered[: a.max_rels], 1):
+        for n, x in enumerate(ordered, 1):
             rels.append({
+                "is_channel": id(x) in chan_ids,
                 "n": n, "name": x.get("name"), "first": x.get("first"), "last": x.get("last"),
                 "canon_rel": x.get("canon_rel"), "type_raw": x.get("type_raw"), "age": x.get("age"),
                 "relabel": x.get("relabel"), "rerooted": x.get("rerooted"),
@@ -668,7 +781,7 @@ def cmd_rank(a) -> int:
                 "mailing_state": x.get("mailing_state"), "mailing_zip": x.get("mailing_zip"),
                 "phones": x.get("phones") or [], "tracerfy": bool(x.get("tracerfy")),
             })
-        dropped = max(0, len(ordered) - a.max_rels)
+        dropped = max(0, len(others) - len(blood) - len(channels) - len(channels_dropped))
         n_ph = sum(len(r["phones"]) for r in rels)
         max_n = max(max_n, len(rels))
         stats["records"] += 1
@@ -677,6 +790,9 @@ def cmd_rank(a) -> int:
         stats["with_relatives"] += 1 if rels else 0
         stats["with_phones"] += 1 if n_ph else 0
         stats["relatives"] += len(rels)
+        stats["duplicate_relatives_merged"] += rec.get("duplicate_relatives_merged") or 0
+        stats["channels"] += len(channels)
+        stats["channels_dropped"] += len(channels_dropped)
         stats["phones"] += n_ph
         ranked[key] = {
             "key": key, "input_name": rec.get("input_name"),
@@ -684,6 +800,7 @@ def cmd_rank(a) -> int:
                         "deceased_flag": rec.get("deceased"),
                         "phones": sorted(rec.get("subject_phones") or [], key=_phone_sort_key)},
             "signer_basis": rec.get("signer_basis"), "rels": rels,
+            "channels_dropped": channels_dropped,
             "rerooted": bool(rec.get("rerooted")),
             "decedent_from_smartskip": rec.get("decedent_from_smartskip"),
             "subject_age_inconsistent": rec.get("subject_age_inconsistent"),
@@ -792,7 +909,16 @@ def _llm_match(text: str, owner_name: str, city: str, address: str, state: str) 
                                       api_key=cfg.ANTHROPIC_API_KEY, model=_obituary_model())
     except Exception as e:  # noqa: BLE001
         return {"error": str(e)[:200]}
-    if not parsed or not parsed.get("match") or not parsed.get("full_name"):
+    # llm_client._chat_anthropic swallows EVERY exception and returns None (llm_client.py:94),
+    # so the except above never fires -- an exhausted API credit balance arrived here as a
+    # plain None and was indistinguishable from "no obituary matched". On 2026-08-31 that
+    # froze 52 records as false "unresolved" before it was caught. A None is always a
+    # failure (a genuine non-match returns a dict with match=false), so report it as one
+    # and let the caller's guard refuse to cache the verdict.
+    if parsed is None:
+        return {"error": "LLM returned nothing (API failure, no key, or unparseable JSON) "
+                         "- see the llm_client log line above"}
+    if not parsed.get("match") or not parsed.get("full_name"):
         return None
     deceased = parsed.get("full_name") or owner_name
     parsed["survivors"] = _validate_survivors_against_text(parsed.get("survivors", []), text, deceased)
@@ -842,7 +968,7 @@ def _name_from_hit(hit: dict, surname: str) -> str:
     if not sur:
         return ""
     title = (hit.get("title") or "")
-    m = re.search(r"([A-Z][a-z]+(?:\s+[A-Z][a-z]*\.?)*\s+" + re.escape(surname.title()) + r")", title)
+    m = re.search(r"([A-Z][a-z]+(?:\s+[A-Z][a-z]*\.?)*\s+" + re.escape(surname.title()) + r")\b", title)
     if m:
         toks = m.group(1).split()
         return f"{toks[0]} {toks[-1]}"
@@ -884,11 +1010,37 @@ def cmd_research(a) -> int:
 
     findings = []
     verdicts = Counter()
+    # "A run that succeeds with zero data found is worse than one that fails loudly."
+    # A dead search or LLM backend produces a long run of uncacheable unresolveds; stop
+    # rather than spend hours and Firecrawl credits writing nothing.
+    consecutive_errors = 0
     for i, key in enumerate(keys, 1):
         rec, rk = records[key], ranked[key]
         cpath = cache_dir / (key.replace("|", "_") + ".json")
         if cpath.exists() and not a.force:
             f = jload(cpath)
+        elif a.presume_alive_without_signal and not deceased_signal(
+                rec.get("lists", ""), rec.get("tags", ""),
+                rec.get("obit_date", ""), rec.get("pr", "")):
+            # FTM-style cohort: nothing on the record suggests a death, so the owner is
+            # presumed alive and the Firecrawl/LLM spend is skipped. The verdict makes
+            # score/build collect the OWNER'S own numbers (the person to call), which the
+            # obituary verdicts only do after research proves the owner alive.
+            flags = ["presumed alive, not researched"]
+            if rec.get("is_trust"):
+                flags.append("trust - trustee inferred")
+            if rec.get("name_confidence") in ("low", "surname_only", "check"):
+                flags.append(f"name_confidence {rec['name_confidence']}")
+            f = {"record": key,
+                 "owner_name": f"{rec['ss_first']} {rec['ss_last']}".strip(),
+                 "searched": [], "verdict": VERDICT_PRESUMED,
+                 "evidence": "no deceased signal on the record (lists, tags, obituary "
+                             "date and PR all quiet); obituary research skipped",
+                 "confirmed_rels": [], "obit_only_names": [], "drop_names": [],
+                 "flags": flags,
+                 "researched_at": datetime.now().isoformat(timespec="seconds")}
+            consecutive_errors = 0
+            jdump(cpath, f)
         else:
             owner_name = f"{rec['ss_first']} {rec['ss_last']}".strip()
             f = {"record": key, "owner_name": owner_name, "searched": []}
@@ -907,8 +1059,11 @@ def cmd_research(a) -> int:
                 f["evidence"] = f"obituary names {parsed.get('full_name')} ({parsed.get('obituary_url')})"
             else:
                 # Spouse-obituary trap: the obituary SiftMap saw may be the spouse's.
-                cands = [r for r in rk["rels"] if r.get("canon_rel") in SPOUSE_RELS]
-                cands += [r for r in rk["rels"] if r not in cands and r.get("last", "").lower()
+                # In-laws capped out of the REL slots are still candidates here: the trap
+                # is about who the obituary is FOR, not about who gets a phone field.
+                pool = list(rk["rels"]) + list(rk.get("channels_dropped") or [])
+                cands = [r for r in pool if r.get("canon_rel") in SPOUSE_RELS]
+                cands += [r for r in pool if r not in cands and (r.get("last") or "").lower()
                           == rec["ss_last"].lower() and r.get("mailing_street")
                           and norm_addr(r["mailing_street"]) == norm_addr(rec["street"])]
                 cands = [r for r in cands if (r.get("first") or "").lower() not in ("", "unknown")]
@@ -923,7 +1078,10 @@ def cmd_research(a) -> int:
                         elif cand.get("canon_rel") in ("Mother", "Father", "Parent"):
                             verdict = "parent died; owner alive"
                         else:
-                            verdict = f"relative ({rel}) died; owner status unknown"
+                            # canon_rel is often literally "Relative", which read as
+                            # "relative (relative) died" on the record.
+                            verdict = ("a relative died; owner status unknown" if rel == "relative"
+                                       else f"relative ({rel}) died; owner status unknown")
                         f["decedent_name"] = p2.get("full_name")
                         f["dod"] = p2.get("date_of_death") or ""
                         f["dod_source"] = "obituary" if f["dod"] else ""
@@ -968,8 +1126,10 @@ def cmd_research(a) -> int:
             surv = [_survivor_name(s) for s in f.get("survivors") or []]
             f["confirmed_rels"] = [n for n in rel_names if any(names_match(n, s) for s in surv)]
             f["obit_only_names"] = [s for s in surv if s and not any(names_match(s, n) for n in rel_names)]
-            f["drop_names"] = [n for n in rel_names
-                               if any(names_match(n, _survivor_name(p)) for p in f.get("preceded") or [])]
+            # dict.fromkeys: names_match is fuzzy and matched the same person repeatedly.
+            f["drop_names"] = list(dict.fromkeys(
+                n for n in rel_names
+                if any(names_match(n, _survivor_name(p)) for p in f.get("preceded") or [])))
             flags = []
             try:
                 if f.get("dod") and (date.today() - date.fromisoformat(f["dod"][:10])).days < 90:
@@ -996,8 +1156,20 @@ def cmd_research(a) -> int:
                            for h in (t.get("hits") or []) if h.get("error")]
             if llm_errors and f["verdict"] == "unresolved":
                 f["transient_errors"] = llm_errors[:3]
+                consecutive_errors += 1
                 say(f"    not cached: {llm_errors[0][:100]}")
+                if consecutive_errors >= a.max_consecutive_errors:
+                    say(f"STOPPING: {consecutive_errors} records in a row failed on a backend "
+                        f"error, not on the data. Last error: {llm_errors[0][:200]}")
+                    say("Nothing from this streak was cached. Fix the backend and re-run "
+                        "`research` -- it resumes from the cache.")
+                    jdump(run / "stage_c_research.json",
+                          {"generated_at": datetime.now().isoformat(timespec="seconds"),
+                           "aborted_on_backend_error": llm_errors[0][:300],
+                           "findings": findings})
+                    return 4
             else:
+                consecutive_errors = 0
                 jdump(cpath, f)
         findings.append(f)
         verdicts[f["verdict"]] += 1
@@ -1133,15 +1305,25 @@ def cmd_score(a) -> int:
         say("ERROR: no TRESTLE_PAID_API_KEY / TRESTLE_API_KEY")
         return 1
 
+    # Price EVERY number on a kept contact, not the first few. The old slice took
+    # `max_phones_per_rel + 1` -- three plus "one spare so a dropped number can be replaced" --
+    # which quietly made scoring the real ceiling on how many numbers could ever load: an
+    # unscored number fails _keep_number and is dropped, so the 4th+ could never reach a record
+    # however the build caps were set. `--max-score-per-rel` bounds it only if a future batch
+    # comes back with 20 numbers a head.
+    cut = a.max_score_per_rel or None
     numbers: list[str] = []
     for key, rk in ranked.items():
         f = research.get(key, {})
-        owner_alive = "owner alive" in (f.get("verdict") or "")
+        v = f.get("verdict") or ""
+        # "presumed alive" is the FTM-cohort verdict (VERDICT_PRESUMED): the owner is the
+        # decision maker there too, so their own numbers are priced like any signer's.
+        owner_alive = "owner alive" in v or "presumed alive" in v
         for rel in rk["rels"]:
-            for p in rel["phones"][: a.max_phones_per_rel + 1]:   # one spare so a dropped number can be replaced
+            for p in (rel["phones"][:cut] if cut else rel["phones"]):
                 numbers.append(p["number"])
         if owner_alive:
-            for p in rk["subject"]["phones"][: a.max_phones_per_rel]:
+            for p in (rk["subject"]["phones"][:cut] if cut else rk["subject"]["phones"]):
                 numbers.append(p["number"])
     uniq = sorted({n for n in numbers if n and n not in cache or (n in cache and cache[n].get("error"))})
     if a.limit:
@@ -1205,36 +1387,137 @@ def _api_phone_type(ss_type: str, trestle_line: str) -> str:
     return "UNKNOWN"
 
 
-def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int) -> str:
-    parts = [f"Deep Prospecting {TODAY} (SmartSkip + obituary + Trestle)"]
-    who = f.get("decedent_name") or f"{rec['ss_first']} {rec['ss_last']}"
-    dod = f.get("dod") or "unknown"
-    parts.append(f"Decedent: {who} DOD {dod} ({f.get('dod_source') or 'no source'})")
-    parts.append(f"Verdict: {f.get('verdict', 'not researched')}")
+# Slug -> prose. The flags are written for the code; the note is read by a caller.
+FLAG_PROSE = {
+    "dod_under_90d": "DOD under 90 days",
+    "dod_from_siftmap_not_obituary": "DOD from SiftMap, not the obituary",
+    "unresolved": "no obituary matched the owner or a spouse candidate",
+    "not researched": "not researched",
+    "presumed alive, not researched": "owner presumed alive - no deceased signal, "
+                                      "obituary research skipped",
+    "trust - trustee inferred": "title in a trust, trustee inferred from the title",
+    "decedent name differs from owner name - check": "decedent name differs from the owner name, check",
+}
+# _push_one_api truncates the note at 2000 (the add-notes cap); stay just under it.
+NOTE_MAX = 1990
+# Measured live 2026-09-01 on 1815 Drew St: 39 phones sent, 200 + "added" for all of them,
+# 30 stored. The limit is the account's, not ours.
+OWNER_PHONE_CAP = 30
+
+# Dial priority, best first. `_phone_sort_key` orders on LINE TYPE and runs at rank time,
+# before Trestle scoring exists -- so on its own it parked 538 Dial First numbers behind
+# Dial Fourth mobiles. Tier has to lead, with line type kept as the tie-break.
+TIER_RANK = {"Dial First": 0, "Dial Second": 1, "Dial Third": 2, "Dial Fourth": 3}
+
+
+def _tier_sort_key(pt: tuple) -> tuple:
+    p, t = pt
+    return (TIER_RANK.get(t.get("tier"), 8), _phone_sort_key(p))
+DOD_SRC_PROSE = {
+    "obituary": "obituary",
+    "siftmap_last_obituary_date": "SiftMap obituary date, not the obituary",
+    "": "no source",
+}
+
+
+def _flag_prose(fl: str) -> str:
+    if fl in FLAG_PROSE:
+        return FLAG_PROSE[fl]
+    if fl.startswith("name_confidence "):
+        return f"owner name parsed with {fl.split(' ', 1)[1]} confidence"
+    if fl.startswith("dod_conflict:"):
+        return "DOD conflict - " + fl.split(":", 1)[1].strip()
+    return fl.replace("_", " ")
+
+
+def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int,
+          not_loaded: list[str] | None = None) -> str:
+    """The note a caller actually reads: one section per line, one relative per line.
+
+    The previous version joined every section with "  ||  " and every relative with " | ",
+    two near-identical nested separators, so the whole thing arrived as one paragraph.
+    """
+    # A presumed-alive record (VERDICT_PRESUMED, FTM cohorts) is not a decedent brief:
+    # the owner is the person to call, and no obituary step ever ran.
+    presumed = "presumed alive" in (f.get("verdict") or "")
+    if presumed:
+        out = [f"DEEP PROSPECTING {TODAY} (SmartSkip + Trestle)", ""]
+        # Do not claim "no numbers" here: the CRM skip trace found none (that is how
+        # the record entered the cohort), but SmartSkip may have -- and build loads
+        # the owner's own numbers FIRST, so the dial list can start with the owner.
+        out.append(f"OWNER: {rec['ss_first']} {rec['ss_last']} - presumed alive; "
+                   "the owner is the person to call (relatives are reach channels)")
+    else:
+        out = [f"DEEP PROSPECTING {TODAY} (SmartSkip + obituary + Trestle)", ""]
+        who = f.get("decedent_name") or f"{rec['ss_first']} {rec['ss_last']}"
+        src = f.get("dod_source") or ""
+        out.append(f"DECEDENT: {who} - DOD {f.get('dod') or 'unknown'} "
+                   f"({DOD_SRC_PROSE.get(src, src)})")
+    # Cached pilot findings read "relative (relative) died" -- the label was interpolated
+    # into a sentence that already carried it.
+    verdict = (f.get("verdict") or "not researched").replace("relative (relative) died",
+                                                             "a relative died")
+    out.append(f"VERDICT: {verdict}")
     if rk.get("signer_basis"):
-        parts.append(f"Signers: {rk['signer_basis']}")
+        out.append(f"SIGNERS: {rk['signer_basis']}")
+
     if rel_lines:
-        parts.append("Relatives: " + " | ".join(rel_lines))
+        out += ["", "WHO TO CALL"] + list(rel_lines)
+
+    nl = list(not_loaded or [])
     if f.get("obit_only_names"):
-        parts.append("Named in obituary, not in SmartSkip: " + ", ".join(f["obit_only_names"][:8]))
-    if f.get("drop_names"):
-        parts.append("Predeceased per obituary (do not call): " + ", ".join(f["drop_names"]))
+        nl.append("Named in the obituary, not in SmartSkip: "
+                  + "; ".join(dict.fromkeys(f["obit_only_names"][:8])))
+    # dict.fromkeys, not set(): names_match is fuzzy and repeatedly matched the same person,
+    # which put "DONALD DAVIS" in the note four times.
+    dropped = list(dict.fromkeys(f.get("drop_names") or []))
+    if dropped:
+        nl.append("Predeceased, do not call: " + "; ".join(dropped))
+    nl_start = len(out) + 2
+    if nl:
+        out += ["", "NOT LOADED"] + nl
+
+    tail = []
     if f.get("executor_named"):
-        parts.append(f"Executor named in obituary: {f['executor_named']}")
+        tail.append(f"EXECUTOR NAMED IN OBITUARY: {f['executor_named']}")
     if rec.get("pr"):
-        parts.append(f"PR on record: {rec['pr']}")
+        tail.append(f"PR ON RECORD: {rec['pr']}")
     if f.get("obituary_url"):
-        parts.append(f"Obituary: {f['obituary_url']}")
+        tail.append(f"OBITUARY: {f['obituary_url']}")
     if rec.get("is_trust"):
-        parts.append(f"Title held by: {rec['business_name']} (trustee inferred from the title)")
-    flags = list(f.get("flags") or [])
+        tail.append(f"TITLE HELD BY: {rec['business_name']} (trustee inferred from the title)")
+    flags = [_flag_prose(x) for x in (f.get("flags") or [])]
     if n_phones == 0:
         flags.append("no numbers found")
     if flags:
-        parts.append("Flags: " + ", ".join(flags))
-    parts.append("MUST VERIFY: decedent is the owner of record; deed vesting; "
-                 "PR appointment (Register of Wills / Circuit Court)")
-    return "  ||  ".join(parts)
+        tail.append("FLAGS: " + "; ".join(dict.fromkeys(flags)))
+    if presumed:
+        tail.append("MUST VERIFY: owner is alive and still the owner of record; "
+                    "deed vesting")
+    else:
+        tail.append("MUST VERIFY: decedent is the owner of record; deed vesting; "
+                    "PR appointment (Register of Wills / Circuit Court)")
+    out += [""] + tail
+
+    note = "\n".join(out)
+    if len(note) > NOTE_MAX and nl:
+        # _push_one_api posts note[:2000]. MUST VERIFY is the LAST line, so a blind cut
+        # removes exactly the line that matters most. Spend the overflow on the NOT LOADED
+        # lists instead -- they are the long ones (a record with 20 capped in-laws) and the
+        # least load-bearing, since nothing in them is being dialled anyway.
+        fixed = len(note) - sum(len(x) + 1 for x in nl)
+        per = max(60, (NOTE_MAX - fixed) // len(nl))
+        for j, line in enumerate(nl):
+            if len(line) > per:
+                out[nl_start + j] = line[: per - 4].rstrip(" ;,") + " ..."
+        note = "\n".join(out)
+        if len(note) > NOTE_MAX:
+            # Still over: drop the block entirely rather than shave the tail. One record
+            # lost the closing ")" of MUST VERIFY to the per-line floor before this.
+            del out[nl_start - 2: nl_start + len(nl)]
+            out.insert(nl_start - 2, f"NOT LOADED: {len(nl)} lines omitted, note too long")
+            note = "\n".join(out)
+    return note[:NOTE_MAX]
 
 
 def cmd_build(a) -> int:
@@ -1269,57 +1552,113 @@ def cmd_build(a) -> int:
                         f["verdict"] = verdict
         except ValueError:
             pass
-        owner_alive = "owner alive" in verdict
+        presumed = "presumed alive" in verdict     # VERDICT_PRESUMED, the FTM cohort
+        owner_alive = "owner alive" in verdict or presumed
         drop = {n.lower() for n in f.get("drop_names") or []}
 
-        phones, cfields, rel_lines, overflow = [], {}, [], []
+        cfields, rel_lines, overflow, chan_over = {}, [], [], []
         slot = 0
+        seen_numbers: set[str] = set()
+        # contacts[] is the candidate pool: every kept number for every contact, each already
+        # sorted best-tier-first. Nothing is truncated here -- the 30-cap is applied afterwards
+        # by priority, not by position, so a Dial First can never be parked behind a Dial
+        # Fourth that merely sat in an earlier REL slot.
+        contacts: list[dict] = []
+
+        # A LIVING owner is the decision maker, so their own numbers are collected FIRST.
+        # They used to be appended after all 15 relatives and were then cut by the 30-cap:
+        # 14029 Breeders Cup Dr lost its owner's Dial First entirely that way.
+        if owner_alive:
+            kept = []
+            for p in rk["subject"]["phones"]:
+                t = cache.get(p["number"], {})
+                if _keep_number(t)[0] and p["number"] not in seen_numbers:
+                    seen_numbers.add(p["number"])
+                    kept.append((p, t))
+            kept.sort(key=_tier_sort_key)
+            if kept:
+                contacts.append({"kind": "owner", "n": 0, "name": "owner", "kept": kept})
+
+        # rk["rels"] already arrives signers -> blood -> in-law channels, so walking it in
+        # order fills the REL fields blood-first and channels take only what is left over.
         for rel in rk["rels"]:
             if (rel["name"] or "").lower() in drop:
                 continue
             if slot >= a.max_rel_slots:
-                # Basem 2026-08-28: REL1-5 plus at most two more. Anyone past that is
-                # named in the note, not loaded as a field or a phone.
-                overflow.append(f"{rel['name']} ({rel['canon_rel']}{', ' + str(rel['age']) if rel.get('age') else ''})")
+                # Past the cap: named in the note, not loaded as a field or a phone.
+                label = f"{rel['name']} ({rel['canon_rel']}{', ' + str(rel['age']) if rel.get('age') else ''})"
+                (chan_over if rel.get("is_channel") else overflow).append(label)
                 continue
             kept = []
             for p in rel["phones"]:
                 t = cache.get(p["number"], {})
-                ok, _ = _keep_number(t)
-                if ok and p["number"] not in {q["number"] for q in phones}:
+                if _keep_number(t)[0] and p["number"] not in seen_numbers:
+                    seen_numbers.add(p["number"])
                     kept.append((p, t))
-                if len(kept) >= a.max_phones_per_rel:
-                    break
+            # Best tier first, so REL{n}: Phone 1..3 get this contact's THREE BEST numbers
+            # rather than whichever three SmartSkip happened to list first.
+            kept.sort(key=_tier_sort_key)
             if not kept and not a.include_phoneless:
                 continue
             slot += 1
             n = slot
             cfields[f"REL{n}: Full Name"] = (rel["name"] or "").upper()
-            tiers = []
-            for m, (p, t) in enumerate(kept, 1):
+            # The REL custom fields only exist as Phone 1..3 -- that cap is real and stays.
+            # The owner's PHONE LIST has no such limit, so it takes every number, tagged
+            # Rel{n}.4, Rel{n}.5 and on (the account already carries Rel4.4 / Rel4.5 from the
+            # IDI imports). Two different limits; they used to be one.
+            for m, (p, _t) in enumerate(kept[: a.max_rel_field_phones], 1):
                 cfields[f"REL{n}: Phone {m}"] = p["number"]
-                tags = [f"Rel{n}.{m}"] + ([t["tier"]] if t.get("tier") and t["tier"] != "Unknown" else [])
-                phones.append({"number": p["number"], "type": _api_phone_type(p.get("type"), t.get("line_type")),
-                               "tags": tags, "status": "UNKNOWN", "is_connected": True,
-                               "rel_n": n, "rel_name": rel["name"], "tier": t.get("tier")})
-                tiers.append(t.get("tier") or "?")
-            rel_lines.append(f"REL{n} {rel['name']} ({rel['canon_rel']}"
+            contacts.append({"kind": "rel", "n": n, "name": rel["name"], "kept": kept,
+                             "is_dm": bool(rel.get("is_dm")), "rel": rel})
+
+        # ── allocation against the 30-phone owner cap ──────────────────
+        # Pass 1 (coverage): one number for every contact, in REL order, owner first. No
+        # signer can be left unreachable by a relative that happens to hold four good numbers.
+        # Pass 2 (quality): everything else by TIER alone, whoever it belongs to.
+        phones, phones_capped = [], []
+
+        def _mk(c, p, t, m):
+            tag = f"Owner.{m}" if c["kind"] == "owner" else f"Rel{c['n']}.{m}"
+            tags = [tag] + ([t["tier"]] if t.get("tier") and t["tier"] != "Unknown" else [])
+            return {"number": p["number"], "type": _api_phone_type(p.get("type"), t.get("line_type")),
+                    "tags": tags, "status": "UNKNOWN", "is_connected": True,
+                    "rel_n": c["n"], "rel_name": c["name"], "tier": t.get("tier")}
+
+        rest = []
+        for c in contacts:
+            for m, (p, t) in enumerate(c["kept"], 1):
+                (phones if m == 1 and len(phones) < OWNER_PHONE_CAP else rest).append(_mk(c, p, t, m))
+        rest.sort(key=lambda ph: TIER_RANK.get(ph.get("tier"), 8))
+        for ph in rest:
+            (phones if len(phones) < OWNER_PHONE_CAP else phones_capped).append(ph)
+
+        # The note lists each contact with the tiers that actually reached the dial list.
+        loaded_by_n: dict[int, list[str]] = {}
+        for ph in phones:
+            loaded_by_n.setdefault(ph["rel_n"], []).append(ph.get("tier") or "?")
+        for c in contacts:
+            if c["kind"] != "rel":
+                continue
+            rel, n = c["rel"], c["n"]
+            tiers = loaded_by_n.get(n, [])
+            role = (" - SIGNER" if rel.get("is_dm")
+                    else " - CHANNEL" if rel.get("is_channel") else "")
+            rel_lines.append(f"REL{n} - {rel['name']} - {rel['canon_rel']}"
                              f"{', ' + str(rel['age']) if rel.get('age') else ''}"
-                             f"{', SIGNER' if rel.get('is_dm') else ''})"
-                             f"{' ' + '/'.join(tiers) if tiers else ' no number'}")
-        if owner_alive:
-            for m, p in enumerate(rk["subject"]["phones"][: a.max_phones_per_rel], 1):
-                t = cache.get(p["number"], {})
-                ok, _ = _keep_number(t)
-                if ok:
-                    tags = [f"Owner.{m}"] + ([t["tier"]] if t.get("tier") else [])
-                    phones.append({"number": p["number"], "type": _api_phone_type(p.get("type"), t.get("line_type")),
-                                   "tags": tags, "status": "UNKNOWN", "is_connected": True,
-                                   "rel_n": 0, "rel_name": "owner", "tier": t.get("tier")})
+                             f"{role}"
+                             f"{' - ' + ' / '.join(tiers) if tiers else ' - no number'}")
+        if owner_alive and loaded_by_n.get(0):
+            rel_lines.insert(0, ("OWNER (presumed alive) - " if presumed else "OWNER (alive) - ")
+                             + " / ".join(loaded_by_n[0]))
 
         tags = [TAG_DP]
         if verdict == "owner did die":
             tags.append(TAG_DECEASED)
+        elif presumed:
+            # Not TAG_ALIVE: that tag asserts a researched spouse death. Nothing here was
+            # researched -- the record simply carried no deceased signal.
+            tags.append(TAG_PRESUMED)
         elif owner_alive:
             tags.append(TAG_ALIVE)
         else:
@@ -1329,10 +1668,26 @@ def cmd_build(a) -> int:
         if not phones:
             tags.append(TAG_NO_NUMBERS)
             no_numbers.append({**rec, "verdict": verdict, "relatives": len(rk["rels"])})
-        group = "deceased" if verdict == "owner did die" else "owner_alive" if owner_alive else "unverified"
+        group = ("deceased" if verdict == "owner did die" else
+                 "presumed_alive" if presumed else
+                 "owner_alive" if owner_alive else "unverified")
 
+        # DataSift keeps at most 30 phones on an owner: it answers the upsert with 200 and
+        # echoes every number back in `added`, then silently stores the first 30. The cap is
+        # applied above, by priority rather than by position.
+        not_loaded = []
+        if phones_capped:
+            rels_cut = sorted({p["rel_n"] for p in phones_capped})
+            not_loaded.append(
+                f"{len(phones_capped)} more numbers are in the REL fields but not on the "
+                f"dial list (DataSift caps an owner at {OWNER_PHONE_CAP}): "
+                f"REL{', REL'.join(str(x) for x in rels_cut)}")
         if overflow:
-            rel_lines.append("Also found, not loaded (REL cap): " + "; ".join(overflow))
+            not_loaded.append("Over the REL cap: " + "; ".join(overflow))
+        inlaws_out = list(dict.fromkeys(chan_over + [
+            f"{c['name']} ({c.get('age') or '?'})" for c in (rk.get("channels_dropped") or [])]))
+        if inlaws_out:
+            not_loaded.append("In-laws found, not loaded: " + "; ".join(inlaws_out))
         plan[key] = {
             "key": key, "street": rec["street"], "city": rec["city"], "state": rec["state"], "zip": rec["zip"],
             "owner_first": rec["owner_first"], "owner_last": rec["owner_last"],
@@ -1341,7 +1696,7 @@ def cmd_build(a) -> int:
             "mail_state": rec["mail_state"], "mail_zip": rec["mail_zip"],
             "verdict": verdict, "group": group, "tags": tags,
             "custom_fields": cfields, "phones": phones,
-            "note": _note(rec, rk, f, rel_lines, len(phones)),
+            "note": _note(rec, rk, f, rel_lines, len(phones), not_loaded),
         }
         max_rel = max(max_rel, slot)
         max_phones = max(max_phones, len(phones))
@@ -1356,7 +1711,7 @@ def cmd_build(a) -> int:
     phone_cols = [f"Phone {i}" for i in range(1, max_phones + 1)]
     rel_cols = [f"REL{i}: Full Name" for i in range(1, max_rel + 1)]
     header = RELOAD_BASE + phone_cols + rel_cols + ["Notes"]
-    for group in ("deceased", "owner_alive", "unverified"):
+    for group in ("deceased", "owner_alive", "presumed_alive", "unverified"):
         rows = []
         for p in plan.values():
             if p["group"] != group or not p["phones"]:
@@ -1475,6 +1830,26 @@ def _resolve_uuid(api: WriteApi, p: dict) -> tuple[str, dict, str]:
     want = (norm_addr(p["street"]), p["zip"])
     exact = [h for h in hits if (norm_addr((h.get("address") or {}).get("street")),
                                  zip5((h.get("address") or {}).get("postal_code"))) == want]
+    if len(exact) > 1:
+        # This account holds duplicate property records: the same street+zip under two
+        # different owner rows (7819 Chestnut Ave is on file under both Gordon Thompson and
+        # Gail R. Huber). Disambiguate on the owner we actually traced. NEVER on a blank
+        # name -- an empty owner_last matches a record whose last_name is null, which
+        # "resolves" to an arbitrary stranger's record.
+        first = (p.get("owner_first") or "").strip().lower()
+        last = (p.get("owner_last") or "").strip().lower()
+        if first and last:
+            named = [h for h in exact
+                     if ((h.get("owner") or {}).get("first_name") or "").strip().lower() == first
+                     and ((h.get("owner") or {}).get("last_name") or "").strip().lower() == last]
+            if len(named) == 1:
+                return named[0]["uuid"], named[0], ""
+            if len(named) > 1:
+                # Same address AND same owner on both rows: a real duplicate record, not an
+                # ambiguity. Either is correct; take the first and say so.
+                return named[0]["uuid"], named[0], ""
+        return "", {}, (f"{len(exact)} exact hits of {len(hits)} for {p['street']} {p['zip']}"
+                        f" - owner {first or '?'} {last or '?'} did not single one out")
     if len(exact) != 1:
         return "", {}, f"{len(exact)} exact hits of {len(hits)} for {p['street']} {p['zip']}"
     return exact[0]["uuid"], exact[0], ""
@@ -1568,6 +1943,7 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
     status, full = api.get(f"/api/internal/property/{uuid}/")
     if status != 200:
         log["error"] = f"record fetch {status}"
+        log["http_status"] = status
         return log
     owner = full.get("owner") or {}
     owner_uuid = owner.get("uuid")
@@ -1580,15 +1956,51 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
 
     # 1. phones (upsert by number on the OWNER)
     if p["phones"] and owner_uuid:
-        existing = {(ph.get("number") or "") for ph in owner.get("phones") or []}
+        want = {_d10(ph["number"]) for ph in p["phones"]}
+        # Superseded numbers have to come OFF first. DataSift caps an owner at 30, so on a
+        # re-push a record already holding 30 silently refuses every better number the new
+        # tier ordering picked (14029 Breeders Cup Dr: 23 of 30 landed, 7 blocked by stale
+        # ones). GUARD: only ever remove a number carrying OUR Rel{N}.{M} / Owner.{M} tag and
+        # absent from the current plan -- a number this pipeline did not write is never
+        # touched, however stale it looks.
+        stale = []
+        stale_restore = []
+        for ph in owner.get("phones") or []:
+            num = ph.get("number") or ""
+            tags = [t.get("name") if isinstance(t, dict) else str(t) for t in (ph.get("tags") or [])]
+            if _d10(num) not in want and any(_OURS_RE.match(t) for t in tags):
+                stale.append(num)
+                # Enough to put the number back if the upsert below then fails.
+                stale_restore.append({"number": num, "type": ph.get("type") or "UNKNOWN",
+                                      "tags": tags, "status": ph.get("status") or "UNKNOWN",
+                                      "is_connected": bool(ph.get("isConnected", True)),
+                                      "verified": False})
+        if stale:
+            st, resp = api.write("POST", f"/api/internal/owner/{owner_uuid}/remove-phones/",
+                                 {"phones": stale})
+            log["steps"]["phones_removed"] = {"status": st, "sent": len(stale),
+                                              "removed": len((resp or {}).get("removed") or [])
+                                              if isinstance(resp, dict) else None}
+        # Send the FULL planned list, not just the numbers that are new. The old code skipped
+        # anything already on the owner, so a re-push could never CORRECT a tag -- and the
+        # tier ordering reshuffles almost every Rel{N}.{M} assignment.
         payload = [{"number": ph["number"], "type": ph["type"], "tags": ph["tags"], "status": ph["status"],
                     "is_connected": ph["is_connected"], "verified": False}
-                   for ph in p["phones"] if ph["number"] not in existing]
+                   for ph in p["phones"]]
         if payload:
             st, resp = api.write("POST", f"/api/internal/owner/{owner_uuid}/upsert-phones/", {"phones": payload})
             log["steps"]["phones"] = {"status": st, "sent": len(payload), "resp": str(resp)[:200]}
-            if st == 403:
-                log["error"] = "403 on upsert-phones"
+            if st not in (200, 201, 204):
+                log["http_status"] = st
+                # The removal above has already landed. Without this restore, a failed
+                # re-push leaves the owner holding FEWER dialable numbers than before
+                # the push -- the one outcome strictly worse than doing nothing.
+                if (log["steps"].get("phones_removed") or {}).get("removed"):
+                    st_r, _ = api.write("POST", f"/api/internal/owner/{owner_uuid}/upsert-phones/",
+                                        {"phones": stale_restore})
+                    log["steps"]["phones_restored"] = {"status": st_r, "sent": len(stale_restore)}
+                log["error"] = ("403 on upsert-phones" if st == 403
+                                else f"upsert-phones failed (status {st})")
                 return log
     # 2. custom fields
     if p["custom_fields"]:
@@ -1604,6 +2016,7 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
             log["steps"]["custom_fields"] = {"status": st, "sent": len(body), "resp": str(resp)[:200]}
             if st == 403:
                 log["error"] = "403 on custom-field update"
+                log["http_status"] = 403
                 return log
             if st not in (200, 201, 204):
                 # phone-type fields may want a format we did not guess: land the names alone
@@ -1620,14 +2033,32 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
     log["steps"]["tags"] = {"status": st, "added": [t for t in p["tags"] if t not in current], "resp": str(resp)[:200]}
     if st == 403:
         log["error"] = "403 on tags PATCH"
+        log["http_status"] = 403
         return log
-    # 4. note
-    st, resp = api.write("POST", f"/api/internal/property/{uuid}/add-notes/", {"notes": p["note"][:2000]})
-    log["steps"]["note"] = {"status": st, "resp": str(resp)[:200]}
-    if st in (404, 405):
-        st2, resp2 = api.write("POST", f"/api/internal/property/{uuid}/message/",
-                               {"message": p["note"][:4000], "pinned": True})
-        log["steps"]["message"] = {"status": st2, "resp": str(resp2)[:200]}
+    # 4. note -> the record's message board, PINNED.
+    #
+    # add-notes writes the `notes` FIELD, which is not the message board a caller reads. It
+    # answers 204, so the old code's message/ fallback (gated on 404/405) never ran and 619
+    # records ended up with an empty board. Post the message first, then pin it: `pinned:true`
+    # on create is accepted and IGNORED (201, pinned=False), and PATCHing pinned returns 200
+    # while changing nothing. Only POST .../message/{uuid}/pin/ (204) actually pins.
+    # add-notes is deliberately NOT called: it appends to the `notes` field, which is not
+    # what the record page shows, and a re-push would stack a second copy there.
+    st2, resp2 = api.write("POST", f"/api/internal/property/{uuid}/message/",
+                           {"message": p["note"][:4000]})
+    msg_uuid = (resp2 or {}).get("uuid") if isinstance(resp2, dict) else None
+    log["steps"]["message"] = {"status": st2, "uuid": msg_uuid, "resp": str(resp2)[:120]}
+    if msg_uuid:
+        # A re-push must not leave two DP boards on the record: drop any earlier one --
+        # but only now that the replacement exists. This cleanup used to run even when
+        # the POST above failed, deleting the record's ONLY pinned note and leaving the
+        # board empty: a failed re-push must never end strictly worse than no push.
+        stx, mbx = api.get(f"/api/internal/property/{uuid}/message/")
+        for old_msg in ((mbx.get("results") or []) if isinstance(mbx, dict) else []):
+            if (old_msg.get("message") or "").startswith("DEEP PROSPECTING")                     and old_msg.get("uuid") and old_msg.get("uuid") != msg_uuid:
+                api.write("DELETE", f"/api/internal/property/{uuid}/message/{old_msg['uuid']}/", {})
+        st3, resp3 = api.write("POST", f"/api/internal/property/{uuid}/message/{msg_uuid}/pin/", {})
+        log["steps"]["pin"] = {"status": st3}
 
     # read back
     time.sleep(1.0)
@@ -1647,10 +2078,23 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
         "tags_missing": [t for t in p["tags"] if t not in
                          [x.get("name") if isinstance(x, dict) else str(x) for x in (after.get("tags") or [])]],
         "notes_present": bool(after.get("notes")),
+        "message_pinned": None,   # filled below from the message board
+        # Whether the field preserves newlines is the thing the probe exists to answer,
+        # so keep the stored text verbatim rather than a boolean.
+        # The `notes` FIELD is deliberately no longer written -- reading it here reported
+        # "no newline survived" on a record whose pinned board message was perfect.
+        # note_stored is filled from the message board below.
+        "note_stored": "",
     }
+    stm, mb = api.get(f"/api/internal/property/{uuid}/message/")
+    msgs = (mb.get("results") or []) if isinstance(mb, dict) else []
+    log["readback"]["message_pinned"] = any(x.get("pinned") for x in msgs)
+    log["readback"]["messages_on_board"] = len(msgs)
+    log["readback"]["note_stored"] = next(
+        (x.get("message") or "" for x in msgs if x.get("pinned")), "")[:2500]
     rb = log["readback"]
     log["ok"] = (not rb["phones_missing"] and not rb["custom_fields_missing"] and not rb["tags_missing"]
-                 and rb["owner_after"] == log["owner_before"])
+                 and rb["owner_after"] == log["owner_before"] and rb["message_pinned"])
     return log
 
 
@@ -1722,7 +2166,14 @@ def cmd_push(a) -> int:
                 if entry.get("error"):
                     fail += 1
                     say(f"  [{i}/{len(keys)}] {plan[k]['street']}: ERROR {entry['error']}")
-                    if "403" in entry["error"]:
+                    # match a real HTTP status, not any "403" in the text: the resolve
+                    # failure message embeds the property ZIP, and MD zip 21403 aborted
+                    # a 826-record run at record 179 (2026-09-01).
+                    # The write-403 error strings start with "403" (no prefix word),
+                    # so prose-matching missed them -- test the STRUCTURED status.
+                    # (The old pattern also carried a literal 0x08 byte where a regex \b was
+                    # meant, so it matched nothing, not even "record fetch 403".)
+                    if entry.get("http_status") == 403:
                         say("  The internal API refuses writes on this account. Switch to --route wizard.")
                         return 3
                 else:
@@ -1736,11 +2187,21 @@ def cmd_push(a) -> int:
                            else f"dry run: would write {entry.get('would_write')}"))
         say(f"done: {ok} ok, {fail} failed. Log: {log_path}")
         if a.probe and a.commit and keys:
+            stored = (entry.get("readback") or {}).get("note_stored") or ""
+            say("--- note as DataSift stored it "
+                f"({stored.count(chr(10))} newlines, {len(stored)} chars) ---")
+            for line in stored.splitlines() or [stored]:
+                say("  | " + line)
+            say("--- end note ---")
+            if "\n" not in stored and stored:
+                say("WARNING: no newline survived. The field collapsed the layout -- do NOT "
+                    "bulk push; switch _note to a single-line separator first.")
             say(f"read back in full:  python src/scripts/dp_record_pull.py --uuid {entry.get('uuid')}")
         return 0 if not fail else 1
 
     # wizard route
     group_tags = {"deceased": [TAG_DP, TAG_DECEASED], "owner_alive": [TAG_DP, TAG_ALIVE],
+                  "presumed_alive": [TAG_DP, TAG_PRESUMED],
                   "unverified": [TAG_DP, TAG_UNVERIFIED]}
     probe_key = keys[0] if a.probe else None
     groups = [plan[probe_key]["group"]] if probe_key else list(group_tags)
@@ -1793,7 +2254,10 @@ def main() -> int:
 
     s = sub.add_parser("rank")
     s.add_argument("--tracerfy", action="store_true", help="Tracerfy gap-fill for phoneless signers ($0.02)")
-    s.add_argument("--max-rels", type=int, default=15)
+    s.add_argument("--max-rels", type=int, default=15,
+                   help="cap on the BLOOD/unknown relative tier (in-law channels are extra)")
+    s.add_argument("--channel-cap", type=int, default=2,
+                   help="in-laws kept as dial channels per record, after the blood tier")
     s.add_argument("--max-generic", type=int, default=50)
     s.add_argument("--min-score", type=float, default=30.0)
     s.add_argument("--keep", action="store_true", help="merge into an existing ranked_records.json")
@@ -1805,6 +2269,12 @@ def main() -> int:
     s.add_argument("--force", action="store_true")
     s.add_argument("--max-fetch", type=int, default=3)
     s.add_argument("--max-spouse", type=int, default=2)
+    s.add_argument("--max-consecutive-errors", type=int, default=8,
+                   help="abort if this many records in a row fail on a backend error")
+    s.add_argument("--presume-alive-without-signal", action="store_true",
+                   help="FTM-style cohorts: only research records carrying a deceased "
+                        "signal (Probate/Obituary list, deceased-ish tag, obituary date, "
+                        "PR); everything else gets the presumed-alive verdict for free")
     s.set_defaults(fn=cmd_research)
 
     s = sub.add_parser("augment")
@@ -1814,11 +2284,13 @@ def main() -> int:
     s = sub.add_parser("score")
     s.add_argument("--litigator", action="store_true")
     s.add_argument("--limit", type=int, default=0)
-    s.add_argument("--max-phones-per-rel", type=int, default=3)
+    s.add_argument("--max-score-per-rel", type=int, default=0,
+                   help="0 = price every number on a kept contact (the default)")
     s.set_defaults(fn=cmd_score)
 
     s = sub.add_parser("build")
-    s.add_argument("--max-phones-per-rel", type=int, default=3)
+    s.add_argument("--max-rel-field-phones", type=int, default=3,
+                   help="REL{n}: Phone 1..N custom fields only; the account has 3")
     s.add_argument("--max-rel-slots", type=int, default=MAX_REL_SLOTS,
                    help="REL slots per record (Basem: the existing 5 plus at most 2 more)")
     s.add_argument("--include-phoneless", action="store_true",
