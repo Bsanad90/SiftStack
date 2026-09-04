@@ -37,9 +37,13 @@ MDDC-derived first cut, all confirmed against real row HTML:
     plain form field), so checking N boxes without waiting for them to
     round-trip races Go's postback and silently drops the county filter --
     fixed with an explicit wait scaled to county count (see build_actions).
-  - This site's "View" button is a plain postback submit with no
-    Details.aspx?ID= anywhere in the row -- there is no stable per-notice id
-    to extract here, so notice_id is always blank (not a parsing miss).
+  - This site's "View" button LOOKED like a plain postback submit with no
+    per-notice id -- corrected 2026-09-01: its onclick carries
+    `Details.aspx?SID=<session>&ID=<notice id>`, but the onclick is attached
+    by client-side JS that a Firecrawl capture sometimes misses, so
+    notice_id is populated when the capture caught it and blank otherwise.
+    Foreclosure dedup deliberately ignores it (see dedupe(): republications
+    carry a NEW id each week).
   - The row DOES carry a hidden, structured `City:`/`County:` field
     (div.right) that MDDC's equivalent div does not -- used as the
     authoritative county source in parse_grid_meta, ahead of the free-text
@@ -147,12 +151,12 @@ COUNTY_CHECKBOX_INDEX: dict[str, int] = {
     "Stafford": 90,
 }
 
+# Narrowed 2026-09-01 with the 14->6 footprint cut: Fairfax + Arlington are the
+# only VA jurisdictions in scope. The COUNTY_CHECKBOXES map above keeps the old
+# entries so an explicit --counties can still reach them.
 DEFAULT_COUNTIES = [
     "Fairfax",
-    "Prince William",
     "Arlington",
-    "Stafford",
-    "Spotsylvania",
 ]
 
 # Matches both the two-line notice-caption form ("STREET\nCITY, ST ZIP") and
@@ -308,16 +312,15 @@ COUNTY_MENTION_RE = re.compile(
     rf"|({_CO_NAME})\s+(?i:county)\b"
 )
 
-# NO stable notice id is extractable from this public grid -- checked live
-# 2026-08-25 against a real row's raw HTML. Unlike the MDDC/TN authenticated
-# grid (a real <a>/<input> carrying `Details.aspx?ID=<n>`), this public
-# view's "View" button is a plain ASP.NET postback submit
-# (`ctl00$ContentPlaceHolder1$WSExtendedGridNP1$GridView1$ctl03$btnView2`) --
-# `ctl03` is just this row's position in the CURRENT page's grid, not a
-# stable global id, and there is no URL/query-string id anywhere in the row
-# markup. notice_id is therefore always blank for this script on purpose,
-# not a parsing miss; dedup relies on (street, city, date_published) instead
-# (see dedupe() below), same as it would for any row with a missing id.
+# notice_id history: the 2026-08-25 read ("no stable notice id is
+# extractable from this public grid") was WRONG -- corrected 2026-09-01: the
+# visible View button's onclick carries `Details.aspx?SID=<sess>&ID=<n>` and
+# ID is a real per-notice id. The catch is that the onclick is attached by
+# client-side JS, so a Firecrawl capture only sometimes includes it: expect
+# notice_id populated on some pulls and blank on others (measured live
+# 2026-09-04: 31/32 in one run, 2/32 in another). Because each weekly
+# REPUBLICATION of a notice gets a NEW id, dedup does NOT key foreclosures
+# on it -- the (street, city) collapse still governs (see dedupe()).
 
 # County checkbox id pattern -- same naming convention as the MDDC site's
 # CheckBoxList (ctl00_ContentPlaceHolder1_as1_lstCounty_{N}), confirmed
@@ -402,8 +405,13 @@ _MONTHS = ("January|February|March|April|May|June|July|August|September|"
            "October|November|December")
 _ANY_DATE_RE = re.compile(rf"({_MONTHS})\s+(\d{{1,2}}),?\s+(\d{{4}})", re.I)
 # Words that mark a date as the DEED's date, never the sale's.
+# "whereas" covers the recital form "WHEREAS, on January 17, 2013 ...
+# executed by" where the deed language FOLLOWS the date -- found live
+# 2026-09-04 in an MDDC full text re-mined through this parser (a 2026
+# notice shipped a 2013 "auction date"). Recitals never carry the sale
+# date; that sits in the operative "will offer for sale ... on" clause.
 _DEED_DATE_CONTEXT_RE = re.compile(
-    r"(recorded|dated|deed\s+of\s+trust|instrument|book|modified|assigned)"
+    r"(recorded|dated|deed\s+of\s+trust|instrument|book|modified|assigned|whereas)"
     r"[^.]{0,40}$", re.I)
 # Sale language that legitimately precedes the auction date.
 _SALE_CONTEXT_RE = re.compile(
@@ -457,7 +465,16 @@ def parse_auction_date(text: str, published: str = ""):
             continue
         if pub and when.date() < pub.date():
             continue
-        (preferred if _SALE_CONTEXT_RE.search(before) else fallback).append((when, raw))
+        # Sale language sits FAR from its date -- "will offer for sale at
+        # public auction in front of the entrance doors to the Circuit Court,
+        # <venue name and address>, on September 26, 2026" -- so the deed
+        # window (60 chars, deliberately tight: deed context is adjacent) is
+        # far too short here. Measured live 2026-09-01: with 60 chars, ZERO
+        # of 15 Arlington notices put their sale date in the preferred
+        # bucket, and min-of-fallback then returned the page header's
+        # "Notice Publish Date" for every row.
+        before_sale = text[max(0, m.start() - 240):m.start()]
+        (preferred if _SALE_CONTEXT_RE.search(before_sale) else fallback).append((when, raw))
 
     for bucket in (preferred, fallback):
         if bucket:
@@ -856,6 +873,32 @@ COUNTY_POSTBACK_SETTLE_MS = 2500
 
 MIN_SPLIT_DAYS = 7
 
+# Windows the backwards walk had to abandon (depth cap / cannot shrink):
+# collected during collect_pages, surfaced as a banner at the END of main()
+# so a scheduled run's log makes the truncation impossible to miss. A
+# mid-run WARNING alone scrolls away in the 6 AM task log and the CSV then
+# reads as complete -- the exact silent-loss class the module's own
+# UntrustworthyResult contract exists to prevent.
+TRUNCATION_WARNINGS: list = []
+
+
+def _oldest_published(htmls: list, popular_search_value: str):
+    """Oldest parseable grid `date_published` across these pages, or None."""
+    from datetime import datetime as _dt
+    oldest = None
+    for h in htmls:
+        for row in parse_grid_html(h, popular_search_value):
+            raw = (row.get("date_published") or "").strip()
+            for fmt in _AUCTION_PUB_FORMATS:
+                try:
+                    when = _dt.strptime(raw, fmt)
+                except ValueError:
+                    continue
+                if oldest is None or when < oldest:
+                    oldest = when
+                break
+    return oldest
+
 
 def collect_pages(creds: dict, popular_search_value: str, counties: list, days: int, max_pages: int,
                   date_from: str = "", date_to: str = "") -> list[str]:
@@ -875,7 +918,11 @@ def collect_pages(creds: dict, popular_search_value: str, counties: list, days: 
     Every (county, window) call verifies the county box is still checked on
     the results page (run_popular_search). Windows below MIN_SPLIT_DAYS that
     still fail raise UntrustworthyResult, so a partial pull is never written
-    as if it were complete."""
+    as if it were complete.
+
+    A window that SUCCEEDS but fills all --max-pages pages is treated as
+    truncated and walked backwards by publish date (see pull_window), so the
+    8-page Firecrawl ceiling caps a single call, not the pull's depth."""
     from datetime import datetime, timedelta
 
     if date_from and date_to:
@@ -906,6 +953,52 @@ def collect_pages(creds: dict, popular_search_value: str, counties: list, days: 
         if len(htmls) > 1 and len(set(p for p in nums if p is not None)) < len(htmls) - 1:
             print(f"    NOTE: pagination re-captured a page on {label} (fewer pages than --max-pages, or a "
                   f"missed click) -- rows are de-duplicated downstream")
+        # A window that fills every requested page is TRUNCATED, not complete:
+        # the grid renders newest-first, so everything older than the last
+        # captured row is silently missing. Walk backwards (Basem, 2026-09-03):
+        # take the oldest publish date seen and re-pull start..that-date. The
+        # cut date itself is re-included (its rows may straddle the page
+        # boundary); the overlap de-duplicates downstream.
+        #
+        # Saturation is judged on DISTINCT detected page numbers, never on
+        # len(htmls): build_actions always emits exactly max_pages scrape
+        # actions and a no-op Next click on the real last page re-captures
+        # that page (full-length, passes MIN_VALID_PAGE_LEN), so len(htmls)
+        # equals max_pages on EVERY successful window -- gating on it sent
+        # complete 2-page pulls into the backwards walk and fanned empty
+        # windows into up to 15 extra Firecrawl calls. A re-captured page is
+        # itself proof the grid's last page was reached, i.e. NOT truncated.
+        distinct_pages = len(set(p for p in nums if p is not None))
+        if distinct_pages >= max_pages:
+            if depth >= 12:
+                msg = (f"{label} saturated at depth {depth} -- backwards walk stopped, "
+                       f"older rows in this window are NOT captured")
+                print(f"    WARNING: {msg}")
+                TRUNCATION_WARNINGS.append(msg)
+                return htmls
+            oldest = _oldest_published(htmls, popular_search_value)
+            if oldest is not None and a.date() <= oldest.date() < b.date():
+                print(f"    {label}: SATURATED at {len(htmls)} pages -- continuing backwards through {fmt(oldest)}")
+                return htmls + pull_window(county, a, oldest, depth + 1)
+            if oldest is not None and oldest.date() >= b.date():
+                # Every visible row sits on the window's last day: that single
+                # day may hold more than max_pages of rows (irrecoverable by
+                # date), but the rest of the window is entirely unseen.
+                msg = (f"{label} saturated with every row on {fmt(oldest)} -- that one day may be "
+                       f"truncated; re-pulling the rest of the window")
+                print(f"    WARNING: {msg}")
+                TRUNCATION_WARNINGS.append(msg)
+                if a.date() < b.date():
+                    return htmls + pull_window(county, a, b - timedelta(days=1), depth + 1)
+                return htmls
+            if span > MIN_SPLIT_DAYS:
+                mid = a + timedelta(days=span // 2)
+                print(f"    {label}: saturated with no parseable dates -- re-pulling as two halves")
+                return (htmls + pull_window(county, a, mid - timedelta(days=1), depth + 1)
+                        + pull_window(county, mid, b, depth + 1))
+            msg = f"{label} saturated and cannot shrink further -- rows may be missing"
+            print(f"    WARNING: {msg}")
+            TRUNCATION_WARNINGS.append(msg)
         return htmls
 
     out: list[str] = []
@@ -1083,11 +1176,17 @@ def scrapfly_preflight(scrapfly_key: str) -> tuple[bool, str]:
 
 
 def fetch_full_text(popular_search_value: str, counties: list, days: int, view_index: int, *,
-                     captcha_api_key: str, scrapfly_key: str, session: str = "va_fulltext",
-                     date_from: str = "", date_to: str = "", page_no: int = 1) -> dict:
-    """Fetch ONE notice's full text: redo the search, click the view_index'th
-    (0-based, in on-page order) result's View button, clear the Turnstile
-    gate, and return the resulting page.
+                     captcha_api_key: str, scrapfly_key: str, session: str = "",
+                     date_from: str = "", date_to: str = "", page_no: int = 1,
+                     notice_id: str = "") -> dict:
+    """Fetch ONE notice's full text: redo the search, click the target row's
+    View button, clear the Turnstile gate, and return the resulting page.
+
+    Target selection: if `notice_id` is given, the View button is chosen by
+    its onclick's `ID=<n>` (EXACT -- immune to the grid reordering/pagination
+    drift that makes position-based selection click the wrong row after ~5
+    rows; this is why the 2026-09-04 daily run only enriched 5 of 38). Else
+    it falls back to `view_index` (0-based, on-page order).
 
     Returns {"ok": True, "html": ...} or {"ok": False, "error": ..., "html": ...}.
     Each call redoes the ENTIRE search from scratch and pays for one 2Captcha
@@ -1095,6 +1194,16 @@ def fetch_full_text(popular_search_value: str, counties: list, days: int, view_i
     this public flow (no stable id/URL exists to jump to directly).
     """
     from scrapfly import ScrapeConfig, ScrapflyClient, ScrapflyScrapeError
+
+    # One session PER FETCH, never shared. A sticky "va_fulltext" session was
+    # reused across rows until 2026-09-01, and the pattern was unmissable: the
+    # first row cleared the Turnstile gate, then every later row in the run
+    # came back gate_not_cleared (16/16 on Arlington) -- Cloudflare hardens
+    # against a session that just cleared a gate and immediately re-searches,
+    # and an off-page 2Captcha token stops being accepted. A fresh session =
+    # fresh cookie jar + proxy per row, which is what row 1 effectively had.
+    if not session:
+        session = f"va_ft_{int(time.time() * 1000)}_{view_index}"
 
     token = _solve_turnstile(SEARCH_URL, DETAIL_TURNSTILE_SITEKEY, captcha_api_key)
     if not token:
@@ -1149,8 +1258,28 @@ def fetch_full_text(popular_search_value: str, counties: list, days: int, view_i
         scen.append({"execute": {"script": _synth_click_expr(
             "document.querySelector('#ctl00_ContentPlaceHolder1_WSExtendedGridNP1_GridView1_ctl01_btnNext')")}})
         scen.append({"wait": 5000})
+    # Click the target row's View button. By notice_id when known (exact,
+    # drift-proof), else by position. [onclick] filters to the VISIBLE
+    # btnView2 per row -- each grid row renders a second, hidden .viewButton
+    # (btnView, display:none), so a bare .viewButton list is doubled and
+    # index N lands on the wrong element for every N >= 1 (the bug behind
+    # 2026-09-01's first-row-works-rest-fail runs).
+    if notice_id:
+        # JS string-contains on the onclick, matching ID=<nid> at a boundary
+        # so ID=117 does not match ID=1170. querySelectorAll + find, since CSS
+        # attribute-substring can't anchor the trailing boundary.
+        click_target = (
+            f"Array.from(document.querySelectorAll('input.viewButton[onclick]'))"
+            f".find(function(b){{return /[?&]ID={int(notice_id)}(?:&|'|\\b)/.test(b.getAttribute('onclick')||'');}})"
+        )
+    else:
+        click_target = f"document.querySelectorAll('input.viewButton[onclick]')[{int(view_index)}]"
     scen += [
-        {"execute": {"script": _synth_click_expr(f"document.querySelectorAll('.viewButton')[{int(view_index)}]")}},
+        # Wait for the grid's View buttons to actually exist before clicking --
+        # a slow Scrapfly render otherwise clicks nothing and the run reports
+        # still_on_search_page (seen 2026-09-04).
+        {"wait_for_selector": {"selector": "input.viewButton[onclick]", "timeout": 15000}},
+        {"execute": {"script": _synth_click_expr(click_target)}},
         {"wait": 5000},
         {"execute": {"script": _INJECT_TURNSTILE.replace("__TOKEN__", token)}},
         {"execute": {"script": _synth_click_expr(f"document.querySelector('{SEL_VIEW_NOTICE_BUTTON}')")}},
@@ -1165,7 +1294,9 @@ def fetch_full_text(popular_search_value: str, counties: list, days: int, view_i
     # Scrapfly charges each action its own time reservation, not just the
     # waits: a page-3 fetch reported "requires at least 77s" against a 47s
     # budget. Measured, not estimated -- roughly 25s per page advanced.
-    budget_ms = min(150_000, 45_000 + 25_000 * max(0, int(page_no or 1) - 1))
+    # Base 70s (Scrapfly measured "requires at least 60s" for a page-1 fetch
+    # 2026-09-04; the old 45s base timed the scenario out), +25s per page paged.
+    budget_ms = min(150_000, 70_000 + 25_000 * max(0, int(page_no or 1) - 1))
     cfg = ScrapeConfig(
         url=SEARCH_URL, render_js=True, asp=True, country="us",
         session=session, proxy_pool="public_residential_pool",
@@ -1191,23 +1322,83 @@ def fetch_full_text(popular_search_value: str, counties: list, days: int, view_i
     except Exception:
         pass
 
+    # Scrapfly reports quota/billing/proxy failures in scrape_result["error"]
+    # while returning EMPTY content; _classify_detail_response surfaces those
+    # (and distinguishes never-left-the-grid from a real gate rejection).
+    return _classify_detail_response(content, upstream)
+
+
+def _classify_detail_response(content: str, upstream) -> dict:
+    """Shared verdict logic for a detail-page fetch.
+
+    Order matters: the SEARCH page itself contains "cf-turnstile" (a hidden
+    pre-armed response input), so testing gate markers before checking for
+    the results grid misdiagnosed every never-left-the-grid failure as
+    gate_not_cleared (2026-09-01, 18 rows)."""
     if any(m in content for m in _NOTICE_MARKERS):
         return {"ok": True, "html": content}
-    if any(m in content for m in _GATE_MARKERS):
-        return {"ok": False, "error": "gate_not_cleared", "html": content}
-
-    # Scrapfly reports quota/billing/proxy failures in scrape_result["error"]
-    # while returning EMPTY content. Those used to fall through to
-    # "unknown_page_state", which reads like a parsing problem and hid a
-    # plain "out of quota" behind 26 identical mystery failures.
+    # On any NON-success, a Scrapfly-reported error wins over page-state
+    # classification: a quota/proxy death mid-scenario leaves whatever page
+    # was reached (often the search grid) in `content`, and classifying that
+    # as still_on_search_page re-masks the exact quota failure this field
+    # was surfaced for (the 2026-08-31 "unknown_page_state" lesson).
     if upstream:
         code = ""
         if isinstance(upstream, dict):
             code = upstream.get("code") or upstream.get("message") or ""
         return {"ok": False, "error": f"scrapfly: {code or upstream}", "html": content}
+    if "ddlPopularSearches" in content or "GridView1" in content:
+        return {"ok": False, "error": "still_on_search_page", "html": content}
+    if any(m in content for m in _GATE_MARKERS):
+        return {"ok": False, "error": "gate_not_cleared", "html": content}
     if not content:
         return {"ok": False, "error": "empty_response_no_upstream_error", "html": ""}
     return {"ok": False, "error": "unknown_page_state", "html": content}
+
+
+def fetch_full_text_direct(details_url: str, *, captcha_api_key: str, scrapfly_key: str) -> dict:
+    """Fetch ONE notice's full text via its own Details.aspx URL.
+
+    The grid's View buttons carry `Details.aspx?SID=<session>&ID=<notice id>`
+    in their onclick (found 2026-09-01), so the whole redo-the-search-and-
+    click-the-Nth-button dance is unnecessary: GET the URL, clear the
+    Turnstile gate, done. The SID is ASP.NET cookieless-session routing from
+    the grid scrape; if it has expired the page bounces back to the search
+    form, reported as still_on_search_page rather than a token problem.
+    """
+    from scrapfly import ScrapeConfig, ScrapflyClient, ScrapflyScrapeError
+
+    token = _solve_turnstile(SEARCH_URL, DETAIL_TURNSTILE_SITEKEY, captcha_api_key)
+    if not token:
+        return {"ok": False, "error": "captcha_solve_failed", "html": ""}
+
+    scen = [
+        {"wait": 4000},
+        {"execute": {"script": _INJECT_TURNSTILE.replace("__TOKEN__", token)}},
+        {"execute": {"script": _synth_click_expr(f"document.querySelector('{SEL_VIEW_NOTICE_BUTTON}')")}},
+        {"wait": 4000},
+    ]
+    client = ScrapflyClient(key=scrapfly_key)
+    cfg = ScrapeConfig(
+        url=details_url, render_js=True, asp=True, country="us",
+        session=f"va_ftd_{int(time.time() * 1000)}", proxy_pool="public_residential_pool",
+        rendering_wait=1500, js_scenario=scen, raise_on_upstream_error=False,
+        timeout=45_000, retry=False,
+    )
+    try:
+        resp = client.scrape(cfg)
+    except ScrapflyScrapeError as exc:
+        return {"ok": False, "error": f"ScrapflyScrapeError: {exc}", "html": ""}
+    except Exception as exc:
+        return {"ok": False, "error": f"{type(exc).__name__}: {exc}", "html": ""}
+
+    content, upstream = "", None
+    try:
+        content = resp.scrape_result.get("content", "") or ""
+        upstream = resp.scrape_result.get("error")
+    except Exception:
+        pass
+    return _classify_detail_response(content, upstream)
 
 
 def extract_full_notice_text(html: str) -> str:
@@ -1229,7 +1420,23 @@ def extract_full_notice_text(html: str) -> str:
     for tag in soup(["script", "style", "nav", "header", "footer"]):
         tag.decompose()
     body = soup.body or soup
-    return body.get_text("\n", strip=True)
+    return strip_detail_page_chrome(body.get_text("\n", strip=True))
+
+
+def strip_detail_page_chrome(text: str) -> str:
+    """Cut the detail page's metadata header off a fallback-extracted text.
+
+    The VA detail page has no known body-container selector, so extraction
+    falls back to whole-page text -- which starts with a header block that
+    includes "Notice Publish Date: <date>". That date poisoned
+    parse_auction_date on 15/15 live rows 2026-09-01 (it passes both guards:
+    it is not deed language and by definition never predates publication),
+    so every row's "auction date" came back as its own publish date. The
+    header ends at the literal "Notice Content" label; the body follows.
+    """
+    marker = "Notice Content"
+    i = text.find(marker)
+    return text[i + len(marker):].lstrip("\n ") if i >= 0 else text
 
 
 CURRENT_PAGE_RE = re.compile(r'lblCurrentPage"[^>]*>\s*(\d+)\s*<')
@@ -1240,6 +1447,9 @@ def detected_page_number(html: str):
     return int(m.group(1)) if m else None
 
 
+_DETAILS_URL_RE = re.compile(r"(Details\.aspx\?SID=[A-Za-z0-9]+&(?:amp;)?ID=(\d+))")
+
+
 def parse_grid_html(html: str, popular_search_value: str, page_no: int | None = None) -> list:
     soup = BeautifulSoup(html, "html.parser")
     rows = []
@@ -1248,6 +1458,22 @@ def parse_grid_html(html: str, popular_search_value: str, page_no: int | None = 
         text_cell = nested.select_one("td[colspan='3']")
         if not info or not text_cell:
             continue
+        # Each row's visible View button carries a DIRECT link in its onclick:
+        # location.href='Details.aspx?SID=<asp session>&ID=<notice id>'.
+        # Found 2026-09-01 while diagnosing the full-text click failures --
+        # the long-standing "no stable id/URL exists in this public view"
+        # assumption was simply wrong. ID is the per-notice key (differs on
+        # every row, verified live); SID is ASP.NET cookieless-session
+        # routing. This both populates notice_id (blank on every earlier
+        # pull) and lets --full-text GET the detail page directly instead of
+        # replaying the whole search and clicking by index.
+        details_url, notice_id = "", ""
+        btn = nested.select_one("input.viewButton[onclick]")
+        if btn:
+            m = _DETAILS_URL_RE.search(btn.get("onclick") or "")
+            if m:
+                details_url = f"{BASE_URL}/{m.group(1).replace('&amp;', '&')}"
+                notice_id = m.group(2)
         # div.left holds "<publication name><br>Monday, August 24, 2026" as
         # two lines -- verified live 2026-08-25 there is no "Published:"
         # label anywhere in this markup (a plain weekday-format date string
@@ -1264,7 +1490,7 @@ def parse_grid_html(html: str, popular_search_value: str, page_no: int | None = 
         addr = parse_address(notice_text) or {}
         rows.append(
             {
-                "notice_id": "",  # not extractable from this public view -- see the comment above COUNTY_CHECKBOX_ID_RE
+                "notice_id": notice_id,  # from the View button's Details.aspx onclick (see above)
                 "publication": publication,
                 "date_published": published,
                 "notice_type": classify_notice_type(notice_text),
@@ -1295,6 +1521,9 @@ def parse_grid_html(html: str, popular_search_value: str, page_no: int | None = 
                 # to jump to directly. Leading underscore = internal, not a
                 # CSV column; popped off before writing (see main()).
                 "full_text": "",
+                # Direct detail-page URL (leading underscore = internal, not a
+                # CSV column). When present, --full-text fetches it directly.
+                "_details_url": details_url,
                 "_view_index": view_index,
                 # Which RESULTS PAGE this row came from (1-based). _view_index
                 # is only meaningful within its own page, so full-text fetch
@@ -1398,9 +1627,15 @@ def dedupe(rows: list) -> list:
     out = []
     at_index = {}
     for r in rows:
-        if r.get("notice_id"):
-            key = ("id", r["notice_id"])
-        elif r["street"].strip() and r.get("notice_type") == "foreclosure":
+        # The foreclosure address collapse is checked BEFORE the notice_id
+        # key on purpose: each weekly REPUBLICATION of the same foreclosure
+        # is a new notice with its own Details.aspx ID (verified live -- the
+        # browser fetchers handle "republication of id=X under a different
+        # id" explicitly), so id-keying republished rows keeps every copy
+        # and silently reinstates the measured 25%-duplicate output the
+        # address collapse exists to remove. notice_id dedup is only safe
+        # where the street is NOT the identity (or is missing).
+        if r["street"].strip() and r.get("notice_type") == "foreclosure":
             # Dateless collapse ONLY for foreclosures, exactly as this
             # docstring's own rule says: address-keying "is right for
             # Foreclosures, and catastrophic for the other Popular Searches."
@@ -1415,6 +1650,8 @@ def dedupe(rows: list) -> list:
             # Restricting to foreclosure removes both failure modes; the other
             # searches keep their original date-inclusive behaviour untouched.
             key = ("addr", r["street"].strip().lower(), r["city"].strip().lower())
+        elif r.get("notice_id"):
+            key = ("id", r["notice_id"])
         elif r["street"] or r["city"]:
             key = ("addr", r["street"].lower(), r["city"].lower(), r["date_published"])
         else:
@@ -1463,9 +1700,9 @@ def main():
                           "via Scrapfly + 2Captcha, clearing the Cloudflare Turnstile gate on the "
                           "detail page. Needs CAPTCHA_API_KEY and SCRAPFLY_KEY in .env. Each row "
                           "redoes the ENTIRE search + pays for one 2Captcha solve, so this is slow "
-                          "and metered -- capped by --full-text-limit. Only reaches rows from page 1 "
-                          "of the results (view_index is per-page; multi-page --max-pages isn't "
-                          "supported yet for this flag).")
+                          "and metered -- capped by --full-text-limit. Rows beyond page 1 are "
+                          "reached by re-paginating to the row's own results page. Also back-fills "
+                          "a blank auction_date/loan_principal from the fetched text.")
     ap.add_argument("--full-text-limit", type=int, default=10,
                      help="Max rows to fetch full text for for when --full-text is set (default 10, "
                           "matching the initial test batch).")
@@ -1579,27 +1816,102 @@ def main():
             args.full_text = False
 
     if args.full_text:
-        batch = rows[: args.full_text_limit]
+        # Spend the metered budget where it buys something: rows whose
+        # snippet already yielded an auction date gain only prose from a
+        # full-text fetch, so blank-auction-date rows go first (stable sort;
+        # `rows` itself -- and so the CSV order -- is untouched).
+        batch = sorted(rows, key=lambda r: bool(r.get("auction_date")))[: args.full_text_limit]
         print(f"  --full-text: fetching full notice text for {len(batch)} of {len(rows)} row(s) "
               f"(each redoes the full search + one 2Captcha solve, expect ~30-90s/row)...")
-        for i, row in enumerate(batch, 1):
-            print(f"    [{i}/{len(batch)}] page={row.get('_page_no') or 1} view_index={row['_view_index']} "
-                  f"({row['street'] or row['city'] or row['publication']})...")
-            result = fetch_full_text(
+        # Every _details_url from one pull shares ONE ASP.NET SID. A SID that
+        # has expired -- or that Scrapfly's separate session/IP cannot resume
+        # (the exact failure va_fetch_full_text_browser measured live) --
+        # bounces EVERY direct fetch, each after paying its 2Captcha solve.
+        # First such bounce trips this breaker: the row retries on the replay
+        # path and the rest of the batch skips the direct path entirely.
+        direct_dead = False
+
+        def _legacy_fetch(row):
+            print(f"      replay path: page={row.get('_page_no') or 1} view_index={row['_view_index']}")
+            return fetch_full_text(
                 ps, counties, args.days, row["_view_index"],
                 page_no=row.get("_page_no") or 1,
+                notice_id=row.get("notice_id") or "",
                 captcha_api_key=creds["captcha_api_key"], scrapfly_key=creds["scrapfly_key"],
                 date_from=args.date_from, date_to=args.date_to,
             )
+
+        for i, row in enumerate(batch, 1):
+            if row.get("_details_url") and not direct_dead:
+                print(f"    [{i}/{len(batch)}] notice_id={row['notice_id']} "
+                      f"({row['street'] or row['city'] or row['publication']})...")
+                result = fetch_full_text_direct(
+                    row["_details_url"],
+                    captcha_api_key=creds["captcha_api_key"], scrapfly_key=creds["scrapfly_key"],
+                )
+                if not result["ok"] and result["error"] in ("still_on_search_page", "gate_not_cleared"):
+                    direct_dead = True
+                    print(f"      direct Details.aspx path bounced ({result['error']}) -- the shared SID is "
+                          f"dead; falling back to the replay path for this and all remaining rows")
+                    result = _legacy_fetch(row)
+            else:
+                # Replay-the-search path: for a row whose View button carried
+                # no Details.aspx onclick, or after the SID breaker tripped.
+                # notice_id (when captured) makes the click id-targeted and
+                # drift-proof; only a truly id-less row clicks by position.
+                print(f"    [{i}/{len(batch)}] ({row['street'] or row['city'] or row['publication']})...")
+                result = _legacy_fetch(row)
             if result["ok"]:
-                row["full_text"] = extract_full_notice_text(result["html"])
-                print(f"      got {len(row['full_text'])} chars")
+                fetched = extract_full_notice_text(result["html"])
+                # A fetch can succeed mechanically yet return ANOTHER notice
+                # (seen live 2026-09-01: the legacy replay-the-search path
+                # returned a Shenandoah County notice for an Arlington row
+                # after the grid reordered overnight). The row's own street
+                # must appear in what came back, or it is a failure.
+                parts = (row["street"] or "").split()
+                if parts and not re.search(
+                        re.escape(parts[0]) + (r"\s+" + re.escape(parts[1]) if len(parts) > 1 else ""),
+                        fetched, re.I):
+                    result = {"ok": False, "error": "wrong_notice_returned", "html": result["html"]}
+            if result["ok"]:
+                row["full_text"] = fetched
+                # The sale date sits ~700 chars in -- past the grid snippet the
+                # scrape-time parse saw -- so a blank auction_date must be
+                # re-mined from the full text or --full-text buys nothing but
+                # prose. Same deed-context/predate guards apply unchanged.
+                # A BLANK-street row cannot pass the wrong-notice check above,
+                # so its fetch is unverified: keep the full_text (the footprint
+                # filter repairs blank streets FROM it) but never back-fill
+                # auction_date/loan_principal from a notice that could belong
+                # to another property.
+                if not parts:
+                    print("      blank street -- identity unverifiable; full_text kept, "
+                          "auction_date/loan_principal NOT back-filled")
+                else:
+                    if not row["auction_date"]:
+                        row["auction_date"] = parse_auction_date(row["full_text"], row["date_published"])
+                    if not row["loan_principal"]:
+                        row["loan_principal"] = parse_loan_principal(row["full_text"])
+                extras = []
+                if row["auction_date"]:
+                    extras.append(f"auction {row['auction_date']}")
+                print(f"      got {len(row['full_text'])} chars"
+                      + (f" ({', '.join(extras)})" if extras else ""))
             else:
                 # Visible in the CSV itself rather than silently blank -- a
                 # blank full_text is otherwise indistinguishable from "not
                 # attempted" (rows past --full-text-limit).
                 row["full_text"] = f"[fetch failed: {result['error']}]"
                 print(f"      FAILED: {result['error']}")
+                # A gate_not_cleared tells you nothing about WHICH state the
+                # page died in (results grid? gate with rejected token?), and
+                # that distinction is the whole diagnosis -- dump the HTML.
+                if result.get("html"):
+                    dbg = ROOT / "output" / "debug_va_ft"
+                    dbg.mkdir(parents=True, exist_ok=True)
+                    fn = dbg / f"fail_{i:02d}_p{row.get('_page_no') or 1}_v{row['_view_index']}.html"
+                    fn.write_text(result["html"], encoding="utf-8")
+                    print(f"      failure HTML -> {fn.relative_to(ROOT)}")
 
     out_path = ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -1633,6 +1945,13 @@ def main():
         writer.writeheader()
         writer.writerows(rows)
     print(f"Wrote {out_path}")
+    if TRUNCATION_WARNINGS:
+        # Last lines of the run on purpose: a scheduled task's log is read
+        # bottom-up, and a truncated pull must never read as complete.
+        print(f"\n  *** TRUNCATED PULL: {len(TRUNCATION_WARNINGS)} window(s) were abandoned "
+              f"before capturing every row -- the CSV above is INCOMPLETE ***")
+        for msg in TRUNCATION_WARNINGS:
+            print(f"    - {msg}")
 
 
 if __name__ == "__main__":
