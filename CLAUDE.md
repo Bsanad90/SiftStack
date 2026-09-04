@@ -159,9 +159,17 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
 - **MDDC Trustee's Sale** — saved search 41 is GONE from the live site; default is now `["43"]`.
   Always run `--list-searches` first. `BATCH_TAG` now stamps `FTM` (changed 2026-08-28, not yet
   run; the next upload lands in the FTM lane; the browser pipeline imports the same constant).
-  On the next real pull: **eyeball `notice_id` uniqueness before trusting the id-first dedup** —
-  the `BARE_ID_RE` fallback is unconfirmed against live HTML, and a shared per-page `ID=` param
-  would collapse every row on a page to one. Dropped rows (off-type/out-of-footprint, incl. the
+  **`notice_id` question SETTLED 2026-09-03:** the Firecrawl-captured grid HTML carries NO id at
+  all (the View buttons' `Details.aspx?SID&ID` onclick is attached by client-side JS that the
+  Firecrawl capture misses — 0 of 94 rows had one), so id-first dedup never fires on a pull CSV
+  and `mddc_fetch_full_text.py` (Scrapfly, fetch-by-id) has nothing to key on — and its asp=True
+  mechanism does NOT clear the Details.aspx gate anyway (`--test-id` live: `gate_not_cleared`,
+  Cloudflare Turnstile). The working path is `mddc_fetch_full_text_browser.py`: Playwright
+  settles the grid (ids then present on every row, 94/94), navigates each Details.aspx directly
+  (first nav per session bounces back to Search.aspx — retry), solves the Turnstile via 2Captcha
+  (sitekey `0x4AAAAAADs-0gpXV1IADMoy`, same `btnViewNotice` shape as VA), and re-mines
+  auction_date with the VA parser's deed-date guards — the MDDC snippet parser has none and
+  emitted a 2024 "auction date" that was a deed recording date. Dropped rows (off-type/out-of-footprint, incl. the
   `order_nisi` reclassifications) now land in `<out>_dropped.csv`; review it, don't trust the
   count. `--hide-read-notices` defaults OFF as of 2026-08-31. → [history](docs/history/mddc-va-md.md)
 - **VA Public Notice** — works unauthenticated via the Popular Searches widget, **one county per
@@ -417,6 +425,28 @@ Four traps, each of which fails silently or cryptically:
 `POST /property/` is **upsert by address**, so re-runs never duplicate, and **lists accumulate** rather than overwrite (verified: a record came back with both new lists plus four it already had). Custom fields go to `PATCH /api/internal/property/{uuid}/custom-field/update-values/` with `[{"field_uuid": ..., "value": ...}]`. Creating a `select` custom field REQUIRES its options in the same POST.
 
 **Always upload one record and read it back before releasing the file.** That single habit caught the tag format, the entity-owner rejection, the option-UUID requirement and a list-name mismatch that would have silently attached nothing for 2,512 of 2,573 records.
+
+### SiftLine boards over the API (learned 2026-09-03, seller re-qualify batch)
+
+- **The board API is fully readable AND writable** with the minted user JWT
+  (discovered by capturing the SPA's own calls; `src/scripts/seller_requalify.py` is the
+  working reference): `GET /api/internal/siftline/board/` (boards),
+  `GET .../board/{board}/column/` (phases), `GET .../board/column/{col}/card/` (cards,
+  paginated). Create a card with `POST .../column/{col}/card/ {"prop": "<prop-uuid>"}` —
+  OPTIONS advertises `prop_uuid` but live the request 400s without `prop`. Move a card
+  with `PATCH .../column/{col}/card/{card}/ {"column": "<new-col-uuid>"}`; delete with
+  `DELETE` on the same route (204). The Lead Management board is
+  `8bbee183-27b4-4734-870f-c9eebd50c9d0`, 12 columns.
+- **`PATCH /property/{uuid}/ {"tags": [...]}` is MERGE-ONLY.** It adds missing names
+  (auto-creating unknown tags) but NEVER removes — a read-modify-write with a name
+  dropped returns 200 and changes nothing. Removal is
+  `POST /api/internal/property/{uuid}/remove-tags/ {"tags": [...]}` (200, echoes
+  `removed_tags`). The obituary batch's "read-modify-write of the FULL set" comment is
+  therefore only half true: correct for adds, wrong for removes.
+- **A users endpoint DOES exist:** `GET /api/internal/account/user/?limit=999` (the
+  board UI calls it) — supersedes "no users/team endpoint exists" below for lookups.
+- `GET /api/internal/activity/` ignores a `?prop=` filter and returns account-wide
+  bulk activity — useless for per-record history (e.g. recovering a prior assignee).
 
 ### Assignees over the API (learned 2026-09-01, lane rebalance)
 
@@ -774,10 +804,14 @@ Full build narrative, including every panel trap and the inverted-preset post-mo
      notices, 51 ASCII + 18 curly U+2019. Always spell both apostrophes out.
    - **unit numbers dropped** — `1476 Vineyard Ct Unit# 105XA` became `1476 Vineyard Ct`. On a
      condo that is a DIFFERENT property. A comma now wins over suffix-splitting.
-   - **25% duplicate output** — `notice_id` is NEVER populated (0/137), so id-dedup had nothing
-     to key on, and foreclosure notices republish weekly by law. 137 -> 103. The dateless
-     collapse is scoped to `notice_type == "foreclosure"` ONLY: keying city-only rows collapsed
-     Estate Claims 26 -> 7, street-bearing ones 26 -> 24 (all carry the courthouse in `street`).
+   - **25% duplicate output** — foreclosure notices republish weekly by law, so dedup collapses
+     foreclosures dateless on (street, city). 137 -> 103. Scoped to `notice_type ==
+     "foreclosure"` ONLY: keying city-only rows collapsed Estate Claims 26 -> 7, street-bearing
+     ones 26 -> 24 (all carry the courthouse in `street`). **`notice_id` update 2026-09-04:**
+     the View button's onclick DOES carry `Details.aspx?SID&ID` (a real per-notice id), but a
+     Firecrawl capture only sometimes includes it (JS-attached; 31/32 one run, 2/32 another) —
+     and each republication carries a NEW id, so `dedupe()` deliberately checks the foreclosure
+     address collapse BEFORE the id key; id-first keying would reinstate the 25% duplicates.
    - **auction dates 94% wrong** — matched `recorded on <date>`, the Deed of Trust RECORDING
      date; 17 of 18 were years in the past. Guarded by deed-context rejection plus "cannot
      predate publication".
