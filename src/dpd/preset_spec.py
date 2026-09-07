@@ -162,29 +162,18 @@ REACTIVATION_STAGES = [
 COUNTY_SCOPE = [
     "District Of Columbia",  # DC 11001
     "Anne Arundel",          # MD 24003
-    "Baltimore",             # MD 24005 (Baltimore County, NOT Baltimore City)
     "Frederick",             # MD 24021
     "Montgomery",            # MD 24031
     "Arlington",             # VA 51013
     "Fairfax",               # VA 51059 (county, NOT Fairfax City)
-    "Alexandria City",       # VA 51510
-    "Prince William",        # VA 51153
 ]
 
-# MAIL presets cover all 14 DPD jurisdictions (Basem, 2026-08-31: pull everything,
-# call only the core 9, mail everywhere). The six extra strings follow the picker's
-# convention (bare county name; independent cities carry " City") and match the
-# spelling on 4,300+ records already in the account. The saved filter named
-# "Obituaries in 15 Counties" is NOT a source -- its location param holds only the
-# same 9 as "Obituary 9 Counties" despite the name (read 2026-08-31).
-COUNTY_SCOPE_MAIL = COUNTY_SCOPE + [
-    "Calvert",               # MD 24009
-    "Carroll",               # MD 24013
-    "Charles",               # MD 24017 (NOT "Charles City", which is a VA county)
-    "Stafford",              # VA 51179
-    "Spotsylvania",          # VA 51177
-    "Fredericksburg City",   # VA 51630 (independent city, like Alexandria City)
-]
+# 2026-09-07 (Basem): the footprint is the 6 counties above, for EVERY channel —
+# the old 9-county call / 15-county mail split is retired (Baltimore, Alexandria
+# City, Prince William, Calvert, Carroll, Charles, Stafford, Spotsylvania and
+# Fredericksburg City dropped). All 73 presets were narrowed in place the same
+# day via dpd_presets_narrow.py (API PATCH, store-read-back verified).
+COUNTY_SCOPE_MAIL = COUNTY_SCOPE
 
 # (folder, label, entry scope, channel, stages)
 _FOLDER_PLAN = [
