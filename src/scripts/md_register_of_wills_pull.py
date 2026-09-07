@@ -136,14 +136,13 @@ COUNTY_ID = {
     "Worcester": "23",
 }
 
+# The 2026-09-01 footprint: only these 3 MD counties are in scope (plus DC/VA
+# via their own pipelines). Carroll, Calvert, Charles and Baltimore County were
+# retired -- still resolvable via explicit --counties, never pulled by default.
 DEFAULT_COUNTIES = [
     "Montgomery",
     "Anne Arundel",
     "Frederick",
-    "Carroll",
-    "Calvert",
-    "Charles",
-    "Baltimore County",
 ]
 
 # Estate Type codes confirmed live on Estate Search's #cboType dropdown:
@@ -409,6 +408,9 @@ def pull_estate_search(county: str, date_from: str, date_to: str, max_pages: int
     print(f"  {county}: {total_records} records across {total_pages} page(s)")
 
     all_rows = parse_estate_search_grid(first_html, county)
+    if total_pages > max_pages:
+        print(f"  {county}: WARNING window TRUNCATED at page {max_pages} of {total_pages} -- "
+              f"records beyond that are NOT pulled. Narrow the date window or raise --max-pages.")
     if total_pages > 1:
         actions = build_estate_search_actions(county_id, date_from, date_to, max_pages=min(total_pages, max_pages))
         htmls = firecrawl_scrape_retry(ESTATE_SEARCH_URL, actions, timeout=90 + 10 * total_pages)
@@ -778,6 +780,9 @@ def pull_legal_notice_search(county: str, date_from: str, date_to: str, max_page
     print(f"  {county} (Legal Notice): {total_records} records across {total_pages} page(s)")
 
     all_records, skip_counts = parse_notice_grid(first_html)
+    if total_pages > max_pages:
+        print(f"  {county} (Legal Notice): WARNING window TRUNCATED at page {max_pages} of {total_pages} -- "
+              f"records beyond that are NOT pulled. Narrow the date window or raise --max-pages.")
     if total_pages > 1:
         actions = build_notice_search_actions(county_id, date_from, date_to, max_pages=min(total_pages, max_pages))
         htmls = firecrawl_scrape_retry(NOTICE_SEARCH_URL, actions, timeout=90 + 10 * total_pages)
@@ -937,16 +942,29 @@ def run_reconciliation_pass(ledger: dict, counties: list[str], run_date: str,
                               lookback_days: int = 45, retry_ceiling_days: int = 90) -> None:
     """Re-check estates already on the ledger's 'incomplete' queue (missing
     PR, most commonly) -- separate from, and cheaper than, re-diffing the
-    entire rolling lookback window on every run. Drops an estate from active
-    re-checking after `retry_ceiling_days` on the queue, logging it as
-    given up rather than retrying forever."""
+    entire rolling lookback window on every run.
+
+    Scoped to THIS run's `counties` (2026-09-03 fix: the param was accepted
+    and ignored, so a Frederick-only run would have re-fetched every county's
+    queue). `lookback_days` is the ACTIVE re-check window: an estate is
+    re-checked on every run while incomplete for up to `lookback_days`, then
+    drops to a weekly re-check (dormant) until `retry_ceiling_days`, when it
+    is logged as given up rather than retried forever. Estates already
+    refreshed by this run's own pull (last_checked == run_date, set by
+    reconcile_ledger) are skipped -- re-fetching their detail page minutes
+    after the pull just fetched it buys nothing."""
     estates = ledger.get("estates", {})
     run_dt = datetime.strptime(run_date, "%m/%d/%Y")
     to_check = []
+    dormant = 0
     for key, record in estates.items():
+        if key.split("|", 1)[0] not in counties:
+            continue
         if not record.get("incomplete"):
             continue
-        since = record.get("incomplete_since")
+        if record.get("last_checked") == run_date:
+            continue  # this run's pull already refreshed it
+        since = record.get("incomplete_since") or record.get("first_seen")
         if since:
             age_days = (run_dt - datetime.strptime(since, "%m/%d/%Y")).days
             if age_days > retry_ceiling_days:
@@ -954,7 +972,15 @@ def run_reconciliation_pass(ledger: dict, counties: list[str], run_date: str,
                     print(f"  RECONCILE gave up (still incomplete after {age_days}d): {key}")
                     record["gave_up"] = True
                 continue
+            if age_days > lookback_days:
+                lc = record.get("last_checked")
+                if lc and (run_dt - datetime.strptime(lc, "%m/%d/%Y")).days < 7:
+                    dormant += 1
+                    continue
         to_check.append((key, record))
+    if dormant:
+        print(f"  Reconciliation: {dormant} incomplete estate(s) past the {lookback_days}d active window "
+              f"-- on weekly re-check until the {retry_ceiling_days}d ceiling.")
 
     if not to_check:
         print("  Reconciliation: nothing on the incomplete queue to re-check.")
@@ -991,8 +1017,29 @@ def run_reconciliation_pass(ledger: dict, counties: list[str], run_date: str,
 # wires it into the ledger so a lookup is never repeated once resolved (or
 # once given up on).
 
-def fill_addresses(ledger: dict, counties: list[str]) -> None:
+def fill_addresses(ledger: dict, counties: list[str],
+                   limit: int | None = None, save_cb=None,
+                   max_consecutive_errors: int = 8) -> set[str]:
+    """Resolve property addresses for ledger records that were never checked.
+    Returns the ledger keys this pass actually touched (for CSV scoping in
+    --fill-addresses-only mode).
+
+    `limit` caps the number of EXPENSIVE Land Records lookups (the cheap
+    notice-stated SDAT owner checks are not counted) -- for probing cost and
+    hit rate before a full multi-hour pass. `save_cb`, when given, is called
+    every SAVE_EVERY processed records so an interrupted hours-long run loses
+    minutes, not hours; the per-record `property_lookup_checked` guard makes
+    a re-run resume where it stopped."""
     import md_land_records_lookup as landrec
+
+    SAVE_EVERY = 10
+    touched: set[str] = set()
+    processed = 0
+    consecutive_errors = 0
+
+    def _maybe_save():
+        if save_cb and processed and processed % SAVE_EVERY == 0:
+            save_cb()
 
     estates = ledger.get("estates", {})
     targets = [
@@ -1001,6 +1048,11 @@ def fill_addresses(ledger: dict, counties: list[str]) -> None:
         and rec.get("estate_type") not in EXCLUDED_ESTATE_TYPES
         and not rec.get("property_lookup_checked")
     ]
+    if limit is not None:
+        skipped = max(0, len(targets) - limit)
+        targets = targets[:limit]
+        if skipped:
+            print(f"  Address lookup: --limit {limit} -- deferring {skipped} record(s) to a later pass.")
     # Addresses the notice itself stated (foreign-PR notices) skip Land
     # Records but still get the SDAT current-owner check by street.
     sdat_only = [
@@ -1015,11 +1067,14 @@ def fill_addresses(ledger: dict, counties: list[str]) -> None:
             print(f"    WARNING: SDAT owner check failed for {key}: {e}")
             continue
         rec["property_needs_sdat_owner"] = False
+        touched.add(key)
+        processed += 1
         if sdat:
             first_tok = (rec.get("decedent_first_name", "") or "").split()[:1]
             last = rec.get("decedent_last_name", "")
             full_name = f"{rec.get('decedent_first_name', '')} {last}".strip()
             rec["property_sdat_owner"] = " / ".join(sdat.get("owner_names") or [])
+            rec["property_sdat_mailing"] = sdat.get("mailing_address", "")
             rec["property_principal_residence"] = sdat.get("principal_residence", "")
             rec["property_sdat_use"] = sdat.get("use", "")
             levels = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
@@ -1035,11 +1090,14 @@ def fill_addresses(ledger: dict, counties: list[str]) -> None:
             rec["property_lookup_confidence"] = "MEDIUM"
             rec["property_lookup_reason"] = "SDAT found no parcel at the notice-stated street (typo in the notice?)"
             print(f"    {key}: notice-stated {rec['property_street']} -- SDAT found no parcel")
+        _maybe_save()
         time.sleep(1.0)
 
     if not targets:
         print("  Address lookup: nothing new to resolve.")
-        return
+        if save_cb and touched:
+            save_cb()
+        return touched
     print(f"  Address lookup: resolving {len(targets)} decedent(s) via Land Records + SDAT.")
     for key, rec in targets:
         county = key.split("|", 1)[0]
@@ -1048,19 +1106,43 @@ def fill_addresses(ledger: dict, counties: list[str]) -> None:
         # split_last_first_name) -- Land Records stores first/middle in
         # SEPARATE fields with an exact-match default, so passing the whole
         # "JANE L." string as First Name silently matched nothing against
-        # a DB value of plain "DEBORAH" (confirmed live). Use only the first
-        # token.
-        first = (rec.get("decedent_first_name", "") or "").split()[:1]
-        first = first[0] if first else ""
+        # a DB value of plain "DEBORAH" (confirmed live). First token goes to
+        # First Name; the middle goes to the form's own Middle Name field
+        # (Basem 2026-09-04 -- disambiguates namesakes so the right owner's
+        # deeds aren't crowded out by the MAX_DEED_CANDIDATES cap).
+        name_toks = (rec.get("decedent_first_name", "") or "").split()
+        first = name_toks[0] if name_toks else ""
+        middle = name_toks[1] if len(name_toks) > 1 else ""
         if not last:
             continue
         try:
             full_name = f"{rec.get('decedent_first_name', '')} {last}".strip()
-            result = landrec.find_property_for_decedent(county, last, first, full_name=full_name)
+            result = landrec.find_property_for_decedent(
+                county, last, first, full_name=full_name,
+                middle_name=middle, prs=rec.get("personal_reps"))
         except Exception as e:  # noqa: BLE001
             print(f"    WARNING: address lookup failed for {key}: {e}")
+            consecutive_errors += 1
+            if consecutive_errors >= max_consecutive_errors:
+                print(f"  ABORTING address pass: {consecutive_errors} consecutive failures.")
+                break
             continue
+        if result.get("error"):
+            # Infrastructure failure, not a finding -- do NOT mark checked,
+            # or the record is frozen as a false NOT_FOUND forever (a dead
+            # Firecrawl quota did exactly that to 60 records on 2026-09-04).
+            print(f"    WARNING: {key} NOT resolved (infrastructure): {result.get('reason')}")
+            consecutive_errors += 1
+            if consecutive_errors >= max_consecutive_errors:
+                print(f"  ABORTING address pass: {consecutive_errors} consecutive infrastructure failures "
+                      f"-- nothing cached, re-run when the service is healthy.")
+                break
+            time.sleep(1.5)
+            continue
+        consecutive_errors = 0
         rec["property_lookup_checked"] = True
+        touched.add(key)
+        processed += 1
         if result.get("found"):
             rec["property_street"] = result["street"]
             rec["property_city"] = result["city"]
@@ -1077,15 +1159,23 @@ def fill_addresses(ledger: dict, counties: list[str]) -> None:
             rec["property_sdat_use"] = result.get("sdat_use", "")
             rec["property_deed_date"] = result.get("source_date", "")
             rec["property_deed_book_page"] = result.get("source_book_page", "")
-            rec["property_lookup_reason"] = result.get("sdat_error", "")
+            rec["property_sdat_mailing"] = result.get("mailing_address", "")
+            rec["property_lookup_reason"] = "; ".join(
+                p for p in (result.get("confidence_note", ""), result.get("sdat_error", "")) if p)
             print(f"    {key}: {result['street']}, {result['city']} MD {result['zip']} "
-                  f"({result['confidence']}, via {result.get('source')}; SDAT owner {rec['property_sdat_owner'] or '?'})")
+                  f"({result['confidence']}, via {result.get('source')}; SDAT owner {rec['property_sdat_owner'] or '?'}"
+                  + (f"; {result['confidence_note']}" if result.get("confidence_note") else "") + ")")
         else:
             rec["property_lookup_confidence"] = "NOT_FOUND"
             rec["property_lookup_reason"] = result.get("reason", "")
             rec["property_sdat_owner"] = " / ".join(result.get("sdat_owner_names") or [])
+            rec["property_sdat_mailing"] = result.get("sdat_mailing", "")
             print(f"    {key}: not found -- {result.get('reason')}")
+        _maybe_save()
         time.sleep(1.5)
+    if save_cb and touched:
+        save_cb()
+    return touched
 
 
 # ── CSV output ───────────────────────────────────────────────────────────
@@ -1277,6 +1367,19 @@ def main():
     parser.add_argument("--out", default="", help="output CSV path (default: output/Register of Wills <date>.csv)")
     parser.add_argument("--no-addresses", action="store_true",
                          help="skip the Land Records + SDAT property address lookup step")
+    parser.add_argument("--fill-addresses-only", action="store_true",
+                         help="no site pull at all: run the Land Records + SDAT address lookup over "
+                              "ledger records (in --counties) that were never checked, write a CSV of "
+                              "the records touched. Pair with --no-addresses backfill pulls: pull fast "
+                              "first, resolve addresses as this separate (hours-long) pass. Never "
+                              "touches the checkpoint; --commit saves the ledger incrementally.")
+    parser.add_argument("--limit", type=int, default=0,
+                         help="with --fill-addresses-only: stop after N Land Records lookups "
+                              "(probe cost/hit-rate before the full pass); 0 = no cap")
+    parser.add_argument("--overlap-days", type=int, default=2,
+                         help="checkpoint mode only: pull from each county's cutoff MINUS this many "
+                              "days -- insurance against dockets entered late with backdated filing "
+                              "dates; the ledger dedupes the overlap")
     parser.add_argument("--commit", action="store_true", help="persist the ledger/checkpoint; without this, dry-run only")
     args = parser.parse_args()
 
@@ -1299,7 +1402,47 @@ def main():
             raise SystemExit(f"Unknown county {c!r}; known: {sorted(COUNTY_ID)}")
 
     ledger = load_json(LEDGER_PATH, {"estates": {}})
+
+    if args.fill_addresses_only:
+        if args.since or args.until or args.date or args.no_addresses:
+            raise SystemExit("--fill-addresses-only does not pull the site -- it cannot be combined "
+                             "with --since/--until/--date/--no-addresses.")
+        save_cb = (lambda: save_json(LEDGER_PATH, ledger)) if args.commit else None
+        touched = fill_addresses(ledger, counties, limit=args.limit or None, save_cb=save_cb)
+        stamp = datetime.now().strftime("%m-%d-%Y")
+        out_path = Path(args.out) if args.out else OUTPUT_DIR / f"Register of Wills addresses {stamp}.csv"
+        row_count = write_csv(ledger, counties, out_path, only_keys=touched)
+        print(f"\nAddress pass touched {len(touched)} record(s); wrote {row_count} row(s) to {out_path}")
+        if args.dump_json:
+            dump = {
+                "run": {"counties": counties, "mode": "fill_addresses_only",
+                        "run_at": datetime.now().isoformat(), "committed": bool(args.commit)},
+                "records": [dict(ledger["estates"][k], ledger_key=k)
+                            for k in sorted(touched) if k in ledger["estates"]],
+            }
+            save_json(Path(args.dump_json), dump)
+            print(f"Dumped {len(dump['records'])} record(s) to {args.dump_json}")
+        if args.commit:
+            save_json(LEDGER_PATH, ledger)
+            print("Committed ledger (checkpoint untouched -- an address pass makes no date-window claim).")
+        else:
+            print("Dry run (--commit not passed) -- ledger NOT saved.")
+        return
+
     last_run = load_json(LAST_RUN_PATH, {})
+    if "last_cutoff" in last_run:
+        if not args.since:
+            raise SystemExit(
+                f"{LAST_RUN_PATH} is a LEGACY single-cutoff checkpoint (last_cutoff="
+                f"{last_run['last_cutoff']!r}). One global date cannot say which counties are actually "
+                "caught up -- the 2026-08-25 Calvert-only commit poisoned it for every other county. "
+                "Archive the file (see CLAUDE.md, MD Probates state line) and re-run: counties with no "
+                "checkpoint entry auto-seed back --seed-days. (An explicit --since window bypasses "
+                "this guard; committing one will rewrite the file in the per-county format.)"
+            )
+        print(f"WARNING: {LAST_RUN_PATH} is a legacy single-cutoff checkpoint -- ignored because "
+              f"--since {args.since} was given. A --commit will rewrite it per-county.")
+    county_cutoffs = last_run.get("county_cutoffs", {})
 
     # Discover the site's own "Latest data as of" cutoff off Estate Search
     # first (a cheap, single fetch), then use that SAME date as the upper
@@ -1313,20 +1456,32 @@ def main():
         raise SystemExit("Could not read 'Latest data as of' marker off Estate Search -- aborting rather than guessing a date.")
     print(f"Site's 'Latest data as of' date: {site_cutoff}")
 
-    date_from = args.since or last_run.get("last_cutoff")
-    if not date_from:
-        seed_dt = datetime.strptime(site_cutoff, "%m/%d/%Y") - timedelta(days=args.seed_days)
-        date_from = seed_dt.strftime("%m/%d/%Y")
-        print(f"No checkpoint found -- seeding with --seed-days={args.seed_days} back to {date_from}")
     date_to = args.until or site_cutoff
     if args.until:
-        print(f"Explicit --until {args.until} -- querying {date_from} to {date_to} "
+        print(f"Explicit --until {args.until} -- querying up to {date_to} "
               f"(checkpoint will NOT advance past this date).")
+
+    # date_from is PER COUNTY (2026-09-03): one global cutoff cannot say which
+    # counties are actually caught up -- a Calvert-only commit once made 6
+    # never-pulled counties look done.
+    date_from_by_county: dict[str, str] = {}
+    for county in counties:
+        if args.since:
+            date_from = args.since
+        elif county_cutoffs.get(county):
+            cp_dt = datetime.strptime(county_cutoffs[county], "%m/%d/%Y") - timedelta(days=args.overlap_days)
+            date_from = cp_dt.strftime("%m/%d/%Y")
+        else:
+            seed_dt = datetime.strptime(site_cutoff, "%m/%d/%Y") - timedelta(days=args.seed_days)
+            date_from = seed_dt.strftime("%m/%d/%Y")
+            print(f"{county}: no checkpoint entry -- seeding with --seed-days={args.seed_days} back to {date_from}")
+        date_from_by_county[county] = date_from
 
     all_estate_records = []
     all_notice_records = []
     for county in counties:
-        print(f"\n=== {county} ===")
+        date_from = date_from_by_county[county]
+        print(f"\n=== {county} ({date_from} to {date_to}) ===")
         estate_records, county_latest = pull_estate_search(
             county, date_from, date_to, max_pages=args.max_pages, fetch_details=not args.no_details)
         all_estate_records.extend(estate_records)
@@ -1357,7 +1512,7 @@ def main():
 
     if args.dump_json:
         dump = {
-            "run": {"counties": counties, "date_from": date_from, "date_to": date_to,
+            "run": {"counties": counties, "date_from_by_county": date_from_by_county, "date_to": date_to,
                     "site_cutoff": site_cutoff, "run_at": datetime.now().isoformat(),
                     "committed": bool(args.commit)},
             "records": [dict(ledger["estates"][k], ledger_key=k)
@@ -1368,19 +1523,30 @@ def main():
 
     if args.commit:
         save_json(LEDGER_PATH, ledger)
-        # Advance the checkpoint only to the date actually queried (date_to),
-        # never blindly to site_cutoff -- an explicit --until narrower than
-        # the site's latest data would otherwise let the checkpoint jump
-        # PAST dates that were never actually pulled, silently skipping them
-        # on the next normal forward run. And never move it BACKWARDS either:
-        # a one-off --date on an older day must not make the next forward run
-        # re-pull weeks it already covered.
-        prev = last_run.get("last_cutoff")
-        if prev and datetime.strptime(prev, "%m/%d/%Y") > datetime.strptime(date_to, "%m/%d/%Y"):
-            print(f"Committed ledger; checkpoint left at {prev} (this run's {date_to} is older).")
-        else:
-            save_json(LAST_RUN_PATH, {"last_cutoff": date_to, "run_at": datetime.now().isoformat()})
-            print(f"Committed ledger + checkpoint (next run will pull forward from {date_to}).")
+        # Advance each pulled county's OWN cutoff, and only to the date
+        # actually queried (date_to), never blindly to site_cutoff -- an
+        # explicit --until narrower than the site's latest data would
+        # otherwise let a cutoff jump PAST dates that were never pulled,
+        # silently skipping them on the next normal forward run. And never
+        # move a cutoff BACKWARDS either: a one-off --date on an older day
+        # must not make the next forward run re-pull weeks already covered.
+        # Counties NOT in this run are untouched -- a partial-county commit
+        # can no longer poison the rest (the 2026-08-25 failure mode).
+        advanced, held = [], []
+        date_to_dt = datetime.strptime(date_to, "%m/%d/%Y")
+        for county in counties:
+            prev = county_cutoffs.get(county)
+            if prev and datetime.strptime(prev, "%m/%d/%Y") > date_to_dt:
+                held.append(f"{county} left at {prev} (this run's {date_to} is older)")
+            else:
+                county_cutoffs[county] = date_to
+                advanced.append(county)
+        save_json(LAST_RUN_PATH, {"county_cutoffs": county_cutoffs,
+                                   "run_at": datetime.now().isoformat()})
+        if advanced:
+            print(f"Committed ledger + checkpoint: {', '.join(advanced)} -> {date_to}.")
+        for msg in held:
+            print(f"Committed ledger; checkpoint {msg}.")
     else:
         print("Dry run (--commit not passed) -- ledger/checkpoint NOT saved.")
 

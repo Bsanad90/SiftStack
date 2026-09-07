@@ -184,11 +184,18 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
   so a dead quota no longer bills one 2Captcha solve per row. → [history](docs/history/mddc-va-md.md)
 - **MD Probates + MD Legal Notices** — `--date` exact-date pulls, PRs split into columns, co-PR and
   foreign-PR notices parsed (the latter state the MD property), SDAT checked BY STREET ADDRESS with a
-  full-name owner match (HIGH/MEDIUM/LOW; LOW = sold since the deed). Review output for Anne Arundel
-  08/26/2026 is in `output/data_extraction_test.xlsx` — NOT uploaded, per Basem. The checkpoint is
-  still contaminated (`output/md_row_last_run.json` holds a Calvert-only cutoff of 08/24/2026 while
-  6 of 7 counties were never backfilled): do NOT run plain `--commit` until it is reset or made
-  per-county. → [history](docs/history/mddc-va-md.md)
+  full-name owner match (HIGH/MEDIUM/LOW; LOW = sold since the deed). **Checkpoint HEALTHY as of
+  2026-09-06:** per-county (`county_cutoffs` schema, never-backwards, `--overlap-days 2`); the
+  contaminated Calvert-only global checkpoint is archived at
+  `output/_archive/md_row_*_LEGACY_calvert_only_20260906.json`. All 3 footprint counties backfilled
+  30 days to 09/04/2026 (450 estates; addresses filled 449/450 — 177 found, 94 HIGH / 83 MEDIUM)
+  and the daily runner's MD-RoW leg now runs checkpoint-driven `--commit` + `--dump-json` (commit =
+  local checkpoint/ledger only; review-before-DataSift unchanged). **Backfill trap:** the Estate
+  Search pagination call tops out around 12 result pages (Firecrawl's 60s total-wait cap — each page
+  adds a 4.5s wait), so a wide `--since/--until` window must be split; `--max-pages` past 12 causes
+  a Firecrawl 400, and the truncation warning's "raise --max-pages" advice cannot work past it.
+  Land Records/SDAT lookups fail transiently in batches (Firecrawl 500s); failed records stay
+  unchecked and any later fill/daily run resumes them. → [history](docs/history/mddc-va-md.md)
 - **Doors-Per-Deal account build** — all 73 Records presets built and verified (0 defects), 12
   folders, 6 entry tags, 24 DC SiftMap presets saved. ZERO records pulled in, so every preset loads
   empty for DC until the pull runs on explicit go. → [history](docs/history/doors-per-deal.md)
