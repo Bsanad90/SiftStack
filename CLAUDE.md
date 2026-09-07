@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Currently focused on Knox and Blount counties, Tennessee. A realtor sphere-of-influence beta runs on the Columbus OH metro (the `soi_*` modules; see "Sphere of Influence Pipeline").
 
-8. **REI Skill Library:** 24 Claude Co-Work skill files (`.skill`/`.plugin` ZIPs) for distribution to DataSift community via [learn.datasift.ai/claude-skills-rei](https://learn.datasift.ai/claude-skills-rei). Skills teach Claude specific REI workflows when uploaded to Co-Work sessions or Projects.
+8. **REI Skill Library:** 25 Claude Co-Work skill files (`.skill`/`.plugin` ZIPs) for distribution to DataSift community via [learn.datasift.ai/claude-skills-rei](https://learn.datasift.ai/claude-skills-rei). Skills teach Claude specific REI workflows when uploaded to Co-Work sessions or Projects.
 
 ## Commands
 
@@ -699,9 +699,9 @@ python src/extract_market_finder.py --state "Tennessee" --county "Knox,Blount" -
 # Output: JSON file in output/market_finder_{state}_{county}_{timestamp}.json
 ```
 
-## REI Skill Library (24 Skills)
+## REI Skill Library (25 Skills)
 
-Distribution-ready Claude Co-Work skill files at top-level `skills/` and `plugins/` (source of truth: `skills/manifest.json` — 24 current entries + 2 superseded, `source_dir` per entry). Each `.skill` is a ZIP containing `SKILL.md` + `references/` folder. Plugins (`.plugin`) also include `commands/` and `.claude-plugin/plugin.json`.
+Distribution-ready Claude Co-Work skill files at top-level `skills/` and `plugins/` (source of truth: `skills/manifest.json` — 25 current entries + 2 superseded, `source_dir` per entry). Each `.skill` is a ZIP containing `SKILL.md` + `references/` folder. Plugins (`.plugin`) also include `commands/` and `.claude-plugin/plugin.json`.
 
 ### Skill Inventory
 
@@ -731,6 +731,7 @@ Distribution-ready Claude Co-Work skill files at top-level `skills/` and `plugin
 | 22 | `team-hiring.skill` | Operations | new | Plans, posts for, interviews, and onboards a remote REI team (data manager, prospector, lead manager, acquisitions manager, dispo): role KPIs, hiring-geography cost arbitrage, pay bands and commission, job descriptions, KPI-anchored interview guide, first-week onboarding. Pairs with candidate-intake |
 | 23 | `vendor-directory-builder.skill` | Operations | new | Vetted contractor/vendor directory for any market: community mining (FB in-group search, self-promoters + recommendation-thread comments), public-record verification (phone provenance, service area, rating with count, license board, BBB), geo sweep + gap analysis + niche gatekeeper layer (utility districts), Excel via bundled build_directory.py. Never-fabricate rule; also THE tool for vetting a found/AI-generated list. Community-safe (openpyxl only, fictional example data) |
 | 24 | `contractor-call-sheet.skill` | Operations | new | Action layer on a finished directory: printable one-page call sheet (build_call_sheet.py, fuzzy column detection, call-first banner for cross-validated providers) + personalized first-contact texts/voicemails + the 6 vetting-call questions. Drafts only, never sends. Community-safe (openpyxl only) |
+| 25 | `dispo-deal-blast.skill` | Operations | new | Text one named wholesale deal to the cash buyers whose own deed history says they buy at that price, and hand every reply to a human. Buyer registry from investor transactions gated on recency, asymmetric price band matching, copy that cannot leak the contract price or the address, batch staged HELD behind a deliberate release, responses become a permanent buyer phonebook. Community-safe (stdlib-only cohort script; lifted from upstream b5de920 without the internal dispo engine) |
 
 ### Cross-Skill Verified Consistency
 
