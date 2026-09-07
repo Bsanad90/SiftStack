@@ -345,8 +345,16 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
   keyed on `records > 0`, so every dry run reported "No counties processed successfully" and
   exited 1; it now keys on the month results, and the offline suite has a regression check.
   **Next:** dry-run all 14 headless, then a live sweep on the smallest county.
-- **Sold backlog suppression (`src/scripts/sold_backlog.py`) — BUILT, AUDITED, PARKED
-  2026-08-31 pending a write path.** The sweep above catches what sells from now on; this
+- **Sold backlog suppression (`src/scripts/sold_backlog.py`) — COMPLETE 2026-09-07.** All
+  1,559 backlog records are suppressed: 928 were flipped `Already Sold` by Basem's manual
+  sweep, and the remaining 630 still-active were stamped `Recently Sold` + month tag over the
+  API (`--commit-live`, new mode) — the cleanup sequence flipped every sampled one, QA 15/15.
+  The API tag write (merge-only property PATCH) works and fires the sequence, so the browser
+  wizard runbook below is OBSOLETE — kept only as history. New pattern for any future backlog:
+  `--live-audit <csv>` (live per-record classify, resumable) then `--commit-live <live csv>`.
+  Backups: `output/sold_backlog_backup_20260907T*.json` (restorable with `--undo`).
+  Historical record of the build and the parked browser path follows.
+  The sweep above catches what sells from now on; this
   catches what already sold while we kept marketing it. Audit (read-only, from the 26,645-record
   hydration) selects **1,559 records** that sold on/after 2024-08-31 and are STILL in an active
   status: 1,123 already mailed, all of them on a list, 643 sitting in "No Answer" on the dialer.
