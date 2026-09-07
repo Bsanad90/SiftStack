@@ -234,6 +234,63 @@ def stamp(api: Api, uuid: str, month_tag: str, backup: list) -> tuple[bool, str]
     return False, last_err
 
 
+def live_audit(src_csv: Path, limit: int = 0) -> Path:
+    """Read every backlog record LIVE and classify it. The hydration cache is
+    2026-08-21 and Basem hand-flipped statuses since, so the cache cannot answer
+    "what still needs the tag" -- only per-record live reads can. Resumable: the
+    per-uuid reads land in a JSONL state file next to the output."""
+    rows = list(csv.DictReader(src_csv.open(encoding="utf-8-sig")))
+    if limit:
+        rows = rows[:limit]
+    state_p = OUT_DIR / ("sold_backlog_live_state_%s.jsonl" % src_csv.stem[-15:])
+    seen: dict[str, dict] = {}
+    if state_p.exists():
+        for line in state_p.open(encoding="utf-8"):
+            try:
+                e = json.loads(line)
+                seen[e["uuid"]] = e
+            except json.JSONDecodeError:
+                pass
+    api = Api()
+    dead_keys = _dead_status_keys()
+    out_rows = []
+    with state_p.open("a", encoding="utf-8") as st:
+        for i, r in enumerate(rows, 1):
+            u = r["uuid"]
+            e = seen.get(u)
+            if e is None:
+                try:
+                    rec = api.call(READ_PATH % u)
+                    tags = [t.get("name") if isinstance(t, dict) else str(t)
+                            for t in (rec.get("tags") or [])]
+                    e = {"uuid": u, "live_status": rec.get("status") or "",
+                         "tagged": RECENTLY_SOLD_TAG in tags}
+                except Exception as ex:  # noqa: BLE001
+                    e = {"uuid": u, "gone": True, "err": str(ex)[:120]}
+                st.write(json.dumps(e) + "\n")
+                st.flush()
+            if e.get("gone"):
+                cat = "gone"
+            elif e.get("tagged"):
+                cat = "tagged_already"
+            elif _status_key(e.get("live_status")) in dead_keys:
+                cat = ("dead_already_sold"
+                       if _status_key(e.get("live_status")) == "already sold"
+                       else "dead_other")
+            else:
+                cat = "active"
+            out_rows.append({**r, "live_status": e.get("live_status", ""),
+                             "live_category": cat})
+            if i % 100 == 0:
+                print("  %d/%d read" % (i, len(rows)), flush=True)
+
+    from collections import Counter
+    print("live categories:", dict(Counter(r["live_category"] for r in out_rows)))
+    out_p = OUT_DIR / ("sold_backlog_live_%s.csv" % datetime.now().strftime("%Y%m%dT%H%M%S"))
+    write_csv(out_rows, out_p)
+    return out_p
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--cache", default=str(CACHE))
@@ -247,11 +304,51 @@ def main() -> int:
                     help="also write the minimal CSV for the browser path "
                          "(Update Data -> Tagging existing properties), which needs "
                          "no API access")
+    ap.add_argument("--live-audit", metavar="CSV",
+                    help="read every record in this backlog CSV LIVE and classify "
+                         "(gone / tagged_already / dead / active); no writes")
+    ap.add_argument("--commit-live", metavar="CSV",
+                    help="stamp only the live_category==active rows of a --live-audit "
+                         "output CSV")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--sleep", type=float, default=0.15)
     a = ap.parse_args()
 
     stamp_ts = datetime.now().strftime("%Y%m%dT%H%M%S")
+
+    if a.live_audit:
+        live_audit(Path(a.live_audit), a.limit)
+        print("\nReview the live CSV, then stamp the stragglers with "
+              "--commit-live <that csv>.")
+        return 0
+
+    if a.commit_live:
+        rows = [r for r in csv.DictReader(Path(a.commit_live).open(encoding="utf-8-sig"))
+                if r.get("live_category") == "active"]
+        if a.limit:
+            rows = rows[: a.limit]
+        print("%d active records to stamp" % len(rows))
+        api = Api()
+        backup: list = []
+        backup_path = OUT_DIR / ("sold_backlog_backup_%s.json" % stamp_ts)
+        ok = bad = 0
+        try:
+            for i, r in enumerate(rows, 1):
+                good, note = stamp(api, r["uuid"], r["sold_month_tag"], backup)
+                ok, bad = ok + int(good), bad + int(not good)
+                print("  [%d/%d] %s %s -- %s" % (i, len(rows), r["uuid"][:8],
+                                                 r["street"][:38],
+                                                 note if good else "FAILED " + note))
+                if not good and i == 1:
+                    print("\nFirst record failed; stopping.")
+                    break
+                time.sleep(a.sleep)
+        finally:
+            if backup:
+                backup_path.write_text(json.dumps(backup, indent=1), encoding="utf-8")
+                print("\nprior state -> %s  (undo with --undo)" % backup_path)
+        print("\ntagged %d, failed %d" % (ok, bad))
+        return 0 if bad == 0 else 1
 
     if a.undo:
         api = Api()

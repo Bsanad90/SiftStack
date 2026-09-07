@@ -501,13 +501,15 @@ async def find_presets_row(page, name: str, out: dict) -> dict | None:
     return None
 
 
-async def delete_saved_filter(page, base_url: str, name: str, out: dict) -> bool:
+async def delete_saved_filter(page, base_url: str, name: str, out: dict,
+                              allow: frozenset[str] = frozenset()) -> bool:
     """Delete ONE saved filter from the management table (PRESETS_ACCOUNT_URL). Refuses
-    non-ZZ names, re-checks the row before clicking, and requires any confirm dialog to
-    quote the name."""
+    non-ZZ names unless the name is on an explicit reviewed allowlist (--delete-from-file),
+    re-checks the row before clicking, and requires any confirm dialog to quote the name."""
     SHOTS.mkdir(parents=True, exist_ok=True)
-    if not DELETE_OK_RE.match(name):
-        out["error"] = f"refused: {name!r} does not start with 'ZZ ' and is not deletable"
+    if not DELETE_OK_RE.match(name) and name not in allow:
+        out["error"] = (f"refused: {name!r} does not start with 'ZZ ' and is not on the "
+                        "explicit allowlist")
         return False
     # Popover census first: the load-bearing after-check compares against this.
     await goto_map(page, base_url)
@@ -902,6 +904,27 @@ async def run(mode: str, fips: str | None, headless: bool, target: str | None = 
             out["results"].append(row)
             return out
 
+        if mode == "delete_batch":
+            # One browser session, every name from the reviewed allowlist file, in
+            # order. Two consecutive failures = a systematic change (dialog wording,
+            # table layout), so halt rather than grind through the rest.
+            names = [ln.strip() for ln in Path(target).read_text(encoding="utf-8").splitlines()
+                     if ln.strip() and not ln.startswith("#")]
+            allow = frozenset(names)
+            consec_fail = 0
+            for i, name in enumerate(names, 1):
+                row = {"name": name}
+                row["deleted"] = await delete_saved_filter(page, base_url, name, row, allow=allow)
+                out["results"].append(row)
+                print(f"  [{i}/{len(names)}] {name!r}: "
+                      f"{'deleted' if row['deleted'] else 'FAILED: ' + str(row.get('error'))}",
+                      flush=True)
+                consec_fail = 0 if row["deleted"] else consec_fail + 1
+                if consec_fail >= 2:
+                    out["error"] = "halted after 2 consecutive failures (systematic change?)"
+                    break
+            return out
+
         if mode == "smoke":
             name = f"ZZ DPD SMOKE {datetime.now():%H%M%S}"
             row = {"name": name, "source": smallest_nonzero["name"], "url": smallest_nonzero["url"]}
@@ -999,15 +1022,20 @@ def main() -> int:
                    help="probe one saved filter's row icons; clicks nothing")
     g.add_argument("--delete-name", metavar="NAME",
                    help="delete ONE saved filter; the name must start with 'ZZ '")
+    g.add_argument("--delete-from-file", metavar="PATH",
+                   help="delete every saved filter named in this reviewed allowlist file "
+                        "(one name per line, # comments); the ZZ-prefix guard is waived "
+                        "ONLY for names in the file")
     ap.add_argument("--headed", action="store_true")
     a = ap.parse_args()
     mode = ("list" if a.list_account else
             "discover" if a.discover else "smoke" if a.smoke_test else
             "commit" if a.commit else "verify" if a.verify else
-            "discover_delete" if a.discover_delete else "delete")
+            "discover_delete" if a.discover_delete else
+            "delete_batch" if a.delete_from_file else "delete")
     if mode != "list" and not a.fips:
         ap.error("--fips is required for every mode except --list-account")
-    target = a.discover_delete or a.delete_name
+    target = a.discover_delete or a.delete_name or a.delete_from_file
     out = asyncio.run(run(mode, a.fips, headless=not a.headed, target=target))
     path = ROOT / "output" / f"dpd_siftmap_presets_{a.fips or 'account'}_{mode}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -1061,6 +1089,16 @@ def main() -> int:
         if r.get("names_after") is not None:
             print(f"   remaining saved filters: {len(r['names_after'])}")
         return 0 if r.get("deleted") else 1
+    if mode == "delete_batch":
+        done = sum(1 for r in out["results"] if r.get("deleted"))
+        bad = [r for r in out["results"] if not r.get("deleted")]
+        print(f"delete-batch: {done} deleted, {len(bad)} failed of {len(out['results'])} attempted")
+        for r in bad:
+            print(f"   FAILED {r['name']!r}: {r.get('error')}")
+        last = next((r for r in reversed(out["results"]) if r.get("names_after") is not None), None)
+        if last:
+            print(f"   remaining saved filters (popover): {len(last['names_after'])}")
+        return 0 if (done and not bad) else 1
     return 0
 
 
