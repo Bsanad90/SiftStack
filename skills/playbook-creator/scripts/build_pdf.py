@@ -36,10 +36,11 @@ from reportlab.lib import colors
 
 def find_mmdc():
     """Find the mmdc binary."""
-    # Check local node_modules first
-    local = os.path.join(os.getcwd(), "node_modules", ".bin", "mmdc")
-    if os.path.exists(local):
-        return local
+    # Check local node_modules first (Windows npm shims are .cmd files)
+    for name in (("mmdc.cmd", "mmdc") if os.name == "nt" else ("mmdc",)):
+        local = os.path.join(os.getcwd(), "node_modules", ".bin", name)
+        if os.path.exists(local):
+            return local
     # Check common install locations
     for path in [
         "/sessions/confident-gallant-pasteur/node_modules/.bin/mmdc",
@@ -48,9 +49,13 @@ def find_mmdc():
         if os.path.exists(path):
             return path
     # Fall back to PATH
-    result = subprocess.run(["which", "mmdc"], capture_output=True, text=True)
-    if result.returncode == 0:
-        return result.stdout.strip()
+    try:
+        finder = "where" if os.name == "nt" else "which"
+        result = subprocess.run([finder, "mmdc"], capture_output=True, text=True)
+        if result.returncode == 0:
+            return result.stdout.strip().splitlines()[0]
+    except OSError:
+        pass
     return None
 
 
@@ -182,6 +187,14 @@ def parse_markdown(md_text: str):
             blocks.append({"type": "bullet_list", "items": items})
             continue
 
+        # Image on its own line: ![caption](path)
+        img_match = re.match(r"^!\[(.*?)\]\((.*?)\)$", line.strip())
+        if img_match:
+            blocks.append({"type": "image", "alt": img_match.group(1),
+                           "src": img_match.group(2)})
+            i += 1
+            continue
+
         # Regular paragraph
         if line.strip():
             para_lines = []
@@ -227,7 +240,8 @@ def md_inline(text: str) -> str:
 # PDF building
 # ---------------------------------------------------------------------------
 
-def build_pdf(md_text: str, output_path: str, title: str = None):
+def build_pdf(md_text: str, output_path: str, title: str = None,
+              base_dir: str = None):
     """Build a PDF from parsed markdown content."""
 
     mmdc = find_mmdc()
@@ -249,16 +263,19 @@ def build_pdf(md_text: str, output_path: str, title: str = None):
         fontSize=16, spaceBefore=18, spaceAfter=8,
         textColor=HexColor("#1a1a2e"), fontName="Helvetica-Bold",
         borderWidth=0, borderPadding=0, borderColor=None,
+        keepWithNext=1,
     ))
     styles.add(ParagraphStyle(
         "H3Custom", parent=styles["Heading3"],
         fontSize=13, spaceBefore=12, spaceAfter=6,
-        textColor=HexColor("#2d3436"), fontName="Helvetica-Bold"
+        textColor=HexColor("#2d3436"), fontName="Helvetica-Bold",
+        keepWithNext=1,
     ))
     styles.add(ParagraphStyle(
         "H4Custom", parent=styles["Heading4"],
         fontSize=11, spaceBefore=8, spaceAfter=4,
-        textColor=HexColor("#2d3436"), fontName="Helvetica-BoldOblique"
+        textColor=HexColor("#2d3436"), fontName="Helvetica-BoldOblique",
+        keepWithNext=1,
     ))
     styles.add(ParagraphStyle(
         "BodyCustom", parent=styles["Normal"],
@@ -389,6 +406,36 @@ def build_pdf(md_text: str, output_path: str, title: str = None):
                     styles["CodeStyle"]
                 ))
 
+        elif btype == "image":
+            img_path = block["src"]
+            if not os.path.isabs(img_path):
+                img_path = os.path.join(base_dir or os.getcwd(), img_path)
+            try:
+                img = Image(img_path)
+                # Screenshots are captured at 2x device scale; 0.375 renders
+                # them at their natural on-screen size (px/2 CSS at 96dpi ->
+                # 72dpi points). Cap the height well under a page so an image
+                # never claims a page of its own and orphans the text around it.
+                max_w = 6.5 * inch
+                max_h = 5.4 * inch
+                w, h = img.imageWidth, img.imageHeight
+                if w > 0 and h > 0:
+                    ratio = min(max_w / w, max_h / h, 0.375)
+                    img._restrictSize(w * ratio, h * ratio)
+                group = [Spacer(1, 6), img]
+                if block.get("alt"):
+                    group.append(Paragraph(
+                        f'<i><font color="#636e72" size="8">{md_inline(block["alt"])}</font></i>',
+                        styles["ScreenshotStyle"]))
+                group.append(Spacer(1, 6))
+                story.append(KeepTogether(group))
+            except Exception as e:
+                print(f"  Warning: Could not embed image {img_path}: {e}",
+                      file=sys.stderr)
+                story.append(Paragraph(
+                    f'<i>[Image missing: {block["src"]}]</i>',
+                    styles["BlockquoteStyle"]))
+
         elif btype == "code":
             code_text = block["code"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             code_text = code_text.replace("\n", "<br/>")
@@ -401,11 +448,18 @@ def build_pdf(md_text: str, output_path: str, title: str = None):
             rows = block["rows"]
             if not rows:
                 continue
-            # Convert markdown in cells
+            # Convert markdown in cells. The header row needs its own white
+            # paragraph style: the TableStyle TEXTCOLOR below does not reach
+            # inside Paragraph flowables, so without this the header text
+            # renders dark-on-dark and disappears.
+            head_style = ParagraphStyle(
+                "TableHead", parent=styles["BodyCustom"],
+                textColor=white, fontName="Helvetica-Bold")
             table_data = []
-            for row in rows:
+            for ri, row in enumerate(rows):
+                cell_style = head_style if ri == 0 else styles["BodyCustom"]
                 table_data.append([
-                    Paragraph(md_inline(cell), styles["BodyCustom"]) for cell in row
+                    Paragraph(md_inline(cell), cell_style) for cell in row
                 ])
 
             col_count = len(table_data[0]) if table_data else 1
@@ -484,7 +538,8 @@ if __name__ == "__main__":
     parser.add_argument("--title", help="Document title", default=None)
     args = parser.parse_args()
 
-    with open(args.input, "r") as f:
+    with open(args.input, "r", encoding="utf-8") as f:
         md_text = f.read()
 
-    build_pdf(md_text, args.output, title=args.title)
+    build_pdf(md_text, args.output, title=args.title,
+              base_dir=os.path.dirname(os.path.abspath(args.input)))

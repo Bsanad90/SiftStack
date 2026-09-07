@@ -52,6 +52,8 @@ if (!inputFile || !outputFile) {
 // ---------------------------------------------------------------------------
 function findMmdc() {
   const candidates = [
+    path.join(process.cwd(), "node_modules", ".bin",
+              process.platform === "win32" ? "mmdc.cmd" : "mmdc"),
     path.join(process.cwd(), "node_modules", ".bin", "mmdc"),
     path.join("/sessions/confident-gallant-pasteur", "node_modules", ".bin", "mmdc"),
     path.join(os.homedir(), ".npm-global", "bin", "mmdc"),
@@ -214,6 +216,14 @@ function parseMarkdown(md) {
       continue;
     }
 
+    // Image on its own line: ![caption](path)
+    const imgMatch = line.trim().match(/^!\[(.*?)\]\((.*?)\)$/);
+    if (imgMatch) {
+      blocks.push({ type: "image", alt: imgMatch[1], src: imgMatch[2] });
+      i++;
+      continue;
+    }
+
     // Paragraph
     if (line.trim()) {
       const paraLines = [];
@@ -270,7 +280,7 @@ function inlineToRuns(text, baseStyle = {}) {
 // ---------------------------------------------------------------------------
 // Build the document
 // ---------------------------------------------------------------------------
-async function buildDocx(mdText, outputPath, docTitle) {
+async function buildDocx(mdText, outputPath, docTitle, baseDir) {
   const mmdc = findMmdc();
   if (!mmdc) console.error("Warning: mmdc not found. Mermaid diagrams will be placeholders.");
 
@@ -431,6 +441,48 @@ async function buildDocx(mdText, outputPath, docTitle) {
           children.push(new Paragraph({
             shading: { fill: "F5F5F5", type: ShadingType.CLEAR },
             children: [new TextRun({ text: `[Flowchart — install @mermaid-js/mermaid-cli to render]`, italics: true, color: "999999", font: "Courier New", size: 16 })],
+          }));
+        }
+        break;
+      }
+
+      case "image": {
+        const imgPath = path.isAbsolute(block.src)
+          ? block.src
+          : path.join(baseDir || process.cwd(), block.src);
+        try {
+          const imgData = fs.readFileSync(imgPath);
+          const width = imgData.readUInt32BE(16);
+          const height = imgData.readUInt32BE(20);
+          // Screenshots are captured at 2x device scale; 0.5 renders them at
+          // natural on-screen size. Cap the height well under a page so an
+          // image never claims a page of its own.
+          const maxW = 624;
+          const maxH = 500;
+          const ratio = Math.min(maxW / width, maxH / height, 0.5);
+          const finalW = Math.round(width * ratio);
+          const finalH = Math.round(height * ratio);
+          children.push(new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 120, after: 40 },
+            children: [new ImageRun({
+              type: "png",
+              data: imgData,
+              transformation: { width: finalW, height: finalH },
+              altText: { title: block.alt || "Screenshot", description: block.alt || "Screenshot", name: path.basename(imgPath) },
+            })],
+          }));
+          if (block.alt) {
+            children.push(new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 160 },
+              children: [new TextRun({ text: block.alt, italics: true, color: COLORS.medGray, size: 16, font: "Arial" })],
+            }));
+          }
+        } catch (e) {
+          console.error(`  Warning: Could not embed image ${imgPath}: ${e.message}`);
+          children.push(new Paragraph({
+            children: [new TextRun({ text: `[Image missing: ${block.src}]`, italics: true, color: "999999", font: "Arial", size: 18 })],
           }));
         }
         break;
@@ -621,7 +673,7 @@ async function buildDocx(mdText, outputPath, docTitle) {
 // Run
 // ---------------------------------------------------------------------------
 const mdText = fs.readFileSync(inputFile, "utf8");
-buildDocx(mdText, outputFile, title).catch(e => {
+buildDocx(mdText, outputFile, title, path.dirname(path.resolve(inputFile))).catch(e => {
   console.error("Error:", e);
   process.exit(1);
 });
