@@ -78,6 +78,10 @@ def main() -> int:
     ap.add_argument("--detail-cache", default="output/dp_ftm_skipped_detail.json")
     ap.add_argument("--count-only", action="store_true",
                     help="resolve + count only (3 API calls); no hydration, no CSV")
+    ap.add_argument("--with-phones", action="store_true",
+                    help="the lane SELECTS records with numbers (e.g. Deep - 03 Exhausted "
+                         "Call): keep phone-bearing records instead of dropping them as "
+                         "index lag")
     a = ap.parse_args()
 
     api = LiveApi()
@@ -138,8 +142,9 @@ def main() -> int:
             errors += 1
             continue
         # The filtered search index lags writes: a record that gained numbers since the
-        # count is no longer a candidate, and the detail read is the truth.
-        if ((r.get("owner") or {}).get("phones") or []):
+        # count is no longer a candidate, and the detail read is the truth. Only for
+        # no-number lanes -- a lane that selects ON having numbers keeps them.
+        if not a.with_phones and ((r.get("owner") or {}).get("phones") or []):
             gained_numbers += 1
             continue
         row = build_row(r)
