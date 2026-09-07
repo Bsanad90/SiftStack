@@ -134,12 +134,12 @@ COUNTY_CHECKBOX_INDEX = {
     "Worcester": 27,
 }
 
+# Narrowed to the 6-county footprint 2026-09-07 (Basem). The dropped MD
+# counties (Baltimore County, Calvert, Carroll, Charles) remain selectable
+# via --counties; pulling them was pure spend -- the upload builder already
+# footprint-filters, so their rows cost Turnstile solves and were dropped.
 DEFAULT_COUNTIES = [
     "Anne Arundel",
-    "Baltimore County",
-    "Calvert",
-    "Carroll",
-    "Charles",
     "Frederick",
     "Montgomery",
     "Washington DC",
