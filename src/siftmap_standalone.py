@@ -55,6 +55,20 @@ class SiftMapClient:
         self._min_interval = min_interval
         self._max_retries = max_retries
         self._last = 0.0
+        self._jwt = None  # lazy Bearer fallback when no Api-Key is set
+
+    def _auth(self) -> str:
+        if self._key:
+            return f"Api-Key {self._key}"
+        # No REISIFT_API_KEY: fall back to the minted user JWT, the same
+        # fallback SearchClient uses. Verified live 2026-09-07 on this
+        # account: /properties/detail/ answers 200 to a Bearer token.
+        if self._jwt is None:
+            from datasift_api_upload import Api  # lazy; mints from .env creds
+            self._jwt = Api()
+        elif time.time() - self._jwt.minted > 1800:
+            self._jwt._mint()
+        return f"Bearer {self._jwt.token}"
 
     # ── plumbing ─────────────────────────────────────────────────────
     def _wait(self) -> None:
@@ -67,10 +81,7 @@ class SiftMapClient:
                  auth: bool = True, timeout: float = 40.0):
         headers = dict(_STD)
         if auth:
-            if not self._key:
-                raise SiftMapError(
-                    "REISIFT_API_KEY is not set; the detail endpoint needs it")
-            headers["authorization"] = f"Api-Key {self._key}"
+            headers["authorization"] = self._auth()
         data = json.dumps(body).encode() if body is not None else None
 
         for attempt in range(self._max_retries + 1):
@@ -101,8 +112,9 @@ class SiftMapClient:
                     time.sleep(2.0 * (attempt + 1))
                     continue
                 if e.code == 401:
+                    mode = "Api-Key" if self._key else "Bearer JWT"
                     raise SiftMapError(
-                        f"401 on {method} {path}. The Api-Key was rejected. {body_txt}")
+                        f"401 on {method} {path}. The {mode} was rejected. {body_txt}")
                 raise SiftMapError(f"HTTP {e.code} on {method} {path}: {body_txt}")
             except urllib.error.URLError as e:
                 if attempt < self._max_retries:

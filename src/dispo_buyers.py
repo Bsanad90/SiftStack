@@ -1681,7 +1681,7 @@ def phase_profiles(args) -> None:
     print("  reachable now (Dial First/Second): %d" % reach)
     for t, n in types.most_common():
         print("   %-18s %4d" % (t, n))
-    xlsx = OUT / ("Knox_Blount_Buyer_Profiles_%s.xlsx"
+    xlsx = OUT / ("DMV_Buyer_Profiles_%s.xlsx"
                   % datetime.now().strftime("%Y%m%d"))
     try:
         written = write_profiles_xlsx(profiles, xlsx) or xlsx
