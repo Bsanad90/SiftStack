@@ -156,17 +156,49 @@ def connects(detail: dict, row: dict, cands: list[dict]) -> str | None:
     return None
 
 
+MAX_CANDIDATE_ESTATES = 8
+
+
+def usable_street(s: str) -> bool:
+    s = (s or "").strip()
+    return len(s) >= 6 and s.upper() not in ("#N/A", "N/A") and any(ch.isdigit() for ch in s)
+
+
 def resolve(rows: list[dict]) -> None:
     cache = json.load(open(CACHE_P, encoding="utf-8")) if CACHE_P.exists() else {}
     plan: list[dict] = []
-    md_estates = sorted({c["estate"] for r in rows for c in parse_candidates(r)
-                         if c["kind"] == "md"})
+    # The degenerate rows (street '#N/A' or blank) joined the sheet on a junk
+    # address and collected HUNDREDS of unrelated candidates -- 2,530 uncached
+    # estates in the first attempt. They cannot be street-verified, so they go
+    # to the hold list without spending a single lookup on them.
+    md_estates = sorted({c["estate"] for r in rows
+                         if usable_street(r["street"])
+                         for c in parse_candidates(r)[:]
+                         if c["kind"] == "md"
+                         and len({x["estate"] for x in parse_candidates(r)
+                                  if x["estate"]}) <= MAX_CANDIDATE_ESTATES})
     todo = [e for e in md_estates if e not in cache]
     print(f"{len(rows)} rows; {len(md_estates)} unique MD estates ({len(todo)} to fetch, "
           f"{len(md_estates) - len(todo)} cached)")
 
     for i, r in enumerate(rows, 1):
         cands = parse_candidates(r)
+        if not usable_street(r["street"]):
+            plan.append({"uuid": r["uuid"], "street": r["street"], "bucket": r["bucket"],
+                         "verdict": "hold_bad_street", "new_first": "", "new_last": "",
+                         "estate": "", "estate_status": "", "evidence": "",
+                         "candidates": f"{len(cands)} candidates (not enumerated)",
+                         "current_pr_first": r["current_pr_first"],
+                         "current_pr_last": r["current_pr_last"], "detail_prs": ""})
+            continue
+        if len({c["estate"] for c in cands if c["estate"]}) > MAX_CANDIDATE_ESTATES:
+            plan.append({"uuid": r["uuid"], "street": r["street"], "bucket": r["bucket"],
+                         "verdict": "hold_too_many_candidates", "new_first": "",
+                         "new_last": "", "estate": "", "estate_status": "", "evidence": "",
+                         "candidates": f"{len(cands)} candidates (not enumerated)",
+                         "current_pr_first": r["current_pr_first"],
+                         "current_pr_last": r["current_pr_last"], "detail_prs": ""})
+            continue
         base = {"uuid": r["uuid"], "street": r["street"], "bucket": r["bucket"],
                 "current_pr_first": r["current_pr_first"],
                 "current_pr_last": r["current_pr_last"],
