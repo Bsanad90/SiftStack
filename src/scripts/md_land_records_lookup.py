@@ -345,6 +345,137 @@ def decode_remarks_account(remarks: str) -> tuple[str, str] | None:
     return acct_raw[:2], acct_raw[2:]
 
 
+def deed_account_candidates(remarks: str, tax_id: str) -> list[tuple[str, str, str]]:
+    """(district, subdivision, account) interpretations to try against the
+    SDAT Account Identifier form, best-first. The full identifier decomposes
+    county(2) + district(2) + subdivision(3) + account(8) (Basem 2026-09-08);
+    deeds carry fragments of it in two places and several shapes:
+      tax_id  '03-02366800'      -> ('03', '', '02366800')
+      tax_id  '03-437-90017499'  -> ('03', '437', '90017499')
+      remarks '... 2107481 8590' -> 8-digit blob, legacy 2+6 split
+      remarks 13-digit blob      -> 2+3+8 split
+    A wrong interpretation costs one SDAT call and fails the owner match, so
+    the list is capped by the caller."""
+    out: list[tuple[str, str, str]] = []
+
+    def add(d: str, s: str, a: str):
+        t = (d, s, a)
+        if d and a and t not in out:
+            out.append(t)
+
+    tid = (tax_id or "").strip()
+    if tid:
+        parts = [p for p in re.split(r"[^\d]+", tid) if p]
+        if len(parts) == 3:
+            add(parts[0].zfill(2), parts[1], parts[2])
+        elif len(parts) == 2:
+            add(parts[0].zfill(2), "", parts[1])
+        else:
+            digits = "".join(parts)
+            if len(digits) == 13:
+                add(digits[:2], digits[2:5], digits[5:])
+            elif len(digits) == 10:
+                add(digits[:2], "", digits[2:])
+    for blob in re.findall(r"\d{7,13}", remarks or ""):
+        if len(blob) == 7:
+            blob = "0" + blob
+        if len(blob) == 13:
+            add(blob[:2], blob[2:5], blob[5:])
+        elif len(blob) == 10:
+            add(blob[:2], "", blob[2:])
+        elif len(blob) == 8:
+            add(blob[:2], "", blob[2:])          # legacy 2+6 (proven on Calvert)
+            lone = [t for t in re.findall(r"(?<!\d)(\d{1,2})(?!\d)", remarks or "")
+                    if int(t) > 0]                # zeros are lot/block filler, not a district
+            if lone:                              # a bare district token elsewhere
+                add(lone[0].zfill(2), "", blob)   # 8 digits ARE the account (AA shape)
+    return out
+
+
+# Maryland open-data assessment roll (Socrata), one dataset per county.
+# Owner names are withheld ('Hidden Property Owner Names') but legal
+# description, lot, block and the premise address are all present and
+# queryable for free -- which turns a Remarks cell like 'MANOR WOODS12  7'
+# (subdivision + lot + block, the Montgomery convention) into the parcel's
+# street address with NO Firecrawl spend. Proven live 2026-09-08: MANOR
+# WOODS / lot 12 / block 7 -> exactly one parcel, 4708 MILTFRED TER.
+OPENDATA_DATASET = {
+    "Montgomery": "kb22-is2w",
+    "Anne Arundel": "3w75-7rie",
+    "Frederick": "gx8c-a963",
+}
+_OD_LEGAL = "legal_description_line_1_mdp_field_legal1_sdat_field_17"
+_OD_LOT = "lot_mdp_field_lot_sdat_field_41"
+_OD_BLOCK = "block_mdp_field_block_sdat_field_40"
+_OD_ADDR = "mdp_street_address_mdp_field_address"
+_OD_CITY = "mdp_street_address_city_mdp_field_city"
+_OD_ZIP = "premise_address_zip_code_mdp_field_premzip_sdat_field_26"
+
+REMARKS_LEGAL_RE = re.compile(
+    r"^([A-Z][A-Z .'&-]{2,}?)\s*(\d{1,4}[A-Z]?)\s+(\d{1,4}[A-Z]?|[A-Z])\s*$")
+
+
+def parse_remarks_legal(remarks: str) -> tuple[str, str, str] | None:
+    """'MANOR WOODS12  7' -> ('MANOR WOODS', '12', '7');
+    'STRATHMORE BEL PRE12  5' -> ('STRATHMORE BEL PRE', '12', '5').
+    A trailing truncated address fragment ('...LLE MD 20853') is stripped
+    first. Returns None when the cell isn't the subdivision+lot+block shape
+    (account blobs and book-page refs are handled by the other decoders)."""
+    txt = (remarks or "").strip().upper()
+    txt = re.sub(r"\s+[A-Z]*\s*MD\s+\d{5}(?:-\d{4})?$", "", txt).strip()
+    m = REMARKS_LEGAL_RE.match(txt)
+    if not m:
+        return None
+    name, lot, block = m.group(1).strip(), m.group(2), m.group(3)
+    if len(name) < 3 or name in {"N/AN/A", "N/A"}:
+        return None
+    return name, lot, block
+
+
+def lookup_opendata_by_legal(county: str, subdiv_name: str, lot: str, block: str) -> list[dict]:
+    """Query the county's open-data assessment roll for parcels whose legal
+    description carries `subdiv_name` and whose lot/block match exactly
+    (values are space-padded in the dataset, so the compare trims). Returns
+    [{street, city, zip}] -- usually exactly one row; the caller SDAT-checks
+    the owner before believing it."""
+    dataset = OPENDATA_DATASET.get(county)
+    if not dataset:
+        return []
+    safe = subdiv_name.replace("'", "''")
+    resp = requests.get(
+        f"https://opendata.maryland.gov/resource/{dataset}.json",
+        params={"$where": f"upper({_OD_LEGAL}) like '%{safe}%'", "$limit": 5000},
+        timeout=120)
+    resp.raise_for_status()
+    out = []
+    for row in resp.json():
+        if str(row.get(_OD_LOT, "")).strip().lstrip("0") != lot.lstrip("0"):
+            continue
+        if str(row.get(_OD_BLOCK, "")).strip() != block:
+            continue
+        street = (row.get(_OD_ADDR) or "").strip()
+        if street:
+            out.append({"street": street, "city": (row.get(_OD_CITY) or "").strip(),
+                        "zip": (row.get(_OD_ZIP) or "").strip()[:5]})
+    return out
+
+
+def remarks_street_number(remarks: str) -> str:
+    """The TRAILING short number in a Remarks cell is the parcel's street
+    number ('SAMPLE MANOR 0 0 2107481 8590' -> the parcel is 8590 Oak Hill
+    Dr). Usable as a partial: SDAT street search by NUMBER with the row
+    picked by the decedent's name (Basem 2026-09-08). Returns '' when the
+    cell has no plausible trailing street number."""
+    toks = (remarks or "").split()
+    if len(toks) < 2:
+        # A lone token ('03') is a district code, not a street number.
+        return ""
+    tail = toks[-1]
+    if re.fullmatch(r"\d{1,6}", tail) and not re.fullmatch(r"0+", tail):
+        return tail
+    return ""
+
+
 # ── Deed PDF text (primary address source) ──────────────────────────────
 
 PDF_ORIGINAL_URL_RE = re.compile(r"original-url=[\"']([^\"']+)")
@@ -500,7 +631,16 @@ ACCOUNT_SEL = "#cphMainContentArea_ucSearchType_wzrdRealPropertySearch_ucEnterDa
 NEXT_SEL = "#cphMainContentArea_ucSearchType_wzrdRealPropertySearch_StepNavigationTemplateContainerID_btnStepNextButton"
 
 
-def lookup_sdat(county: str, district: str, account: str) -> dict | None:
+SUBDIV_SEL = DISTRICT_SEL.replace("txtDistrict", "txtSubDiv")
+
+
+def lookup_sdat(county: str, district: str, account: str, subdivision: str = "") -> dict | None:
+    """SDAT search type 02, PROPERTY ACCOUNT IDENTIFIER. The full identifier
+    decomposes as county(2) + district(2) + subdivision(3) + account(8)
+    (Basem 2026-09-08); counties whose form shows the Subdivision box
+    (e.g. Anne Arundel) reject a submit without it -- pass `subdivision`
+    there. The box is inside pnlSubDiv and simply absent on counties that
+    don't use it, where filling it is a harmless no-op."""
     county_id = SDAT_COUNTY_ID[county]
     actions = [
         {"type": "wait", "milliseconds": 2000},
@@ -517,7 +657,8 @@ def lookup_sdat(county: str, district: str, account: str) -> dict | None:
         # already run. Same native-setter + input/change pattern already
         # proven for every other text field in this codebase fixes it.
         {"type": "executeJavascript", "script": _set_text_js(DISTRICT_SEL, district)},
-        {"type": "executeJavascript", "script": _set_text_js(ACCOUNT_SEL, account)},
+        {"type": "executeJavascript", "script": (_set_text_js(SUBDIV_SEL, subdivision) if subdivision else "")
+                                               + _set_text_js(ACCOUNT_SEL, account)},
         {"type": "wait", "milliseconds": 500},
         {"type": "click", "selector": NEXT_SEL},
         {"type": "wait", "milliseconds": 3000},
@@ -565,29 +706,50 @@ def split_street_for_sdat(street: str) -> tuple[str, str]:
     return number, " ".join(t.upper().rstrip(".") for t in tokens)
 
 
-def _click_matching_result_row_js(street_number: str, street_name: str) -> str:
+def _click_matching_result_row_js(street_number: str, street_name: str,
+                                  owner_tokens: list[str] | None = None,
+                                  require_owner: bool = False) -> str:
     """If the street search landed on a multi-match grid (several parcels
-    on the same number/name, e.g. units), click the first row that carries
-    both the number and the name. A no-op when the page is already a single
-    parcel's detail (it has 'Owner Name' on it)."""
+    on the same number/name, e.g. condo units), click the best row. The
+    grid shows each parcel's OWNER, so when `owner_tokens` (decedent name
+    tokens) are given, a row carrying the street AND the owner's surname
+    wins over the first street match -- on '300 KING FARM' the first row
+    is an arbitrary unit and its owner is a stranger (Basem 2026-09-08:
+    'putting partial name and find with decedent's name'). With
+    `require_owner` (the partial-street retry) a street-only row is NOT
+    clicked at all: a broad grid without an owner match must fail loudly
+    rather than hand back a random neighbor. A no-op when the page is
+    already a single parcel's detail (it has 'Owner Name' on it)."""
     num = street_number.replace("'", "")
     name = street_name.replace("'", "").upper()
+    toks = [re.sub(r"[^A-Z0-9]", "", t.upper()) for t in (owner_tokens or [])]
+    toks = [t for t in toks if len(t) > 1]
+    toks_js = "[" + ",".join(f"'{t}'" for t in toks) + "]"
     return f"""
         (function() {{
             if ((document.body.innerText || '').indexOf('Owner Name') >= 0) return;
+            var toks = {toks_js};
             var rows = document.querySelectorAll('table tr');
+            var streetHit = null;
             for (var i = 0; i < rows.length; i++) {{
                 var t = (rows[i].innerText || '').toUpperCase();
                 if (t.indexOf('{num}') >= 0 && t.indexOf('{name}') >= 0) {{
                     var a = rows[i].querySelector('a');
-                    if (a) {{ a.click(); return; }}
+                    if (!a) continue;
+                    if (!streetHit) streetHit = a;
+                    if (toks.length) {{
+                        var hits = 0;
+                        for (var j = 0; j < toks.length; j++) if (t.indexOf(toks[j]) >= 0) hits++;
+                        if (hits >= Math.min(2, toks.length)) {{ a.click(); return; }}
+                    }}
                 }}
             }}
+            if (streetHit && !{str(bool(require_owner)).lower()}) streetHit.click();
         }})();
     """
 
 
-def lookup_sdat_by_address(county: str, street: str) -> dict | None:
+def lookup_sdat_by_address(county: str, street: str, owner_name: str = "") -> dict | None:
     """SDAT Real Property search, type 01 STREET ADDRESS (per Basem
     2026-08-27: 'use the property address and then street, don't use tax
     account ID'). Returns the parsed parcel (owner names, premises, mailing,
@@ -597,10 +759,70 @@ def lookup_sdat_by_address(county: str, street: str) -> dict | None:
     DEBORAH L, 456 EXAMPLE CT OWINGS 20736; '8590' + 'OAK HILL' -> the
     SAMPLE trustees' parcel. Both landed directly on the detail page; the
     multi-match grid click below is a guard for the unit/duplicate case and
-    is a no-op on a direct hit."""
+    is a no-op on a direct hit.
+
+    `owner_name` (the decedent, when the caller knows who should be on
+    title) steers the multi-match grid: a condo search returns one row per
+    UNIT and the first street match is an arbitrary neighbor -- the row
+    carrying the owner's name is the right parcel. When the full street
+    name finds nothing, a PARTIAL street name (first word) is retried with
+    the owner match REQUIRED (Basem 2026-09-08), so misspelled or
+    reformatted street names still resolve without ever returning a
+    stranger's parcel."""
     county_id = SDAT_COUNTY_ID[county]
     number, name = split_street_for_sdat(street)
     if not (number and name):
+        return None
+    owner_tokens = [t for t in re.split(r"[\s,/]+", (owner_name or "").upper())
+                    if t and t.rstrip(".") not in _NAME_NOISE]
+
+    def _run(street_name: str, require_owner: bool) -> dict | None:
+        actions = [
+            {"type": "wait", "milliseconds": 2000},
+            {"type": "executeJavascript", "script": _set_select_js(COUNTY_SEL, county_id)},
+            {"type": "wait", "milliseconds": 500},
+            {"type": "executeJavascript", "script": _set_select_js(TYPE_SEL, "01")},  # STREET ADDRESS
+            {"type": "wait", "milliseconds": 500},
+            {"type": "click", "selector": CONTINUE_SEL},
+            {"type": "wait", "milliseconds": 3000},
+            {"type": "executeJavascript", "script": _set_text_js(STREET_NUMBER_SEL, number) + _set_text_js(STREET_NAME_SEL, street_name)},
+            {"type": "wait", "milliseconds": 500},
+            {"type": "click", "selector": NEXT_SEL},
+            {"type": "wait", "milliseconds": 4000},
+            {"type": "executeJavascript", "script": _click_matching_result_row_js(
+                number, street_name, owner_tokens, require_owner=require_owner)},
+            {"type": "wait", "milliseconds": 3500},
+            {"type": "scrape"},
+        ]
+        html = firecrawl_scrape_retry(SDAT_URL, actions, timeout=120)
+        parsed = parse_sdat_result(html)
+        if parsed:
+            parsed["sdat_query"] = {"street_number": number, "street_name": street_name}
+        return parsed
+
+    parsed = _run(name, require_owner=False)
+    first_word = name.split()[0] if name.split() else ""
+    if not parsed and owner_tokens and first_word and first_word != name:
+        # Partial street name casts a wider grid; the decedent's name picks
+        # the row, and WITHOUT an owner match no row is clicked at all.
+        print(f"      SDAT: no parcel under {number} {name!r} -- retrying partial "
+              f"street {first_word!r} matched on the owner's name")
+        parsed = _run(first_word, require_owner=True)
+    return parsed
+
+
+def lookup_sdat_by_street_number(county: str, number: str, owner_name: str) -> dict | None:
+    """SDAT street search by house NUMBER alone -- the street-name box left
+    empty -- with the result row REQUIRED to match the owner's name. Used
+    when a deed's Remarks cell yields only a street number (its trailing
+    token) and the decedent's name must pick the parcel out of every
+    same-numbered street in the county (Basem 2026-09-08). Never clicks a
+    row without an owner match, so it cannot return a stranger's parcel."""
+    county_id = SDAT_COUNTY_ID[county]
+    number = (number or "").strip()
+    owner_tokens = [t for t in re.split(r"[\s,/]+", (owner_name or "").upper())
+                    if t and t.rstrip(".") not in _NAME_NOISE]
+    if not (number and owner_tokens):
         return None
     actions = [
         {"type": "wait", "milliseconds": 2000},
@@ -610,18 +832,19 @@ def lookup_sdat_by_address(county: str, street: str) -> dict | None:
         {"type": "wait", "milliseconds": 500},
         {"type": "click", "selector": CONTINUE_SEL},
         {"type": "wait", "milliseconds": 3000},
-        {"type": "executeJavascript", "script": _set_text_js(STREET_NUMBER_SEL, number) + _set_text_js(STREET_NAME_SEL, name)},
+        {"type": "executeJavascript", "script": _set_text_js(STREET_NUMBER_SEL, number)},
         {"type": "wait", "milliseconds": 500},
         {"type": "click", "selector": NEXT_SEL},
         {"type": "wait", "milliseconds": 4000},
-        {"type": "executeJavascript", "script": _click_matching_result_row_js(number, name)},
+        {"type": "executeJavascript", "script": _click_matching_result_row_js(
+            number, "", owner_tokens, require_owner=True)},
         {"type": "wait", "milliseconds": 3500},
         {"type": "scrape"},
     ]
     html = firecrawl_scrape_retry(SDAT_URL, actions, timeout=120)
     parsed = parse_sdat_result(html)
     if parsed:
-        parsed["sdat_query"] = {"street_number": number, "street_name": name}
+        parsed["sdat_query"] = {"street_number": number, "street_name": "(number-only)"}
     return parsed
 
 
@@ -655,7 +878,8 @@ def parse_sdat_result(html: str) -> dict | None:
     mailing = grab(r"Mailing Address:\s*\n(.+?)\nDeed Reference")
     legal_desc = grab(r"Legal Description:\s*\n(.+?)\nMap:")
     district = grab(r"District -\s*\n(\d+)")
-    account = grab(r"Account Identifier -\s*\n([\w-]+)")
+    subdivision = grab(r"Subdivision -\s*\n(\d+)")
+    account = grab(r"Account (?:Identifier|Number) -\s*\n([\w-]+)")
     # "Use: | Principal Residence: | RESIDENTIAL | YES" -- the two values
     # follow the two labels, in that order.
     use_pr = grab(r"Principal Residence:\s*\n([A-Z ]+)\n(?:YES|NO)")
@@ -667,6 +891,7 @@ def parse_sdat_result(html: str) -> dict | None:
         "mailing_address": " ".join(mailing.split()),
         "legal_description": " ".join(legal_desc.split()),
         "district": district,
+        "subdivision": subdivision,
         "account": account,
         "use": use_pr.strip(),
         "principal_residence": principal_residence,
@@ -774,9 +999,29 @@ def _sdat_confirm_by_address(county: str, street: str, last_name: str, first_nam
     None when SDAT has no parcel at that address or the call failed; callers
     decide what an unconfirmed address is worth."""
     try:
-        sdat = lookup_sdat_by_address(county, street)
+        sdat = lookup_sdat_by_address(county, street,
+                                      owner_name=full_name or f"{first_name} {last_name}")
     except Exception as e:  # noqa: BLE001
         return {"error": str(e)}
+    if not sdat or not sdat.get("premises_address"):
+        return None
+    levels = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
+    level = max((name_match_level(full_name, last_name, first_name, name) for name in sdat["owner_names"]),
+                key=lambda lv: levels[lv], default="LOW")
+    overlap = max((_name_token_overlap(full_name or f"{first_name} {last_name}", name)
+                   for name in sdat["owner_names"]), default=0.0)
+    addr = split_premises_address(sdat["premises_address"])
+    return {"addr": addr, "owner_names": sdat["owner_names"], "mailing_address": sdat.get("mailing_address", ""),
+            "legal_description": sdat["legal_description"], "overlap": overlap, "level": level,
+            "district": sdat.get("district", ""), "account": sdat.get("account", ""),
+            "use": sdat.get("use", ""), "principal_residence": sdat.get("principal_residence", "")}
+
+
+def _confirm_from_parcel(sdat: dict, last_name: str, first_name: str,
+                         full_name: str = "") -> dict | None:
+    """Same output shape as `_sdat_confirm_by_address`, but for a parcel we
+    already hold (from an account-identifier or street-number lookup) --
+    no second SDAT query needed to score the owner match."""
     if not sdat or not sdat.get("premises_address"):
         return None
     levels = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
@@ -865,8 +1110,264 @@ def _probe_pr_addresses(county: str, prs: list[dict] | None, last_name: str,
     return None
 
 
+# The Land Records grantee index stores the BARE surname -- an estate name
+# like "MULLINIX JR, EARL WILLIAM" puts the suffix in decedent_last_name, and
+# a "Begins" search for "MULLINIX JR" matches nothing (28 of the ledger's 273
+# address misses carried a suffix, measured 2026-09-08).
+NAME_SUFFIXES = {"JR", "SR", "II", "III", "IV", "V"}
+
+# Cross-initial nicknames only: a first-INITIAL prefix search already covers
+# same-letter shortenings (JIM under J finds JAMES), so this maps only pairs
+# whose first letters differ. Both directions are generated at build time.
+_NICKNAME_GROUPS = [
+    {"WILLIAM", "BILL", "BILLY"}, {"ROBERT", "BOB", "BOBBY"}, {"JOHN", "JACK"},
+    {"MARGARET", "PEGGY", "PEG"}, {"ELIZABETH", "BETTY", "BETSY", "LIZ"},
+    {"RICHARD", "DICK"}, {"CHARLES", "CHUCK"}, {"EDWARD", "TED", "NED"},
+    {"HENRY", "HANK", "HARRY"}, {"HELEN", "NELL"}, {"SARAH", "SALLY"},
+    {"MARY", "POLLY", "MOLLY"}, {"ANNE", "NANCY", "NAN"}, {"THEODORE", "TED"},
+    {"FRANCES", "FANNY"}, {"VIRGINIA", "GINNY"}, {"DOROTHY", "DOT"},
+    {"KATHERINE", "CATHERINE", "KAY", "KITTY"}, {"ELEANOR", "NORA"},
+]
+NICKNAMES: dict[str, set[str]] = {}
+for _grp in _NICKNAME_GROUPS:
+    for _n in _grp:
+        NICKNAMES.setdefault(_n, set()).update(_grp - {_n})
+
+# Each variant costs a full Land Records login + search (~30s of Firecrawl);
+# cap the ladder so one impossible decedent cannot eat minutes of quota.
+MAX_VARIANT_SEARCHES = 5
+
+
+def split_name_suffix(last_name: str) -> tuple[str, str]:
+    """'MULLINIX JR' -> ('MULLINIX', 'JR'); 'TOMS SR.' -> ('TOMS', 'SR');
+    a bare surname passes through unchanged."""
+    toks = (last_name or "").strip().split()
+    if len(toks) >= 2 and toks[-1].upper().rstrip(".") in NAME_SUFFIXES:
+        return " ".join(toks[:-1]), toks[-1].upper().rstrip(".")
+    return (last_name or "").strip(), ""
+
+
+def name_search_variants(last_name: str, first_name: str = "",
+                         middle_name: str = "") -> list[tuple[str, str, str]]:
+    """Ordered (last, first, middle) tuples for the grantee search ladder.
+    The deed index often disagrees with the estate record on name FORM --
+    suffix glued to the surname, nickname vs formal first name, a bare
+    initial, someone who goes by their middle name, a hyphenated surname
+    indexed under one half. Deduped, most-precise first, capped by the
+    caller."""
+    bare_last, _suffix = split_name_suffix(last_name)
+    first = (first_name or "").strip()
+    middle = (middle_name or "").strip()
+    mid_initial = middle[:1]
+
+    variants: list[tuple[str, str, str]] = []
+
+    def add(last: str, fst: str, mid: str):
+        v = (last, fst, mid)
+        if last and v not in variants:
+            variants.append(v)
+
+    if mid_initial:
+        add(bare_last, first, mid_initial)
+    add(bare_last, first, "")
+    if len(first) > 1:
+        add(bare_last, first[0], "")            # prefix search: E matches EARL
+    for nick in sorted(NICKNAMES.get(first.upper(), ())):
+        if nick[0] != first[:1].upper():        # cross-initial only
+            add(bare_last, nick, "")
+    if len(middle) > 1:
+        add(bare_last, middle, "")              # goes-by-middle
+    if "-" in bare_last:                        # hyphenated: each half
+        for part in bare_last.split("-"):
+            if part.strip():
+                add(part.strip(), first, "")
+    return variants
+
+
 def find_property_for_decedent(county: str, last_name: str, first_name: str = "", full_name: str = "",
                                 middle_name: str = "", prs: list[dict] | None = None) -> dict:
+    """Variant-ladder wrapper around `_find_property_once`: tries the name
+    forms from `name_search_variants` in order (suffix stripped first --
+    the single biggest source of false 'no grantee records'), returns the
+    first confirmed hit, and only then falls back to the PR-address probe.
+    An infrastructure error aborts the ladder immediately so a dead
+    Firecrawl quota is not billed once per variant."""
+    variants = name_search_variants(last_name, first_name, middle_name)[:MAX_VARIANT_SEARCHES]
+    if not variants:
+        return {"found": False, "confidence": "LOW", "reason": "no usable decedent name to search"}
+
+    misses: list[dict] = []
+    all_zero = True
+    for i, (v_last, v_first, v_mid) in enumerate(variants):
+        if i:
+            print(f"      name variant {i + 1}/{len(variants)}: last={v_last!r} first={v_first!r} mid={v_mid!r}")
+        res = _find_property_once(county, v_last, v_first, full_name=full_name,
+                                  middle_name=v_mid, prs=prs, probe_pr=False)
+        if res.get("error"):
+            return res
+        if res.get("found"):
+            res["searched_as"] = f"{v_last}, {v_first} {v_mid}".strip()
+            return res
+        if not res.get("zero_rows"):
+            all_zero = False
+        misses.append(res)
+
+    if all_zero:
+        # A transient empty response is a known live failure mode (2026-09-03:
+        # the same decedent returned deeds in one run and zero rows hours
+        # later) -- one plain retry of the primary variant before concluding.
+        time.sleep(3.0)
+        v_last, v_first, v_mid = variants[0]
+        res = _find_property_once(county, v_last, v_first, full_name=full_name,
+                                  middle_name=v_mid, prs=prs, probe_pr=False)
+        if res.get("found") and not res.get("error"):
+            res["searched_as"] = f"{v_last}, {v_first} {v_mid}".strip()
+            return res
+
+    pr_hit = _probe_pr_addresses(county, prs, last_name, first_name, full_name)
+    if pr_hit:
+        return pr_hit
+
+    # Most informative miss wins: an SDAT owner mismatch names a concrete
+    # address; deeds-without-addresses beats bare zero-row noise.
+    def _rank(m: dict) -> int:
+        r = m.get("reason", "")
+        if "SDAT's current owner" in r:
+            return 0
+        if "DEED-type record(s) checked" in r:
+            return 1
+        if not m.get("zero_rows"):
+            return 2
+        return 3
+    best = sorted(misses, key=_rank)[0]
+    tried = "; ".join(f"{l}/{f}{('/' + m) if m else ''}" for l, f, m in variants)
+    best["reason"] = f"{best.get('reason', '')} [searched {len(variants)} name variant(s): {tried}]"
+    best.pop("zero_rows", None)
+    return best
+
+
+def _try_deed_identifiers(county: str, cand: dict, tax_id: str,
+                          last_name: str, first_name: str, full_name: str,
+                          prs: list[dict] | None = None) -> dict | None:
+    """Resolve a deed that states NO address through what it does carry:
+    the SDAT account (Remarks / Tax ID, via the Account Identifier form)
+    or, failing that, the Remarks' trailing STREET NUMBER as an
+    owner-matched partial search (both Basem 2026-09-08). Returns a full
+    found-result dict, {'mismatch': {...}} when a parcel resolved but its
+    owner is a stranger, or None when the deed carries nothing usable."""
+    remarks = cand.get("remarks", "")
+
+    # Branch 0 (FREE, no Firecrawl): Montgomery-style remarks carry
+    # subdivision name + lot + block -- the open-data assessment roll turns
+    # that into the premise address; SDAT then adjudicates the owner.
+    legal = parse_remarks_legal(remarks)
+    if legal:
+        try:
+            parcels = lookup_opendata_by_legal(county, *legal)
+        except Exception as e:  # noqa: BLE001
+            print(f"      open-data legal lookup failed ({e}) -- falling through")
+            parcels = []
+        for parcel in parcels[:2]:
+            confirmed = _sdat_confirm_by_address(county, parcel["street"],
+                                                 last_name, first_name, full_name)
+            if not confirmed or "error" in confirmed:
+                continue
+            if confirmed["level"] in ("HIGH", "MEDIUM") or _pr_owner_match(prs, " / ".join(confirmed["owner_names"])):
+                low_parcel = confirmed
+                print(f"      remarks legal {legal} -> open-data -> {parcel['street']} "
+                      f"({confirmed['level']})")
+                break
+        else:
+            low_parcel = None
+        if low_parcel:
+            confidence = low_parcel["level"]
+            note = ""
+            if confidence == "LOW":
+                # Accepted via the PR-owner match (Zhu case) -- estate-held,
+                # not a stranger's; same MEDIUM-with-note the main branch uses.
+                confidence = "MEDIUM"
+                note = (f"SDAT's current owner is the PR "
+                        f"({_pr_owner_match(prs, ' / '.join(low_parcel['owner_names']))}) -- estate-held, not sold")
+            base = {
+                "street": low_parcel["addr"]["street"] or parcel["street"],
+                "city": low_parcel["addr"]["city"] or parcel["city"],
+                "state": "MD", "zip": low_parcel["addr"]["zip"] or parcel["zip"],
+                "source_book_page": cand.get("book_page", ""), "source_date": cand.get("date", ""),
+                "deed_tax_id": tax_id or "", "deed_remarks_account": "",
+            }
+            if note:
+                base["confidence_note"] = note
+            return {"found": True, "confidence": confidence, **base,
+                    "sdat_premises": low_parcel["addr"]["street"],
+                    "source": "deed_remarks_legal_opendata_sdat_confirmed",
+                    "owner_names": low_parcel["owner_names"], "mailing_address": low_parcel["mailing_address"],
+                    "legal_description": low_parcel["legal_description"],
+                    "sdat_district": low_parcel["district"], "sdat_account": low_parcel["account"],
+                    "sdat_use": low_parcel["use"], "principal_residence": low_parcel["principal_residence"],
+                    "name_overlap": round(low_parcel["overlap"], 2), "name_match": low_parcel["level"]}
+
+    attempts = deed_account_candidates(remarks, tax_id)[:2]
+    low_parcel = None
+    for d, s, a in attempts:
+        try:
+            sdat = lookup_sdat(county, d, a, subdivision=s)
+        except Exception:  # noqa: BLE001
+            continue
+        confirmed = _confirm_from_parcel(sdat, last_name, first_name, full_name)
+        if confirmed:
+            low_parcel = low_parcel or confirmed
+            if confirmed["level"] in ("HIGH", "MEDIUM"):
+                low_parcel = confirmed
+                break
+    else:
+        streetnum = remarks_street_number(remarks)
+        if streetnum and not low_parcel:
+            try:
+                sdat = lookup_sdat_by_street_number(
+                    county, streetnum, full_name or f"{first_name} {last_name}")
+            except Exception:  # noqa: BLE001
+                sdat = None
+            low_parcel = _confirm_from_parcel(sdat, last_name, first_name, full_name) if sdat else None
+
+    if not low_parcel:
+        return None
+    confirmed = low_parcel
+    base = {
+        "street": confirmed["addr"]["street"], "city": confirmed["addr"]["city"],
+        "state": "MD", "zip": confirmed["addr"]["zip"],
+        "source_book_page": cand.get("book_page", ""), "source_date": cand.get("date", ""),
+        "deed_tax_id": tax_id or "",
+        "deed_remarks_account": "-".join(decode_remarks_account(remarks) or ()) or "",
+    }
+    sdat_fields = {
+        "owner_names": confirmed["owner_names"], "mailing_address": confirmed["mailing_address"],
+        "legal_description": confirmed["legal_description"],
+        "sdat_district": confirmed["district"], "sdat_account": confirmed["account"],
+        "sdat_use": confirmed["use"], "principal_residence": confirmed["principal_residence"],
+        "name_overlap": round(confirmed["overlap"], 2),
+        "name_match": confirmed["level"],
+    }
+    if confirmed["level"] in ("HIGH", "MEDIUM"):
+        print(f"      deed stated no address -- resolved via its own identifiers "
+              f"({base['deed_tax_id'] or base['deed_remarks_account'] or 'street number'}) "
+              f"-> {base['street']} ({confirmed['level']})")
+        result = {"found": True, "confidence": confirmed["level"], **base,
+                  "sdat_premises": confirmed["addr"]["street"],
+                  "source": "deed_identifier_sdat_confirmed", **sdat_fields}
+        # Kaiser guard (parity with the street-confirmed branch): a PR who
+        # shares the decedent's first+last may be the person on title.
+        ambiguous_pr = _pr_owner_match(prs, " / ".join(confirmed["owner_names"]))
+        if ambiguous_pr and _name_tokens(ambiguous_pr) != _name_tokens(full_name):
+            result["confidence"] = "MEDIUM"
+            result["confidence_note"] = (f"SDAT owner also matches PR {ambiguous_pr} -- "
+                                         "title may be the living relative's, verify")
+        return result
+    return {"mismatch": {**base, **sdat_fields}}
+
+
+def _find_property_once(county: str, last_name: str, first_name: str = "", full_name: str = "",
+                        middle_name: str = "", prs: list[dict] | None = None,
+                        probe_pr: bool = True) -> dict:
     """Full pipeline, most-reliable path first:
 
     1. Land Records grantee search, newest DEED-like instrument first.
@@ -893,20 +1394,12 @@ def find_property_for_decedent(county: str, last_name: str, first_name: str = ""
     A miss documents exactly what was tried so a human isn't left guessing."""
     middle_initial = (middle_name or "").strip()[:1]
     try:
-        results = []
-        if middle_initial:
-            results = search_grantee(county, last_name, first_name, middle_name=middle_initial)
-        if not results:
-            # No middle given, the index stored no middle for this person, or
-            # a transient empty response (seen live 2026-09-03: the same
-            # decedent returned deeds in one run and "0 grantee records"
-            # hours later) -- fall back to first+last, then one plain retry.
-            results = search_grantee(county, last_name, first_name)
-        if not results:
-            time.sleep(3.0)
-            results = search_grantee(county, last_name, first_name)
+        # One search per call -- the VARIANT LADDER in the public wrapper
+        # owns all fallbacks (no-middle, initials, nicknames, retry), so a
+        # zero here must return honestly rather than re-search.
+        results = search_grantee(county, last_name, first_name, middle_name=middle_initial)
     except Exception as e:  # noqa: BLE001
-        pr_hit = _probe_pr_addresses(county, prs, last_name, first_name, full_name)
+        pr_hit = _probe_pr_addresses(county, prs, last_name, first_name, full_name) if probe_pr else None
         if pr_hit:
             return pr_hit
         # `error` marks this an INFRASTRUCTURE failure (dead Firecrawl quota,
@@ -919,10 +1412,10 @@ def find_property_for_decedent(county: str, last_name: str, first_name: str = ""
 
     candidates = [r for r in results if r["instrument_type"].upper() in DEED_LIKE_INSTRUMENTS]
     if not candidates:
-        pr_hit = _probe_pr_addresses(county, prs, last_name, first_name, full_name)
+        pr_hit = _probe_pr_addresses(county, prs, last_name, first_name, full_name) if probe_pr else None
         if pr_hit:
             return pr_hit
-        return {"found": False, "confidence": "LOW",
+        return {"found": False, "confidence": "LOW", "zero_rows": not results,
                 "reason": f"{len(results)} grantee record(s) found, none were DEED-type instruments"}
     # Each candidate costs a Land Records login + PDF fetch (+ an SDAT call),
     # 30-60 s apiece; a common surname returns dozens of deed rows and one
@@ -951,6 +1444,19 @@ def find_property_for_decedent(county: str, last_name: str, first_name: str = ""
                 deed_info = None
 
         if not (deed_info and deed_info["address_statement"]):
+            # The deed's PDF states no address (or has no text layer), but
+            # the instrument can still IDENTIFY the parcel: the Remarks cell
+            # or the deed's own Tax ID carries the SDAT account (queried via
+            # the Account Identifier form -- the Subdivision box works as of
+            # 2026-09-08), and a remark's trailing token is the parcel's
+            # STREET NUMBER, usable as an owner-matched partial search.
+            acct_fallback = _try_deed_identifiers(
+                county, cand, (deed_info or {}).get("tax_id", ""),
+                last_name, first_name, full_name, prs=prs)
+            if acct_fallback is not None:
+                if acct_fallback.get("found"):
+                    return acct_fallback
+                mismatches.append(acct_fallback["mismatch"])
             continue
         addresses_seen += 1
         addr = split_deed_address_statement(deed_info["address_statement"])
@@ -1020,7 +1526,7 @@ def find_property_for_decedent(county: str, last_name: str, first_name: str = ""
     # Nothing confirmed off the deeds -- the PR's own address is the last,
     # cheapest candidate (and an SDAT-owner-confirmed hit there outranks an
     # unconfirmed deed statement).
-    pr_hit = _probe_pr_addresses(county, prs, last_name, first_name, full_name)
+    pr_hit = _probe_pr_addresses(county, prs, last_name, first_name, full_name) if probe_pr else None
     if pr_hit:
         return pr_hit
     if unconfirmed:
@@ -1036,15 +1542,9 @@ def find_property_for_decedent(county: str, last_name: str, first_name: str = ""
             "candidate_street": m["street"], "candidate_city": m["city"], "candidate_zip": m["zip"],
             "sdat_owner_names": m["owner_names"], "sdat_mailing": m.get("mailing_address", ""),
         }
-    if middle_initial:
-        # The middle-scoped search can EXCLUDE the address-bearing deed when
-        # that instrument was indexed without a middle (live 2026-09-04:
-        # McKetty's confirmed Parrs Ridge deed vanished under middle 'H' and
-        # three other deeds took its slots). Zero-row fallback above cannot
-        # catch a nonzero-but-wrong candidate set -- widen and re-walk.
-        print(f"      middle-scoped deeds yielded no address -- widening to first+last only")
-        return find_property_for_decedent(county, last_name, first_name, full_name=full_name,
-                                           middle_name="", prs=prs)
+    # NOTE: the old middle-scoped "widen and re-walk" recursion (McKetty,
+    # 2026-09-04) lives in the wrapper now -- its variant ladder always tries
+    # first+last WITHOUT the middle right after the middle-scoped search.
     return {"found": False, "confidence": "LOW",
             "reason": f"{len(candidates)} DEED-type record(s) checked ({tried_pdf} had a readable PDF text "
                       f"layer, {addresses_seen} stated an address), none yielded a property address"

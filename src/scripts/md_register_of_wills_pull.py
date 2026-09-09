@@ -1062,7 +1062,9 @@ def fill_addresses(ledger: dict, counties: list[str],
     for key, rec in sdat_only:
         county = key.split("|", 1)[0]
         try:
-            sdat = landrec.lookup_sdat_by_address(county, rec["property_street"])
+            sdat = landrec.lookup_sdat_by_address(
+                county, rec["property_street"],
+                owner_name=f"{rec.get('decedent_first_name', '')} {rec.get('decedent_last_name', '')}".strip())
         except Exception as e:  # noqa: BLE001
             print(f"    WARNING: SDAT owner check failed for {key}: {e}")
             continue
