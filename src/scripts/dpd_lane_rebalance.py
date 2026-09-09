@@ -88,8 +88,13 @@ DIALERS = ["Mostafa Hisham", "Ahmed Galal", "Mohammed Bagoury", "Pal John",
 
 # The shape this split was computed against. A drift means someone has been
 # dialing and the targets need recomputing -- stop rather than split a stale
-# picture.
-EXPECT = {"hottest": 1040, "ftm": 571, "overlap": 48, "assigned": 97}
+# picture. Recomputed 2026-09-08 from dpd_lane_assignee_report (hottest 730 =
+# 723 assigned + 7 blank; ftm 455 = 328 assigned + 127 blank; overlap 32).
+# `assigned` is DISTINCT assigned records across both lanes. The first
+# 2026-09-08 read said hottest 730 / assigned 1019; by the plan run the lane
+# had moved to 727 / 1016 (records shift as dialers work) -- pinned to the
+# cached read in dpd_lane_rebalance_state.json that the plan/commit runs use.
+EXPECT = {"hottest": 727, "ftm": 455, "overlap": 32, "assigned": 1016}
 
 MAX_CONSECUTIVE_ERRORS = 8
 
