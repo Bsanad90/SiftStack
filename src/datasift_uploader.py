@@ -2379,12 +2379,22 @@ async def _siftmap_set_date(page, date_btn_id: str, target_date_str: str, label:
 async def _siftmap_add_page_to_account(
     page, *, county: str, sold_tag_date: str, page_num: int,
     replace_owners: bool = False,
+    tags: list[str] | None = None,
+    require_tags: bool = False,
 ) -> dict:
     """Select all filtered properties via "Select Max" and add to account.
 
     Uses the checkbox dropdown → "Select Max (N)" option to select ALL
     filtered results (not just visible ones), then clicks "Add Records
     to Account". No pagination needed.
+
+    `tags` overrides the sold-sweep default tag set (RECENTLY_SOLD_TAG + the
+    month tag) -- the DPD pull passes its own Priority/stack/month tags.
+    `require_tags=True` refuses to click the confirm button unless every tag is
+    verifiably COMMITTED in the modal (the sold-backlog lesson: an "applied" tag
+    can be sitting uncommitted in the input, or matched only in the open
+    suggestion list; confirming then imports untagged records, which nothing
+    downstream can find again).
 
     Returns dict with {success, records_added}.
     """
@@ -2554,7 +2564,28 @@ async def _siftmap_add_page_to_account(
     # RECENTLY_SOLD_TAG is the trigger the cleanup sequence listens for; the
     # per-month tag is Ty's, kept verbatim, and is what keeps the set separable
     # by sale month afterwards.
-    tags_to_apply = [RECENTLY_SOLD_TAG, f"Sold {sold_tag_date}"]
+    # Tag commit order of preference (rewritten 2026-09-08 after a live near-miss):
+    # typing a tag that is a SUBSTRING of an existing tag leaves the cousin highlighted
+    # first in the dropdown, so the old blind-Enter fallback selected the WRONG tag
+    # ("Free & Clear + Notice of Foreclosure" when asked for "Notice of Foreclosure").
+    # The modal's own "Add" button next to the tag input commits the TYPED text
+    # deterministically, so it is now the primary path; every tag is then verified as a
+    # committed chip before moving on.
+    _CHIP_CHECK_JS = """(tag) => {
+        const vis = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+        return [...document.querySelectorAll('*')].some(el => {
+            if (!vis(el) || el.tagName === 'INPUT') return false;
+            if ((el.innerText || '').trim() !== tag) return false;
+            let p = el;
+            for (let i = 0; i < 8 && p; i++, p = p.parentElement) {
+                const c = (p.className || '').toString().toLowerCase();
+                if (c.includes('suggestion') || c.includes('option') || c.includes('dropdown'))
+                    return false;
+            }
+            return true;
+        });
+    }"""
+    tags_to_apply = tags if tags is not None else [RECENTLY_SOLD_TAG, f"Sold {sold_tag_date}"]
     for tag in tags_to_apply:
         try:
             tag_inp = page.locator('input[placeholder*="tag" i], input[name*="tag" i]')
@@ -2565,22 +2596,53 @@ async def _siftmap_add_page_to_account(
 
             await tag_inp.first.click()
             await tag_inp.first.fill(tag)
-            await page.wait_for_timeout(1000)
+            await page.wait_for_timeout(1200)
 
-            # Look for existing tag or "Create" option
-            create_opt = page.get_by_text(re.compile(f"[Cc]reate.*{re.escape(tag)}"))
-            if await create_opt.count() > 0:
-                await create_opt.last.click()
-                await page.wait_for_timeout(500)
-            else:
-                # Try clicking exact match in dropdown first
-                exact_opt = page.locator(f'[class*="suggestion"] >> text="{tag}"')
-                if await exact_opt.count() > 0:
-                    await exact_opt.first.click()
-                    await page.wait_for_timeout(500)
-                else:
-                    await tag_inp.first.press("Enter")
-                    await page.wait_for_timeout(500)
+            # Primary: the "Add" control on the tag input's own row commits the typed
+            # text. Locate it relative to the INPUT, not by page-wide text ("Add"
+            # appears all over this modal).
+            added = await page.evaluate(
+                """() => {
+                const inp = [...document.querySelectorAll('input')].find(i =>
+                    /tag/i.test(i.getAttribute('placeholder') || ''));
+                if (!inp) return false;
+                let row = inp;
+                for (let i = 0; i < 6 && row.parentElement; i++) {
+                    row = row.parentElement;
+                    const btn = [...row.querySelectorAll('button, [role="button"], div, span')]
+                        .find(el => (el.innerText || '').trim() === 'Add'
+                                    && el.getBoundingClientRect().width > 0
+                                    && el.getBoundingClientRect().width < 120);
+                    if (btn) { btn.click(); return true; }
+                }
+                return false;
+            }""")
+            await page.wait_for_timeout(900)
+
+            if not added or not await page.evaluate(_CHIP_CHECK_JS, tag):
+                # Fallback: an EXACT-text option in the open dropdown only. Never a
+                # regex "Create" match, never a blind Enter -- both can pick a cousin.
+                await page.evaluate(
+                    """(tag) => {
+                    const vis = el => { const r = el.getBoundingClientRect();
+                                        return r.width > 0 && r.height > 0; };
+                    const hit = [...document.querySelectorAll('*')].find(el => {
+                        if (!vis(el) || el.children.length > 1) return false;
+                        const t = (el.innerText || '').trim();
+                        if (t !== tag && t !== `Create "${tag}"` && t !== `Add "${tag}"`)
+                            return false;
+                        let p = el;
+                        for (let i = 0; i < 8 && p; i++, p = p.parentElement) {
+                            const c = (p.className || '').toString().toLowerCase();
+                            if (c.includes('suggestion') || c.includes('option')
+                                || c.includes('dropdown')) return true;
+                        }
+                        return false;
+                    });
+                    if (hit) hit.click();
+                    return !!hit;
+                }""", tag)
+                await page.wait_for_timeout(900)
 
             # Dismiss dropdown by clicking modal heading
             modal_heading = page.get_by_text(re.compile(r"Add [\d,]+ Propert"))
@@ -2588,7 +2650,10 @@ async def _siftmap_add_page_to_account(
                 await modal_heading.first.click()
                 await page.wait_for_timeout(300)
 
-            logger.info("Applied tag: %s", tag)
+            if await page.evaluate(_CHIP_CHECK_JS, tag):
+                logger.info("Applied tag: %s", tag)
+            else:
+                logger.warning("Tag '%s' did NOT commit as a chip", tag)
         except Exception as tag_err:
             logger.warning("Failed to apply tag '%s': %s", tag, tag_err)
 
@@ -2599,6 +2664,33 @@ async def _siftmap_add_page_to_account(
     if await modal_heading.count() > 0:
         await modal_heading.first.click()
         await page.wait_for_timeout(500)
+
+    if require_tags:
+        # Every tag must be a COMMITTED chip. The suggestion dropdown was dismissed
+        # by the heading click above, so an exact-text element that is not an input
+        # and not inside a suggestion/option list is a chip. Refuse to confirm on
+        # any miss -- untagged imports cannot be found again.
+        missing = await page.evaluate(
+            """(tags) => {
+            const vis = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+            return tags.filter(tag => ![...document.querySelectorAll('*')].some(el => {
+                if (!vis(el) || el.tagName === 'INPUT') return false;
+                if ((el.innerText || '').trim() !== tag) return false;
+                let p = el;
+                for (let i = 0; i < 8 && p; i++, p = p.parentElement) {
+                    const c = (p.className || '').toString().toLowerCase();
+                    if (c.includes('suggestion') || c.includes('option') || c.includes('dropdown'))
+                        return false;
+                }
+                return true;
+            }));
+        }""", tags_to_apply)
+        if missing:
+            logger.error("Tags NOT committed in the modal: %s -- refusing to confirm", missing)
+            await _screenshot(page, f"siftmap_tags_missing_{county}_p{page_num}")
+            await page.keyboard.press("Escape")
+            return {"success": False, "records_added": 0,
+                    "error": f"tags not committed: {missing}"}
 
     await _screenshot(page, f"siftmap_pre_confirm_{county}_p{page_num}")
 

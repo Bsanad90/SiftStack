@@ -4,6 +4,7 @@
     python src/scripts/dpd_siftmap_presets.py --fips 11001 --smoke-test   # save ONE throwaway, reload it
     python src/scripts/dpd_siftmap_presets.py --fips 11001 --commit       # save every manifest preset
     python src/scripts/dpd_siftmap_presets.py --fips 11001 --verify       # enumerate + reload each
+    python src/scripts/dpd_siftmap_presets.py --audit-auto-add               # read-only AUTO-ADD census, all filters
     python src/scripts/dpd_siftmap_presets.py --fips 11001 --discover-delete "ZZ ..."  # probe one row's icons, click nothing
     python src/scripts/dpd_siftmap_presets.py --fips 11001 --delete-name "ZZ ..."      # delete ONE saved filter (name must start "ZZ ")
 
@@ -501,6 +502,104 @@ async def find_presets_row(page, name: str, out: dict) -> dict | None:
     return None
 
 
+# ── auto-add census (read-only) ──────────────────────────────────────
+#
+# The management table is documented (Basem's 2026-08-31 screenshot) as FILTER NAME /
+# CREATED / AUTO-ADD per row, but no artifact has ever READ the auto-add state: the
+# commit artifacts only prove the checkbox was OFF at save time, and the 2026-09-07
+# delete-batch row probes selected only `svg, button, [role=button]`, which is blind to
+# a checkbox input. This census reads the state without changing it: collapsed row
+# first, then a chevron expansion if the collapsed row carries nothing readable.
+# Clicks ONLY chevrons and pagination -- never star/edit/trash, never any toggle.
+
+# Ground truth from the 2026-09-08 evidence dump: every row carries a cell
+# `div.auto-add-column` (row cells have class PresetRowstyles__PresetRowTableCell;
+# the header's cell says "Auto-Add" and has PresetListstyles__PresetListTableCell)
+# containing a react-toggle whose class gains `react-toggle--checked` when ON, plus
+# a real `input.react-toggle-screenreader-only[type=checkbox]` whose .checked is the
+# same state. Anchor on those cells; never climb from the chevron -- a climb that
+# tests `querySelector(title)` overshoots to the table container and reads the whole
+# page as one row (the first census did exactly that).
+_AUDIT_PAGE_JS = """() => {
+    const body = document.body.innerText || '';
+    const m = body.match(/(\\d+)\\s*-\\s*(\\d+)\\s*of\\s*(\\d+)/);
+    const cells = [...document.querySelectorAll('.auto-add-column')]
+        .filter(c => (c.className || '').toString().includes('PresetRow'));
+    const rows = cells.map((cell, i) => {
+        // the row = the widest ancestor still holding only THIS auto-add cell
+        let row = cell;
+        while (row.parentElement && row.parentElement !== document.body
+               && row.parentElement.querySelectorAll('.auto-add-column').length <= 1)
+            row = row.parentElement;
+        // the row container carries no PresetCardTitle element (verified 2026-09-08);
+        // the name is the first line of the row's own text
+        const titleEl = row.querySelector('[class*="PresetCardTitle"]');
+        const firstLine = ((row.innerText || '').trim().split('\\n')[0] || '').trim();
+        const cb = cell.querySelector('input[type="checkbox"]');
+        const tgl = cell.querySelector('.react-toggle');
+        return {i,
+                title: titleEl ? (titleEl.innerText || '').trim() : (firstLine || null),
+                text: (row.innerText || '').trim().slice(0, 240),
+                checkbox_checked: cb ? cb.checked : null,
+                toggle_on: tgl ? tgl.classList.contains('react-toggle--checked') : null,
+                cell_html: cell.outerHTML.slice(0, 700)};
+    });
+    return {range: m ? m[0] : null, total: m ? Number(m[3]) : null, rows};
+}"""
+
+
+def _autoadd_verdict(row: dict) -> tuple[bool | None, str]:
+    """Derive ON/OFF from a row's auto-add cell; None = unreadable (refuse to guess)."""
+    cb, tgl = row.get("checkbox_checked"), row.get("toggle_on")
+    if isinstance(cb, bool) and isinstance(tgl, bool):
+        if cb == tgl:
+            return cb, "checkbox and react-toggle agree"
+        return None, f"checkbox={cb} but react-toggle--checked={tgl} -- refusing to guess"
+    if isinstance(cb, bool):
+        return cb, "checkbox only"
+    if isinstance(tgl, bool):
+        return tgl, "react-toggle class only"
+    return None, "no checkbox or react-toggle in the auto-add cell"
+
+
+async def audit_auto_add(page, out: dict) -> None:
+    """Read every management-table row's auto-add state. Clicks only pagination."""
+    SHOTS.mkdir(parents=True, exist_ok=True)
+    await page.goto(PRESETS_ACCOUNT_URL, wait_until="domcontentloaded")
+    await page.wait_for_timeout(5000)
+    await _clean_map(page)
+    results: list[dict] = []
+    out["results"] = results
+    for pageno in range(1, 12):
+        state = await page.evaluate(_AUDIT_PAGE_JS)
+        out["total_reported"] = state.get("total") or out.get("total_reported")
+        await page.screenshot(path=str(SHOTS / f"audit_autoadd_p{pageno}.png"))
+        titles_this_page = set()
+        for r in state["rows"]:
+            verdict, why = _autoadd_verdict(r)
+            row = {"page": pageno, "title": r["title"], "text": r["text"],
+                   "checkbox_checked": r["checkbox_checked"], "toggle_on": r["toggle_on"],
+                   "cell_html": r["cell_html"], "auto_add": verdict, "evidence": why}
+            if r["title"] in titles_this_page:
+                # duplicate title on one page = the row anchor regressed to a shared
+                # container again; that invalidates the whole read
+                out["error"] = (f"page {pageno} read the title {r['title']!r} twice -- "
+                                "row anchoring is broken, treat this census as void")
+                results.append(row)
+                return
+            titles_this_page.add(r["title"])
+            results.append(row)
+            label = {True: "ON ", False: "off", None: "?? "}[verdict]
+            print(f"  [{label}] p{pageno} {str(r['title'])[:70]}  ({why})", flush=True)
+        if not await page.evaluate(_CLICK_NEXT_JS):
+            break
+        await page.wait_for_timeout(2500)
+    total = out.get("total_reported")
+    if total and len(results) < total:
+        out["error"] = (f"audited {len(results)} of {total} rows -- short read, "
+                        "treat as a failure, not as absent filters")
+
+
 async def delete_saved_filter(page, base_url: str, name: str, out: dict,
                               allow: frozenset[str] = frozenset()) -> bool:
     """Delete ONE saved filter from the management table (PRESETS_ACCOUNT_URL). Refuses
@@ -865,6 +964,50 @@ async def run(mode: str, fips: str | None, headless: bool, target: str | None = 
                 out["error"] = "management page unusable (no filter names read)"
         return out
 
+    if mode == "audit":
+        # Read-only auto-add census of every saved filter (all manifests, no fips).
+        out = {"mode": mode, "at": datetime.now().isoformat(timespec="seconds")}
+        email, password = get_credentials()
+        async with create_browser(headless=headless) as (_b, _c, page):
+            if not await login(page, email, password) or "/login" in page.url:
+                out["error"] = "login failed"
+                return out
+            await audit_auto_add(page, out)
+            if out.get("error"):
+                return out
+            # Live-count any audited filter no manifest knows (e.g. Moe Galal's
+            # obituary filter): load it once from the popover, read the count. Loading
+            # a saved filter only navigates the map -- nothing is added.
+            known: set[str] = set()
+            for mp in sorted((ROOT / "data").glob("dpd_siftmap_manifest_*.json")):
+                m = json.loads(mp.read_text(encoding="utf-8"))
+                known.update(p["name"] for p in m.get("presets", []))
+                if m.get("tier2"):
+                    known.add(m["tier2"]["name"])
+            unmatched = []
+            for r in out["results"]:
+                t = r.get("title") or ""
+                if not any(t.startswith(n) for n in known):
+                    unmatched.append(r)
+            out["unmatched_titles"] = [r.get("title") for r in unmatched]
+            for r in unmatched[:5]:
+                # popover rows show the bare NAME; the management title concatenates the
+                # description, so probe prefixes of the title against the popover list
+                await goto_map(page, DATASIFT_SIFTMAP_URL)
+                pop = await saved_filter_names(page) or []
+                name = next((n for n in pop if r.get("title", "").startswith(n)), None)
+                if not name:
+                    r["live_count"] = None
+                    r["live_count_error"] = "name not matched in the popover"
+                    continue
+                got = await load_saved_filter(page, name)
+                r["live_count"] = got.get("count")
+                r["live_count_url"] = got.get("url")
+                if not got.get("loaded"):
+                    r["live_count_error"] = got.get("reason")
+                print(f"  live count {r.get('live_count')}  {name[:70]}", flush=True)
+        return out
+
     man_path = ROOT / "data" / f"dpd_siftmap_manifest_{fips}.json"
     if not man_path.exists():
         raise SystemExit(f"missing {man_path}")
@@ -1014,6 +1157,9 @@ def main() -> int:
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--list-account", action="store_true",
                    help="read-only: list EVERY saved filter from the management page")
+    g.add_argument("--audit-auto-add", action="store_true",
+                   help="read-only: census every saved filter's AUTO-ADD state "
+                        "(clicks only chevrons and pagination; toggles nothing)")
     g.add_argument("--discover", action="store_true")
     g.add_argument("--smoke-test", action="store_true")
     g.add_argument("--commit", action="store_true")
@@ -1029,12 +1175,13 @@ def main() -> int:
     ap.add_argument("--headed", action="store_true")
     a = ap.parse_args()
     mode = ("list" if a.list_account else
+            "audit" if a.audit_auto_add else
             "discover" if a.discover else "smoke" if a.smoke_test else
             "commit" if a.commit else "verify" if a.verify else
             "discover_delete" if a.discover_delete else
             "delete_batch" if a.delete_from_file else "delete")
-    if mode != "list" and not a.fips:
-        ap.error("--fips is required for every mode except --list-account")
+    if mode not in ("list", "audit") and not a.fips:
+        ap.error("--fips is required for every mode except --list-account/--audit-auto-add")
     target = a.discover_delete or a.delete_name or a.delete_from_file
     out = asyncio.run(run(mode, a.fips, headless=not a.headed, target=target))
     path = ROOT / "output" / f"dpd_siftmap_presets_{a.fips or 'account'}_{mode}.json"
@@ -1052,6 +1199,21 @@ def main() -> int:
             print("   SHORT READ -- treat as a read failure, not as absent filters")
             return 1
         return 0
+    if mode == "audit":
+        rows = out.get("results") or []
+        on = [r for r in rows if r.get("auto_add") is True]
+        off = [r for r in rows if r.get("auto_add") is False]
+        unk = [r for r in rows if r.get("auto_add") is None]
+        total = out.get("total_reported")
+        print(f"audit-auto-add: {len(rows)} rows read"
+              + (f" of {total} reported" if total else "")
+              + f" -- ON {len(on)}, off {len(off)}, unreadable {len(unk)}")
+        for r in on:
+            print(f"   ON : {str(r.get('title'))[:90]}")
+        for r in unk:
+            print(f"   ?? : {str(r.get('title'))[:90]}  ({r.get('evidence')})")
+        # unreadable rows are a defect in the reader, not proof of anything
+        return 1 if (unk or (total and len(rows) < total)) else 0
     if mode == "smoke":
         r = out["results"][0]
         rb = r.get("readback") or {}
