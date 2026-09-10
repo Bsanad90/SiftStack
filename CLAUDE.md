@@ -297,6 +297,43 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
   land on ~3.5% of records on the first upsert (a plain re-upsert fixes them, so the repair
   pass is not optional), and tier `Unknown` is deliberately never written as a tag -- auditing
   for it reports correct behaviour as a defect.
+  **6. A NON-DP plan pushed through `obituary_dp_batch.py push` deleted the DP boards
+  (found 2026-09-10, fixed).** On 2026-09-01 15:53 an ad-hoc "Register of Wills 9.1.2026"
+  plan (`output/probate_fields_push/`, builder script not in the repo; 401 boards posted) was
+  pushed with this pusher 13 minutes after the DP QA passed. `_push_one_api` deleted every
+  message starting `DEEP PROSPECTING` whatever the NEW note was, so 21 obituary DP notes were
+  replaced by a SmartSkip-raw "Relative" list (no obituary, predeceased people loaded), and on
+  8 records REL1..REL15 were rewritten in SmartSkip order so the REL fields disagreed with the
+  phone `Rel{n}.{m}` tags (1392 Stonecreek Rd: REL1 field JUDITH MCAULEY, Rel1.x phones SARAH
+  LIBSON). Fixed: the cleanup now deletes only earlier messages of the SAME FAMILY
+  (`_note_family`, first line cut at " (", date stripped; equality not prefix) and logs each
+  deletion in `steps.message_replaced`. `names_match` stays strict (PR-repair scripts import
+  it, and so does the predeceased drop list -- code review showed ambiguous nicknames such as
+  Chris/Christine or Lisa->Elizabeth would drop a LIVING signer); the obituary cross-checks go
+  through `_cross_check`, which pairs survivors and SmartSkip relatives 1:1 (strict first,
+  `names_match_loose` only when unambiguous; standalone given names are pruned from
+  `NICKNAMES`), and REL lines print the obituary's relationship (`Niece (obituary)`) via
+  `_rel_label`/`OBIT_LABEL_MAP` only when the decedent IS the owner -- labelling only,
+  signer selection and trace targets unchanged. **Repair DONE 2026-09-10** through the
+  rebuilt `obituary_dp_qa.py` (`--keys-file` across run dirs, VALUE-compare on REL fields,
+  exact `Rel{n}.{m}` tag check, repair of fields/tags/phones with read-back,
+  `--clear-extra-rel` which REQUIRES `--extra-source` and blanks only values that other plan
+  wrote, per-record backup + `--undo`; code committed `fce82b5` after an 8-angle review): 19 DP
+  notes re-posted and pinned BESIDE the kept PROBATE note (two pins coexist), 6 REL sets
+  restored + 88 probate-written extra slots blanked (`""` via update-values works), verify
+  audit 18/22 clean; the 3 non-clean carry another pusher's REL extras (kept on purpose) and
+  8327 Old Harford Rd is a duplicate-address pair where nothing was lost. Records the probate
+  plan listed but never pushed (6) were left alone. Backups/undo:
+  `output/probate_fields_push/qa_backup_20260910T*/`, `qa_undo_20260910T*.jsonl`.
+  Same day, Basem's rule **DP wins** on records another pusher also loaded: 3005 S Leisure
+  World #405 REL set restored; 2084 Jasmine Rd / 4462 Owensville Sudley / 1805 Sunnyside Ln
+  re-pushed via `obituary_dp_batch.py --run-dir <run> push --route api --probe <key> --force
+  --commit` (`--run-dir` is GLOBAL: it goes before the subcommand), which removed 18/0/10
+  foreign Rel-tagged numbers under the pusher's own-tag guard. Four other records' Rel tags
+  had never matched any DP plan (the final re-push's tags did not land; the old QA's
+  `startswith("Rel")` check could not see it) -- re-upserted, verified.
+  Trap for any pusher: a board note may only ever displace its own family, and REL fields
+  written by another plan are not yours to blank unless their value proves it.
   Also: **SmartSkip dedupes its input by NAME, not property** — 9 of 628 rows returned nothing
   of their own because the same owner holds two properties. Their heir graphs are identical
   people, so the result can be fanned across same-owner records for free (not done).
