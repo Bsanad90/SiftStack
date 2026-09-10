@@ -83,8 +83,6 @@ VERDICT_PRESUMED = "owner presumed alive (no deceased signal)"
 # one -- research is only worth its Firecrawl/LLM spend where a signal exists.
 DECEASED_SIGNAL_LISTS = ("probate", "obituary")
 DECEASED_SIGNAL_TAGS = ("deceased owner", "owner deceased", "obituaries", "deceased")
-
-
 def deceased_signal(lists: str, tags: str, obit_date: str, pr: str) -> str:
     """Why this record's owner might be dead, or '' if nothing suggests it."""
     ll = (lists or "").lower()
@@ -129,56 +127,208 @@ SPOUSE_RELS = {"Husband", "Wife", "Spouse"}
 
 # A phone tag this pipeline wrote. Nothing outside this pattern is ever removed.
 _OURS_RE = re.compile(r"^(Rel\d+\.\d+|Owner\.\d+)$")
-
-
 def _d10(n) -> str:
     """Last 10 digits -- the account stores some numbers as +1XXXXXXXXXX."""
     return "".join(c for c in str(n or "") if c.isdigit())[-10:]
+_FAMILY_DATE_RE = re.compile(r"\s+\d{4}-\d{2}-\d{2}$")
+def _note_family(note: str) -> str:
+    """Header marker of a board note: its first line, cut at the first " (", with a trailing
+    ISO date stripped. Two notes are the same FAMILY when this matches.
+
+        "DEEP PROSPECTING 2026-09-01 (SmartSkip + obituary + Trestle)"     -> "DEEP PROSPECTING"
+        "PROBATE - Register of Wills Anne Arundel County (loaded 2026-09-01)"
+                                        -> "PROBATE - Register of Wills Anne Arundel County"
+    """
+    text = (note or "").strip()
+    first = text.splitlines()[0] if text else ""
+    # the pre-2026-09-01 note format joined every section with "  ||  " on one line
+    first = first.split("  ||  ", 1)[0]
+    head = first.split(" (", 1)[0]
+    return _FAMILY_DATE_RE.sub("", head).strip()
+def board_messages(api, uuid: str) -> list[dict]:
+    """Every message on a record's board. `?limit=100`: without it the default page can hide
+    an older same-family note, which then never gets replaced and stacks."""
+    st, mb = api.get(f"/api/internal/property/{uuid}/message/?limit=100")
+    if isinstance(mb, dict):
+        return mb.get("results") or []
+    return mb if isinstance(mb, list) else []
 
 
+def custom_field_rows(api, uuid: str) -> tuple[list[dict], dict[str, object]]:
+    """(rows, {label: value}) for a record's custom fields. The endpoint answers a bare list
+    on this account; a paginated dict is handled too."""
+    st, cf = api.get(f"/api/internal/property/{uuid}/custom-field/")
+    rows = cf if isinstance(cf, list) else ((cf.get("results") or cf.get("data") or []) if isinstance(cf, dict) else [])
+    return rows, {((r.get("custom_field") or {}).get("label") or ""): r.get("value") for r in rows}
+
+
+def _stale_board_messages(msgs: list[dict], new_note: str, new_uuid: str) -> list[dict]:
+    """Earlier board messages the new note REPLACES: same family, different uuid.
+
+    2026-09-01 trap: this pusher was reused for a "PROBATE - Register of Wills" plan and the
+    cleanup deleted every message starting "DEEP PROSPECTING" -- the obituary DP note on 21
+    records, replaced by a SmartSkip-raw list with no obituary. A note may only ever displace
+    its OWN family (equality, not prefix: "PROBATE - ... Baltimore County" is not "... Anne
+    Arundel County"). An unrecognisable header (< 8 chars) deletes nothing.
+    """
+    fam = _note_family(new_note)
+    if len(fam) < 8:
+        return []
+    return [m for m in msgs
+            if m.get("uuid") and m.get("uuid") != new_uuid
+            and _note_family(m.get("message") or "") == fam]
 # ───────────────────────── small helpers ─────────────────────────
 
 def norm_addr(s: str) -> str:
     return re.sub(r"[^a-z0-9]", "", (s or "").lower())
-
-
 def zip5(s: str) -> str:
     d = re.sub(r"\D", "", s or "")
     return d[:5]
-
-
 def sift_key(street: str, zipcode: str) -> str:
     return f"{norm_addr(street)}|{zip5(zipcode)}"
-
-
 def name_tokens(name: str) -> list[str]:
     toks = [t for t in re.split(r"[^a-z]+", (name or "").lower()) if t]
     return [t for t in toks if t not in SUFFIXES and t not in ORDINALS]
-
-
-def names_match(a: str, b: str) -> bool:
-    """First token + last token match, ignoring middle names, initials, suffixes."""
+def _names_match_by(a: str, b: str, first_eq) -> bool:
+    """Shared body of the two matchers: last token exact, first token by `first_eq`,
+    middle names / initials / suffixes ignored, single-token names never match."""
     ta, tb = name_tokens(a), name_tokens(b)
     ta = [t for t in ta if len(t) > 1] or ta
     tb = [t for t in tb if len(t) > 1] or tb
     if len(ta) < 2 or len(tb) < 2:
         return False
-    return ta[0] == tb[0] and ta[-1] == tb[-1]
+    return ta[-1] == tb[-1] and first_eq(ta[0], tb[0])
+def names_match(a: str, b: str) -> bool:
+    """First token + last token match, ignoring middle names, initials, suffixes.
+
+    STRICT on purpose: pr_repair_write / pr_repair_copr_multi / dc_case_pr_lookup import this
+    to decide PR writes, where a loose match means writing the wrong person; and the
+    predeceased drop list uses it, because a false "predeceased" silences a living signer.
+    The obituary cross-checks use names_match_loose below, through _cross_check's 1:1 rule.
+    """
+    return _names_match_by(a, b, lambda x, y: x == y)
+# nickname -> formal spellings. Consulted in both directions. Obituaries use the family
+# name (Judy, Sally, Bill); SmartSkip returns the legal one (JUDITH, SARAH, WILLIAM) -- the
+# strict matcher called 58 loaded relatives "not in SmartSkip" over exactly this.
+NICKNAMES: dict[str, set[str]] = {
+    "judy": {"judith"}, "sally": {"sarah"},
+    "bill": {"william"}, "billy": {"william"}, "will": {"william"},
+    "bob": {"robert"}, "bobby": {"robert"}, "rob": {"robert"},
+    "dick": {"richard"}, "rick": {"richard"},
+    "jim": {"james"}, "mike": {"michael"},
+    "chris": {"christopher", "christine", "christina", "christian"},
+    "peggy": {"margaret"}, "maggie": {"margaret"}, "meg": {"margaret"}, "marge": {"margaret"},
+    "kathy": {"katherine", "kathleen", "catherine"}, "kate": {"katherine", "kathleen", "catherine"}, "cathy": {"catherine", "katherine"},
+    "liz": {"elizabeth"}, "beth": {"elizabeth", "bethany"}, "betty": {"elizabeth"}, "jack": {"john"},
+    "tom": {"thomas"}, "tony": {"anthony"}, "ted": {"edward", "theodore"}, "ed": {"edward", "edwin", "edmund"},
+    "dan": {"daniel"}, "danny": {"daniel"}, "dave": {"david"},
+    "steve": {"steven", "stephen"}, "joe": {"joseph"},
+    "larry": {"lawrence", "laurence"}, "jerry": {"gerald", "jerome", "gerard"},
+    "ron": {"ronald"}, "don": {"donald"},
+    "ken": {"kenneth"}, "pat": {"patricia", "patrick"}, "patty": {"patricia"}, "trish": {"patricia"},
+    "sue": {"susan", "suzanne"},
+    "chuck": {"charles"}, "charlie": {"charles"}, "hank": {"henry"}, "fred": {"frederick", "alfred"},
+    "greg": {"gregory"}, "andy": {"andrew"}, "drew": {"andrew"}, "matt": {"matthew"},
+    "nick": {"nicholas"}, "ben": {"benjamin"}, "sam": {"samuel", "samantha"}, "alex": {"alexander", "alexandra", "alexis"},
+    "jen": {"jennifer"}, "jenny": {"jennifer"}, "becky": {"rebecca"},
+    "debbie": {"deborah", "debra"}, "deb": {"deborah", "debra"},
+    "cindy": {"cynthia"}, "vicki": {"victoria"}, "vicky": {"victoria"},
+    "tim": {"timothy"}, "ray": {"raymond"}, "walt": {"walter"}, "al": {"albert", "alfred", "alan", "allen", "alvin"}, "herb": {"herbert"}, "frank": {"francis", "franklin"},
+    "fran": {"frances", "francis"},
+    "russ": {"russell"}, "randy": {"randall", "randolph"}, "nate": {"nathaniel", "nathan"}, "len": {"leonard"},
+    "vince": {"vincent"}, "phil": {"philip", "phillip"}, "pete": {"peter"},
+    "stu": {"stuart"}, "wes": {"wesley"}, "zach": {"zachary"}, "josh": {"joshua"}, "jon": {"jonathan"},
+    "doug": {"douglas"}, "brad": {"bradley", "bradford"}, "bernie": {"bernard"}, "ernie": {"ernest"}, "jackie": {"jacqueline"}, "millie": {"mildred", "millicent"}, "pam": {"pamela"}, "rosie": {"rose", "rosemary"}, "steph": {"stephanie"},
+    "val": {"valerie"},
+}
+# Keys that are common standalone given names in their own right (Lisa, Carol, Lynn, Jamie,
+# Harry, ...) are NOT in the table: "preceded by daughter Lisa Jones" must never equate a
+# living ELIZABETH JONES. The table is unioned with soi_owner_match.NICKNAMES so the two
+# pipelines cannot disagree on a pair (stephen<->steven, kate<->kathryn, jeff<->jeffrey).
+try:  # pragma: no cover - import only
+    from soi_owner_match import NICKNAMES as _SOI_NICKNAMES  # noqa: E402
+    for _k, _v in _SOI_NICKNAMES.items():
+        NICKNAMES.setdefault(_k, set()).update(_v)
+except Exception:  # noqa: BLE001
+    pass
+# The SOI table serves owner-name matching, where a false positive costs a lookup; here a
+# false positive can silence a signer or stamp the wrong kinship, so standalone given names
+# are removed again after the union whatever either table says.
+_STANDALONE_GIVEN = {"lisa", "carol", "lynn", "jamie", "harry", "terry", "kim", "jan", "jo", "kit",
+                     "jody", "leo", "bert", "marty", "les", "lou", "mo", "nan", "nell", "rae", "wendy",
+                     "tina", "toni", "connie", "bonnie", "dolly", "sandy", "sherry", "shelly", "penny",
+                     "mandy", "tammy", "gene", "art", "norm", "polly", "gerry", "rich", "hal"}
+for _k in _STANDALONE_GIVEN:
+    NICKNAMES.pop(_k, None)
+def _first_equiv(a: str, b: str, prefix: bool = True) -> bool:
+    """Two first-name tokens name the same person: equal, nickname either way, or (when
+    `prefix`) one is a >=4-char prefix of the other (Chris/Christopher, Steph/Stephanie)."""
+    if a == b:
+        return True
+    if b in NICKNAMES.get(a, ()) or a in NICKNAMES.get(b, ()):
+        return True
+    if prefix and min(len(a), len(b)) >= 4 and (a.startswith(b) or b.startswith(a)):
+        return True
+    return False
+def names_match_loose(a: str, b: str, prefix: bool = True) -> bool:
+    """names_match with nickname / prefix tolerance on the FIRST token only; last token exact.
+
+    Used for the obituary <-> SmartSkip cross-checks (confirmed_rels, obit_only_names,
+    augment dedupe). `prefix=False` for the predeceased drop list: a false "predeceased"
+    silences a signer, so only the nickname table is trusted there (Rose vs Rosemary stays
+    two people).
+    """
+    return _names_match_by(a, b, lambda x, y: _first_equiv(x, y, prefix))
 
 
+def _cross_check(f: dict, rels: list[dict]) -> dict:
+    """Obituary survivors <-> SmartSkip relatives, paired ONE-TO-ONE.
+
+    A loose match is trusted only when it is unambiguous: the survivor loosely matches
+    exactly one relative and that relative loosely matches exactly one survivor. Strict
+    matches pair first. So "Paul Smith" + "Paula Smith" against a lone PAUL SMITH pairs
+    Paul strictly and leaves Paula unmatched (she gets traced, not silenced), and
+    "Chris Jones" (son) / "Christine Jones" (daughter) against CHRISTOPHER + CHRISTINE
+    pair by strict-then-unique instead of stamping "son" on both.
+
+    Returns {"confirmed": [rel names], "obit_only": [survivor names],
+             "paired_survivors": [survivor names], "words": {rel name: relationship word}}.
+    """
+    survivors = []
+    for sv in f.get("survivors") or []:
+        nm = _survivor_name(sv)
+        if nm:
+            survivors.append((nm, ((sv.get("relationship") if isinstance(sv, dict) else "") or "").strip().lower()))
+    rel_names = [r["name"] for r in rels if r.get("name")]
+    paired: dict[str, tuple[str, str]] = {}   # rel name -> (survivor name, word)
+    used_surv: set[str] = set()
+    for matcher in (names_match, names_match_loose):
+        cand_by_surv = {nm: [r for r in rel_names if r not in paired and matcher(r, nm)]
+                        for nm, _w in survivors if nm not in used_surv}
+        cand_by_rel: dict[str, list[str]] = {}
+        for nm, cands in cand_by_surv.items():
+            for r in cands:
+                cand_by_rel.setdefault(r, []).append(nm)
+        for nm, word in survivors:
+            if nm in used_surv:
+                continue
+            cands = cand_by_surv.get(nm) or []
+            if len(cands) == 1 and len(cand_by_rel.get(cands[0], [])) == 1:
+                paired[cands[0]] = (nm, word)
+                used_surv.add(nm)
+    return {"confirmed": [r for r in rel_names if r in paired],
+            "obit_only": [nm for nm, _w in survivors if nm not in used_surv],
+            "paired_survivors": sorted(used_surv),
+            "words": {r: w for r, (_nm, w) in paired.items() if w}}
 def jdump(path: Path, obj) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(json.dumps(obj, indent=1, ensure_ascii=False), encoding="utf-8")
     tmp.replace(path)
-
-
 def jload(path: Path, default=None):
     if not path.exists():
         return default
     return json.loads(path.read_text(encoding="utf-8"))
-
-
 def write_csv(path: Path, rows: list[dict], header: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
@@ -186,12 +336,8 @@ def write_csv(path: Path, rows: list[dict], header: list[str]) -> None:
         w.writeheader()
         for r in rows:
             w.writerow(r)
-
-
 def say(msg: str) -> None:
     print(msg, flush=True)
-
-
 # ───────────────────────── name parsing ─────────────────────────
 
 def _gender_known(first: str) -> bool:
@@ -201,8 +347,6 @@ def _gender_known(first: str) -> bool:
         return g in ("male", "female", "mostly_male", "mostly_female")
     except Exception:
         return False
-
-
 def _order_tokens(toks: list[str], style_default: bool | None) -> tuple[str, str]:
     """toks are the human tokens of ONE person (initials kept). Return (first, last).
 
@@ -236,8 +380,6 @@ def _order_tokens(toks: list[str], style_default: bool | None) -> tuple[str, str
     if recorder_order:
         return words[1].title(), words[0].title()
     return words[0].title(), words[-1].title()
-
-
 def parse_owner_blob(biz: str) -> dict:
     """A Business Name string -> {first, last, source, confidence, is_entity}.
 
@@ -293,15 +435,11 @@ def parse_owner_blob(biz: str) -> dict:
                 "is_entity": True}
     return {"first": first, "last": last, "source": "blob",
             "confidence": "low" if first else "none", "is_entity": False}
-
-
 # ───────────────────────── prep ─────────────────────────
 
 SS_HEADER = ["First Name", "Last Name", "Mailing Address", "Mailing City", "Mailing State",
              "Mailing Zip", "Property Address", "Property City", "Property State", "Property Zip",
              "Sift Key", "Name Source", "Name Confidence"]
-
-
 def cmd_prep(a) -> int:
     run = Path(a.run_dir)
     run.mkdir(parents=True, exist_ok=True)
@@ -425,8 +563,6 @@ def cmd_prep(a) -> int:
         say(f"   {t['business_name']!r:55} -> {t['first']} {t['last']}  [{t['confidence']}]")
     assert len(records) + counts["dup_address"] == len(rows)
     return 0
-
-
 # ───────────────────────── trace ─────────────────────────
 
 def _smartskip(run: Path):
@@ -435,8 +571,6 @@ def _smartskip(run: Path):
     if "smartskip_trace" in sys.modules:
         return importlib.reload(sys.modules["smartskip_trace"])
     return importlib.import_module("smartskip_trace")
-
-
 def cmd_trace(a) -> int:
     run = Path(a.run_dir)
     ss = _smartskip(run)
@@ -518,21 +652,15 @@ def cmd_trace(a) -> int:
         time.sleep(15)
     say(f"TIMEOUT: re-run  trace --download-id {bid}")
     return 5
-
-
 # ───────────────────────── rank ─────────────────────────
 
 def _phone_sort_key(p: dict) -> tuple:
     t = (p.get("type") or "").lower()   # SmartSkip: Mobile / Residential / OtherPhone
     return (0 if "mobile" in t or "cell" in t or "wireless" in t else
             1 if "land" in t or "residential" in t else 2, p.get("number", ""))
-
-
 PARENT_RELS = {"Mother", "Father", "Parent"}
 CHILD_RELS = {"Son", "Daughter", "Child"}
 SIB_RELS = {"Brother", "Sister", "Sibling"}
-
-
 def _reroot_namesake(rec: dict, crm: dict) -> None:
     """SmartSkip resolved a NAMESAKE CHILD at the address instead of the owner.
 
@@ -598,8 +726,6 @@ def _reroot_namesake(rec: dict, crm: dict) -> None:
                                       "phones": decedent.get("phones") or [],
                                       "deceased_flag": decedent.get("deceased")}
     rec["rerooted"] = True
-
-
 def _dedupe_relatives(rec: dict) -> int:
     """Collapse repeated people in the relatives graph, merging their phones.
 
@@ -647,8 +773,6 @@ def _dedupe_relatives(rec: dict) -> int:
         rec["dms"] = [x for x in order if id(x) in dm_ids]
         rec["duplicate_relatives_merged"] = dropped
     return dropped
-
-
 def cmd_rank(a) -> int:
     run = Path(a.run_dir)
     from parse_smartskip import parse  # noqa: E402
@@ -821,8 +945,6 @@ def cmd_rank(a) -> int:
         say(f"WARNING {len(unmatched)} SmartSkip rows did not match a record: {unmatched[:5]}")
     say("Signer share split differs by state (MD/DC/VA intestacy), ranking order does not.")
     return 0
-
-
 # ───────────────────────── research ─────────────────────────
 
 def _firecrawl_search(query: str, limit: int = 8) -> list[dict]:
@@ -844,11 +966,7 @@ def _firecrawl_search(query: str, limit: int = 8) -> list[dict]:
     items = data.get("data") or []
     return [{"href": it.get("url", ""), "title": it.get("title", ""), "body": it.get("description", "")}
             for it in items if isinstance(it, dict)]
-
-
 _ddgs_dead_until = 0.0
-
-
 def _search_obit(name: str, city: str, state: str) -> list[dict]:
     """Obituary web search: DDGS (free) with retries, Firecrawl search when DDGS is throttled.
 
@@ -891,8 +1009,6 @@ def _search_obit(name: str, city: str, state: str) -> list[dict]:
             out.append({"url": url, "title": title, "snippet": body})
     time.sleep(1.5)
     return out[:6]
-
-
 def _llm_match(text: str, owner_name: str, city: str, address: str, state: str) -> dict | None:
     import config as cfg  # noqa: E402
     import llm_client  # noqa: E402
@@ -926,8 +1042,6 @@ def _llm_match(text: str, owner_name: str, city: str, address: str, state: str) 
         parsed["preceded_in_death"] = _validate_survivors_against_text(
             parsed.get("preceded_in_death", []), text, deceased)
     return parsed
-
-
 def _try_person(name: str, rec: dict, max_fetch: int) -> tuple[dict | None, list]:
     """Search + fetch + LLM for one candidate decedent. Returns (parsed, trail)."""
     from obituary_enricher import _fetch_page_text  # noqa: E402
@@ -960,8 +1074,6 @@ def _try_person(name: str, rec: dict, max_fetch: int) -> tuple[dict | None, list
             return parsed, trail
         time.sleep(0.5)
     return None, trail
-
-
 def _name_from_hit(hit: dict, surname: str) -> str:
     """'https://.../obituaries/jane-ann-sample-21' or 'Jane Ann Sample Obituary' -> 'Jane Sample'."""
     sur = (surname or "").lower()
@@ -987,14 +1099,10 @@ def _name_from_hit(hit: dict, surname: str) -> str:
         if first and len(first) > 1:
             return f"{first.title()} {surname.title()}"
     return ""
-
-
 def _survivor_name(s) -> str:
     if isinstance(s, dict):
         return (s.get("name") or "").strip()
     return str(s or "").strip()
-
-
 def cmd_research(a) -> int:
     run = Path(a.run_dir)
     records = jload(run / "records.json", {})
@@ -1123,10 +1231,13 @@ def cmd_research(a) -> int:
                 f["dod_source"] = "siftmap_last_obituary_date"
             # Cross-check the obituary's people against SmartSkip's relatives.
             rel_names = [r["name"] for r in rk["rels"]]
-            surv = [_survivor_name(s) for s in f.get("survivors") or []]
-            f["confirmed_rels"] = [n for n in rel_names if any(names_match(n, s) for s in surv)]
-            f["obit_only_names"] = [s for s in surv if s and not any(names_match(s, n) for n in rel_names)]
+            cc = _cross_check(f, rk["rels"])
+            f["confirmed_rels"] = cc["confirmed"]
+            f["obit_only_names"] = cc["obit_only"]
             # dict.fromkeys: names_match is fuzzy and matched the same person repeatedly.
+            # STRICT here: 867 of 871 cached `preceded` entries are bare strings with no
+            # relationship word to corroborate, and a false "predeceased" drops a living
+            # signer from the dial list ("preceded by Chris Swam" must not drop CHRISTINE).
             f["drop_names"] = list(dict.fromkeys(
                 n for n in rel_names
                 if any(names_match(n, _survivor_name(p)) for p in f.get("preceded") or [])))
@@ -1181,8 +1292,6 @@ def cmd_research(a) -> int:
                                           "findings": findings})
     say(f"verdicts: {dict(verdicts)}")
     return 0
-
-
 # ───────────────────────── augment ─────────────────────────
 
 OBIT_REL_MAP = {"wife": "Wife", "husband": "Husband", "spouse": "Spouse", "partner": "Spouse",
@@ -1193,7 +1302,35 @@ OBIT_REL_MAP = {"wife": "Wife", "husband": "Husband", "spouse": "Spouse", "partn
 SIGNER_WORDS = {"Wife", "Husband", "Spouse", "Son", "Daughter", "Child", "Sister", "Brother",
                 "Sibling", "Mother", "Father"}
 
-
+# Labelling ONLY (the REL line in the note). OBIT_REL_MAP above decides who gets traced and
+# who is a signer and is deliberately untouched: a niece is a real relationship worth
+# printing, not a $0.02 trace target or an intestacy heir.
+OBIT_LABEL_MAP = {**OBIT_REL_MAP,
+                  "stepson": "Stepson", "stepdaughter": "Stepdaughter",
+                  "niece": "Niece", "nephew": "Nephew", "aunt": "Aunt", "uncle": "Uncle",
+                  "cousin": "Cousin", "grandson": "Grandchild", "granddaughter": "Grandchild",
+                  "grandchild": "Grandchild", "great-grandchild": "Great-grandchild",
+                  "son-in-law": "In-Law", "daughter-in-law": "In-Law", "sister-in-law": "In-Law",
+                  "brother-in-law": "In-Law", "mother-in-law": "In-Law", "father-in-law": "In-Law",
+                  "niece-in-law": "In-Law", "nephew-in-law": "In-Law",
+                  "companion": "Partner", "fiance": "Partner", "fiancee": "Partner",
+                  "executor": "Executor", "personal representative": "Personal Representative"}
+_GENERIC_RELS = {"Relative", "In-Law", "Unknown", "", None}
+def _obituary_words(f: dict, rels: list[dict]) -> dict[str, str]:
+    """SmartSkip relative name -> the obituary's relationship word, 1:1 (see _cross_check)."""
+    return _cross_check(f, rels)["words"]
+def _rel_label(rel: dict, obit_words: dict[str, str]) -> str:
+    """The relationship printed on a REL line. SmartSkip's canon_rel, enriched with the
+    obituary's word when the obituary names this person: a "Relative, 44" the obituary
+    calls a niece prints "Niece (obituary), 44"."""
+    canon = rel.get("canon_rel") or "Relative"
+    word = obit_words.get(rel.get("name") or "")
+    if not word:
+        return canon
+    lab = OBIT_LABEL_MAP.get(word) or word.title()
+    if canon in _GENERIC_RELS or canon == lab:
+        return f"{lab} (obituary)"
+    return f"{canon}, {lab} (obituary)"
 def cmd_augment(a) -> int:
     """Obituary-named signers SmartSkip never returned -> Tracerfy at the property address.
 
@@ -1216,7 +1353,9 @@ def cmd_augment(a) -> int:
         if f.get("verdict") != "owner did die":
             continue
         rec = records[key]
-        existing = [r["name"] for r in rk["rels"]]
+        # 1:1 pairing: "Judy McAuley" paired with JUDITH MCAULEY is not traced again, but
+        # "Paula Smith" next to a lone PAUL SMITH (prefix collision) still is.
+        already = {n.lower() for n in _cross_check(f, rk["rels"])["paired_survivors"]}
         drop = {n.lower() for n in f.get("drop_names") or []}
         names = list(f.get("survivors") or [])
         if f.get("executor_named"):
@@ -1227,7 +1366,7 @@ def cmd_augment(a) -> int:
             canon = OBIT_REL_MAP.get(rel_word.strip().lower())
             if not nm or not canon or nm.lower() in drop:
                 continue
-            if any(names_match(nm, e) for e in existing):
+            if nm.lower() in already:
                 continue
             toks = [t for t in re.split(r"\s+", nm.strip()) if t and t.strip(".") .lower() not in SUFFIXES]
             if len(toks) < 2:
@@ -1273,13 +1412,9 @@ def cmd_augment(a) -> int:
     jdump(run / "ranked_records.json", ranked)
     say(f"   added {dict(added)}; ranked_records.json updated. Re-run `score` to tier the new numbers.")
     return 0
-
-
 # ───────────────────────── score ─────────────────────────
 
 SKIP_LINE_TYPES = {"tollfree", "premium", "voicemail"}
-
-
 def _keep_number(t: dict) -> tuple[bool, str]:
     if not t or t.get("error"):
         return False, "unscored"
@@ -1292,8 +1427,6 @@ def _keep_number(t: dict) -> tuple[bool, str]:
     if t.get("tier") == "Drop":
         return False, "drop tier"
     return True, ""
-
-
 def cmd_score(a) -> int:
     run = Path(a.run_dir)
     import obituary_dp_run as dpr  # noqa: E402
@@ -1369,15 +1502,11 @@ def cmd_score(a) -> int:
     write_csv(run / "dial_sheet.csv", rows, list(rows[0].keys()) if rows else ["key"])
     say(f"dial_sheet.csv: {len(rows)} numbers, {sum(1 for r in rows if r['keep'])} kept")
     return 0
-
-
 # ───────────────────────── build ─────────────────────────
 
 RELOAD_BASE = ["Property Street Address", "Property City", "Property State", "Property ZIP Code",
                "Owner First Name", "Owner Last Name",
                "Mailing Street Address", "Mailing City", "Mailing State", "Mailing ZIP Code"]
-
-
 def _api_phone_type(ss_type: str, trestle_line: str) -> str:
     t = (trestle_line or ss_type or "").lower()
     if "mobile" in t or "cell" in t or "wireless" in t:
@@ -1385,8 +1514,6 @@ def _api_phone_type(ss_type: str, trestle_line: str) -> str:
     if "land" in t or "residential" in t:
         return "LANDLINE"
     return "UNKNOWN"
-
-
 # Slug -> prose. The flags are written for the code; the note is read by a caller.
 FLAG_PROSE = {
     "dod_under_90d": "DOD under 90 days",
@@ -1408,8 +1535,6 @@ OWNER_PHONE_CAP = 30
 # before Trestle scoring exists -- so on its own it parked 538 Dial First numbers behind
 # Dial Fourth mobiles. Tier has to lead, with line type kept as the tie-break.
 TIER_RANK = {"Dial First": 0, "Dial Second": 1, "Dial Third": 2, "Dial Fourth": 3}
-
-
 def _tier_sort_key(pt: tuple) -> tuple:
     p, t = pt
     return (TIER_RANK.get(t.get("tier"), 8), _phone_sort_key(p))
@@ -1418,8 +1543,6 @@ DOD_SRC_PROSE = {
     "siftmap_last_obituary_date": "SiftMap obituary date, not the obituary",
     "": "no source",
 }
-
-
 def _flag_prose(fl: str) -> str:
     if fl in FLAG_PROSE:
         return FLAG_PROSE[fl]
@@ -1428,8 +1551,6 @@ def _flag_prose(fl: str) -> str:
     if fl.startswith("dod_conflict:"):
         return "DOD conflict - " + fl.split(":", 1)[1].strip()
     return fl.replace("_", " ")
-
-
 def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int,
           not_loaded: list[str] | None = None) -> str:
     """The note a caller actually reads: one section per line, one relative per line.
@@ -1518,8 +1639,6 @@ def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int,
             out.insert(nl_start - 2, f"NOT LOADED: {len(nl)} lines omitted, note too long")
             note = "\n".join(out)
     return note[:NOTE_MAX]
-
-
 def cmd_build(a) -> int:
     run = Path(a.run_dir)
     records = jload(run / "records.json", {})
@@ -1556,6 +1675,25 @@ def cmd_build(a) -> int:
         owner_alive = "owner alive" in verdict or presumed
         drop = {n.lower() for n in f.get("drop_names") or []}
 
+        # Re-run the obituary <-> SmartSkip cross-check with the loose matcher, so a cached
+        # finding stops listing "Judy McAuley" as not in SmartSkip while JUDITH MCAULEY sits
+        # in REL2. No research re-run, no spend: the survivors are in the cache.
+        cc = _cross_check(f, rk["rels"])
+        if f.get("survivors"):
+            f = dict(f)
+            f["obit_only_names"] = cc["obit_only"]
+            f["confirmed_rels"] = cc["confirmed"]
+        # The relationship words describe kinship to the DECEDENT. Only when the decedent is
+        # the owner do they describe the owner's relatives; on "parent died" / "a relative
+        # died" / same-surname verdicts the words belong to someone else and are not printed.
+        obit_words = cc["words"] if verdict == "owner did die" else {}
+        basis = rk.get("signer_basis") or ""
+        dms = [r for r in rk["rels"] if r.get("is_dm")]
+        if basis.startswith("no labelled immediate family") and dms and all(r["name"] in obit_words for r in dms):
+            rk = dict(rk)
+            rk["signer_basis"] = ("no labelled immediate family; every signer below is named in the "
+                                  "obituary (relationship shown), VERIFY before mailing")
+
         cfields, rel_lines, overflow, chan_over = {}, [], [], []
         slot = 0
         seen_numbers: set[str] = set()
@@ -1586,7 +1724,7 @@ def cmd_build(a) -> int:
                 continue
             if slot >= a.max_rel_slots:
                 # Past the cap: named in the note, not loaded as a field or a phone.
-                label = f"{rel['name']} ({rel['canon_rel']}{', ' + str(rel['age']) if rel.get('age') else ''})"
+                label = f"{rel['name']} ({_rel_label(rel, obit_words)}{', ' + str(rel['age']) if rel.get('age') else ''})"
                 (chan_over if rel.get("is_channel") else overflow).append(label)
                 continue
             kept = []
@@ -1644,7 +1782,7 @@ def cmd_build(a) -> int:
             tiers = loaded_by_n.get(n, [])
             role = (" - SIGNER" if rel.get("is_dm")
                     else " - CHANNEL" if rel.get("is_channel") else "")
-            rel_lines.append(f"REL{n} - {rel['name']} - {rel['canon_rel']}"
+            rel_lines.append(f"REL{n} - {rel['name']} - {_rel_label(rel, obit_words)}"
                              f"{', ' + str(rel['age']) if rel.get('age') else ''}"
                              f"{role}"
                              f"{' - ' + ' / '.join(tiers) if tiers else ' - no number'}")
@@ -1665,6 +1803,11 @@ def cmd_build(a) -> int:
             tags.append(TAG_UNVERIFIED)
         if rec.get("is_trust"):
             tags.append(TAG_TRUST)
+        # Cohort-wide tags the caller asked for (e.g. `Priority 1`). Additive only --
+        # the property PATCH merges, so an extra tag never displaces an existing one.
+        for extra in getattr(a, "extra_tag", None) or []:
+            if extra not in tags:
+                tags.append(extra)
         if not phones:
             tags.append(TAG_NO_NUMBERS)
             no_numbers.append({**rec, "verdict": verdict, "relatives": len(rk["rels"])})
@@ -1771,8 +1914,6 @@ def cmd_build(a) -> int:
         f"MAX REL SLOTS={max_rel}, max phones/record={max_phones}, "
         f"phone tags={len(tag_rows)}, no numbers={len(no_numbers)}")
     return 0
-
-
 # ───────────────────────── API (read + write) ─────────────────────────
 
 class WriteApi:
@@ -1819,8 +1960,6 @@ class WriteApi:
                     return 0, str(e)
                 time.sleep(2 ** attempt)
         return 0, "retries exhausted"
-
-
 def _resolve_uuid(api: WriteApi, p: dict) -> tuple[str, dict, str]:
     """(uuid, record, why) -- exact street+zip5 match among search hits, else ''."""
     status, body = api.search({"limit": 25, "offset": 0, "query": {"must": {"search": p["street"]}}})
@@ -1853,18 +1992,12 @@ def _resolve_uuid(api: WriteApi, p: dict) -> tuple[str, dict, str]:
     if len(exact) != 1:
         return "", {}, f"{len(exact)} exact hits of {len(hits)} for {p['street']} {p['zip']}"
     return exact[0]["uuid"], exact[0], ""
-
-
 REL_GROUP_LABEL = "Custom Fields 1"   # the live REL1..5 group (id 14); group 22 holds INACTIVE duplicates
-
-
 def _group_id(f: dict):
     g = f.get("group")
     if isinstance(g, dict):
         return g.get("id")
     return f.get("group_id")
-
-
 def _field_index(api: WriteApi) -> dict[str, dict]:
     """label -> field, ACTIVE fields only. The account carries an inactive duplicate
     'REL1: Full Name' in the 'Probate without PR' group; keyed naively by label it wins
@@ -1885,8 +2018,6 @@ def _field_index(api: WriteApi) -> dict[str, dict]:
         if prev is None or glabel == REL_GROUP_LABEL:
             out[lbl] = f
     return out
-
-
 def cmd_schema(a) -> int:
     run = Path(a.run_dir)
     plan = jload(run / "push_plan.json", {})
@@ -1928,8 +2059,6 @@ def cmd_schema(a) -> int:
     still = [lbl for lbl, _ in missing if lbl not in fields]
     say("read-back: " + ("all present" if not still else f"STILL MISSING {still}"))
     return 0 if not still else 4
-
-
 # ───────────────────────── push ─────────────────────────
 
 def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
@@ -2049,23 +2178,34 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
     msg_uuid = (resp2 or {}).get("uuid") if isinstance(resp2, dict) else None
     log["steps"]["message"] = {"status": st2, "uuid": msg_uuid, "resp": str(resp2)[:120]}
     if msg_uuid:
-        # A re-push must not leave two DP boards on the record: drop any earlier one --
-        # but only now that the replacement exists. This cleanup used to run even when
-        # the POST above failed, deleting the record's ONLY pinned note and leaving the
-        # board empty: a failed re-push must never end strictly worse than no push.
-        stx, mbx = api.get(f"/api/internal/property/{uuid}/message/")
-        for old_msg in ((mbx.get("results") or []) if isinstance(mbx, dict) else []):
-            if (old_msg.get("message") or "").startswith("DEEP PROSPECTING")                     and old_msg.get("uuid") and old_msg.get("uuid") != msg_uuid:
-                api.write("DELETE", f"/api/internal/property/{uuid}/message/{old_msg['uuid']}/", {})
+        # A re-push must not leave two boards of the same kind on the record: drop any
+        # earlier note of the SAME FAMILY (see _stale_board_messages) -- but only now that
+        # the replacement exists. This cleanup used to run even when the POST above failed,
+        # deleting the record's ONLY pinned note and leaving the board empty: a failed
+        # re-push must never end strictly worse than no push. And it used to match on the
+        # literal "DEEP PROSPECTING" whatever the new note was, which is how a probate
+        # plan pushed through this code wiped 21 obituary DP notes on 2026-09-01. Every
+        # deletion is logged now; an undo needs to know what went.
+        board = board_messages(api, uuid)
+        stale_msgs = _stale_board_messages(board, p["note"], msg_uuid)
+        replaced = []
+        for old_msg in stale_msgs:
+            st_d, _ = api.write("DELETE", f"/api/internal/property/{uuid}/message/{old_msg['uuid']}/", {})
+            # Full text kept (<= 4000 chars): the deleted note is otherwise unrecoverable,
+            # and a DELETE that did not take must read as "still there", not "replaced".
+            replaced.append({"uuid": old_msg["uuid"], "status": st_d, "deleted": st_d in (200, 202, 204),
+                             "pinned": bool(old_msg.get("pinned")), "message": (old_msg.get("message") or "")[:4000]})
+        log["steps"]["message_replaced"] = replaced
+        if any(not r["deleted"] for r in replaced):
+            log.setdefault("warnings", []).append(
+                f"{sum(not r['deleted'] for r in replaced)} stale same-family message(s) NOT deleted")
         st3, resp3 = api.write("POST", f"/api/internal/property/{uuid}/message/{msg_uuid}/pin/", {})
         log["steps"]["pin"] = {"status": st3}
 
     # read back
     time.sleep(1.0)
     st, after = api.get(f"/api/internal/property/{uuid}/")
-    st2, cf = api.get(f"/api/internal/property/{uuid}/custom-field/")
-    cf_rows = cf if isinstance(cf, list) else (cf.get("results") or cf.get("data") or []) if isinstance(cf, dict) else []
-    got_cf = {((r.get("custom_field") or {}).get("label") or ""): r.get("value") for r in cf_rows}
+    _cf_rows, got_cf = custom_field_rows(api, uuid)
     got_phones = {(ph.get("number") or ""): ph for ph in ((after.get("owner") or {}).get("phones") or [])}
     log["readback"] = {
         "owner_after": f"{(after.get('owner') or {}).get('first_name')} {(after.get('owner') or {}).get('last_name')}".strip(),
@@ -2086,8 +2226,7 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
         # note_stored is filled from the message board below.
         "note_stored": "",
     }
-    stm, mb = api.get(f"/api/internal/property/{uuid}/message/")
-    msgs = (mb.get("results") or []) if isinstance(mb, dict) else []
+    msgs = board_messages(api, uuid)
     log["readback"]["message_pinned"] = any(x.get("pinned") for x in msgs)
     log["readback"]["messages_on_board"] = len(msgs)
     log["readback"]["note_stored"] = next(
@@ -2096,8 +2235,6 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
     log["ok"] = (not rb["phones_missing"] and not rb["custom_fields_missing"] and not rb["tags_missing"]
                  and rb["owner_after"] == log["owner_before"] and rb["message_pinned"])
     return log
-
-
 def _wizard_push(run: Path, group: str, tags: list[str], commit: bool, headed: bool, one_row_key: str | None) -> dict:
     from sift_upload_wizard import run_upload  # noqa: E402
     src = run / f"reload_{group}.csv"
@@ -2118,8 +2255,6 @@ def _wizard_push(run: Path, group: str, tags: list[str], commit: bool, headed: b
     shot = str(run / f"wizard_{group}")
     return asyncio.run(run_upload(str(path), "Obituary", tags, existing_list=True, has_phones=True,
                                   do_finish=commit, headless=not headed, shot_base=shot))
-
-
 def cmd_push(a) -> int:
     run = Path(a.run_dir)
     plan_doc = jload(run / "push_plan.json", {})
@@ -2227,8 +2362,6 @@ def cmd_push(a) -> int:
         "`push --route api --limit N` afterwards if the read-back shows them missing (API custom-field "
         "PATCH may work even where the wizard was needed for phones).")
     return 0
-
-
 # ───────────────────────── main ─────────────────────────
 
 def main() -> int:
@@ -2295,6 +2428,9 @@ def main() -> int:
                    help="REL slots per record (Basem: the existing 5 plus at most 2 more)")
     s.add_argument("--include-phoneless", action="store_true",
                    help="give relatives with no kept phone a REL slot anyway (name only)")
+    s.add_argument("--extra-tag", action="append", default=[], metavar="TAG",
+                   help="property tag applied to EVERY record in the batch, repeatable "
+                        "(e.g. --extra-tag 'Priority 1')")
     s.set_defaults(fn=cmd_build)
 
     s = sub.add_parser("schema")
@@ -2317,7 +2453,5 @@ def main() -> int:
     if getattr(a, "probe", None) == "__auto__":
         a.probe = "__auto__"
     return a.fn(a)
-
-
 if __name__ == "__main__":
     sys.exit(main())
