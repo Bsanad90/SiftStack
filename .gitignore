@@ -72,8 +72,9 @@ Skills for REI/
 Thumbs.db
 *.swp
 
-# Claude Code / planning
-.claude/
+# Claude Code / planning (local settings + worktrees stay ignored; project agents are source)
+.claude/*
+!.claude/agents/
 .planning/
 .playwright-mcp/
 
