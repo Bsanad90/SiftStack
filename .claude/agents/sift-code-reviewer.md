@@ -2,7 +2,6 @@
 name: sift-code-reviewer
 description: SiftStack pre-commit inspector. Reviews a diff in THIS repo against the DataSift and pipeline trap list (tags as arrays, merge-only PATCH, status normalisation, note-family rule, owner-merge trap, zero-is-failure) and returns BLOCKER/WARNING findings with file:line. Use for "review my changes", "review before I commit", "check this diff for traps", "pre-commit review" in Sift Stack. Not the generic GSD reviewer; applies no fixes.
 tools: Read, Grep, Glob, Bash
-model: inherit
 effort: high
 color: red
 ---

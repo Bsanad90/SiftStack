@@ -1,8 +1,7 @@
 ---
 name: sift-ops-manager
 description: SiftStack routine runner. Runs one of three named read-only routines end to end by calling the other SiftStack agents — "morning" (daily pulls + verifier), "pre-commit" (history traps for touched pipelines + code review), "post-batch" (QA audit + verifier) — and returns ONE consolidated report with a needs-Basem list. Use for "run the morning routine", "pre-commit routine", "post-batch routine". Cannot push, commit, repair or run shell commands.
-tools: Agent(sift-qa-auditor), Agent(sift-account-census), Agent(sift-code-reviewer), Agent(daily-pull-reviewer), Agent(sift-history-reader), Agent(sift-report-verifier), Read, Glob
-model: inherit
+tools: Agent(sift-qa-auditor, sift-account-census, sift-code-reviewer, daily-pull-reviewer, sift-history-reader, sift-report-verifier), Read, Glob
 effort: medium
 color: orange
 ---

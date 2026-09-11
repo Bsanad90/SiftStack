@@ -2,7 +2,6 @@
 name: sift-report-verifier
 description: SiftStack second opinion. Takes another agent's report (qa-auditor, account-census, daily-pull-reviewer, code-reviewer) plus the files it was based on, re-opens the raw files, and returns CONFIRMED or DISPUTED per claim with the file and line that decides it. Use for "verify this report", "double-check the QA verdict", "is this pull table right", "second opinion". Read-only, never repairs.
 tools: Read, Grep, Glob, Bash
-model: inherit
 effort: high
 color: purple
 ---
