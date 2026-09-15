@@ -939,7 +939,8 @@ def reconcile_ledger(ledger: dict, merged: dict[(str, str), dict], run_date: str
 
 
 def run_reconciliation_pass(ledger: dict, counties: list[str], run_date: str,
-                              lookback_days: int = 45, retry_ceiling_days: int = 90) -> None:
+                              lookback_days: int = 45, retry_ceiling_days: int = 90,
+                              limit: int | None = None, save_cb=None) -> None:
     """Re-check estates already on the ledger's 'incomplete' queue (missing
     PR, most commonly) -- separate from, and cheaper than, re-diffing the
     entire rolling lookback window on every run.
@@ -952,7 +953,22 @@ def run_reconciliation_pass(ledger: dict, counties: list[str], run_date: str,
     is logged as given up rather than retried forever. Estates already
     refreshed by this run's own pull (last_checked == run_date, set by
     reconcile_ledger) are skipped -- re-fetching their detail page minutes
-    after the pull just fetched it buys nothing."""
+    after the pull just fetched it buys nothing.
+
+    `limit` caps how many estates this pass re-fetches, and `save_cb` banks
+    the ledger every SAVE_EVERY records -- the same contract fill_addresses
+    uses, and for the same reason. Added 2026-09-15 after the daily leg spent
+    five consecutive days (09-11..09-15) being killed at the runner's 75m cap
+    inside this function: it re-fetched all ~170 queued estates every run with
+    no cap and banked nothing, so the kill discarded the whole pass, the CSV
+    write below it was never reached, and the next day repeated the identical
+    work. The queue grew 156 -> 170 rather than draining.
+
+    The ordering matters as much as the cap. `to_check` used to be in ledger
+    insertion order, so a bare `limit` would re-check the SAME first N estates
+    every run and everything past N would never be looked at again. Sorting
+    least-recently-checked first makes a capped pass rotate through the whole
+    queue across days, which is what actually drains it."""
     estates = ledger.get("estates", {})
     run_dt = datetime.strptime(run_date, "%m/%d/%Y")
     to_check = []
@@ -964,6 +980,13 @@ def run_reconciliation_pass(ledger: dict, counties: list[str], run_date: str,
             continue
         if record.get("last_checked") == run_date:
             continue  # this run's pull already refreshed it
+        if not record.get("record_id"):
+            # A legal-notice-only record has no detail page, so it can never be
+            # re-checked and never gets `last_checked` set. Left in the queue it
+            # would sort to the front forever (never-checked first) and eat a
+            # slot of every capped pass without doing any work -- permanently
+            # starving the estates that CAN be resolved. Drop it at build time.
+            continue
         since = record.get("incomplete_since") or record.get("first_seen")
         if since:
             age_days = (run_dt - datetime.strptime(since, "%m/%d/%Y")).days
@@ -985,7 +1008,31 @@ def run_reconciliation_pass(ledger: dict, counties: list[str], run_date: str,
     if not to_check:
         print("  Reconciliation: nothing on the incomplete queue to re-check.")
         return
+
+    # Least-recently-checked first, never-checked before ever-checked, so a
+    # capped pass rotates through the queue across days instead of re-checking
+    # the same head of the list forever. See the docstring.
+    def _last_checked_sort_key(item):
+        lc = item[1].get("last_checked")
+        if not lc:
+            return datetime.min
+        try:
+            return datetime.strptime(lc, "%m/%d/%Y")
+        except ValueError:
+            return datetime.min
+
+    to_check.sort(key=_last_checked_sort_key)
+
+    queued = len(to_check)
+    if limit is not None and queued > limit:
+        to_check = to_check[:limit]
+        print(f"  Reconciliation: --reconcile-limit {limit} -- deferring "
+              f"{queued - limit} of {queued} queued estate(s) to a later pass "
+              f"(least-recently-checked go first).")
     print(f"  Reconciliation: re-checking {len(to_check)} incomplete estate(s).")
+
+    SAVE_EVERY = 10
+    processed = 0
     for key, record in to_check:
         record_id = record.get("record_id")
         if not record_id:
@@ -1004,7 +1051,12 @@ def run_reconciliation_pass(ledger: dict, counties: list[str], run_date: str,
             if not record["incomplete"]:
                 record["incomplete_since"] = None
         record["last_checked"] = run_date
+        processed += 1
+        if save_cb and processed % SAVE_EVERY == 0:
+            save_cb()
         time.sleep(1.5)
+    if save_cb and processed:
+        save_cb()
 
 
 # ── Property address lookup (Maryland Land Records + SDAT) ─────────────
@@ -1032,7 +1084,12 @@ def fill_addresses(ledger: dict, counties: list[str],
     a re-run resume where it stopped."""
     import md_land_records_lookup as landrec
 
-    SAVE_EVERY = 10
+    # Flush after EVERY record, not every 10. A Land Records lookup is minutes,
+    # not seconds, so a 10-record cadence never fired inside a capped run: the
+    # 2026-09-15 daily leg resolved 2 of 26 before the 75m kill, banked nothing,
+    # and re-did the same two the next day. Writing the ledger is a local JSON
+    # dump measured in milliseconds -- there is no reason to batch it.
+    SAVE_EVERY = 1
     touched: set[str] = set()
     processed = 0
     consecutive_errors = 0
@@ -1376,8 +1433,17 @@ def main():
                               "first, resolve addresses as this separate (hours-long) pass. Never "
                               "touches the checkpoint; --commit saves the ledger incrementally.")
     parser.add_argument("--limit", type=int, default=0,
-                         help="with --fill-addresses-only: stop after N Land Records lookups "
-                              "(probe cost/hit-rate before the full pass); 0 = no cap")
+                         help="stop the address pass after N Land Records lookups; 0 = no cap. "
+                              "Applies to the normal pull as well as --fill-addresses-only. "
+                              "Land Records is minutes per decedent, so cap it on any run under "
+                              "a wall-clock cap or it will starve the CSV write that follows it.")
+    parser.add_argument("--reconcile-limit", type=int, default=0,
+                         help="stop the incomplete-queue reconciliation pass after N re-fetches; "
+                              "0 = no cap. Least-recently-checked estates go first, so a capped "
+                              "daily run rotates through the whole queue across days. Set this on "
+                              "any run under a wall-clock cap -- an uncapped pass on a large queue "
+                              "can outlast the cap and starve the address fill and the CSV write "
+                              "that follow it.")
     parser.add_argument("--overlap-days", type=int, default=2,
                          help="checkpoint mode only: pull from each county's cutoff MINUS this many "
                               "days -- insurance against dockets entered late with backdated filing "
@@ -1498,30 +1564,61 @@ def main():
     print(f"Ledger: {len(changes['added'])} added, {len(changes['changed'])} changed, "
           f"{len(changes['unchanged'])} unchanged.")
 
+    # Same save_cb both slow passes use. Without it a run banked nothing until
+    # the very end, so an interrupted pass threw away everything it had done --
+    # which is exactly what the 2026-09-10 06:00 run lost when the scheduled
+    # task's time limit killed it at 09:00 mid-pass. It matters doubly now that
+    # each leg carries its own timeout: a capped MD-RoW must chew through both
+    # queues a chunk at a time and resume tomorrow, and the per-record
+    # `property_lookup_checked` / `last_checked` guards only help if the ledger
+    # was actually written.
+    save_cb = (lambda: save_json(LEDGER_PATH, ledger)) if args.commit else None
+
     run_reconciliation_pass(ledger, counties, run_date=site_cutoff,
                              lookback_days=args.reconcile_lookback_days,
-                             retry_ceiling_days=args.retry_ceiling_days)
-
-    if not args.no_addresses:
-        fill_addresses(ledger, counties)
+                             retry_ceiling_days=args.retry_ceiling_days,
+                             limit=args.reconcile_limit or None,
+                             save_cb=save_cb)
 
     out_path = Path(args.out) if args.out else OUTPUT_DIR / f"Register of Wills {date_to.replace('/', '-')}.csv"
-    # Scope the CSV to just what THIS run touched, not the whole
-    # accumulated ledger -- otherwise every weekly deliverable would grow
-    # into a superset of all history rather than that period's batch.
-    row_count = write_csv(ledger, counties, out_path, only_keys=only_keys)
-    print(f"\nWrote {row_count} row(s) to {out_path}")
 
-    if args.dump_json:
-        dump = {
-            "run": {"counties": counties, "date_from_by_county": date_from_by_county, "date_to": date_to,
-                    "site_cutoff": site_cutoff, "run_at": datetime.now().isoformat(),
-                    "committed": bool(args.commit)},
-            "records": [dict(ledger["estates"][k], ledger_key=k)
-                        for k in sorted(only_keys) if k in ledger["estates"]],
-        }
-        save_json(Path(args.dump_json), dump)
-        print(f"Dumped {len(dump['records'])} record(s) to {args.dump_json}")
+    def write_outputs(stage: str) -> None:
+        # Scope the CSV to just what THIS run touched, not the whole
+        # accumulated ledger -- otherwise every weekly deliverable would grow
+        # into a superset of all history rather than that period's batch.
+        row_count = write_csv(ledger, counties, out_path, only_keys=only_keys)
+        print(f"\nWrote {row_count} row(s) to {out_path}  [{stage}]")
+        if args.dump_json:
+            dump = {
+                "run": {"counties": counties, "date_from_by_county": date_from_by_county, "date_to": date_to,
+                        "site_cutoff": site_cutoff, "run_at": datetime.now().isoformat(),
+                        "committed": bool(args.commit), "stage": stage,
+                        # "records" below is every estate this run's date window TOUCHED (added +
+                        # changed + unchanged) -- these two lists say which ones are genuinely NEW,
+                        # for a downstream consumer that only wants today's actual new estates.
+                        "added": changes["added"], "changed": changes["changed"]},
+                "records": [dict(ledger["estates"][k], ledger_key=k)
+                            for k in sorted(only_keys) if k in ledger["estates"]],
+            }
+            save_json(Path(args.dump_json), dump)
+            print(f"Dumped {len(dump['records'])} record(s) to {args.dump_json}  [{stage}]")
+
+    # The deliverable is written BEFORE the address pass and again after it.
+    # The address pass is by far the slowest thing here (minutes per decedent)
+    # and it used to sit in FRONT of the only CSV write, so a wall-clock kill
+    # anywhere inside it meant the entire run produced nothing -- which is
+    # exactly what happened on five consecutive days, 2026-09-11..09-15.
+    # Writing first makes the CSV independent of how far addresses get; writing
+    # again folds in whatever they resolved. Because of that the address pass no
+    # longer needs a cap to protect the deliverable: let it run until the
+    # runner's per-leg timeout and bank every record as it goes (SAVE_EVERY=1),
+    # and let the separate `--fill-addresses-only` job carry on from there.
+    if args.no_addresses:
+        write_outputs("no address pass")
+    else:
+        write_outputs("before address pass")
+        fill_addresses(ledger, counties, limit=args.limit or None, save_cb=save_cb)
+        write_outputs("after address pass")
 
     if args.commit:
         save_json(LEDGER_PATH, ledger)
