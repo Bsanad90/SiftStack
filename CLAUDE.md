@@ -171,7 +171,29 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
   auction_date with the VA parser's deed-date guards — the MDDC snippet parser has none and
   emitted a 2024 "auction date" that was a deed recording date. Dropped rows (off-type/out-of-footprint, incl. the
   `order_nisi` reclassifications) now land in `<out>_dropped.csv`; review it, don't trust the
-  count. `--hide-read-notices` defaults OFF as of 2026-08-31. → [history](docs/history/mddc-va-md.md)
+  count. `--hide-read-notices` defaults OFF as of 2026-08-31.
+  **COUNTY CHECKBOXES ARE INERT — measured 2026-09-15.** A search with ONLY "Washington DC" ticked
+  returned 89 rows spanning **18 counties**, Virginia ones included (Loudoun, Culpeper, Stafford,
+  Prince William, Alexandria city). The site returns the whole MD/DC/VA feed whatever is selected;
+  the `county` column is DERIVED afterwards from notice free-text plus ZIP geocode. So narrowing
+  `DEFAULT_COUNTIES` (`be69672`) never narrowed the SEARCH — it only changed which inert boxes get
+  ticked. Footprint filtering is post-hoc and STATE-based, not county-based.
+  **The "pagination did not advance" warning is usually a FALSE ALARM.** The site publishes only
+  ~3-4 trustee notices/day in total, so a 7-day window genuinely ends after ~3 pages and the
+  warning fires whenever the result set is shorter than `--max-pages`. Read the ROW COUNTS instead:
+  a short final page (10, 10, then 8) is end-of-results, not a stall. A 30-day window walked all
+  10 pages cleanly. Do not "fix" this without checking the counts first.
+  **Consequence for DC:** DC runs ~18 notices per 30 days (~4/week), so a 7-day window can contain
+  ZERO DC by chance — it did for the whole of 09-11..09-15, which looked like a broken county
+  filter and was not. `--days 30` surfaced 25 in-footprint leads, 13 of them DC. Prefer a wider
+  window over trusting a quiet week.
+  **DC probate ownership (`dc_probate_pull.py`): ITSPE *is* OTR** ("Integrated Tax System Public
+  Extract", served off DCGIS), so re-querying OTR cannot resolve a MEDIUM owner match — MEDIUM
+  means the NAME match is partial, usually just an extra middle initial or maiden name on our side
+  (`Michael L. Joyner` vs OTR `JOYNER, MICHAEL` is the same person). The next source up is the DC
+  Recorder of Deeds, which is still an unfinished signup. A residence owned by someone whose
+  SURNAME matches the decedent is a lead, not a dead end — an heir already on title.
+  → [history](docs/history/mddc-va-md.md)
 - **VA Public Notice** — works unauthenticated via the Popular Searches widget, **one county per
   Firecrawl call with adaptive date-window splitting** (multi-county selection cancels its own
   postbacks; Fairfax + 60 days exceeds Firecrawl's budget). Pagination was broken until 2026-08-28
@@ -195,7 +217,37 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
   adds a 4.5s wait), so a wide `--since/--until` window must be split; `--max-pages` past 12 causes
   a Firecrawl 400, and the truncation warning's "raise --max-pages" advice cannot work past it.
   Land Records/SDAT lookups fail transiently in batches (Firecrawl 500s); failed records stay
-  unchecked and any later fill/daily run resumes them. → [history](docs/history/mddc-va-md.md)
+  unchecked and any later fill/daily run resumes them.
+  **DEAD FOR FIVE DAYS, FIXED 2026-09-15 (`72af4a5`).** The daily leg wrote NOTHING 09-11..09-15:
+  killed at the runner's 75m per-leg cap every day, and because neither slow pass banked progress
+  the ledger was last written 09-10 — five days of Firecrawl spend for zero output, while the
+  reconciliation queue grew 156 -> 170 instead of draining. Three defects, one shape — an
+  unbounded, unbanked slow pass sitting IN FRONT of the only deliverable: `run_reconciliation_pass`
+  had no cap and no `save_cb`; `fill_addresses` was never given a `limit` on the normal pull path;
+  and `fill_addresses` flushed only every 10 records, which at 5-11 MINUTES per decedent never
+  fires (09-15 resolved 2 of 26 and banked none of them). Fixed: both passes take `limit` +
+  `save_cb`, `fill_addresses` flushes EVERY record, and **the CSV + JSON are written BEFORE the
+  address pass and again after**, so the deliverable no longer depends on how far addresses get —
+  which is what lets the daily address pass run uncapped. New `--reconcile-limit`; `--limit` now
+  applies to the normal pull too.
+  **The ordering matters as much as the cap:** the queue was in ledger insertion order, so a bare
+  limit would re-check the same head forever and never reach the tail. It now sorts
+  least-recently-checked FIRST, and rows with no `record_id` are dropped at build time — they can
+  never be re-checked, so they never get `last_checked` and would sort first forever, eating a slot
+  of every capped run. Offline regression: `tools/manual/test_md_row_pass_budgets.py` (12 checks) —
+  run it after ANY change to either pass. Live proof: exit 0 in 47m43s, 76 rows written.
+  **Measured throughput, use these to size caps:** reconciliation ~6.9s/estate; Land Records
+  5-11 MINUTES/decedent; pull + detail fetches ~13m.
+  **Real address throughput now comes from `automation/md_row_address_fill.ps1`** — the same
+  `--fill-addresses-only` lookup with no 75m ceiling, run several times a day, resuming via the
+  per-record `property_lookup_checked` guard and exiting in seconds when nothing is unchecked.
+  **CONCURRENCY HAZARD:** the pull and the fill job both hold the WHOLE ledger in memory and write
+  it back wholesale, so two at once means the second writer SILENTLY discards the first's work. The
+  fill job refuses to start while a Register of Wills process is alive; anything else that touches
+  the ledger needs the same guard.
+  **Reading the CSV:** `Property Address` can hold the literal string `Not Found (Claude)` — that
+  is NOT an address. The 09-15 pull's 76 rows were 36 real addresses, 21 `Not Found` placeholders
+  and 19 blank; only **15** had a real address AND a PR. → [history](docs/history/mddc-va-md.md)
 - **Doors-Per-Deal account build** — all 73 Records presets built and verified (0 defects), 12
   folders, 6 entry tags, 24 DC SiftMap presets saved. ZERO records pulled in, so every preset loads
   empty for DC until the pull runs on explicit go. → [history](docs/history/doors-per-deal.md)
@@ -477,6 +529,85 @@ Four traps, each of which fails silently or cryptically:
 `POST /property/` is **upsert by address**, so re-runs never duplicate, and **lists accumulate** rather than overwrite (verified: a record came back with both new lists plus four it already had). Custom fields go to `PATCH /api/internal/property/{uuid}/custom-field/update-values/` with `[{"field_uuid": ..., "value": ...}]`. Creating a `select` custom field REQUIRES its options in the same POST.
 
 **Always upload one record and read it back before releasing the file.** That single habit caught the tag format, the entity-owner rejection, the option-UUID requirement and a list-name mismatch that would have silently attached nothing for 2,512 of 2,573 records.
+
+### Incomplete records and the owner-block PATCH (learned 2026-09-11, lane cleanup)
+
+- **A record's Clean/Incomplete state is the detail field `type`** (`"clean"` / `"incomplete"`);
+  the query key is `{"must": {..., "property_type": "incomplete"}}` (omit it = the "All" tab).
+  The thin list row does not carry it. What makes a record incomplete, measured on 222 lane
+  records: an entity owner with `company` set and no person first name (185); a blank owner
+  (15); a first name carrying a middle initial WITH A PERIOD (`Tracey M.` — `Tracey M` is
+  clean, proven live), a single-letter first name, a suffix inside `last_name` (`Abell 4Th`),
+  or a mailing block with null city/state/zip (11); a property address with no number/ZIP (4).
+  Our own 09-01 PR pushes wrote the period names.
+- **`PATCH /property/{uuid}/ {"owner": {first_name, last_name, company, address}}` flips `type`
+  to clean IMMEDIATELY** (read-back at +0 s), keeps the owner uuid, phones and `skiptraced`,
+  and `company` may stay (a trust title beside the trustee's name is clean). Always send the
+  FULL block including the current mailing (a name-only block re-binds to a stranger's entity).
+  **Undo works with `null` names** (`""` is rejected with 400): an entity rename is reversible.
+- **Two side effects, both seen live:** (1) renaming the owner of a DUPLICATE property record
+  (same address, same owner entity) makes DataSift collapse the duplicate — the second record
+  404s afterwards, the twin survives with everything (4803 S Polling House Rd: Pal John's thin
+  SiftMap copy vanished, Bagoury's full record stayed). Check the plan for twin street+zip
+  before writing. (2) Setting name + mailing that match an ORPHAN owner entity (one with no
+  property, so the `search` collision check cannot see it) absorbs its phones into ours with
+  the uuid unchanged (9925 Old Frederick Rd: the PR's `Pr.1..4` numbers joined, 3 → 7). A
+  same-uuid phone INCREASE is an absorption, a decrease or a uuid change is a real merge.
+- **`GET /api/internal/owner/`** lists all 53k owner entities (limit up to 2,000, `ordering=`
+  honoured) but takes NO filter (`search`, `address`, POST-as-GET bodies are all ignored) and
+  400s past offset 10,000 — a full mailing index cannot be built. The property query's
+  `search` matches owner MAILING strings as well as property streets; that is the collision check.
+- Tooling: `src/scripts/lane_incomplete_cleanup.py` (`--lane ftm|hottest --plan|--probe|
+  --commit --group C|F|A-diff|A-same|B|--verify|--worklist|--undo`); run dirs under
+  `output/lane_incomplete_cleanup/`. FTM 2026-09-11: 197 → 54 incomplete (141 fixed, 12 review
+  rows + 41 worklist rows in `worklist.csv`, 1 group-B row pending). Hottest planned (14 write /
+  4 review / 7 worklist), not written.
+
+### Per-record event log + tasks over the API (learned 2026-09-15, Re-Skiptrace review)
+
+- **`GET /api/internal/property/{uuid}/logs/`** is a PER-RECORD event log — supersedes "no
+  per-record history exists" (the account-wide `activity/` endpoint lists only bulk jobs).
+  Rows carry `event_type`, `author` (email), `source` (`internal-api` = the UI, `smrtphone`,
+  `bulk`, `upload`, `sequence`, `system`), `timestamp`, `payload`. Seen: `property.status.updated`
+  (`{"property":{"status":[old,new]}}`, slug-cased values such as `re-skiptrace`),
+  `owner.phone.status.updated`, `property.tags.added/removed`, `owner.phone.tags.added`,
+  `task.created/overdue`, `property.message.added/pinned`, `property.webhook.delivery.success`.
+  Default page is 10 newest; `?limit=50` and `?page=2` work; `count` is the total.
+  `reskiptrace_audit.record_log()` / `moved_into_status()` are the readers.
+- **`GET /api/internal/task/?limit=200&offset=N&ordering=created`** lists every task in the
+  account (242 on 2026-09-15; `assigned_to_property` is a bare uuid, `assigned_to_user` /
+  `created_by` are user dicts, `completed` is an ISO timestamp or null). WITHOUT `ordering=` the
+  pages overlap: one task came back twice and another vanished. **`completed` is READ-ONLY on
+  PATCH** — `PATCH {"completed": ...}` answers 200 and stores nothing (the pin-style lie);
+  `outcome_notes` IS writable by PATCH. Completing is `POST .../task/{uuid}/complete/` (200),
+  reopening `POST .../task/{uuid}/uncomplete/`. `reskiptrace_audit.fetch_open_tasks()` reads,
+  `reskiptrace_review.py` writes.
+- **The `Re-Skiptrace` status is a dialer dumping ground with no convention.** 2026-09-15 live:
+  15 records, all already skip traced; 11 parked by dialers since 09-08, 13 of 15 with NO
+  number dispositioned, Pal leaves a same-day task to Basem about half the time, Mostafa and
+  Bagoury leave nothing. `reskiptrace_audit.py` now reports who parked each record and when,
+  its open tasks, board-note families, and two new buckets `ENTITY` (LLC/trust owner, no
+  person name) and `UNDIALED` (callable numbers never dialed). `reskiptrace_fix.py` and
+  `reskiptrace_review.py` post ONE pinned **`WHO YOU ARE DIALING <date>` dial sheet** per record
+  (Basem, same day: "don't write a review note -- write something that helps the dialers know
+  who they are dialing") + a `Re-Skip Reviewed MM/YYYY` tag; QA requires the pinned note;
+  re-pushes replace only their own family. The sheet = owner, alive/deceased line (DP verdict,
+  obituary date, probate PR logic), PR, REL names on file, then every number in dial order with
+  tier, line type, WHOSE it is (from the `Owner.N` / `Rel{N}.{M}` / `Pr.N` / `Plaintiff.N` phone
+  tags resolved against the `REL{N}: Full Name` / `PR First|Last Name` fields) and its CRM
+  disposition. `reskiptrace_fix.build_dial_sheet()` is the shared builder.
+  **"Relative fields missing" (dialers, via Basem 2026-09-15) sized on a 150-record live
+  sample of the 18,590 records with Rel/Pr-tagged phones:** REL name fields empty on 4 of 90
+  Rel-tagged records (~4%, e.g. `8 Anderson Ridge Rd` REL1-5 all blank, `6212 Fort Hunt Rd`),
+  PR name fields empty on 12 of 51 Pr-tagged records (~24%). Estimated account-wide: ~500
+  records with unnamed relatives, ~1,500 with unnamed PRs. Not repaired; separate job
+  (`output/reskiptrace_review/rel_missing_sample_20260915.json`). **The names exist in the
+  vendor files on Google Drive** (`Marketing Lists/<YYYY>/<MM>/...`, `*_ReadyForDialing.xlsx`
+  / `*_SkipTraced.xlsx`: decedent, PR, REL names beside the phones) — readable with the
+  Divorce Cases project's OAuth token and venv python (see auto-memory
+  `reference_marketing_lists_drive`). Proof: `859 Lake Gaston Dr`'s five `Rel1-5` phones are
+  PR Joseff Cockrill's per `Monthly_Probate_202604_ReadyForDialing.xlsx`. Enformion BusinessV2
+  answered "Invalid Galaxy Token" on 2026-09-15 — the key is dead.
 
 ### SiftLine boards over the API (learned 2026-09-03, seller re-qualify batch)
 
