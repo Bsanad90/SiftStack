@@ -884,6 +884,14 @@ def cmd_rank(a) -> int:
     # blood kin out of the REL fields. `--max-rels` bounds the blood tier; `--channel-cap`
     # bounds the in-law tail, which is appended after it.
     #
+    # `--channel-cap` DEFAULTS TO 0 (Basem, 2026-09-15): load no in-law at all. An in-law
+    # cannot sign, and a dialer working a CHANNEL entry as a decision maker burns the dial.
+    # They are still NAMED in the note ("In-laws found, not loaded"), so the reach path is
+    # documented without costing a REL slot, a dial-list number or a Trestle solve -- a
+    # dropped in-law keeps `"phones": []`, and `score` prices only numbers on a KEPT
+    # contact, so an in-law number is never priced. Measured on the 2026-09-15 FTM batch:
+    # cap 2 cost 115 REL entries and 232 of 1,100 dial numbers (21%).
+    #
     # Only In-Law is capped, never the generic "Relative" bucket: 63% of SmartSkip labels come
     # back generic and that is where mislabeled blood kin land (it called a husband of 62 years
     # a plain "Relative"), so capping generics would drop real signers.
@@ -2475,8 +2483,13 @@ def main() -> int:
     s.add_argument("--tracerfy", action="store_true", help="Tracerfy gap-fill for phoneless signers ($0.02)")
     s.add_argument("--max-rels", type=int, default=15,
                    help="cap on the BLOOD/unknown relative tier (in-law channels are extra)")
-    s.add_argument("--channel-cap", type=int, default=2,
-                   help="in-laws kept as dial channels per record, after the blood tier")
+    s.add_argument("--channel-cap", type=int, default=0,
+                   help="in-laws kept as dial channels per record, after the blood tier. "
+                        "DEFAULT 0 (Basem, 2026-09-15): an in-law can never sign, so they "
+                        "take no REL slot and no dial number and their phones are never "
+                        "Trestle-scored -- a dropped in-law is still NAMED in the note's "
+                        "'In-laws found, not loaded' line, which is the whole point of "
+                        "keeping them. Raise it only on an explicit ask.")
     s.add_argument("--max-generic", type=int, default=50)
     s.add_argument("--min-score", type=float, default=30.0)
     s.add_argument("--keep", action="store_true", help="merge into an existing ranked_records.json")
