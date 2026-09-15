@@ -442,9 +442,21 @@ def lookup_opendata_by_legal(county: str, subdiv_name: str, lot: str, block: str
     if not dataset:
         return []
     safe = subdiv_name.replace("'", "''")
+    # NO upper() in the $where. Socrata sits behind Cloudflare, and a $where
+    # containing "upper(" is served an interstitial challenge -- HTTP 403 with
+    # a "Just a moment..." HTML body, which `raise_for_status` surfaces as a
+    # bare 403 that reads like an auth/quota problem rather than a WAF block.
+    # It cost 5 silent address-lookup fall-throughs on the 2026-09-10 run
+    # before anyone noticed; the identical query without upper() returns 200.
+    # Dropping it is behaviour-preserving: `like` is case-sensitive, and the
+    # legal-description values are stored uppercase apart from a literal
+    # "IMPS (Improvements)." prefix that is never part of a subdivision name
+    # (measured over ~14.6K rows across all three county datasets: 0 lowercase
+    # remainders in Montgomery and Anne Arundel, 2 non-name artifacts in
+    # Frederick). `parse_remarks_legal` already uppercases what it passes in.
     resp = requests.get(
         f"https://opendata.maryland.gov/resource/{dataset}.json",
-        params={"$where": f"upper({_OD_LEGAL}) like '%{safe}%'", "$limit": 5000},
+        params={"$where": f"{_OD_LEGAL} like '%{safe}%'", "$limit": 5000},
         timeout=120)
     resp.raise_for_status()
     out = []
