@@ -22,6 +22,9 @@ status cohort -- same gates, same write surfaces, same traps honoured:
   * property tag PATCH is merge-only; undo removal is `POST .../remove-tags/`
   * status writes take an ACTIVE title verbatim (`No Answer`)
   * phone tags fail to land on ~3.5% of first upserts: qa --repair is mandatory
+  * (2026-09-15) every pushed record gets ONE pinned `RE-SKIPTRACE REVIEW` board
+    note + a `Re-Skip Reviewed MM/YYYY` tag; qa requires the pinned note; a
+    re-push replaces only its own family; undo deletes only its own family
 
 Usage (in order; each step gates the next):
     python -u src/scripts/reskiptrace_fix.py pull                # free, read-only
@@ -34,6 +37,7 @@ Usage (in order; each step gates the next):
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 import time
 from datetime import datetime
@@ -72,6 +76,11 @@ from phone_validator import (  # noqa: E402
     clean_phone,
     process_phones,
 )
+from obituary_dp_batch import (  # noqa: E402
+    _note_family,
+    _stale_board_messages,
+    board_messages,
+)
 from reskiptrace_audit import status_key  # noqa: E402
 
 RUN = ROOT / "output" / "reskiptrace_fix"
@@ -87,6 +96,125 @@ STATUS = "Re-Skiptrace"
 # Same target as the not_related batch (Basem's pick): the generic active-dialer
 # status, an is_active title verbatim, so callable records re-enter the lanes.
 REQUALIFY_STATUS = "No Answer"
+
+# 2026-09-15 (Basem): every record this push touches gets ONE pinned board note
+# written FOR THE DIALER -- who the owner is, whether they are alive, and which
+# person each number belongs to -- plus a month tag. Basem's correction the same
+# day: not a review/process note; a dial sheet. The family header is what
+# `_stale_board_messages` keys on: a re-push replaces only an earlier note of
+# this family, never anything else on the board.
+REVIEW_FAMILY = "WHO YOU ARE DIALING"
+REVIEW_TAG = f"Re-Skip Reviewed {datetime.now():%m/%Y}"
+TODAY = datetime.now().strftime("%Y-%m-%d")
+
+# Phone tags that say WHOSE number it is (our own vocabulary, both spellings).
+_WHO_RE = re.compile(r"^(?P<kind>rel|owner|pr|plaintiff|defendant)\.? ?(?P<n>\d+)?(?:[. ](?P<m>\d+))?$", re.I)
+_CRM_WORDS = {"UNKNOWN": "not dialed yet", "NO_ANSWER": "no answer so far", "WRONG": "WRONG number",
+              "DEAD": "DEAD line", "DNC": "DO NOT CALL", "CORRECT": "confirmed correct",
+              "NOT_INTERESTED": "not interested"}
+_TYPE_WORDS = {"MOBILE": "mobile", "LANDLINE": "landline", "VOIP": "voip", "UNKNOWN": "?"}
+
+
+def fmt_phone(n: str) -> str:
+    d = "".join(c for c in str(n or "") if c.isdigit())[-10:]
+    return f"{d[:3]}-{d[3:6]}-{d[6:]}" if len(d) == 10 else str(n)
+
+
+def who_owns_number(tags: list[str], owner_name: str, rel_names: dict[int, str],
+                    pr_name: str) -> str:
+    """'Judith Perrault (owner)', 'Nan Beck (REL2, daughter)', 'relative 3 (name NOT on file)'."""
+    for t in tags:
+        m = _WHO_RE.match(t or "")
+        if not m:
+            continue
+        kind = m.group("kind").lower()
+        n = int(m.group("n") or 0)
+        if kind == "owner":
+            return f"{owner_name or 'the owner'} (owner)"
+        if kind == "pr":
+            return f"{pr_name} (personal representative)" if pr_name else "the personal representative (name NOT on file)"
+        if kind == "rel":
+            nm = rel_names.get(n)
+            return f"{nm} (REL{n})" if nm else f"relative {n} (name NOT on file -- REL{n} field empty)"
+        if kind in ("plaintiff", "defendant"):
+            return f"divorce {kind} {n or ''}".strip() + " (name NOT on file)"
+    return f"{owner_name} (owner -- skip trace of the owner)" if owner_name else "owner (skip trace of the owner)"
+
+
+def rel_names_from_cf(cf: dict[str, str]) -> dict[int, str]:
+    """{1: 'Nan Beck (daughter)'} from `REL1: Full Name` / `REL1: Relationship` custom fields."""
+    out: dict[int, str] = {}
+    for label, val in (cf or {}).items():
+        m = re.match(r"^REL(\d+): Full Name$", label or "")
+        if m and (val or "").strip():
+            n = int(m.group(1))
+            rel = (cf.get(f"REL{n}: Relationship") or "").strip()
+            out[n] = f"{val.strip()}" + (f" ({rel})" if rel else "")
+    return out
+
+
+def build_dial_sheet(*, owner_name: str, company: str, owner_deceased: str, pr_name: str,
+                     cf: dict[str, str], phones: list[dict], emails: list[str],
+                     why_here: str, next_step: str, extra: list[str] | None = None,
+                     source: str = "") -> str:
+    """The dialer-facing board note. `phones` are dicts with cleaned/tag/type/status/tags
+    in DIAL ORDER; `owner_deceased` is '' (alive as far as we know) or a sentence."""
+    lines = [f"{REVIEW_FAMILY} {TODAY} (dial sheet{': ' + source if source else ''})", ""]
+    if owner_name:
+        lines.append(f"OWNER: {owner_name}" + (f"  -- title: {company}" if company else ""))
+    elif company:
+        lines.append(f"OWNER: {company} (entity -- no person on title)")
+    else:
+        lines.append("OWNER: name NOT on file (blank owner)")
+    lines.append("STATUS OF OWNER: " + (owner_deceased or "alive as far as we know"))
+    if pr_name:
+        lines.append(f"PERSONAL REPRESENTATIVE: {pr_name}")
+    rel_names = rel_names_from_cf(cf)
+    if rel_names:
+        lines.append("RELATIVES ON FILE: " + "; ".join(f"REL{n} {nm}" for n, nm in sorted(rel_names.items())))
+    for x in extra or []:
+        lines.append(x)
+    lines.append("")
+    if phones:
+        lines.append("NUMBERS -- dial in this order:")
+        for i, ph in enumerate(phones, 1):
+            tier = ph.get("tag") or score_tag_of(ph.get("tags") or []) or "untiered"
+            who = who_owns_number(ph.get("tags") or [], owner_name, rel_names, pr_name)
+            crm = _CRM_WORDS.get((ph.get("status") or "UNKNOWN").upper(), (ph.get("status") or "").lower())
+            lines.append(f"  {i}. {fmt_phone(ph.get('cleaned') or ph.get('number'))}  {tier:<11} "
+                         f"{_TYPE_WORDS.get((ph.get('type') or 'UNKNOWN').upper(), '?'):<8} -> {who}   [{crm}]")
+    else:
+        lines.append("NUMBERS: none usable on record -- do not dial; mail track.")
+    if emails:
+        lines.append("EMAILS: " + ", ".join(emails[:4]))
+    lines.append("")
+    lines.append("WHY IT WAS IN RE-SKIPTRACE: " + why_here)
+    lines.append("NEXT: " + next_step)
+    return "\n".join(lines)
+
+
+def build_note(r: dict, planned: list[dict], best_tag, callable_: bool,
+               mail_only: bool, entry_add: list[str], clear_status: bool,
+               tiered_now: int) -> str:
+    """reskiptrace_fix's dial sheet for one record (phones in the planned dial order)."""
+    if not planned:
+        nxt = "nothing to dial; mail track. Do not re-skip -- deep prospect if this owner matters."
+    elif callable_:
+        nxt = (f"dial the numbers above best-first and mark each one WRONG / DEAD / NO ANSWER. "
+               f"Status set to {REQUALIFY_STATUS}." if clear_status else
+               "dial the numbers above best-first and mark each one.")
+    else:
+        nxt = f"every number is {best_tag}-tier or already marked bad -> tagged {MAIL_ONLY}; mail only."
+    return build_dial_sheet(
+        owner_name=r.get("owner_name") if not r.get("owner_is_entity") else "",
+        company=r.get("company") or "", owner_deceased=r.get("owner_deceased") or "",
+        pr_name=r.get("pr_name") or "", cf=r.get("custom_fields") or {},
+        phones=planned, emails=r.get("emails") or [],
+        why_here="somebody parked it for a re-skip, but the owner is ALREADY skip traced -- "
+                 "a re-trace returns the same numbers"
+                 + (f"; {tiered_now} number(s) were untiered and are now Trestle-tiered" if tiered_now else ""),
+        next_step=nxt, source="reskiptrace_fix")
+
 
 # Prior paid Trestle results, reused for free.
 FREE_CACHES = [
@@ -167,6 +295,32 @@ def cmd_pull(a) -> int:
             continue
         addr = body.get("address") or {}
         owner = body.get("owner") or {}
+        # Dial-sheet context: custom fields (REL names, PR) live on their own
+        # endpoint; the deceased verdict lives on the DP board note if any.
+        _stc, cf_raw = api.get(f"/api/internal/property/{u}/custom-field/")
+        cf_rows = cf_raw if isinstance(cf_raw, list) else ((cf_raw.get("results") or [])
+                                                            if isinstance(cf_raw, dict) else [])
+        cf = {((row.get("custom_field") or {}).get("label") or ""): (row.get("value") or "").strip()
+              for row in cf_rows if (row.get("value") or "").strip()}
+        pr_name = " ".join(x for x in [cf.get("PR First Name"), cf.get("PR Last Name")] if x).strip() \
+            or (body.get("personal_representative") or "")
+        deceased = ""
+        if owner.get("deceased"):
+            deceased = "DECEASED per the account's owner flag"
+        for m in board_messages(api, u):
+            txt = m.get("message") or ""
+            if txt.startswith("DEEP PROSPECTING"):
+                dec = re.search(r"DECEDENT:\s*(.+)", txt)
+                ver = re.search(r"VERDICT:\s*(.+)", txt)
+                if ver and "did die" in ver.group(1).lower() and dec:
+                    deceased = f"DECEASED -- {dec.group(1).strip()} (deep prospecting {m.get('created', '')[:10]})"
+                elif ver:
+                    deceased = f"{ver.group(1).strip()} (deep prospecting {m.get('created', '')[:10]})"
+                break
+        if not deceased and body.get("last_obituary_date"):
+            deceased = (f"unknown -- an obituary dated {body['last_obituary_date'][:10]} is attached "
+                        "(may be a relative's); confirm on the call")
+        person = " ".join(x for x in [owner.get("first_name"), owner.get("last_name")] if x).strip()
         records[u] = {
             "street": addr.get("street"), "city": addr.get("city"),
             "state": addr.get("state"), "zip": addr.get("postal_code"),
@@ -175,9 +329,11 @@ def cmd_pull(a) -> int:
             "lists": tag_names(body.get("lists")),
             "prop_tags": tag_names(body.get("tags")),
             "owner_uuid": owner.get("uuid"),
-            "owner_name": " ".join(x for x in [owner.get("first_name"),
-                                               owner.get("last_name")] if x).strip()
-                          or (owner.get("company") or ""),
+            "company": owner.get("company") or "",
+            "owner_is_entity": bool(owner.get("company")) and not person,
+            "emails": [e for e in (owner.get("emails") or []) if isinstance(e, str)],
+            "custom_fields": cf, "pr_name": pr_name, "owner_deceased": deceased,
+            "owner_name": person or (owner.get("company") or ""),
             "phones": [{"number": p.get("number"),
                         "cleaned": clean_phone(str(p.get("number") or "")),
                         "type": p.get("type"), "status": p.get("status"),
@@ -392,6 +548,8 @@ def build_push_plan(records: dict, plan: dict, cache: dict,
                             "type": p["type"], "status": p["status"],
                             "is_connected": p["is_connected"], "tags": new_tags,
                             "old_tags": p["tags"]})
+            # bad-status numbers still print on the sheet, so the dialer sees the
+            # WRONG/DEAD marks and does not redial them
             ranks.append(rk)
         planned.sort(key=lambda x: (x["rank"], x["idx"]))
         if len(planned) > OWNER_PHONE_CAP:
@@ -403,14 +561,21 @@ def build_push_plan(records: dict, plan: dict, cache: dict,
         tags_after = list(r["prop_tags"]) + entry_add
         if mail_only and MAIL_ONLY not in tags_after:
             tags_after.append(MAIL_ONLY)
+        if REVIEW_TAG not in tags_after:
+            tags_after.append(REVIEW_TAG)
         clear_status = callable_ and status_key(r.get("status")) == status_key(STATUS)
 
         phones_changed = planned and (
             [p["cleaned"] for p in planned]
             != list(dict.fromkeys(p["cleaned"] for p in phones))
             or any(sorted(p["tags"]) != sorted(p["old_tags"]) for p in planned))
+        # A record already carrying this month's review tag with nothing else to
+        # change was handled by an earlier run: the re-run is idempotent.
         if not phones_changed and tags_after == r["prop_tags"] and not clear_status:
             continue
+        best_tag = min((p["tag"] for p in planned), key=rank_of) if planned else None
+        tiered_now = sum(1 for p in planned if not score_tag_of(p["old_tags"])
+                         and p["tag"] != "Unknown")
         out[u] = {"owner_uuid": r["owner_uuid"], "owner_name": r["owner_name"],
                   "street": r["street"], "zip": r["zip"],
                   "phones": [{k: p[k] for k in
@@ -420,9 +585,46 @@ def build_push_plan(records: dict, plan: dict, cache: dict,
                   "mail_only": mail_only,
                   "clear_status": clear_status,
                   "tags_add": [t for t in tags_after if t not in r["prop_tags"]],
-                  "best_tag": min((p["tag"] for p in planned), key=rank_of)
-                              if planned else None}
+                  "best_tag": best_tag,
+                  "note": build_note(r, planned, best_tag, callable_, mail_only,
+                                     entry_add, clear_status, tiered_now)}
     return out
+
+
+def post_pinned_note(api: Api, uuid: str, note: str) -> dict:
+    """Post ONE board note and pin it, replacing only earlier notes of the SAME family.
+
+    The three-step contract from obituary_dp_batch (2026-09-01): POST message/ (201),
+    then POST message/{uuid}/pin/ (204 -- `pinned:true` on create is ignored and a
+    PATCH lies), and delete same-family predecessors only AFTER the new one exists,
+    logging each deletion in full so an undo knows what went.
+    """
+    st, resp = api.write("POST", f"/api/internal/property/{uuid}/message/",
+                         {"message": note[:4000]})
+    msg_uuid = (resp or {}).get("uuid") if isinstance(resp, dict) else None
+    out = {"status": st, "uuid": msg_uuid, "replaced": [], "pin": None}
+    if not msg_uuid:
+        out["error"] = f"message POST {st}: {str(resp)[:150]}"
+        return out
+    for old in _stale_board_messages(board_messages(api, uuid), note, msg_uuid):
+        st_d, _ = api.write("DELETE", f"/api/internal/property/{uuid}/message/{old['uuid']}/", {})
+        out["replaced"].append({"uuid": old["uuid"], "status": st_d,
+                                "deleted": st_d in (200, 202, 204),
+                                "pinned": bool(old.get("pinned")),
+                                "message": (old.get("message") or "")[:4000]})
+    st_p, _ = api.write("POST", f"/api/internal/property/{uuid}/message/{msg_uuid}/pin/", {})
+    out["pin"] = st_p
+    if st_p not in (200, 201, 204):
+        out["error"] = f"pin {st_p}"
+    return out
+
+
+def pinned_note_of_family(api: Api, uuid: str, family: str) -> dict | None:
+    """The pinned board message of `family` on a record, or None."""
+    for m in board_messages(api, uuid):
+        if m.get("pinned") and _note_family(m.get("message") or "") == family:
+            return m
+    return None
 
 
 def push_one(api: Api, uuid: str, p: dict) -> dict:
@@ -457,6 +659,12 @@ def push_one(api: Api, uuid: str, p: dict) -> dict:
                                 "resp": str(resp)[:150]}
         if st not in (200, 201, 204):
             log["error"] = f"property PATCH {st}"
+            return log
+    if p.get("note"):
+        note_log = post_pinned_note(api, uuid, p["note"])
+        log["steps"]["note"] = note_log
+        if note_log.get("error"):
+            log["error"] = note_log["error"]
     return log
 
 
@@ -494,6 +702,14 @@ def verify_one(api: Api, uuid: str, p: dict) -> list[str]:
             bad.append(f"status {live_status!r} != planned {REQUALIFY_STATUS!r}")
     elif status_key(live_status) not in (status_key(STATUS), ""):
         bad.append(f"status unexpectedly {live_status!r}")
+    if p.get("note"):
+        # `ok` REQUIRES the pinned note (the obituary batch rule): a note that
+        # posted but did not pin, or was never posted, is a defect --repair fixes.
+        m = pinned_note_of_family(api, uuid, REVIEW_FAMILY)
+        if not m:
+            bad.append(f"no pinned {REVIEW_FAMILY!r} board note")
+        elif not (m.get("message") or "").startswith(p["note"].splitlines()[0]):
+            bad.append("pinned review note is from an earlier run")
     return bad
 
 
@@ -626,6 +842,14 @@ def do_undo(backup_file: str) -> int:
             if st not in (200, 201, 204):
                 say(f"  {u}: remove-tags {st}")
                 bad += 1
+        # The review note is ours alone: delete every RE-SKIPTRACE REVIEW message
+        # (own family only -- nothing else on the board is touched).
+        for m in board_messages(api, u):
+            if _note_family(m.get("message") or "") == REVIEW_FAMILY and m.get("uuid"):
+                st, _ = api.write("DELETE", f"/api/internal/property/{u}/message/{m['uuid']}/", {})
+                if st not in (200, 202, 204):
+                    say(f"  {u}: review note delete {st}")
+                    bad += 1
     say(f"undo done, {bad} failures")
     return 0 if not bad else 1
 

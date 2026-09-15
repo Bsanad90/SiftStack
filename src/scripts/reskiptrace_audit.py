@@ -13,6 +13,19 @@ into the action it actually needs:
                  the dialer gets an order, no tracing needed
   RETAG          the work is already done (DP markers on the record, or every
                  number already tiered) -> the status is stale; just move it
+  ENTITY         (2026-09-15) the owner is an LLC/trust with no person name and
+                 the numbers are live -> the dialer has nobody to ask for;
+                 research the principal (Enformion BusinessV2 / SOS), don't re-skip
+  UNDIALED       (2026-09-15) callable, tiered numbers that were never
+                 dispositioned (every one still UNKNOWN) -> parked prematurely;
+                 send it back to the dialer, nothing to trace
+
+2026-09-15 additions, after Basem found the status "has no tags or notes": every
+row now carries WHO moved the record into the status and WHEN (the per-record
+event log `GET /api/internal/property/{uuid}/logs/`, `property.status.updated`
+with author email), the OPEN TASKS on the record (`GET /api/internal/task/` --
+Pal's "Reskip trace" tasks are the only reasons anyone ever wrote down), the
+board-note families present, and how many numbers were dispositioned since.
 
 Nothing here writes to the account. The follow-up for each bucket runs only on an
 explicit go.
@@ -44,6 +57,7 @@ sys.path[:0] = [str(ROOT / "src"), str(ROOT / "src" / "scripts")]
 
 from dpd_lane_assignee_report import PAGE, count, list_uuids  # noqa: E402
 from dpd_lane_phone_score import (  # noqa: E402
+    CALLABLE_MAX_RANK,
     Api,
     jload,
     jsave,
@@ -54,7 +68,7 @@ from dpd_lane_phone_score import (  # noqa: E402
     tag_names,
 )
 from not_related_requalify import bad_phone_status  # noqa: E402
-from obituary_dp_batch import deceased_signal  # noqa: E402
+from obituary_dp_batch import _note_family, deceased_signal  # noqa: E402
 from phone_validator import COST_PER_PHONE, clean_phone  # noqa: E402
 
 RUN = ROOT / "output" / "reskiptrace_audit"
@@ -86,15 +100,94 @@ REL_CF_RE = re.compile(r"^REL\d+: Full Name$")
 # unlimited $97/mo plan, so a re-skip is $0 marginal.
 DP_PER_RECORD_LO, DP_PER_RECORD_HI = 0.30, 0.55
 
-BUCKETS = ["RE-SKIP", "DEEP PROSPECT", "SCORE", "RETAG"]
+BUCKETS = ["RE-SKIP", "DEEP PROSPECT", "ENTITY", "SCORE", "UNDIALED", "RETAG"]
 
 SUGGESTED_NEXT = {
     "RE-SKIP": "run DataSift skip trace (unlimited plan, $0 marginal)",
     "DEEP PROSPECT": "obituary_dp_batch-style run (research heirs, keep mailing)",
+    "ENTITY": "research the principal (enformion_business.find_principals / SOS), "
+              "write the name into the owner block, then back to the dialer",
     "SCORE": "Trestle tier run (dpd_lane_phone_score engine, never-double-bill)",
+    "UNDIALED": "parked with undialed callable numbers -> back to the dialer with a "
+                "note; nothing to trace",
     "RETAG": "status flip off Re-Skiptrace (active-title vocabulary; e.g. "
              "'No Answer' for dialable records) -- explicit go required",
 }
+
+# Event-log shapes (per-record `logs/` endpoint, verified live 2026-09-15). The
+# status payload is {"property": {"status": [old, new]}} with slug-cased values
+# ("re-skiptrace"), the author is an email string or {"email": ...}.
+EV_STATUS = "property.status.updated"
+EV_PHONE_STATUS = "owner.phone.status.updated"
+LOG_LIMIT = 50
+
+
+def _author(ev: dict) -> str:
+    a = ev.get("author")
+    if isinstance(a, dict):
+        return a.get("email") or a.get("first_name") or ""
+    return str(a or "")
+
+
+def record_log(api, uuid: str) -> list[dict]:
+    """Latest LOG_LIMIT events on a record, newest first. [] on any failure."""
+    st, r = api.get(f"/api/internal/property/{uuid}/logs/?limit={LOG_LIMIT}")
+    if st != 200 or not isinstance(r, dict):
+        return []
+    return r.get("data") or []
+
+
+def moved_into_status(events: list[dict], want_key: str) -> dict:
+    """The most recent status change INTO the audited status: who, when, from what,
+    plus how many phone dispositions happened after it (0 = parked untouched)."""
+    out = {"moved_by": "", "moved_at": "", "moved_from": "", "dispositions_since": 0}
+    for i, ev in enumerate(events):
+        if ev.get("event_type") != EV_STATUS:
+            continue
+        old_new = ((ev.get("payload") or {}).get("property") or {}).get("status") or [None, None]
+        if status_key(old_new[1]) == want_key:
+            out.update(moved_by=_author(ev), moved_at=str(ev.get("timestamp") or ""),
+                       moved_from=str(old_new[0] or ""))
+            out["dispositions_since"] = sum(
+                1 for e in events[:i] if e.get("event_type") == EV_PHONE_STATUS)
+            break
+    return out
+
+
+def fetch_open_tasks(api) -> dict[str, list[dict]]:
+    """property uuid -> open tasks (title, due, assignee, creator, task uuid).
+    `GET /api/internal/task/` pages the whole account (242 tasks on 2026-09-15)."""
+    out: dict[str, list[dict]] = {}
+    seen: set[str] = set()
+    offset = 0
+    while True:
+        # `ordering=created` pins the page order: without it the 2026-09-15 run
+        # got one task twice and lost another across the page boundary.
+        st, r = api.get(f"/api/internal/task/?limit=200&offset={offset}&ordering=created")
+        if st != 200 or not isinstance(r, dict):
+            break
+        rows = r.get("results") or []
+        for t in rows:
+            if t.get("completed") or t.get("uuid") in seen:
+                continue
+            seen.add(t.get("uuid"))
+            p = t.get("assigned_to_property")
+            pid = p.get("uuid") if isinstance(p, dict) else p
+            if not pid:
+                continue
+            asg = t.get("assigned_to_user") or {}
+            cb = t.get("created_by") or {}
+            out.setdefault(pid, []).append({
+                "uuid": t.get("uuid"), "title": t.get("title") or "",
+                "due": str(t.get("due_date") or "")[:10],
+                "assigned": (asg.get("first_name") if isinstance(asg, dict) else asg) or "",
+                "created_by": (cb.get("email") if isinstance(cb, dict) else cb) or "",
+                "notes": t.get("notes") or "",
+            })
+        offset += 200
+        if not rows or offset >= (r.get("count") or 0):
+            break
+    return out
 
 
 def status_key(s) -> str:
@@ -151,15 +244,25 @@ def hydrate(api, uuids: list[str], fresh: bool) -> dict[str, dict]:
                   if (r.get("value") or "").strip()
                   and REL_CF_RE.match((r.get("custom_field") or {}).get("label") or "")]
 
-        stm, mb = api.get(f"/api/internal/property/{u}/message/")
+        stm, mb = api.get(f"/api/internal/property/{u}/message/?limit=100")
         msgs = (mb.get("results") or []) if isinstance(mb, dict) else []
         dp_msgs = [x for x in msgs if (x.get("message") or "").startswith("DEEP PROSPECTING")]
+
+        events = record_log(api, u)
 
         cache[u] = {
             "detail": body,
             "rel_cf": rel_cf,
             "dp_board": bool(dp_msgs),
             "dp_pinned": any(x.get("pinned") for x in dp_msgs),
+            # every board note's family (first line, cut at " (", date stripped) --
+            # the reviewer's "is there ANY note here" answer, not just DP
+            "board": [{"family": _note_family(x.get("message") or ""),
+                       "pinned": bool(x.get("pinned")),
+                       "author": _author(x), "created": str(x.get("created") or "")[:10]}
+                      for x in msgs],
+            "moved": moved_into_status(events, status_key(STATUS)),
+            "log_events": len(events),
         }
         if i % 25 == 0 or i == len(todo):
             jsave(DETAIL, cache)
@@ -168,13 +271,19 @@ def hydrate(api, uuids: list[str], fresh: bool) -> dict[str, dict]:
     return cache
 
 
-def classify(u: str, entry: dict, thin: dict) -> dict:
+def classify(u: str, entry: dict, thin: dict, tasks: list[dict] | None = None) -> dict:
     """One record -> bucket + everything a reviewer needs to check the call."""
     d = entry["detail"]
     addr = d.get("address") or {}
     owner = d.get("owner") or {}
     lists = tag_names(d.get("lists"))
     ptags = tag_names(d.get("tags"))
+    tasks = tasks or []
+    moved = entry.get("moved") or {}
+    board = entry.get("board") or []
+    # An entity owner with no person name: the dialer has nobody to ask for.
+    entity_owner = bool((owner.get("company") or "").strip()) and \
+        not (owner.get("first_name") or "").strip()
 
     phones = []
     for p in (owner.get("phones") or []):
@@ -191,6 +300,13 @@ def classify(u: str, entry: dict, thin: dict) -> dict:
     scored = [p for p in alive if score_tag_of(p["tags"])]
     best_tier = min((score_tag_of(p["tags"]) for p in scored),
                     key=rank_of, default="")
+    # Callable (rank <= CALLABLE_MAX_RANK) numbers whose CRM status is still the
+    # never-dialed default: the record was parked without those being tried.
+    callable_scored = [p for p in scored if rank_of(score_tag_of(p["tags"])) <= CALLABLE_MAX_RANK]
+    undialed_callable = [p for p in callable_scored
+                         if (p["status"] or "UNKNOWN").upper() == "UNKNOWN"]
+    if callable_scored and len(undialed_callable) != len(callable_scored):
+        undialed_callable = []   # at least one callable number WAS tried: not "undialed"
 
     skiptraced = bool(owner.get("skiptraced") or thin.get("skiptraced"))
     skip_tags = [t for t in ptags
@@ -229,11 +345,19 @@ def classify(u: str, entry: dict, thin: dict) -> dict:
             bucket, reason = "DEEP PROSPECT", "skip traced; every number is marked wrong/dead/dnc"
         else:
             bucket, reason = "RE-SKIP", "only bad-status numbers and never skip traced"
+    elif entity_owner and not dp_done:
+        bucket = "ENTITY"
+        reason = (f"owner is an entity ({owner.get('company')}) with no person name; "
+                  f"{len(alive)} live numbers -> research the principal, don't re-skip")
     elif unscored:
         reason = f"{len(unscored)} of {len(alive)} live numbers never Trestle-scored"
         if dp_done:
             reason += " (DP already done)"
         bucket = "SCORE"
+    elif undialed_callable:
+        bucket = "UNDIALED"
+        reason = (f"{len(undialed_callable)} callable number(s) (best {best_tier}) never "
+                  f"dispositioned -- parked before being dialed")
     else:
         bucket = "RETAG"
         reason = (f"all {len(alive)} live numbers already tiered (best {best_tier})"
@@ -241,6 +365,14 @@ def classify(u: str, entry: dict, thin: dict) -> dict:
 
     return {
         "uuid": u, "bucket": bucket, "reason": reason,
+        "moved_by": moved.get("moved_by", ""), "moved_at": moved.get("moved_at", "")[:16],
+        "moved_from": moved.get("moved_from", ""),
+        "dispositions_since": moved.get("dispositions_since", 0),
+        "open_tasks": " | ".join(f"{t['title']} (to {t['assigned']}, due {t['due']})"
+                                 for t in tasks),
+        "board_notes": " | ".join(f"{b['family']}{' [pinned]' if b['pinned'] else ''}"
+                                  for b in board) or "(none)",
+        "phones_undialed": len(undialed_callable),
         "street": addr.get("street") or "", "city": addr.get("city") or "",
         "state": addr.get("state") or "", "zip": (addr.get("postal_code") or "")[:5],
         "county": addr.get("county") or "",
@@ -314,6 +446,10 @@ def main() -> int:
     if gone:
         say(f"  {len(gone)} record(s) 404'd (deleted from the account): {gone[:5]}")
 
+    open_tasks = fetch_open_tasks(api)
+    say(f"open tasks account-wide: {sum(len(v) for v in open_tasks.values())} "
+        f"on {len(open_tasks)} records")
+
     # The filtered index lags writes: trust each record's own detail read.
     want = status_key(status_title)
     rows, moved = [], []
@@ -324,7 +460,18 @@ def main() -> int:
         if status_key(entry["detail"].get("status")) != want:
             moved.append(u)
             continue
-        rows.append(classify(u, entry, thin_rows.get(u) or {}))
+        rows.append(classify(u, entry, thin_rows.get(u) or {}, open_tasks.get(u)))
+
+    # Records a dialer asked to re-skip via a TASK but never moved into the status
+    # (Pal's convention, seen live 2026-09-15 on 2 records): list them so they are
+    # not lost, without pretending they hold the status.
+    tasked_elsewhere = {pid: ts for pid, ts in open_tasks.items()
+                        if pid not in cache and any(
+                            re.search(r"re.?skip|no name|not related", t["title"], re.I)
+                            for t in ts)}
+    if tasked_elsewhere:
+        say(f"  {len(tasked_elsewhere)} record(s) carry a re-skip TASK but are NOT in "
+            f"the status: {list(tasked_elsewhere)}")
     if moved:
         say(f"  {len(moved)} record(s) no longer hold the status on their detail "
             f"read (index lag / moved) -- excluded: {moved[:5]}")
@@ -375,12 +522,29 @@ def main() -> int:
                 f"= ${len(to_pay) * COST_PER_PHONE:.2f})")
         for r in sub[:5]:
             say(f"    {r['street']}, {r['city']}  [{r['owner']}]  -- {r['reason']}")
+            say(f"        parked by {r['moved_by'] or '?'} {r['moved_at'] or ''}; "
+                f"tasks: {r['open_tasks'] or '-'}; notes: {r['board_notes']}")
         if len(sub) > 5:
             say(f"    ... and {len(sub) - 5} more (see CSV)")
+
+    # Who parks records here, and how (the convention audit Basem asked for).
+    by_mover: dict[str, dict] = {}
+    for r in rows:
+        m = by_mover.setdefault(r["moved_by"] or "(unknown)",
+                                {"n": 0, "with_task": 0, "with_note": 0, "untouched": 0})
+        m["n"] += 1
+        m["with_task"] += bool(r["open_tasks"])
+        m["with_note"] += r["board_notes"] != "(none)"
+        m["untouched"] += (r["dispositions_since"] == 0)
+    say("\nparked by (n / left a task / record has any note / no phone dispositioned):")
+    for who, m in sorted(by_mover.items(), key=lambda kv: -kv[1]["n"]):
+        say(f"    {who:36} {m['n']:3} / {m['with_task']:3} / {m['with_note']:3} / {m['untouched']:3}")
 
     jsave(RUN / f"summary_{ts}.json", {
         "status_title": status_title, "cohort": n, "audited": len(rows),
         "moved": moved, "deleted": gone,
+        "tasked_not_in_status": tasked_elsewhere,
+        "parked_by": by_mover,
         "buckets": {b: sum(1 for r in rows if r["bucket"] == b) for b in BUCKETS},
         "score_to_pay": sorted(to_pay), "score_cached_free": sorted(cached_free),
         "csv": str(out_csv),

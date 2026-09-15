@@ -281,6 +281,25 @@ def names_match_loose(a: str, b: str, prefix: bool = True) -> bool:
     return _names_match_by(a, b, lambda x, y: _first_equiv(x, y, prefix))
 
 
+NAMESAKE_GAP_YEARS = 18   # a same-name relative this much older/younger is a Jr./Sr., not the decedent
+
+
+def _matches_decedent(decedent: str, name: str) -> bool:
+    """Strict first+last match, OR last name equal and any given-name token shared.
+
+    The loose arm exists for the middle-name-as-first case: obituary "Lynn Wayne Hill",
+    SmartSkip "WAYNE HILL". It is deliberately narrower than names_match_loose (no
+    nickname table, no prefix) because a hit here silences a relative; the age gap
+    check in cmd_build is what protects a living namesake.
+    """
+    if names_match(decedent, name):
+        return True
+    dt, nt = name_tokens(decedent), name_tokens(name)
+    if len(dt) < 2 or len(nt) < 2 or dt[-1] != nt[-1]:
+        return False
+    return bool({t for t in dt[:-1] if len(t) > 1} & {t for t in nt[:-1] if len(t) > 1})
+
+
 def _cross_check(f: dict, rels: list[dict]) -> dict:
     """Obituary survivors <-> SmartSkip relatives, paired ONE-TO-ONE.
 
@@ -1594,6 +1613,10 @@ def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int,
     dropped = list(dict.fromkeys(f.get("drop_names") or []))
     if dropped:
         nl.append("Predeceased, do not call: " + "; ".join(dropped))
+    dec_dropped = list(dict.fromkeys(f.get("decedent_dropped") or []))
+    if dec_dropped:
+        nl.append("Matches the DECEDENT, not loaded (dead, or an unresolvable namesake): "
+                  + "; ".join(dec_dropped))
     nl_start = len(out) + 2
     if nl:
         out += ["", "NOT LOADED"] + nl
@@ -1674,6 +1697,43 @@ def cmd_build(a) -> int:
         presumed = "presumed alive" in verdict     # VERDICT_PRESUMED, the FTM cohort
         owner_alive = "owner alive" in verdict or presumed
         drop = {n.lower() for n in f.get("drop_names") or []}
+
+        # The DECEDENT is never in drop_names -- that list is the obituary's predeceased --
+        # yet SmartSkip returns the subject again under a second identity (type Unknown /
+        # Other Relative, age a few years off), and on "spouse died" / "relative died"
+        # verdicts the dead person legitimately sits among the relatives. Either way a dead
+        # person was landing as a SIGNER with phones: on the 2026-09-11 Aug-27 batch the
+        # probe record loaded the husband from the obituary as REL1 with 7 numbers, and 61
+        # of 453 records carried a same-name relative within 4 years of the subject's age.
+        # Drop any relative whose name matches the decedent unless the age gap to the
+        # SmartSkip subject says it is a namesake child or parent (>= 18 years); everything
+        # dropped here is printed in the note so the caller can see who was excluded.
+        f = dict(f)
+        f["decedent_dropped"] = []
+        dec = f.get("decedent_name") or ""
+        if dec:
+            subj_age = (rk.get("subject") or {}).get("age")
+            # The age gap is measured against the SmartSkip SUBJECT (the owner). That only
+            # says anything about a namesake when the decedent IS the owner, or is the
+            # owner's spouse (a same-generation gap). On "parent died" / "a relative died"
+            # the dead person is a different generation from the subject by definition, so
+            # a same-name relative there is the decedent whatever the gap (Imogene Sparks,
+            # 89, under a 32-year-old owner; Munzer Murshed, 54, under a 79-year-old).
+            gap_is_meaningful = (verdict == "owner did die"
+                                 or any(w in verdict for w in ("spouse died", "husband died", "wife died")))
+            for rel in rk["rels"]:
+                nm = rel.get("name") or ""
+                if nm.lower() in drop or not _matches_decedent(dec, nm):
+                    continue
+                try:
+                    gap = abs(int(subj_age) - int(rel.get("age")))
+                except (TypeError, ValueError):
+                    gap = None
+                if gap_is_meaningful and gap is not None and gap >= NAMESAKE_GAP_YEARS:
+                    continue     # a namesake child / parent, alive: keep
+                drop.add(nm.lower())
+                f["decedent_dropped"].append(
+                    f"{nm}{', ' + str(rel['age']) if rel.get('age') else ''}")
 
         # Re-run the obituary <-> SmartSkip cross-check with the loose matcher, so a cached
         # finding stops listing "Judy McAuley" as not in SmartSkip while JUDITH MCAULEY sits
@@ -1838,6 +1898,7 @@ def cmd_build(a) -> int:
             "mail_street": rec["mail_street"], "mail_city": rec["mail_city"],
             "mail_state": rec["mail_state"], "mail_zip": rec["mail_zip"],
             "verdict": verdict, "group": group, "tags": tags,
+            "decedent_dropped": f.get("decedent_dropped") or [],
             "custom_fields": cfields, "phones": phones,
             "note": _note(rec, rk, f, rel_lines, len(phones), not_loaded),
         }
@@ -2110,10 +2171,20 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
             log["steps"]["phones_removed"] = {"status": st, "sent": len(stale),
                                               "removed": len((resp or {}).get("removed") or [])
                                               if isinstance(resp, dict) else None}
+            log["steps"]["phones_removed_numbers"] = list(stale)
         # Send the FULL planned list, not just the numbers that are new. The old code skipped
         # anything already on the owner, so a re-push could never CORRECT a tag -- and the
         # tier ordering reshuffles almost every Rel{N}.{M} assignment.
-        payload = [{"number": ph["number"], "type": ph["type"], "tags": ph["tags"], "status": ph["status"],
+        # A number already on the owner keeps the DIALER'S disposition. The plan carries
+        # "UNKNOWN" for every number it did not itself observe, and the upsert overwrites
+        # status -- 2026-09-15, 7639 Paradise Beach Rd: the house line Bagoury had just
+        # marked DEAD came back as "not dialed yet" and led the dial sheet. A plan status
+        # only wins when it is a real observation (anything other than UNKNOWN/blank).
+        live_status = {_d10(ph.get("number") or ""): (ph.get("status") or "UNKNOWN")
+                       for ph in (owner.get("phones") or []) if ph.get("number")}
+        payload = [{"number": ph["number"], "type": ph["type"], "tags": ph["tags"],
+                    "status": (ph["status"] if (ph.get("status") or "UNKNOWN") != "UNKNOWN"
+                               else live_status.get(_d10(ph["number"]), "UNKNOWN")),
                     "is_connected": ph["is_connected"], "verified": False}
                    for ph in p["phones"]]
         if payload:
@@ -2140,6 +2211,21 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
                 log.setdefault("missing_fields", []).append(lbl)
                 continue
             body.append({"field_uuid": f["uuid"], "value": val})
+        # A re-push only ever WROTE fields; it never blanked one. When the new plan has a
+        # relative in fewer slots than the old one (2026-09-11 probe: the dead husband
+        # dropped from REL1, every slot shifted up, and REL1: Phone 2/3 kept HIS numbers), a
+        # ghost value survives under a renamed slot. Blank a live REL field that is not in
+        # the plan ONLY when its digits are a number this push just removed from the owner
+        # under our own Rel tag -- that is the provenance rule from the 2026-09-10 repair:
+        # another plan's REL values are never touched.
+        removed_digits = {_d10(n) for n in (log["steps"].get("phones_removed_numbers") or [])}
+        if removed_digits:
+            _rows, live_cf = custom_field_rows(api, uuid)
+            for lbl, val in live_cf.items():
+                if (lbl.startswith("REL") and val and lbl not in p["custom_fields"]
+                        and _d10(str(val)) in removed_digits and fields.get(lbl)):
+                    body.append({"field_uuid": fields[lbl]["uuid"], "value": ""})
+                    log["steps"].setdefault("custom_fields_blanked", []).append(lbl)
         if body:
             st, resp = api.write("PATCH", f"/api/internal/property/{uuid}/custom-field/update-values/", body)
             log["steps"]["custom_fields"] = {"status": st, "sent": len(body), "resp": str(resp)[:200]}

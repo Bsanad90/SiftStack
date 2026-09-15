@@ -377,6 +377,17 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
   8327 Old Harford Rd is a duplicate-address pair where nothing was lost. Records the probate
   plan listed but never pushed (6) were left alone. Backups/undo:
   `output/probate_fields_push/qa_backup_20260910T*/`, `qa_undo_20260910T*.jsonl`.
+  **7. The upsert RESET a dialer's phone disposition (found 2026-09-15, fixed).** `cmd_build`
+  stamps every plan phone `status: "UNKNOWN"` and `_push_one_api` sent that verbatim, so a
+  re-push of a number already on the owner overwrote the CRM mark: on 7639 Paradise Beach Rd
+  the house line Bagoury had marked DEAD minutes earlier came back "not dialed yet" and led the
+  dial sheet. `_push_one_api` now keeps the LIVE status whenever the plan's is UNKNOWN/blank.
+  Same record, same day: SmartSkip returned the namesake SON as the subject and the ranker
+  re-rooted his SIBLINGS as the decedent's children -> 6 false SIGNERS (nephews and cousins);
+  the LLM research pass had an empty legacy.com shell (`survivors: []`). Fix path that works:
+  Firecrawl-scrape the funeral-home page, hand-fill `stage_c_research.json` survivors/preceded/
+  executor_named + `canon_rel`/`is_dm` in `ranked_records.json`, `build`, `push --force`. The
+  predeceased wife on title surfaces as `secondary_owners` on the detail read.
   Same day, Basem's rule **DP wins** on records another pusher also loaded: 3005 S Leisure
   World #405 REL set restored; 2084 Jasmine Rd / 4462 Owensville Sudley / 1805 Sunnyside Ln
   re-pushed via `obituary_dp_batch.py --run-dir <run> push --route api --probe <key> --force
