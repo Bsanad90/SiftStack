@@ -72,6 +72,8 @@ TAG_UNVERIFIED = "DP Death Unverified"
 TAG_PRESUMED = "DP Owner Presumed Alive"
 TAG_NO_NUMBERS = f"DP No Numbers {MONTH_TAG}"
 TAG_TRUST = "DP Trust Trustee Inferred"
+TAG_SIGNERS_DARK = "DP No Signer Numbers"   # signer set phoneless; blood tier loaded instead
+TAG_REACH_ONLY = "DP Reach Path Only"       # owner alive with no number; family is the only route
 
 # The presumed-alive verdict (FTM cohorts, research --presume-alive-without-signal).
 # It deliberately CONTAINS the substring "owner alive" nowhere: score/build test for it
@@ -907,6 +909,9 @@ def cmd_rank(a) -> int:
         inlaws = [x for x in others if x.get("canon_rel") == "In-Law"]
         blood.sort(key=lambda x: (0 if x.get("phones") else 1, -(x.get("dm_score") or 0)))
         inlaws.sort(key=lambda x: (0 if x.get("phones") else 1, -(x.get("dm_score") or 0)))
+        blood_held = [{"name": x.get("name"), "canon_rel": x.get("canon_rel"),
+                       "age": x.get("age"), "n_phones": len(x.get("phones") or [])}
+                      for x in blood[a.max_rels:]]
         blood = blood[: a.max_rels]
         channels = inlaws[: a.channel_cap]
         chan_ids = {id(x) for x in channels}
@@ -942,6 +947,7 @@ def cmd_rank(a) -> int:
         stats["with_phones"] += 1 if n_ph else 0
         stats["relatives"] += len(rels)
         stats["duplicate_relatives_merged"] += rec.get("duplicate_relatives_merged") or 0
+        stats["non_signers_held"] += len(blood_held)
         stats["channels"] += len(channels)
         stats["channels_dropped"] += len(channels_dropped)
         stats["phones"] += n_ph
@@ -951,7 +957,7 @@ def cmd_rank(a) -> int:
                         "deceased_flag": rec.get("deceased"),
                         "phones": sorted(rec.get("subject_phones") or [], key=_phone_sort_key)},
             "signer_basis": rec.get("signer_basis"), "rels": rels,
-            "channels_dropped": channels_dropped,
+            "channels_dropped": channels_dropped, "blood_held": blood_held,
             "rerooted": bool(rec.get("rerooted")),
             "decedent_from_smartskip": rec.get("decedent_from_smartskip"),
             "subject_age_inconsistent": rec.get("subject_age_inconsistent"),
@@ -1479,7 +1485,26 @@ def cmd_score(a) -> int:
         # "presumed alive" is the FTM-cohort verdict (VERDICT_PRESUMED): the owner is the
         # decision maker there too, so their own numbers are priced like any signer's.
         owner_alive = "owner alive" in v or "presumed alive" in v
-        for rel in rk["rels"]:
+        # Price the SIGNERS' numbers only (Basem, 2026-09-16). Under the signers-only
+        # build a non-signer's number can never reach the dial list, so pricing it buys
+        # nothing -- and this was the largest line in the bill: Trestle $146.12 across
+        # 9,741 numbers on the 619-record obituary cohort. On an owner-alive record no
+        # relative is loaded at all, so none of them are priced either.
+        #
+        # THE ONE EXCEPTION, and it must stay: if the signer set came back with no phone
+        # at all, signers-only would take the record dark -- an unscored number fails
+        # _keep_number, so skipping the blood tier here would also strip it at build.
+        # For that record only, fall back to the blood tier so the saving never costs a
+        # callable lead. `build` applies the same rule and tags the record.
+        sig = [r for r in rk["rels"] if r.get("is_dm")]
+        if owner_alive:
+            # Phoneless living owner: price the family, they are the only route to them.
+            pool = [] if rk["subject"]["phones"] else [r for r in rk["rels"] if not r.get("is_channel")]
+        elif any(r.get("phones") for r in sig):
+            pool = sig
+        else:
+            pool = [r for r in rk["rels"] if not r.get("is_channel")]
+        for rel in pool:
             for p in (rel["phones"][:cut] if cut else rel["phones"]):
                 numbers.append(p["number"])
         if owner_alive:
@@ -1557,6 +1582,17 @@ NOTE_MAX = 1990
 # Measured live 2026-09-01 on 1815 Drew St: 39 phones sent, 200 + "added" for all of them,
 # 30 stored. The limit is the account's, not ours.
 OWNER_PHONE_CAP = 30
+# Ty's hard cap on how many numbers one record's dial list may carry. DataSift's own
+# ceiling is OWNER_PHONE_CAP; this is the QUALITY ceiling under it -- 30 numbers on a
+# record is a wall, not a call list. Basem 2026-09-16.
+DIAL_LIST_CAP = 20
+# The relationship word that rides ON the phone tag (Ty's REL_TAG). Anything not named
+# here stays unlabelled rather than being called "Relative": a wrong kinship word on a
+# dial sheet is worse than none.
+REL_TAG_WORD = {"Son": "Son", "Daughter": "Daughter", "Child": "Child",
+                "Husband": "Husband", "Wife": "Wife", "Spouse": "Spouse",
+                "Mother": "Mother", "Father": "Father", "Parent": "Parent",
+                "Brother": "Brother", "Sister": "Sister", "Sibling": "Sibling"}
 
 # Dial priority, best first. `_phone_sort_key` orders on LINE TYPE and runs at rank time,
 # before Trestle scoring exists -- so on its own it parked 538 Dial First numbers behind
@@ -1763,8 +1799,32 @@ def cmd_build(a) -> int:
                                   "obituary (relationship shown), VERIFY before mailing")
 
         cfields, rel_lines, overflow, chan_over = {}, [], [], []
+        nonsigners, alive_held = [], []
         slot = 0
         seen_numbers: set[str] = set()
+        # SIGNERS ONLY (Basem, 2026-09-16). rank_record already picked the intestacy
+        # signer set; before this the flag was read once, to reword a sentence, and every
+        # blood relative was loaded anyway. The guard: if not one signer has a number that
+        # survives _keep_number the record would go dark, so for that record the blood
+        # tier is allowed back in and the record is tagged so it is visible, never silent.
+        # `score` applies the identical rule, which is what makes the numbers exist here.
+        # The drop set must be applied HERE too. It is not cosmetic: on 7 of the 453
+        # Aug-27 records the only intestacy signer IS the decedent, whom the loop drops by
+        # name a few lines down. Computing signers_dark over the undropped list made it
+        # read False -- the decedent "had numbers" -- so the real family was then skipped
+        # as non-signers and the record shipped with nothing. Caught by the build diff.
+        _sig = [r for r in rk["rels"] if r.get("is_dm") and (r["name"] or "").lower() not in drop]
+        signers_dark = not any(_keep_number(cache.get(p["number"], {}))[0]
+                               for r in _sig for p in r["phones"])
+        # The same guard on the owner-alive branch, and it is not hypothetical: on the
+        # 453-record Aug-27 cohort 11 records are "spouse died; owner alive" where the
+        # OWNER has no callable number of their own. Stripping relatives there leaves a
+        # record with nobody to call at all -- one of them had 90 numbers on file. So when
+        # the living owner is unreachable the family goes back on as a REACH PATH, tagged
+        # and labelled as such in the note: a route to the owner, never a signer.
+        owner_reachable = any(_keep_number(cache.get(p["number"], {}))[0]
+                              for p in rk["subject"]["phones"])
+        reach_only = owner_alive and not owner_reachable
         # contacts[] is the candidate pool: every kept number for every contact, each already
         # sorted best-tier-first. Nothing is truncated here -- the 30-cap is applied afterwards
         # by priority, not by position, so a Dial First can never be parked behind a Dial
@@ -1786,9 +1846,25 @@ def cmd_build(a) -> int:
                 contacts.append({"kind": "owner", "n": 0, "name": "owner", "kept": kept})
 
         # rk["rels"] already arrives signers -> blood -> in-law channels, so walking it in
-        # order fills the REL fields blood-first and channels take only what is left over.
+        # order fills the REL fields signers-first.
         for rel in rk["rels"]:
             if (rel["name"] or "").lower() in drop:
+                continue
+            # The owner is ALIVE and signs alone. A relative on such a record holds no
+            # authority to sell, and a dialer working one burns the dial. Named, not loaded.
+            if owner_alive and not reach_only:
+                alive_held.append(f"{rel['name']} ({_rel_label(rel, obit_words)})")
+                continue
+            # NEVER an in-law, on any path. The two fallbacks below reopen the blood
+            # tier, and without this guard they reopened the CHANNEL tier with it --
+            # on an Aug-27 reach-path record that put two In-Laws into REL6/REL7,
+            # against the standing rule that an in-law is named in the note and
+            # nowhere else. (Only bites on run dirs ranked before --channel-cap 0.)
+            if rel.get("is_channel") and not rel.get("is_dm"):
+                chan_over.append(f"{rel['name']} ({_rel_label(rel, obit_words)})")
+                continue
+            if not rel.get("is_dm") and not (signers_dark or reach_only):
+                nonsigners.append(f"{rel['name']} ({_rel_label(rel, obit_words)})")
                 continue
             if slot >= a.max_rel_slots:
                 # Past the cap: named in the note, not loaded as a field or a phone.
@@ -1826,18 +1902,30 @@ def cmd_build(a) -> int:
 
         def _mk(c, p, t, m):
             tag = f"Owner.{m}" if c["kind"] == "owner" else f"Rel{c['n']}.{m}"
-            tags = [tag] + ([t["tier"]] if t.get("tier") and t["tier"] != "Unknown" else [])
+            # MERGE the relationship word onto the number (Ty's tag) beside our positional
+            # one (Basem, 2026-09-16). The account has NO REL{n}: Relationship field, so a
+            # dialer used to see "Rel3.2" and had to decode it against REL3 -- which is the
+            # "relative fields missing" complaint exactly (~500 records carry Rel-tagged
+            # phones over blank REL names). The word travels ON the number and cannot go
+            # stale; Rel{n}.{m} stays the pointer into the custom fields.
+            #
+            # THE OWNER RULE holds for free: the owner's numbers are collected first and
+            # seen_numbers stops a shared household line being claimed twice, so a number
+            # the owner also holds is tagged Owner.{m} and never wears a kinship word.
+            word = REL_TAG_WORD.get((c.get("rel") or {}).get("canon_rel") or "")                 if c["kind"] == "rel" else ""
+            tags = [tag] + ([word] if word else [])                 + ([t["tier"]] if t.get("tier") and t["tier"] != "Unknown" else [])
             return {"number": p["number"], "type": _api_phone_type(p.get("type"), t.get("line_type")),
                     "tags": tags, "status": "UNKNOWN", "is_connected": True,
                     "rel_n": c["n"], "rel_name": c["name"], "tier": t.get("tier")}
 
+        dial_cap = min(a.dial_cap or DIAL_LIST_CAP, OWNER_PHONE_CAP)
         rest = []
         for c in contacts:
             for m, (p, t) in enumerate(c["kept"], 1):
-                (phones if m == 1 and len(phones) < OWNER_PHONE_CAP else rest).append(_mk(c, p, t, m))
+                (phones if m == 1 and len(phones) < dial_cap else rest).append(_mk(c, p, t, m))
         rest.sort(key=lambda ph: TIER_RANK.get(ph.get("tier"), 8))
         for ph in rest:
-            (phones if len(phones) < OWNER_PHONE_CAP else phones_capped).append(ph)
+            (phones if len(phones) < dial_cap else phones_capped).append(ph)
 
         # The note lists each contact with the tiers that actually reached the dial list.
         loaded_by_n: dict[int, list[str]] = {}
@@ -1848,7 +1936,14 @@ def cmd_build(a) -> int:
                 continue
             rel, n = c["rel"], c["n"]
             tiers = loaded_by_n.get(n, [])
-            role = (" - SIGNER" if rel.get("is_dm")
+            # On an owner-alive / presumed-alive record NOBODY on this list can sign --
+            # the LIVING OWNER does. is_dm is the intestacy rank computed as if the owner
+            # had died, so printing "SIGNER" next to it tells a dialer the exact opposite
+            # of the truth, and on a reach-path record it contradicts the note's own
+            # header two lines above. Caught on 1608 28th St SE, where six relatives of a
+            # living owner were each labelled SIGNER.
+            role = (" - REACH ONLY (cannot sign; owner is alive)" if owner_alive
+                    else " - SIGNER" if rel.get("is_dm")
                     else " - CHANNEL" if rel.get("is_channel") else "")
             rel_lines.append(f"REL{n} - {rel['name']} - {_rel_label(rel, obit_words)}"
                              f"{', ' + str(rel['age']) if rel.get('age') else ''}"
@@ -1871,6 +1966,10 @@ def cmd_build(a) -> int:
             tags.append(TAG_UNVERIFIED)
         if rec.get("is_trust"):
             tags.append(TAG_TRUST)
+        if signers_dark and not owner_alive and any(r.get("phones") for r in rk["rels"]):
+            tags.append(TAG_SIGNERS_DARK)
+        if reach_only and phones:
+            tags.append(TAG_REACH_ONLY)
         # Cohort-wide tags the caller asked for (e.g. `Priority 1`). Additive only --
         # the property PATCH merges, so an extra tag never displaces an existing one.
         for extra in getattr(a, "extra_tag", None) or []:
@@ -1891,7 +1990,7 @@ def cmd_build(a) -> int:
             rels_cut = sorted({p["rel_n"] for p in phones_capped})
             not_loaded.append(
                 f"{len(phones_capped)} more numbers are in the REL fields but not on the "
-                f"dial list (DataSift caps an owner at {OWNER_PHONE_CAP}): "
+                f"dial list (the dial list is capped at {dial_cap}): "
                 f"REL{', REL'.join(str(x) for x in rels_cut)}")
         if overflow:
             not_loaded.append("Over the REL cap: " + "; ".join(overflow))
@@ -1899,6 +1998,18 @@ def cmd_build(a) -> int:
             f"{c['name']} ({c.get('age') or '?'})" for c in (rk.get("channels_dropped") or [])]))
         if inlaws_out:
             not_loaded.append("In-laws found, not loaded: " + "; ".join(inlaws_out))
+        if alive_held:
+            not_loaded.append("Owner is alive and signs alone; family found but NOT loaded "
+                              "(reach path only, they cannot sell): " + "; ".join(alive_held))
+        if reach_only and phones:
+            not_loaded.insert(0, "OWNER IS ALIVE and is the only person who can sell, but has "
+                                 "no number on file. The family below is a REACH PATH to the "
+                                 "owner -- ask for the owner by name. None of them can sign.")
+        if nonsigners:
+            not_loaded.append("Not signers under intestacy, named only: " + "; ".join(nonsigners))
+        held = [f"{c['name']} ({c.get('canon_rel') or '?'})" for c in (rk.get("blood_held") or [])]
+        if held:
+            not_loaded.append("Further relatives on file, not loaded: " + "; ".join(held))
         plan[key] = {
             "key": key, "street": rec["street"], "city": rec["city"], "state": rec["state"], "zip": rec["zip"],
             "owner_first": rec["owner_first"], "owner_last": rec["owner_last"],
@@ -2481,8 +2592,13 @@ def main() -> int:
 
     s = sub.add_parser("rank")
     s.add_argument("--tracerfy", action="store_true", help="Tracerfy gap-fill for phoneless signers ($0.02)")
-    s.add_argument("--max-rels", type=int, default=15,
-                   help="cap on the BLOOD/unknown relative tier (in-law channels are extra)")
+    s.add_argument("--max-rels", type=int, default=0,
+                   help="cap on the NON-SIGNER blood/unknown relative tier, after the "
+                        "intestacy signer set. DEFAULT 0 (Basem, 2026-09-16): load the "
+                        "signers and nobody else. A non-signer cannot convey the property, "
+                        "so they take no REL slot, no dial number and no Trestle solve -- "
+                        "they are still NAMED in the note. SIGNERS are never capped by "
+                        "this: every child must sign, so six children take six slots.")
     s.add_argument("--channel-cap", type=int, default=0,
                    help="in-laws kept as dial channels per record, after the blood tier. "
                         "DEFAULT 0 (Basem, 2026-09-15): an in-law can never sign, so they "
@@ -2523,6 +2639,11 @@ def main() -> int:
     s = sub.add_parser("build")
     s.add_argument("--max-rel-field-phones", type=int, default=3,
                    help="REL{n}: Phone 1..N custom fields only; the account has 3")
+    s.add_argument("--dial-cap", type=int, default=DIAL_LIST_CAP,
+                   help=f"numbers on one record's dial list (default {DIAL_LIST_CAP}). "
+                        f"DataSift's own ceiling is {OWNER_PHONE_CAP}; this is the quality "
+                        "ceiling under it. Numbers over the cap stay in the REL fields and "
+                        "the note says which contacts they belong to.")
     s.add_argument("--max-rel-slots", type=int, default=MAX_REL_SLOTS,
                    help="REL slots per record (Basem: the existing 5 plus at most 2 more)")
     s.add_argument("--include-phoneless", action="store_true",
