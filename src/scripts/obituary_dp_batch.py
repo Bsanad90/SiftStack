@@ -179,6 +179,163 @@ def _stale_board_messages(msgs: list[dict], new_note: str, new_uuid: str) -> lis
     return [m for m in msgs
             if m.get("uuid") and m.get("uuid") != new_uuid
             and _note_family(m.get("message") or "") == fam]
+
+
+# Edit the record's existing same-family board note in place instead of post-new + delete-old
+# (Basem, 2026-09-17: "edit the existing note"). Set False to force the old replace path.
+NOTE_EDIT_IN_PLACE = True
+_REL_PHONE_RE = re.compile(r"^REL(\d+): Phone (\d+)$")
+_REL_NAME_RE = re.compile(r"^REL(\d+): Full Name$")
+
+
+def _ghost_blanks(live_cf: dict, plan_cf: dict, removed_digits: set, fields: dict) -> list[str]:
+    """Live REL custom fields a re-push must blank, decided by PROVENANCE only.
+
+    A re-push only ever WROTE fields; when the new plan uses fewer slots than the old one a
+    dropped relative survives under a slot the plan no longer names. Two rules, both anchored
+    on numbers this push just removed from the owner under our own Rel{n}.{m} tag:
+
+      1. `REL{n}: Phone k` not in the plan whose digits are a removed number -> blank
+         (the 2026-09-11 probe: the dead husband's numbers stayed in REL1: Phone 2/3).
+      2. `REL{n}: Full Name` not in the plan, when rule 1 blanked at least one phone of slot
+         n AND every other phone field of that slot is empty or also blanked -> blank
+         (2026-09-15 FTM strip: 200 name ghosts on 60 records survived rule 1 alone).
+
+    A slot still holding a number we did NOT remove belongs to another pusher, so its name
+    stays -- the 2026-09-10 rule: another plan's REL values are never touched. A label the
+    account does not have (`fields`) is never written.
+    """
+    out: list[str] = []
+    slots: set[str] = set()
+    for lbl, val in live_cf.items():
+        m = _REL_PHONE_RE.match(lbl)
+        if (m and val and lbl not in plan_cf and _d10(str(val)) in removed_digits
+                and fields.get(lbl)):
+            out.append(lbl)
+            slots.add(m.group(1))
+    blanked = set(out)
+    for n in sorted(slots, key=int):
+        name_lbl = f"REL{n}: Full Name"
+        if not live_cf.get(name_lbl) or name_lbl in plan_cf or not fields.get(name_lbl):
+            continue
+        leftovers = [l for l, v in live_cf.items()
+                     if v and l not in blanked and l not in plan_cf
+                     and _REL_PHONE_RE.match(l) and _REL_PHONE_RE.match(l).group(1) == n]
+        if leftovers:
+            continue
+        out.append(name_lbl)
+    return out
+
+
+def _ordered_keys(pushable: list[str], wanted: list[str]) -> list[str]:
+    """`wanted` in its own order, restricted to keys the push may touch. Order is the point:
+    the never-dialed wave must land before the dialed one."""
+    allowed = set(pushable)
+    return [k for k in wanted if k in allowed]
+
+
+def _stale_numbers(owner_phones: list, want: set, prior: "set | None") -> tuple[list, list, list]:
+    """Numbers to take OFF the owner before the upsert: (stale, restore_payload, foreign_kept).
+
+    A number comes off only when it (a) is absent from the new plan, (b) carries our own
+    Rel{n}.{m}/Owner.{m} tag AND (c) -- when `prior` is given -- was written by OUR earlier
+    plan for this record. (c) is the 2026-09-17 fix: other pushers (RFD imports, probate
+    pushes) tag THEIR numbers Rel{n}.{m} too, so the tag alone is not provenance -- on
+    2026-09-10 the tag-only guard removed 18 foreign numbers from 3005 S Leisure World #405
+    (Basem's richer-source rule: append, never blank). Rel-tagged numbers skipped under (c)
+    are returned as `foreign_kept` so the log shows them. `prior=None` = the old behaviour."""
+    stale, restore, foreign = [], [], []
+    for ph in owner_phones or []:
+        num = ph.get("number") or ""
+        tags = [t.get("name") if isinstance(t, dict) else str(t) for t in (ph.get("tags") or [])]
+        d = _d10(num)
+        if d in want or not any(_OURS_RE.match(t) for t in tags):
+            continue
+        if prior is not None and d not in prior:
+            foreign.append(num)
+            continue
+        stale.append(num)
+        restore.append({"number": num, "type": ph.get("type") or "UNKNOWN", "tags": tags,
+                        "status": ph.get("status") or "UNKNOWN",
+                        "is_connected": bool(ph.get("isConnected", True)), "verified": False})
+    return stale, restore, foreign
+
+
+def _norm_note(s: str) -> str:
+    return re.sub(r"\s+", " ", s or "").strip()
+
+
+def _place_note(api, uuid: str, note: str, log: dict) -> None:
+    """Step 4 of a push: the note onto the record's message board, PINNED.
+
+    add-notes writes the `notes` FIELD, which is not the board a caller reads (it answers 204,
+    so the old 404/405-gated fallback never ran and 619 boards were empty). `pinned:true` on
+    create is accepted and IGNORED; PATCHing pinned answers 200 and stores nothing; only
+    POST .../message/{uuid}/pin/ (204) pins.
+
+    2026-09-17 (Basem: "edit the existing note"): when the record already carries a note of
+    the SAME FAMILY, PATCH its text in place -- same message uuid, same pin, same date -- so a
+    1,000-record re-push neither floods the Activity Log (which echoes board posts) nor resets
+    when the research was done. The PATCH is trusted only on READ-BACK (the route lies for
+    `pinned`); if the text did not land, fall back to what every earlier push did: POST the
+    new note, DELETE the same-family old ones (each logged in full), pin. A failed POST deletes
+    nothing -- a failed re-push must never end with an empty board.
+    """
+    text = note[:4000]
+    board = board_messages(api, uuid)
+    same = _stale_board_messages(board, text, "")
+    if same and NOTE_EDIT_IN_PLACE:
+        target = next((m for m in same if m.get("pinned")), same[0])
+        before = target.get("message") or ""
+        st_e, resp_e = api.write("PATCH", f"/api/internal/property/{uuid}/message/{target['uuid']}/",
+                                 {"message": text})
+        after = board_messages(api, uuid)
+        got = next((m for m in after if m.get("uuid") == target["uuid"]), None)
+        stored = (got or {}).get("message") or ""
+        if got and _norm_note(stored) == _norm_note(text):
+            log["steps"]["message_edited"] = {"status": st_e, "uuid": target["uuid"],
+                                              "was_pinned": bool(target.get("pinned")),
+                                              "before": before[:4000]}
+            log["steps"]["message"] = {"status": st_e, "uuid": target["uuid"], "edited": True}
+            if got.get("pinned"):
+                log["steps"]["pin"] = {"status": "kept"}
+            else:
+                st3, _ = api.write("POST", f"/api/internal/property/{uuid}/message/{target['uuid']}/pin/", {})
+                log["steps"]["pin"] = {"status": st3}
+            dupes = [m for m in same if m.get("uuid") != target["uuid"]]
+            if dupes:
+                replaced = []
+                for old in dupes:
+                    st_d, _ = api.write("DELETE", f"/api/internal/property/{uuid}/message/{old['uuid']}/", {})
+                    replaced.append({"uuid": old["uuid"], "status": st_d, "deleted": st_d in (200, 202, 204),
+                                     "pinned": bool(old.get("pinned")), "message": (old.get("message") or "")[:4000]})
+                log["steps"]["message_replaced"] = replaced
+            return
+        log["steps"]["message_edit_failed"] = {"status": st_e, "uuid": target["uuid"],
+                                               "resp": str(resp_e)[:200],
+                                               "stored_unchanged": _norm_note(stored) == _norm_note(before),
+                                               "before": before[:4000]}
+        log.setdefault("warnings", []).append("message PATCH did not store the text; posted a new note instead")
+    st2, resp2 = api.write("POST", f"/api/internal/property/{uuid}/message/", {"message": text})
+    msg_uuid = (resp2 or {}).get("uuid") if isinstance(resp2, dict) else None
+    log["steps"]["message"] = {"status": st2, "uuid": msg_uuid, "resp": str(resp2)[:120]}
+    if not msg_uuid:
+        return
+    # Only now that the replacement exists: drop earlier notes of the SAME FAMILY (equality
+    # of _note_family, never a prefix -- a probate plan pushed through this code once wiped
+    # 21 obituary DP notes by matching "DEEP PROSPECTING"). Every deletion is logged in full.
+    stale_msgs = _stale_board_messages(board_messages(api, uuid), text, msg_uuid)
+    replaced = []
+    for old_msg in stale_msgs:
+        st_d, _ = api.write("DELETE", f"/api/internal/property/{uuid}/message/{old_msg['uuid']}/", {})
+        replaced.append({"uuid": old_msg["uuid"], "status": st_d, "deleted": st_d in (200, 202, 204),
+                         "pinned": bool(old_msg.get("pinned")), "message": (old_msg.get("message") or "")[:4000]})
+    log["steps"]["message_replaced"] = replaced
+    if any(not r["deleted"] for r in replaced):
+        log.setdefault("warnings", []).append(
+            f"{sum(not r['deleted'] for r in replaced)} stale same-family message(s) NOT deleted")
+    st3, _ = api.write("POST", f"/api/internal/property/{uuid}/message/{msg_uuid}/pin/", {})
+    log["steps"]["pin"] = {"status": st3}
 # ───────────────────────── small helpers ─────────────────────────
 
 def norm_addr(s: str) -> str:
@@ -2241,7 +2398,7 @@ def cmd_schema(a) -> int:
     return 0 if not still else 4
 # ───────────────────────── push ─────────────────────────
 
-def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
+def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool, prior: "set | None" = None) -> dict:
     log = {"key": p["key"], "street": p["street"], "route": "api", "at": datetime.now().isoformat(timespec="seconds"),
            "commit": commit, "steps": {}}
     uuid, rec, why = _resolve_uuid(api, p)
@@ -2272,18 +2429,12 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
         # ones). GUARD: only ever remove a number carrying OUR Rel{N}.{M} / Owner.{M} tag and
         # absent from the current plan -- a number this pipeline did not write is never
         # touched, however stale it looks.
-        stale = []
-        stale_restore = []
-        for ph in owner.get("phones") or []:
-            num = ph.get("number") or ""
-            tags = [t.get("name") if isinstance(t, dict) else str(t) for t in (ph.get("tags") or [])]
-            if _d10(num) not in want and any(_OURS_RE.match(t) for t in tags):
-                stale.append(num)
-                # Enough to put the number back if the upsert below then fails.
-                stale_restore.append({"number": num, "type": ph.get("type") or "UNKNOWN",
-                                      "tags": tags, "status": ph.get("status") or "UNKNOWN",
-                                      "is_connected": bool(ph.get("isConnected", True)),
-                                      "verified": False})
+        # `prior` (numbers OUR earlier plan wrote for this record) is the provenance that the
+        # tag alone cannot give -- see _stale_numbers. stale_restore puts the numbers back if
+        # the upsert below then fails.
+        stale, stale_restore, foreign_kept = _stale_numbers(owner.get("phones") or [], want, prior)
+        if foreign_kept:
+            log["steps"]["phones_foreign_kept"] = list(foreign_kept)
         if stale:
             st, resp = api.write("POST", f"/api/internal/owner/{owner_uuid}/remove-phones/",
                                  {"phones": stale})
@@ -2337,14 +2488,20 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
         # the plan ONLY when its digits are a number this push just removed from the owner
         # under our own Rel tag -- that is the provenance rule from the 2026-09-10 repair:
         # another plan's REL values are never touched.
+        # 2026-09-17: the slot's Full Name goes too once every phone field of the slot was
+        # ours (see _ghost_blanks) -- 200 name ghosts survived the phone-only rule on 09-15.
+        # Provenance = numbers this push removed from the owner PLUS numbers our prior plan
+        # wrote that the new plan dropped: a REL field can hold a number that was never on
+        # the owner (over the 30-cap, or already gone), which `phones_removed_numbers` never
+        # names -- the 2026-09-17 QA backstop blanked 40+ such ghosts the push had left.
         removed_digits = {_d10(n) for n in (log["steps"].get("phones_removed_numbers") or [])}
+        if prior:
+            removed_digits |= prior - {_d10(ph["number"]) for ph in p["phones"]}
         if removed_digits:
             _rows, live_cf = custom_field_rows(api, uuid)
-            for lbl, val in live_cf.items():
-                if (lbl.startswith("REL") and val and lbl not in p["custom_fields"]
-                        and _d10(str(val)) in removed_digits and fields.get(lbl)):
-                    body.append({"field_uuid": fields[lbl]["uuid"], "value": ""})
-                    log["steps"].setdefault("custom_fields_blanked", []).append(lbl)
+            for lbl in _ghost_blanks(live_cf, p["custom_fields"], removed_digits, fields):
+                body.append({"field_uuid": fields[lbl]["uuid"], "value": ""})
+                log["steps"].setdefault("custom_fields_blanked", []).append(lbl)
         if body:
             st, resp = api.write("PATCH", f"/api/internal/property/{uuid}/custom-field/update-values/", body)
             log["steps"]["custom_fields"] = {"status": st, "sent": len(body), "resp": str(resp)[:200]}
@@ -2369,43 +2526,9 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool) -> dict:
         log["error"] = "403 on tags PATCH"
         log["http_status"] = 403
         return log
-    # 4. note -> the record's message board, PINNED.
-    #
-    # add-notes writes the `notes` FIELD, which is not the message board a caller reads. It
-    # answers 204, so the old code's message/ fallback (gated on 404/405) never ran and 619
-    # records ended up with an empty board. Post the message first, then pin it: `pinned:true`
-    # on create is accepted and IGNORED (201, pinned=False), and PATCHing pinned returns 200
-    # while changing nothing. Only POST .../message/{uuid}/pin/ (204) actually pins.
-    # add-notes is deliberately NOT called: it appends to the `notes` field, which is not
-    # what the record page shows, and a re-push would stack a second copy there.
-    st2, resp2 = api.write("POST", f"/api/internal/property/{uuid}/message/",
-                           {"message": p["note"][:4000]})
-    msg_uuid = (resp2 or {}).get("uuid") if isinstance(resp2, dict) else None
-    log["steps"]["message"] = {"status": st2, "uuid": msg_uuid, "resp": str(resp2)[:120]}
-    if msg_uuid:
-        # A re-push must not leave two boards of the same kind on the record: drop any
-        # earlier note of the SAME FAMILY (see _stale_board_messages) -- but only now that
-        # the replacement exists. This cleanup used to run even when the POST above failed,
-        # deleting the record's ONLY pinned note and leaving the board empty: a failed
-        # re-push must never end strictly worse than no push. And it used to match on the
-        # literal "DEEP PROSPECTING" whatever the new note was, which is how a probate
-        # plan pushed through this code wiped 21 obituary DP notes on 2026-09-01. Every
-        # deletion is logged now; an undo needs to know what went.
-        board = board_messages(api, uuid)
-        stale_msgs = _stale_board_messages(board, p["note"], msg_uuid)
-        replaced = []
-        for old_msg in stale_msgs:
-            st_d, _ = api.write("DELETE", f"/api/internal/property/{uuid}/message/{old_msg['uuid']}/", {})
-            # Full text kept (<= 4000 chars): the deleted note is otherwise unrecoverable,
-            # and a DELETE that did not take must read as "still there", not "replaced".
-            replaced.append({"uuid": old_msg["uuid"], "status": st_d, "deleted": st_d in (200, 202, 204),
-                             "pinned": bool(old_msg.get("pinned")), "message": (old_msg.get("message") or "")[:4000]})
-        log["steps"]["message_replaced"] = replaced
-        if any(not r["deleted"] for r in replaced):
-            log.setdefault("warnings", []).append(
-                f"{sum(not r['deleted'] for r in replaced)} stale same-family message(s) NOT deleted")
-        st3, resp3 = api.write("POST", f"/api/internal/property/{uuid}/message/{msg_uuid}/pin/", {})
-        log["steps"]["pin"] = {"status": st3}
+    # 4. note -> the record's message board, PINNED: edit the existing same-family note in
+    #    place, else post + replace (see _place_note for the traps behind each route).
+    _place_note(api, uuid, p["note"], log)
 
     # read back
     time.sleep(1.0)
@@ -2476,6 +2599,21 @@ def cmd_push(a) -> int:
                 pass
 
     keys = [k for k, p in plan.items() if p["phones"] or a.include_no_numbers]
+    if getattr(a, "keys_file", None):
+        # An ORDERED subset (2026-09-17, Basem: records nobody has dialed yet go first).
+        # The file is a JSON list of plan keys; the push walks it in that order and
+        # touches nothing else. Keys the plan does not know are reported, not guessed.
+        wanted = jload(Path(a.keys_file), [])
+        if not isinstance(wanted, list):
+            say(f"STOP: {a.keys_file} is not a JSON list of keys")
+            return 2
+        unknown = [k for k in wanted if k not in plan]
+        keys, keys_set = _ordered_keys(keys, wanted), set(keys)
+        phoneless = [k for k in wanted if k in plan and k not in keys_set]
+        say(f"keys-file {a.keys_file}: {len(wanted)} keys -> {len(keys)} pushable"
+            + (f", {len(unknown)} not in plan (skipped: {unknown[:3]}...)" if unknown else "")
+            + (f", {len(phoneless)} without phones (skipped; --include-no-numbers to tag them)"
+               if phoneless else ""))
     if a.probe:
         if a.probe in plan:
             keys = [a.probe]
@@ -2492,6 +2630,20 @@ def cmd_push(a) -> int:
     if a.route == "api":
         api = WriteApi()
         fields = _field_index(api)
+        # Provenance for phone removal: the plan this run dir pushed BEFORE (backed up as
+        # push_plan_prestrip_*.json by the 2026-09-17 strip). Without it the removal guard
+        # falls back to the tag alone, which other pushers share -- so say so loudly.
+        prior_path = a.prior_plan
+        if not prior_path:
+            cands = sorted(run.glob("push_plan_prestrip_*.json"))
+            prior_path = str(cands[-1]) if cands else None
+        prior_plan = None
+        if prior_path:
+            prior_plan = (jload(Path(prior_path), {}) or {}).get("records") or {}
+            say(f"prior plan {prior_path}: phone removal restricted to the {len(prior_plan)} records' own numbers")
+        else:
+            say("NO prior plan found: phone removal keyed on our Rel/Owner tags alone (other "
+                "pushers share that vocabulary -- fine for a FIRST push only)")
         need = {lbl for k in keys for lbl in plan[k]["custom_fields"]}
         missing = sorted(l for l in need if l not in fields)
         if missing:
@@ -2500,7 +2652,9 @@ def cmd_push(a) -> int:
         ok = fail = 0
         with open(log_path, "a", encoding="utf-8") as lf:
             for i, k in enumerate(keys, 1):
-                entry = _push_one_api(api, plan[k], fields, a.commit)
+                prior = (None if prior_plan is None else
+                         {_d10(ph["number"]) for ph in ((prior_plan.get(k) or {}).get("phones") or [])})
+                entry = _push_one_api(api, plan[k], fields, a.commit, prior=prior)
                 lf.write(json.dumps(entry, ensure_ascii=False) + "\n")
                 lf.flush()
                 if entry.get("error"):
@@ -2667,6 +2821,12 @@ def main() -> int:
     s.add_argument("--headed", action="store_true")
     s.add_argument("--include-no-numbers", action="store_true",
                    help="also tag records that got no phones (DP No Numbers)")
+    s.add_argument("--prior-plan", metavar="JSON",
+                   help="push_plan.json this run dir pushed BEFORE; only numbers it wrote may be "
+                        "removed (default: newest push_plan_prestrip_*.json in the run dir)")
+    s.add_argument("--keys-file", metavar="JSON",
+                   help="ORDERED JSON list of plan keys: push exactly these, in this order "
+                        "(e.g. keys_never_dialed.json from dp_strip_order.py)")
     s.set_defaults(fn=cmd_push)
 
     a = ap.parse_args()
