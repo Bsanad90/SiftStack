@@ -522,6 +522,45 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
   `python src/scripts/dpd_playbook_extract.py --fips <fips> --fetch`. The parsed
   `data/dpd_playbook_<fips>.json` files, which ARE read, are untouched.
 
+## "Unknown <Surname>" DP relatives — the ghost resolver (step 1 built 2026-09-17)
+
+130 DP relatives across the run dirs are named `Unknown <Surname>` (113 live in `REL{n}: Full
+Name` with `Rel{n}.{m}` phones): SmartSkip's Subject row came back with a blank First Name,
+`_reroot_namesake` kept that nameless Subject as a Child signer, and research never joins by
+name. `src/scripts/dp_ghost_name_resolver.py` (READ-ONLY, no spend) proposes a first name per
+ghost from the vendor phone index (`output/rel_pr_name_repair/index.json`), obituary survivors
+and SmartSkip Subject-row emails, and writes `output/unknown_ghosts/ghost_name_resolution.csv`
++ `.json` for review. Tiers: HIGH / MEDIUM / NAMESAKE (the phones belong to someone carrying the
+owner's or a named relative's exact name at another age) / DUPLICATE (the ghost IS an
+already-named relative, SmartSkip listed them twice -> merge, not rename) / LOW / HINT (email
+only) / UNRESOLVED. First run: 25/10/6/8/3/59/19. **Trestle Reverse Phone** (`src/scripts/trestle_reverse_phone.py`,
+`GET /3.2/phone`, ~$0.07/query, cached per number, `--commit` to bill) is used on Basem's
+per-batch go: the 5-property probe on 2026-09-17 (17 queries, $1.19) returned a same-surname
+holder on 5/5 and a NEW person to call on 4/5 (the fifth was the deceased owner's own line).
+Batch 2 the same day: 44 ghosts, 47 queries, $3.29 -> `trestle_reverse_enrich.py` (offline, from
+the cache) writes `output/unknown_ghosts/trestle_enrichment.csv`: 25 NEW PERSON, **13 NAMESAKE SON**
+(the owner's name as Jr./III or another middle name, a generation younger -- the namesake-child trap,
+finally named), 1 merge, 1 owner's own line, 8 age mismatches, 1 no hit. Batch 3 (confirm the resolver's names,
+leftover numbers, the 22 household ghosts via `--shared`): 87 queries, $6.09; total $10.57 / 151.
+Final sheet, 115 probed: 59 NEW PERSON, 15 NAMESAKE SON, 10 merges, 11 household-only, 13 age
+mismatch, 5 no hit, 2 owner's line; 39 of the resolver's 52 confirmed, Welzel's ghost turned out to
+be the named IN-LAW Cindy (not a signer), Helmick is Kevin Lee Helmick (neither source had him).
+Rule that paid for itself: **confirm a one-source name before writing it** -- 10 of 52 did not
+survive. **Step 3 WRITTEN 2026-09-17:** `dp_ghost_name_write.py` renamed 82 REL slots live (QA 90/90),
+no phone moved; the 8 "duplicates" were renames because the twin held no slot of its own. **TRAP:**
+the DP strip re-push wave from another session (`push --force` of `push_plan.json`) reverted 9 writes
+within minutes -- the plan files are the source of truth, patch them first (`dp_ghost_plan_patch.py`,
+idempotent, backups) and check `Get-CimInstance Win32_Process` for a running pusher before any
+per-record account fix. **Trap: holders are under
+`owners[]`, not `belongs_to`** -- the first parse read every response as empty. Free alongside: the funeral-home page rescrape for the 21 obituaries that came back
+without a survivors list, hand review of the 4 rows whose obituary names children absent from
+the record, and demoting the 34 whose obituary already accounts for every child (not heirs
+whatever their name, so never worth a query). Offline checks: `python tools/manual/test_ghost_name_resolver.py`
+-- run after any change to `same_person` / `vendor_candidates` / `decide`. Traps it encodes: a
+shared MIDDLE name is not an identity; a same-name relative is a duplicate only when the ghost's
+age fits (or Sr., or a shared line); the predeceased drop yields to a survivor match. Nothing
+has been written to the account; the write step reuses the rel_pr_name_repair pattern.
+
 ---
 
 ## DataSift API upload contract (hard-won, 2026-08)
