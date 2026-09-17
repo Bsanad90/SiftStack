@@ -61,12 +61,27 @@ DEAD, not quiet.
   how many are still unchecked, do not call them failures.
 - `register_of_wills.csv` missing while the log exists: DEAD leg, say so first.
 
-**DC probate** (DWLR half daily; Tyler-portal walk Mon/Wed/Fri 07:15 as its own task)
-- Files: `DC-Probate_stdout.log` + `dc_probates.csv` (daily); `DC-Portal_stdout.log` +
-  `dc_probates_portal.csv` / `.json` (portal days only).
-- The portal checkpoint (`2026-ADM-000nnn`) must advance. On a Mon/Wed/Fri with no portal files,
-  report the portal leg as MISSING. On other days its absence is expected.
-- Report cases found and ownership verdicts (owns / family / rental) where present.
+**DC probate** (DWLR half only)
+- Files: `DC-Probate_stdout.log` + `dc_probates.csv`.
+- The Tyler-portal walk (`SiftStack DC Portal Pull`, Mon/Wed/Fri 07:15) is LIVE. On a Mon/Wed/Fri
+  with no `DC-Portal_stdout.log` / `dc_probates_portal.csv`, report the portal leg as MISSING; on
+  other days its absence is expected. The portal checkpoint (`portal_next_case`, currently
+  2026-ADM-001010) must advance, and a run that ends in a WAF failure writes NO file and does NOT
+  advance it -- say so, and say a re-run usually clears it (2026-09-16: the scheduled run died on
+  the WAF, a manual re-run the same afternoon walked 28 cases clean). A WAF death is a bad day,
+  not a dead pipeline.
+- A LOW portal hit count near the sequence head is normal: the walk stops after 5 consecutive
+  misses, so a day with 1-3 new cases is the court filing slowly, not a fault.
+- `dc_probates.csv` is a rolling LEDGER, not a day's harvest: the DWLR notices page carries ~50
+  notices whatever the day. Read the log's `Ledger: N added, N changed, N unchanged` line for what
+  is actually new, and say so.
+- Report ownership verdicts, but count OWNERS not one exact string. A row counts as owned when the
+  verdict says `Decedent OWNS residence`, OR `decedent OWNS <other address> (HIGH)`, OR
+  `N additional parcel(s) in ledger`, OR the verdict is blank while `ITSPE Owner` name-matches the
+  decedent (resolved on an earlier run). Dead ends are RENTAL / owned by a differently-named person
+  / not found in ITSPE / no owner-name match / all LOW / ambiguous.
+- The leg runs WITHOUT `--commit` (review-only), so the log ends `Dry run: ledger and checkpoint
+  NOT persisted`. That is expected, not a failure.
 </legs>
 
 <report_format>
