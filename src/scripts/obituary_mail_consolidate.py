@@ -3,7 +3,9 @@
 Each obituary record has a DECEASED owner, so the people who can actually sign are
 relatives. This collects them into one tall file where each row is one mailpiece:
 
-  * one HOUSEHOLD piece per record -- "The Shaws" at the PROPERTY address;
+  * one HOUSEHOLD piece per record -- "The Shaws" at the PROPERTY address -- UNLESS a
+    ranked signer lives there, in which case the named signer piece replaces it (one
+    envelope per door; Basem, 2026-09-17);
   * one SIGNER piece per ranked decision maker, at THAT PERSON'S OWN mailing address.
 
 WHERE THE HEIR ADDRESS COMES FROM. The account holds heir names and phones but NO heir
@@ -24,13 +26,37 @@ TWO TRAPS THIS FILE IS BUILT AROUND.
    the count comes back as the unfiltered account total, reading like a real answer. The
    unfiltered total is therefore taken FIRST and any cohort count equal to it aborts.
 
+PREVIOUSLY MAILED PROPERTIES ARE EXCLUDED (Basem, 2026-09-17). A property that was already
+mailed by an earlier campaign leaves this list entirely -- household piece AND every heir
+piece. Three sources decide it, because no single one is complete:
+
+  * DataSift LIST membership: the `Inheritance`, `Divorce` and `Probate` lists were mailed
+    campaigns, so being on one of them means mailed even when the CRM counter says 0 (the
+    counter was not always advanced -- 137 cohort records sat on those lists, 26 had an
+    attempt). `Register of Wills Probates` counts only WITH an attempt.
+  * the DataSift `directmail_attempts` counter (thin row; > 0 = mailed, whatever the lists).
+  * the vendor SENT files on Google Drive (`Probate With PR_<date>_Mailings.xlsx` etc.,
+    2026-04-01 onward), indexed by `mailed_history.py index`. `build` REFUSES to run without
+    that index unless `--no-drive` is passed, so the Drive leg cannot be skipped by accident.
+
+Closing the cycle: once this drop is sent, save the final CSV to Drive as
+`Obituary Heirs_<YYYYMMDD>_Mailings.xlsx` under `Marketing Lists/<YYYY>/<MM>/<MMDD>/` so the
+next `vendor_lists_fetch.py --families mailings` + `mailed_history.py index` picks it up.
+
 Nothing here writes to DataSift. Every call is a GET or a post_as_get read.
 
 Usage:
     python src/scripts/obituary_mail_consolidate.py index          # offline, no API
     python src/scripts/obituary_mail_consolidate.py pull           # live, resumable
-    python src/scripts/obituary_mail_consolidate.py build
+    python src/scripts/obituary_mail_consolidate.py build          # needs mailed_index.json
+    python src/scripts/obituary_mail_consolidate.py build --keep-mailed   # the old, unscreened file
+    python src/scripts/obituary_mail_consolidate.py merge          # one letter per door, separate CSV
     python src/scripts/obituary_mail_consolidate.py qa --sample 5
+
+`merge` writes obituary_mailing_merged.csv: signers who share a door for the same property
+become ONE row addressed to all of them (`Samuel & Amy Tapper`, or `The Benitez Family` /
+`<top> & Family` for 3+, a line over 40 chars, or an Unknown first name), spouse named first,
+with `co_addressees` and a `salutation` that names everyone. obituary_mailing.csv is untouched.
 """
 from __future__ import annotations
 
@@ -55,6 +81,7 @@ from dpd_lane_phone_score import Api, jload, jsave, say, tag_names  # noqa: E402
 from obituary_dp_batch import ORDINALS, sift_key, zip5  # noqa: E402
 from obituary_dp_input import ENTITY_WORDS, SUFFIXES  # noqa: E402
 from rel_pr_name_repair import cf_values  # noqa: E402
+import mailed_history  # noqa: E402
 
 OUT = ROOT / "output" / "obituary_mail_consolidate"
 DP_INDEX = OUT / "dp_index.json"
@@ -75,6 +102,15 @@ OBIT_TAG_SUBSTR = "obitua"
 # and the "Sold Property Cleanup" sequence maps it onto the `Already Sold` STATUS, but the
 # tag lands first, so suppress on both.
 RECENTLY_SOLD_TAG = "Recently Sold"
+
+# Previously-mailed rule (Basem, 2026-09-17). Membership of one of these lists means the
+# property was in a mailed campaign, counter or no counter.
+MAILED_LISTS = {"Inheritance", "Divorce", "Probate"}
+# ...while these lists count as mailed only when the CRM counter agrees (a Register of Wills
+# record is uploaded long before -- and sometimes without -- a mail drop).
+MAILED_WITH_ATTEMPT_LISTS = {"Register of Wills Probates"}
+# The Drive-derived mailed-history index (mailed_history.py index). Required by `build`.
+MAILED_INDEX = mailed_history.INDEX
 
 MAIL_COLS = [
     "mail_id", "addressee_type", "addressee",
@@ -340,6 +376,11 @@ def hydrate_one(api: Api, u: str) -> dict:
         "last_obituary_date": (body.get("last_obituary_date") or "")[:10],
         "do_not_mail_ever": body.get("do_not_mail_ever"),
         "owner_do_not_mail_ever": owner.get("do_not_mail_ever"),
+        # the CRM's only "was mailed" signal; the thin row carries it too, and `build`
+        # falls back to that for records hydrated before this key existed
+        "directmail_attempts": body.get("directmail_attempts"),
+        "direct_mailed": body.get("direct_mailed"),
+        "last_direct_mailed": body.get("last_direct_mailed"),
         "cf": {k: v for k, v in cf_values(cf).items() if v},
         "pulled": datetime.now().isoformat(timespec="seconds"),
     }
@@ -532,6 +573,45 @@ def suppression_reason(rec: dict) -> str | None:
     return None
 
 
+def mail_attempts(rec: dict, thin: dict | None) -> int:
+    """The CRM Direct Mail Attempts counter: the detail read if it stored one, else the
+    thin cohort row (records hydrated before 2026-09-17 carry it only there)."""
+    v = rec.get("directmail_attempts")
+    if v is None and thin:
+        v = thin.get("directmail_attempts")
+    try:
+        return int(v or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def previously_mailed(rec: dict, attempts: int, drive_hits: list[dict]) -> tuple[str | None, list[str]]:
+    """(reason, signals). reason is None when nothing says this property was mailed.
+
+    signals name which source fired -- `list`, `attempt`, `drive` -- so the audit can
+    report how the three agree; the reason text names the lists / count / files.
+    """
+    lists = set(rec.get("lists") or [])
+    on_mailed = sorted(lists & MAILED_LISTS)
+    on_conditional = sorted(lists & MAILED_WITH_ATTEMPT_LISTS)
+    signals, parts = [], []
+    if on_mailed:
+        signals.append("list")
+        parts.append("lists=" + ",".join(on_mailed))
+    elif on_conditional and attempts > 0:
+        signals.append("list")
+        parts.append("lists=" + ",".join(on_conditional) + " (with attempt)")
+    if attempts > 0:
+        signals.append("attempt")
+        parts.append(f"directmail_attempts={attempts}")
+    if drive_hits:
+        signals.append("drive")
+        parts.append("drive=" + mailed_history.describe(drive_hits))
+    if not signals:
+        return None, []
+    return "previously mailed: " + "; ".join(parts), signals
+
+
 def cmd_build(a) -> int:
     idx = jload(DP_INDEX, {})
     records = jload(RECORDS, {})
@@ -539,10 +619,24 @@ def cmd_build(a) -> int:
         say("missing dp_index.json or records.json -- run `index` then `pull`")
         return 2
     dp = idx["index"]
+    thin_rows: dict = (jload(COHORT, {}) or {}).get("cohort") or {}
+
+    mailed_index: dict | None = None
+    if not a.keep_mailed and not a.no_drive:
+        p = Path(a.mailed_index) if a.mailed_index else MAILED_INDEX
+        if not p.exists():
+            say(f"no mailed-history index at {p} -- run `vendor_lists_fetch.py --families "
+                "mailings` then `mailed_history.py index`, or pass --no-drive to screen on "
+                "the DataSift signals alone (say so in the hand-off)")
+            return 2
+        mailed_index = mailed_history.load_index(p)
+        say(f"mailed-history index: {mailed_index.get('files')} sent files, "
+            f"{mailed_index.get('date_range')}, {len(mailed_index.get('by_prop_key') or {})} properties")
 
     rows: list[dict] = []
     excluded: list[dict] = []
     tally = Counter()
+    mailed_signals: Counter = Counter()
     # how many pieces each distinct person receives, so repeat recipients are visible
     person_count: Counter = Counter()
 
@@ -563,6 +657,20 @@ def cmd_build(a) -> int:
                              "relationship": "", "reason": why.split(":")[0],
                              "detail": why})
             continue
+        if not a.keep_mailed:
+            attempts = mail_attempts(rec, thin_rows.get(u))
+            hits = (mailed_history.lookup(mailed_index, rec.get("street") or "", rec.get("zip") or "")
+                    if mailed_index else [])
+            why, signals = previously_mailed(rec, attempts, hits)
+            if why:
+                tally["record_previously_mailed"] += 1
+                mailed_signals["+".join(signals)] += 1
+                excluded.append({"scope": "record", "sift_key": key, "record_uuid": u,
+                                 "property_street": rec.get("street") or "",
+                                 "property_zip": rec.get("zip") or "", "name": "",
+                                 "relationship": "", "reason": "previously mailed",
+                                 "detail": why})
+                continue
         entry = dp.get(key) or {}
         prepared.append((u, rec, entry))
 
@@ -676,22 +784,48 @@ def cmd_build(a) -> int:
         if n_signers == 0:
             tally["records_without_signer"] += 1
 
-    # Flag the two overlaps that cost postage without losing a recipient, so they can be
-    # filtered in the sheet rather than decided here:
-    #   * a signer who lives AT the decedent's property already gets the household piece
-    #     through the same door;
-    #   * several signers can share one address (siblings in one house).
+    # A signer who LIVES AT the decedent's property gets a piece addressed by name through
+    # that door, so the anonymous "The Shaws" household piece to the same door is wasted
+    # postage (Basem, 2026-09-17: "if someone resides at the property I should not be
+    # mailing the household AND the signer"). The household piece is dropped for every
+    # record with a resident signer; the named piece is the better of the two.
     at_addr: Counter = Counter()
+    resident_by_uuid: dict[str, list[str]] = {}
     for r in rows:
-        if r["addressee_type"] == "signer":
-            at_addr[(r["sift_key"], norm(r["mail_street"]), r["mail_zip"])] += 1
+        if r["addressee_type"] != "signer":
+            continue
+        at_addr[(r["sift_key"], norm(r["mail_street"]), r["mail_zip"])] += 1
+        if (norm(r["mail_street"]) == norm(r["property_street"])
+                and r["mail_zip"] == r["property_zip"]):
+            resident_by_uuid.setdefault(r["record_uuid"], []).append(r["addressee"])
+    kept: list[dict] = []
+    for r in rows:
+        if r["addressee_type"] == "household" and r["record_uuid"] in resident_by_uuid:
+            who = resident_by_uuid[r["record_uuid"]]
+            tally["household_replaced_by_resident_signer"] += 1
+            tally["household_rows"] -= 1
+            excluded.append({"scope": "household", "sift_key": r["sift_key"],
+                             "record_uuid": r["record_uuid"],
+                             "property_street": r["property_street"],
+                             "property_zip": r["property_zip"], "name": r["addressee"],
+                             "relationship": "", "reason": "resident_signer_mailed",
+                             "detail": "named piece already goes to this door: "
+                                       + ", ".join(who)})
+            continue
+        kept.append(r)
+    rows = kept
+
+    # Flags left for the sheet: a signer at the property (the household piece is gone, the
+    # flag says why) and several signers sharing one address (siblings in one house) --
+    # the latter is not decided here.
     for r in rows:
         if r["addressee_type"] != "signer":
             continue
         f = []
-        if (norm(r["mail_street"]) == norm(r["property_street"])
+        if r["record_uuid"] in resident_by_uuid and (
+                norm(r["mail_street"]) == norm(r["property_street"])
                 and r["mail_zip"] == r["property_zip"]):
-            f.append("same_door_as_household")
+            f.append("resides_at_property")
         if at_addr[(r["sift_key"], norm(r["mail_street"]), r["mail_zip"])] > 1:
             f.append("shares_address_with_other_signer")
         r["flags"] = "; ".join(f)
@@ -721,6 +855,15 @@ def cmd_build(a) -> int:
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "records_hydrated": len(records),
         "records_suppressed": tally["record_suppressed"],
+        "records_previously_mailed": tally["record_previously_mailed"],
+        # which sources fired, e.g. {"list": 58, "list+attempt": 20, "drive": 4, ...}
+        "previously_mailed_signals": dict(mailed_signals),
+        "mailed_rule": {"lists": sorted(MAILED_LISTS),
+                        "lists_with_attempt_only": sorted(MAILED_WITH_ATTEMPT_LISTS),
+                        "drive_index": (str(MAILED_INDEX) if mailed_index else None),
+                        "drive_files": (mailed_index or {}).get("files"),
+                        "drive_date_range": (mailed_index or {}).get("date_range"),
+                        "keep_mailed": bool(a.keep_mailed)},
         "records_mailable": mailable,
         "household_rows": tally["household_rows"],
         "signer_rows": tally["signer_rows"],
@@ -734,8 +877,14 @@ def cmd_build(a) -> int:
 
     say(f"records hydrated      {len(records)}")
     say(f"  suppressed          {tally['record_suppressed']}")
+    say(f"  previously mailed   {tally['record_previously_mailed']}"
+        + ("  (NOT screened: --keep-mailed)" if a.keep_mailed else ""))
+    for sig, n in sorted(mailed_signals.items(), key=lambda kv: -kv[1]):
+        say(f"      {n:5d}  {sig}")
     say(f"  mailable            {mailable}")
-    say(f"household pieces      {tally['household_rows']}")
+    say(f"household pieces      {tally['household_rows']}"
+        f"  (dropped {tally['household_replaced_by_resident_signer']} where a signer resides "
+        "at the property)")
     say(f"signer pieces         {tally['signer_rows']}")
     say(f"TOTAL MAILPIECES      {len(rows)}")
     say(f"excluded rows         {len(excluded)}")
@@ -744,14 +893,201 @@ def cmd_build(a) -> int:
 
     # reconciliation: household rows must equal mailable records minus unmailable households
     expect_hh = (mailable - tally["household_skipped"]
-                 - tally["household_duplicate_property"])
+                 - tally["household_duplicate_property"]
+                 - tally["household_replaced_by_resident_signer"])
     if tally["household_rows"] != expect_hh:
         say(f"! RECONCILE FAILED: household rows {tally['household_rows']} != {expect_hh}")
         return 1
     return 0
 
 
-# ------------------------------------------------------------------ 4. qa
+# ------------------------------------------------------------------ 4. merge (one letter per door)
+
+MERGED_CSV = OUT / "obituary_mailing_merged.csv"
+AUDIT_MERGED = OUT / "audit_merged.json"
+MERGED_COLS = MAIL_COLS + ["addressee_count", "co_addressees", "salutation", "merged_mail_ids"]
+NAME_LINE_MAX = 40          # a USPS address-block line past this truncates in print
+SPOUSE_RELS = {"spouse", "wife", "husband", "widow", "widower"}
+UNKNOWN_FIRST = {"unknown", "unk", "n/a", "na", "none", ""}
+
+
+def _first(name: str) -> str:
+    return (name or "").split()[0] if (name or "").split() else ""
+
+
+def _last(name: str) -> str:
+    return (name or "").split()[-1] if (name or "").split() else ""
+
+
+def _door_rank(r: dict) -> tuple:
+    """Spouse first (the strongest claim, and the one who calls back), then DP rank."""
+    rel = (r.get("relationship") or "").lower()
+    m = re.search(r"\|rel(\d+)$", r.get("mail_id") or "")
+    return (0 if rel in SPOUSE_RELS else 1, int(m.group(1)) if m else 999)
+
+
+def joint_line(names: list[str]) -> tuple[str, str]:
+    """(envelope name line, salutation) for everyone at one door.
+
+    Basem, 2026-09-17: every heir must sign, so no one at the door is preferred -- name
+    them all. Two people: `Samuel & Amy Tapper` / `Marilyn Shapiro & Diane Keller`. Three
+    or more, or a line past NAME_LINE_MAX, or an Unknown first name: `The Benitez Family`
+    when the surname is shared, else `<top-ranked> & Family`. The salutation always names
+    everyone it can.
+    """
+    if len(names) == 1:
+        # a lone heir whose first name SmartSkip did not return ("Unknown Lee") is
+        # addressed as the family, never as "Unknown"
+        if _first(names[0]).lower() in UNKNOWN_FIRST:
+            sur = _last(names[0])
+            return f"The {sur} Family", f"Dear {sur} Family"
+        return names[0], f"Dear {_first(names[0])}"
+    firsts = [_first(n) for n in names]
+    lasts = {_last(n).lower() for n in names}
+    shared = len(lasts) == 1
+    unknown = any(f.lower() in UNKNOWN_FIRST for f in firsts)
+    known_firsts = [f for f in firsts if f.lower() not in UNKNOWN_FIRST]
+
+    known_names = [n for n in names if _first(n).lower() not in UNKNOWN_FIRST]
+
+    def family_line() -> str:
+        if shared:
+            return f"The {_last(names[0])} Family"
+        # the top-ranked heir can be the one with no first name -- lead with a real one
+        return f"{known_names[0]} & Family" if known_names else f"The {_last(names[0])} Family"
+
+    def family_salutation() -> str:
+        if shared:
+            return f"Dear {_last(names[0])} Family"
+        return f"Dear {known_firsts[0]} and Family" if known_firsts else "Dear Family"
+
+    if unknown:
+        return family_line(), family_salutation()
+    if len(names) == 2:
+        line = (f"{firsts[0]} & {firsts[1]} {_last(names[0])}" if shared
+                else f"{names[0]} & {names[1]}")
+    else:
+        line = " & ".join(names)
+    if len(line) > NAME_LINE_MAX:
+        line = family_line()
+    if len(line) > NAME_LINE_MAX:            # a long surname can still overflow
+        line = f"{(known_names or names)[0]} & Family"
+    sal = "Dear " + (", ".join(firsts[:-1]) + " and " + firsts[-1])
+    return line, sal
+
+
+def cmd_merge(a) -> int:
+    """obituary_mailing.csv -> obituary_mailing_merged.csv: one letter per door.
+
+    Signer rows that share a door for the same property become one row addressed to all
+    of them; household rows and lone signers pass through unchanged (household rows gain
+    a salutation). The source CSV is never modified.
+    """
+    if not MAILING_CSV.exists():
+        say("no mailing CSV -- run `build` first")
+        return 2
+    rows = list(csv.DictReader(MAILING_CSV.open(encoding="utf-8-sig")))
+    groups: dict[tuple, list[dict]] = {}
+    order: list[tuple] = []
+    for r in rows:
+        if r["addressee_type"] == "signer":
+            k = ("s", r["record_uuid"], norm(r["mail_street"]), r["mail_zip"])
+        else:
+            k = ("h", r["mail_id"])
+        if k not in groups:
+            order.append(k)
+        groups.setdefault(k, []).append(r)
+
+    out: list[dict] = []
+    tally = Counter()
+    sizes: Counter = Counter()
+    for k in order:
+        g = sorted(groups[k], key=_door_rank)
+        top = dict(g[0])
+        if k[0] == "h":
+            sur = top.get("decedent_surname") or ""
+            top.update(addressee_count=1, co_addressees="", merged_mail_ids=top["mail_id"],
+                       salutation=(f"Dear {title_name(sur)} Family" if sur else "Dear Neighbor"))
+            out.append(top)
+            tally["household_rows"] += 1
+            continue
+        names = [x["addressee"] for x in g]
+        line, sal = joint_line(names)
+        sizes[len(g)] += 1
+        if len(g) > 1:
+            tally["doors_merged"] += 1
+            tally["rows_merged_away"] += len(g) - 1
+            if line.endswith("Family"):
+                tally["family_line_fallback"] += 1
+        else:
+            tally["lone_signer_rows"] += 1
+        flags = [f for f in (top.get("flags") or "").split("; ")
+                 if f and f != "shares_address_with_other_signer"]
+        top.update(
+            addressee=line, salutation=sal, addressee_count=len(g),
+            relationship="; ".join(x.get("relationship") or "?" for x in g),
+            dm_why=" || ".join(x.get("dm_why") or "" for x in g if x.get("dm_why")),
+            co_addressees="; ".join(f"{x['addressee']} ({x.get('relationship') or '?'})" for x in g),
+            merged_mail_ids="; ".join(x["mail_id"] for x in g),
+            flags="; ".join(flags))
+        out.append(top)
+
+    # repeat-recipient count on the NEW name line, so "& Family" lines are counted as such
+    pc: Counter = Counter()
+    for r in out:
+        if r["addressee_type"] == "signer":
+            pc[(norm(r["addressee"]), norm(r["mail_street"]), r["mail_zip"])] += 1
+    for r in out:
+        if r["addressee_type"] == "signer":
+            r["signer_mail_count"] = pc[(norm(r["addressee"]), norm(r["mail_street"]), r["mail_zip"])]
+
+    with MERGED_CSV.open("w", newline="", encoding="utf-8-sig") as fh:
+        w = csv.DictWriter(fh, fieldnames=MERGED_COLS)
+        w.writeheader()
+        w.writerows(out)
+
+    # reconciliation: every source piece lands in exactly one merged row; one row per door
+    seen: Counter = Counter()
+    for r in out:
+        for mid in r["merged_mail_ids"].split("; "):
+            seen[mid] += 1
+    src_ids = {r["mail_id"] for r in rows}
+    missing = src_ids - set(seen)
+    dup = [m for m, n in seen.items() if n > 1]
+    doors = Counter((r["record_uuid"], norm(r["mail_street"]), r["mail_zip"]) for r in out)
+    multi = [d for d, n in doors.items() if n > 1]
+    long_lines = [r["addressee"] for r in out if len(r["addressee"]) > NAME_LINE_MAX]
+    unknown_lines = [r["addressee"] for r in out if "unknown" in r["addressee"].lower()]
+    problems = []
+    if missing:
+        problems.append(f"{len(missing)} source pieces missing from the merged file")
+    if dup:
+        problems.append(f"{len(dup)} source pieces appear twice")
+    if multi:
+        problems.append(f"{len(multi)} doors still get more than one row")
+    if long_lines:
+        problems.append(f"{len(long_lines)} name lines over {NAME_LINE_MAX} chars")
+    if unknown_lines:
+        problems.append(f"{len(unknown_lines)} name lines print 'Unknown'")
+
+    audit = {"generated_at": datetime.now().isoformat(timespec="seconds"),
+             "source": str(MAILING_CSV), "source_rows": len(rows), "merged_rows": len(out),
+             "tally": dict(tally), "door_sizes": dict(sorted(sizes.items())),
+             "name_line_max": NAME_LINE_MAX, "problems": problems}
+    jsave(AUDIT_MERGED, audit)
+    say(f"source pieces         {len(rows)}")
+    say(f"  household           {tally['household_rows']}")
+    say(f"  lone signer         {tally['lone_signer_rows']}")
+    say(f"  doors merged        {tally['doors_merged']}  (sizes {dict(sorted(sizes.items()))})")
+    say(f"    family-line fallback {tally['family_line_fallback']}")
+    say(f"MERGED ROWS           {len(out)}  (-{tally['rows_merged_away']})")
+    say(f"  -> {MERGED_CSV}")
+    for p in problems:
+        say(f"  ! {p}")
+    return 0 if not problems else 1
+
+
+# ------------------------------------------------------------------ 5. qa
 
 def cmd_qa(a) -> int:
     import random
@@ -769,6 +1105,33 @@ def cmd_qa(a) -> int:
     say(f"rows carrying a dead status: {len(bad)} (expected 0)")
     sold = [r for r in rows if RECENTLY_SOLD_TAG in (r["tags"] or "")]
     say(f"rows tagged {RECENTLY_SOLD_TAG}: {len(sold)} (expected 0)")
+
+    # no previously-mailed property may survive: list membership, CRM counter, Drive index
+    thin_rows: dict = (jload(COHORT, {}) or {}).get("cohort") or {}
+    on_list = [r for r in rows
+               if {x.strip() for x in (r["lists"] or "").split(",")} & MAILED_LISTS]
+    say(f"rows on a mailed list {sorted(MAILED_LISTS)}: {len(on_list)} (expected 0)")
+    with_attempt = [r for r in rows
+                    if mail_attempts(records.get(r["record_uuid"]) or {},
+                                     thin_rows.get(r["record_uuid"])) > 0]
+    say(f"rows with directmail_attempts > 0: {len(with_attempt)} (expected 0)")
+    drive_hit: list[dict] = []
+    if MAILED_INDEX.exists():
+        mi = mailed_history.load_index(MAILED_INDEX)
+        drive_hit = [r for r in rows
+                     if mailed_history.lookup(mi, r["property_street"], r["property_zip"])]
+        say(f"rows in the Drive mailed-history index: {len(drive_hit)} (expected 0)")
+    else:
+        say(f"! no Drive mailed-history index at {MAILED_INDEX} -- Drive check skipped")
+    mailed_left = on_list or with_attempt or drive_hit
+
+    # no door may receive both the household piece and a named signer piece
+    hh_doors = {(r["record_uuid"], norm(r["mail_street"]), r["mail_zip"]) for r in rows
+                if r["addressee_type"] == "household"}
+    double_door = [r for r in rows if r["addressee_type"] == "signer"
+                   and (r["record_uuid"], norm(r["mail_street"]), r["mail_zip"]) in hh_doors]
+    say(f"signer pieces to a door that also gets the household piece: {len(double_door)} (expected 0)")
+    mailed_left = mailed_left or double_door
 
     api = Api()
     say("JWT minted OK")
@@ -803,7 +1166,7 @@ def cmd_qa(a) -> int:
     say(f"\nsampled {len(sample)} records, {len(problems)} problems")
     for p in problems:
         say(f"  ! {p}")
-    return 0 if not problems and not bad and not sold else 1
+    return 0 if not problems and not bad and not sold and not mailed_left else 1
 
 
 def main() -> int:
@@ -816,12 +1179,18 @@ def main() -> int:
                    help="keep low; other live jobs share the account's rate limit")
     p.add_argument("--limit", type=int)
     p.add_argument("--fresh", action="store_true")
-    sub.add_parser("build", help="emit the mailing CSV")
+    b = sub.add_parser("build", help="emit the mailing CSV (previously-mailed properties excluded)")
+    b.add_argument("--mailed-index", help=f"path of the Drive mailed-history index (default {MAILED_INDEX})")
+    b.add_argument("--no-drive", action="store_true",
+                   help="screen on the DataSift signals only; refuses by default when the index is missing")
+    b.add_argument("--keep-mailed", action="store_true",
+                   help="skip the previously-mailed screen entirely (reproduces the 2026-09-15 file)")
+    sub.add_parser("merge", help="one letter per door -> obituary_mailing_merged.csv (source untouched)")
     q = sub.add_parser("qa", help="spot-check the CSV against the live account")
     q.add_argument("--sample", type=int, default=5)
     a = ap.parse_args()
     return {"index": cmd_index, "pull": cmd_pull,
-            "build": cmd_build, "qa": cmd_qa}[a.cmd](a)
+            "build": cmd_build, "merge": cmd_merge, "qa": cmd_qa}[a.cmd](a)
 
 
 if __name__ == "__main__":

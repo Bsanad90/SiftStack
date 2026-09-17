@@ -72,7 +72,24 @@ FAMILIES = {
     "skiptraced": re.compile(r"Skip ?Traced", re.I),
     # the vendor INPUT files (no phones) -- only useful for the decedent/PR names
     "2bskip": re.compile(r"2 ?B ?Skip", re.I),
+    # the weekly SENT mail lists (`Probate With PR_<date>_Mailings.xlsx`, `Probate No PR_...`,
+    # `Divorce_..._Mailings.xlsx`): the record of which properties were actually mailed and
+    # when. `mailed_history.py index` turns them into the mailed-history index that every
+    # mailing CSV is screened against. The 2025 `Weekly Mailings_*` variants do not carry
+    # this suffix and are out of scope on purpose (Basem, 2026-09-17: 2026 from April only).
+    "mailings": re.compile(r"_Mailings", re.I),
 }
+DATE_IN_NAME = re.compile(r"(\d{8})")
+DATE_IN_PATH = re.compile(r"/(\d{4})/(\d{2})/(\d{4})(?:/|$)")
+
+
+def file_date(name: str, path: str) -> str:
+    """YYYYMMDD from the file name, else from a `<YYYY>/<MM>/<MMDD>` folder path, else ''."""
+    m = DATE_IN_NAME.search(name)
+    if m:
+        return m.group(1)
+    m = DATE_IN_PATH.search(path)
+    return f"{m.group(1)}{m.group(3)}" if m else ""
 GSHEET = "application/vnd.google-apps.spreadsheet"
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
@@ -141,7 +158,12 @@ def main() -> int:
                     help="re-walk the Drive tree instead of reusing the snapshot")
     ap.add_argument("--limit", type=int, default=0, help="stop after N downloads (smoke)")
     ap.add_argument("--years", default="", help="comma list of top-level year folders to include")
+    ap.add_argument("--since", default="",
+                    help="YYYYMMDD: keep only files dated on/after this (date read from the "
+                         "file name, else the <YYYY>/<MM>/<MMDD> folder); undated files are skipped")
     a = ap.parse_args()
+    if a.since and not re.fullmatch(r"\d{8}", a.since):
+        sys.exit("--since must be YYYYMMDD")
 
     fams = [FAMILIES[f.strip()] for f in a.families.split(",") if f.strip()]
     folder_id = _env("MARKETING_LISTS_FOLDER_ID", "the Drive folder id of the Marketing Lists root")
@@ -172,6 +194,7 @@ def main() -> int:
     years = {y.strip() for y in a.years.split(",") if y.strip()}
     manifest: dict = json.loads(MANIFEST.read_text(encoding="utf-8")) if MANIFEST.exists() else {}
     todo = []
+    n_undated = n_early = 0
     for path, items in tree.items():
         parts = path.split("/")
         if years and (len(parts) < 2 or parts[1] not in years):
@@ -183,11 +206,21 @@ def main() -> int:
                 continue
             if it["mimeType"] not in (GSHEET, XLSX) and not it["name"].lower().endswith((".xlsx", ".csv", ".xlsm")):
                 continue
+            if a.since:
+                d = file_date(it["name"], path)
+                if not d:
+                    n_undated += 1
+                    continue
+                if d < a.since:
+                    n_early += 1
+                    continue
             prev = manifest.get(it["id"])
             if prev and prev.get("modifiedTime") == it.get("modifiedTime") and Path(prev["local"]).exists():
                 continue
             todo.append((path, it))
     say(f"{len(todo)} files to download ({len(manifest)} already in the manifest)")
+    if a.since:
+        say(f"  --since {a.since}: skipped {n_early} earlier files and {n_undated} undated files")
 
     # Two Drive files can share a folder AND a name (a Google Sheet beside its xlsx twin,
     # or a re-upload). First run overwrote 160 of them; a claimed path now gets the Drive
