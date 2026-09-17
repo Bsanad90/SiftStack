@@ -537,9 +537,68 @@ Four traps, each of which fails silently or cryptically:
 3. **Entity owners cannot have a blank `first_name`** (the API rejects it). Send the business as `company` and OMIT the person keys; omitting a key is not the same as sending `""`.
 4. **`notes` on the property payload returns 200 and is discarded.** Post it separately.
 
-`POST /property/` is **upsert by address**, so re-runs never duplicate, and **lists accumulate** rather than overwrite (verified: a record came back with both new lists plus four it already had). Custom fields go to `PATCH /api/internal/property/{uuid}/custom-field/update-values/` with `[{"field_uuid": ..., "value": ...}]`. Creating a `select` custom field REQUIRES its options in the same POST.
+`POST /property/` WAS **upsert by address** (dead since 2026-09-01, see trap 6 below; the internal replacement does not upsert), and **lists accumulate** rather than overwrite (verified: a record came back with both new lists plus four it already had). Custom fields go to `PATCH /api/internal/property/{uuid}/custom-field/update-values/` with `[{"field_uuid": ..., "value": ...}]`. Creating a `select` custom field REQUIRES its options in the same POST.
 
 **Always upload one record and read it back before releasing the file.** That single habit caught the tag format, the entity-owner rejection, the option-UUID requirement and a list-name mismatch that would have silently attached nothing for 2,512 of 2,573 records.
+
+### Endpoint traps from Ty's upstream (recorded 2026-09-17; measured on ty+2 unless stated)
+
+Ty measured these on his account after our fork point (2026-08-17) and wrote them into his
+scripts' docstrings; they were never in this file. A behaviour measured on ty+2 is strong
+evidence, not proof, for this account — each bullet says where it was measured.
+
+1. **Collection-level `remove-*` / `add-*` routes ignore top-level scoping and apply
+   ACCOUNT-WIDE.** Ty, 2026-08-11 (`upstream:src/restore_priority1.py`): `POST
+   /api/internal/property/remove-tags/` with `properties` at the TOP LEVEL of the body stripped
+   `Priority 1` from every record that had it (4,386 → 3,507). **Measured HERE 2026-09-16**
+   (`src/scripts/probate_list_restore.py`): `POST /api/internal/property/remove-lists/` with
+   `{"props": ["<one uuid>"], "lists": ["Probate"]}` ignored `props`, answered
+   `{"count": 30766}` and emptied the `Probate` list account-wide; restored the same day
+   (8,070 live, ~200 unrecoverable). The ONLY body shape the records-filter index honours nests
+   the filter INSIDE `query.must` and passes the tag as a TITLE, not a uuid:
+   `{"query": {"must": {"property_type": "clean", ..., "properties": [uuids]}}, "tags": ["Priority 1"]}`
+   (Ty's `priority_tags.py` add-tags path, live). Rule: a collection-level route is a WRITE,
+   never a probe. Prefer the per-record routes `/property/{uuid}/add-lists/`, `/remove-lists/`,
+   `/remove-tags/`. `OPTIONS` returns 404 on routes where `POST` works, so a 404 from OPTIONS is
+   not evidence that an endpoint is absent.
+2. **`POST /api/internal/property/skip-trace/` skip traces the WHOLE ACCOUNT.** Ty measured
+   2026-08-19 (`upstream:src/datasift_skiptrace.py`): a body naming ONE property uuid traced
+   53,322 records (stats `total_properties` 12,920 → 66,242). Free only on the unlimited plan;
+   his module refuses to run when `GET /api/internal/activity/skiptrace/stats/` reports
+   `value_spent` > 0, because on a metered plan the same call bills for every record. On this
+   account skip trace goes through the wizard (Send To → Skip Trace, require the "Sent!"
+   confirmation). Never call this endpoint here without first reading that stats route and the plan.
+3. **The `lists` body shape on per-record add/remove is DISPUTED — verify on one record first.**
+   Ty (`upstream:src/strip_bulk_lists.py`, `dispo_flow.py`, live on ty+2): `{"lists": "Owner
+   Occupied"}` is a STRING, one list per call; an ARRAY returns 201 and changes NOTHING (batched
+   blindly it would have reported 878 records cleaned with zero changed). This account
+   (`probate_list_restore.py` docstring, 2026-09-16): `/property/{uuid}/remove-lists/
+   {"lists": [...]}` (an array) worked and echoed `removed_lists`. The 8,070-record restore
+   itself used `PATCH /api/internal/property/{uuid}/ {"lists": [...]}`, merge-only, proven live.
+   Until add-lists is probed here with both shapes and read back: send one list per call as a
+   STRING and read the record back — the shape that lies returns 201.
+4. **`GET /api/internal/property/?lists=<uuid>` is silently IGNORED and returns the whole
+   account** (Ty, `upstream:src/list_inventory.py`: 50,769 rows, so every list read as fully
+   populated). Counts and membership come only from the search: `POST /api/internal/property/`
+   with header `x-http-method-override: GET` and `{"query": {"must": {...}}}` — the shape
+   `dpd_lane_assignee_report.to_query()` and `live_pull.py` already use.
+5. **Folder and preset listings default to 10 rows.** `GET /api/internal/filter-preset-folder/`
+   and `.../filter-preset-folder/{uuid}/filter-preset/` return 10 unless `?limit=999` (Ty,
+   `upstream:src/obituary_presets.py`, `dispo_flow.py`: ty+2 has 21 folders and an earlier pass
+   reported the folder "missing"). An exists-check without the limit lies, and the re-create then
+   400s on the global unique-title rule. `dpd_presets_verify.py` passes 73/73, so the existing
+   code handles it; the trap is for any NEW listing code.
+6. **The Open API create route `POST /property/` has returned 403 for every method and both auth
+   types since 2026-09-01** (Ty `39cf760`, measured with the minted JWT and the Api-Key on an
+   unchanged account; matches this account's own "403s on this JWT" finding). Ty's fix creates
+   through `POST /api/internal/property/`, which does NOT upsert (a duplicate address returns 400
+   `{"non_field_errors": ["Property address already exists!"], "property": ["<uuid>"]}`, so his
+   `create_property()` attaches lists/tags/owner to that uuid) and validates `owner` BEFORE the
+   duplicate check (an ownerless body 400s even when the record exists). **NOT ported here:**
+   `datasift_api_upload.upload_rows`, `src/scripts/mddc_datasift_upload.py`, `probate_pr_note.py`,
+   `repair_pr_owners.py` and `probate_audit_restore.py` all still POST the dead route. Record
+   creation on this account is the wizard until that port lands; note the MDDC rows carry no owner
+   name, so even the ported route could only attach to existing records, never create new ones.
 
 ### Incomplete records and the owner-block PATCH (learned 2026-09-11, lane cleanup)
 
@@ -1060,7 +1119,7 @@ Full build narrative, including every panel trap and the inverted-preset post-mo
 5. ~~The other 13 jurisdictions~~ **DONE 2026-08-31:** all 13 built and verified via `src/scripts/dpd_siftmap_build_all.py` (sequential per-county driver, halts on first defect, resume-aware) — 152 presets saved, every one reloading to its exact measured count, 72 inexpressible rows routed to FTM, 8 measured-zero rows kept. Fixes that made it survivable: `saved_filter_names` now exhausts "Show more" (was capped at 4 clicks — fatal at 200+ rows), `reload_check` retries an empty popover once (transient mid-session failure seen on Anne Arundel). **Correction 2026-08-31: exhausting "Show more" is not the same as seeing every filter.** `saved_filter_names` reads the SiftMap **Presets popover**, and that popover tops out around 100 rows; the account actually holds **180 saved filters across 18 pages** (measured on the management page). The complete list is under **Configure → `/siftmap/presets/account`** (10 per page, already known to the code as `PRESETS_ACCOUNT_URL`, which is what `--delete-name` drives). Consequence: any presence/skip check built on `saved_filter_names` is working from a partial list — and `dpd_siftmap_presets.py --commit` uses it exactly that way, so it can re-save a name that already exists, which its own comment calls a hard stop. Read the management page, not the popover, when the question is "does this filter exist". QA reports in `output/dpd_qa_report_<fips>.md`. **County split DONE 2026-08-31 (Basem's design: pull all 14, call the core 9, mail everywhere):** the 30 MAIL presets now carry all 15 counties (`COUNTY_SCOPE_MAIL`), added IN PLACE via `dpd_presets_create.py --widen-counties` — load row (JS click on the title, from a FRESH /records navigation per preset), `set_tokens` the 6 new counties, Save (overwrite), then verify the STORE (counties 9→15, every other stored field byte-equal; the panel's exclusion render lies on load but Save does not serialize the lie — proven by the `--widen-smoke` gate). CALL / Deep Prospecting / Reactivation stay at 9. `dpd_presets_verify.py` exits 0: 73/73, 0 defects.
 6. Sign-ups when Basem is ready (DC Recorder of Deeds free registration; DOB eRecords — `CAPTCHA_API_KEY` is now real and working, struck 2026-08-31) — the ordered list is in `output/dpd_dc_ftm_investigation.md`.
 
-**Standing constraints:** create no Lists (reuse what exists; a SiftMap pull applies *tags* in the Add-Records modal, not lists); `.env` browser auth for every WRITE (presets/folders/SiftMap have no write API, and this account's internal API 403s on writes) — internal-API READS are fine and are how `dpd_presets_verify.py` checks the store; Priority 1/2 are stamped at pull time so they arrive with the property; FTM is stamped by the daily Register of Wills / MDDC / VA pulls; never click `Add Records to Account` and never tick the Save Filters PRO auto-add checkbox without an explicit go.
+**Standing constraints:** create no Lists (reuse what exists; a SiftMap pull applies *tags* in the Add-Records modal, not lists); `.env` browser auth for every WRITE (policy, not a limit: Ty's `account_blueprint` creates presets, folders, sequences, custom fields, task presets, boards and SiftMap `/filters/` over the API on ty+1/ty+2, and filter-preset PATCH is proven here 2026-09-07 — but no CREATE route has been probed on this account, so writes stay browser-driven until one is, one object at a time with a read-back) — internal-API READS are fine and are how `dpd_presets_verify.py` checks the store; Priority 1/2 are stamped at pull time so they arrive with the property; FTM is stamped by the daily Register of Wills / MDDC / VA pulls; never click `Add Records to Account` and never tick the Save Filters PRO auto-add checkbox without an explicit go.
 
 **Decisions taken 2026-08-26 (Basem):** the high-lift slices ride ALONGSIDE the widened T1s (Baltimore `Senior + Vacant` 182/16.5x, Fairfax `Notice of Default` 91/37.3x, Arlington `Free & Clear + Out-of-State + Senior` 123/16.5x as their own smaller higher-priority lists; DC's are skipped as its 76.8x measures 1 record). **AI data is NOT being bought**, so build on the distressor and geography layers only. **Superseded for DC on 2026-08-27** by the per-row design in [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md); still the plan of record for the 13 counties whose per-row manifests have not been built.
 
