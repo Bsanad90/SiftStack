@@ -37,8 +37,12 @@ const {
 // ---------------------------------------------------------------------------
 const args = process.argv.slice(2);
 let inputFile, outputFile, title;
+let diagramMaxH = 700;   // px; --diagram-max-height overrides
+let imageMaxH = 500;     // px; --image-max-height overrides
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--title" && args[i + 1]) { title = args[++i]; continue; }
+  if (args[i] === "--diagram-max-height" && args[i + 1]) { diagramMaxH = parseInt(args[++i], 10); continue; }
+  if (args[i] === "--image-max-height" && args[i + 1]) { imageMaxH = parseInt(args[++i], 10); continue; }
   if (!inputFile) { inputFile = args[i]; continue; }
   if (!outputFile) { outputFile = args[i]; continue; }
 }
@@ -399,7 +403,7 @@ async function buildDocx(mdText, outputPath, docTitle, baseDir) {
             // Scale to fit content width with minimum readability enforcement
             // Use full content width (6.5 inches = 624px at 96dpi) for better readability
             const maxW = 624;
-            const maxH = 700;  // Allow taller charts since segmented charts are narrower
+            const maxH = diagramMaxH;  // default 700: taller charts since segmented charts are narrower
             const minW = 400;  // Minimum width — never shrink below this
             const minH = 200;  // Minimum height
 
@@ -458,7 +462,7 @@ async function buildDocx(mdText, outputPath, docTitle, baseDir) {
           // natural on-screen size. Cap the height well under a page so an
           // image never claims a page of its own.
           const maxW = 624;
-          const maxH = 500;
+          const maxH = imageMaxH;
           const ratio = Math.min(maxW / width, maxH / height, 0.5);
           const finalW = Math.round(width * ratio);
           const finalH = Math.round(height * ratio);

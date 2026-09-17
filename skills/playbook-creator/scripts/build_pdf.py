@@ -241,7 +241,8 @@ def md_inline(text: str) -> str:
 # ---------------------------------------------------------------------------
 
 def build_pdf(md_text: str, output_path: str, title: str = None,
-              base_dir: str = None):
+              base_dir: str = None, diagram_max_h: float = 4.5,
+              image_max_h: float = 5.4):
     """Build a PDF from parsed markdown content."""
 
     mmdc = find_mmdc()
@@ -384,7 +385,7 @@ def build_pdf(md_text: str, output_path: str, title: str = None,
                     img = Image(png_path)
                     # Scale to fit page width
                     max_w = 6.5 * inch
-                    max_h = 4.5 * inch
+                    max_h = diagram_max_h * inch
                     w, h = img.imageWidth, img.imageHeight
                     if w > 0 and h > 0:
                         ratio = min(max_w / w, max_h / h)
@@ -417,7 +418,7 @@ def build_pdf(md_text: str, output_path: str, title: str = None,
                 # 72dpi points). Cap the height well under a page so an image
                 # never claims a page of its own and orphans the text around it.
                 max_w = 6.5 * inch
-                max_h = 5.4 * inch
+                max_h = image_max_h * inch
                 w, h = img.imageWidth, img.imageHeight
                 if w > 0 and h > 0:
                     ratio = min(max_w / w, max_h / h, 0.375)
@@ -536,10 +537,16 @@ if __name__ == "__main__":
     parser.add_argument("input", help="Input markdown file")
     parser.add_argument("output", help="Output PDF file")
     parser.add_argument("--title", help="Document title", default=None)
+    parser.add_argument("--diagram-max-height", type=float, default=4.5,
+                        help="Max height of a rendered Mermaid diagram, in inches (default 4.5)")
+    parser.add_argument("--image-max-height", type=float, default=5.4,
+                        help="Max height of an embedded screenshot, in inches (default 5.4)")
     args = parser.parse_args()
 
     with open(args.input, "r", encoding="utf-8") as f:
         md_text = f.read()
 
     build_pdf(md_text, args.output, title=args.title,
-              base_dir=os.path.dirname(os.path.abspath(args.input)))
+              base_dir=os.path.dirname(os.path.abspath(args.input)),
+              diagram_max_h=args.diagram_max_height,
+              image_max_h=args.image_max_height)
