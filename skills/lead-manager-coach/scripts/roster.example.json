@@ -1,8 +1,17 @@
 {
-  "_comment": "Copy to roster.json in your project folder (next to the scripts folder). 'roles' pins callers who only work one pipeline so their calls always route to the right rubric: cold_call | lead_management | closing. 'excluded' hides departed callers from coaching review.",
+  "_comment": "Copy to roster.json in your project folder (next to the scripts folder). 'roles' pins callers who only work one pipeline so their calls always route to the right rubric: cold_call | lead_management | closing. 'excluded' hides departed callers from coaching review. 'manager' is printed on every per-dialer record; 'dialers' each get a record even before their first coached call; 'aliases' map the name heard on a call (callers often use phone aliases) to the dialer, so one person's calls fold into one record. Unmapped aliases get their own record and are listed in the manager index.",
+  "manager": "Manager Name",
+  "dialers": [
+    "Jane Smith",
+    "John Doe"
+  ],
   "roles": {
     "Jane Smith": "cold_call",
     "John Doe": "lead_management"
+  },
+  "aliases": {
+    "jane": "Jane Smith",
+    "name heard on the call": "John Doe"
   },
   "excluded": [
     "Former Caller Name"

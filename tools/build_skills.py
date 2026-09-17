@@ -87,6 +87,8 @@ REQUIRES = {
                                      note="Community mining needs your logged-in browser for private groups. The Excel engine is pure openpyxl."),
     "contractor-call-sheet": dict(tier="none", fallback=None,
                                   note="Drafts outreach for a human to send. Never sends anything itself."),
+    "dispo-deal-blast": dict(tier="none", fallback=None,
+                             note="The method, the guards and the copy rules. The bundled cohort calculator is stdlib only. Wiring it to your own CRM and SMS provider is your call, and every send stays behind a human release."),
 
     # --- tier account: your own login for something you already pay for ----
     "sift-market-research": dict(tier="account", env=["DATASIFT_EMAIL", "DATASIFT_PASSWORD"],
@@ -161,6 +163,7 @@ CATEGORY = {
     "caller-reputation-monitor": "Operations",
     "vendor-directory-builder": "Operations",
     "contractor-call-sheet": "Operations",
+    "dispo-deal-blast": "Operations",
     "kpi-engine": "Coaching & Performance",
     "cold-call-coach": "Coaching & Performance",
     "lead-manager-coach": "Coaching & Performance",

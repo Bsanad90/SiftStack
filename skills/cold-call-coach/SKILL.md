@@ -76,6 +76,22 @@ One styled Excel file: Summary (full calls, /100, band colored), Short Calls
 (opener + conversion on their own scale), Coaching Detail, Caller Scorecard,
 Criterion Scores.
 
+6. Refresh the per-dialer coaching records (ALWAYS, after every grading run):
+
+```bash
+python scripts/dialer_report.py
+```
+
+One cumulative record per dialer in `output/call_coaching/dialers/<Dialer Name>.md`,
+written in the dialer's name and holding every coached call to date: progress table,
+category trend (first vs latest), the criteria that keep scoring low (the retraining
+list), the current drill, and a newest-first call log. It is the document a manager
+retrains from and can send to the dialer at any point. `README.md` in the same folder
+is the manager index (every dialer, average, latest, trend) and lists caller aliases
+not yet mapped in `roster.json` (`"aliases": {"name heard on the call": "Dialer Name"}`;
+`"manager"` and `"dialers"` are printed on every record). Internal operational notes
+belong BELOW the per-call report's JSON footer; the dialer record never copies them.
+
 ## Grading quality protocol (mandatory verify pass)
 
 - Every quote must appear verbatim in the transcript (check by substring).

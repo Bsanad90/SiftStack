@@ -50,6 +50,12 @@ BAND_FILLS = {
 }
 
 SECTION_RE = re.compile(r"^[A-Z][A-Z0-9 /()3']+$")
+# Report section headers; a section ends where the next one starts, even when the
+# header line carries lowercase parentheticals ("TOP 3 STRENGTHS (quote the transcript)").
+REPORT_HEADERS = ("SCORES", "CRITERION SCORES", "PILLARS CAPTURED", "TOP 3 STRENGTHS",
+                  "TOP 3 IMPROVEMENT", "ONE DRILL", "ONE FIX", "WHAT HAPPENED", "OPENER (",
+                  "CONVERSION ATTEMPT", "N/A discipline", "Evidence per criterion",
+                  "Auto-fail scan", "## ")
 
 
 def _grab(pattern: str, text: str) -> str:
@@ -79,10 +85,13 @@ def _section(text: str, header_prefix: str) -> str:
                 out.append(inline)
             continue
         if active:
-            if (SECTION_RE.match(s) and len(s) > 8) or s.startswith("```"):
+            if (SECTION_RE.match(s) and len(s) > 8) or s.startswith("```") \
+                    or any(s.startswith(h) for h in REPORT_HEADERS if not header_prefix.startswith(h)):
                 break
             out.append(line)
-    return "\n".join(out).strip()
+    text_out = "\n".join(out).strip()
+    # "ONE DRILL FOR THIS WEEK" leaves its tail on the inline text; drop it
+    return re.sub(r"^FOR THIS WEEK\s*", "", text_out)
 
 
 def _scores_json(text: str) -> dict:
@@ -175,9 +184,16 @@ def parse_report(path: Path) -> dict:
     }
 
 
+def _is_report(path: Path) -> bool:
+    """A per-call report is any .md carrying the SCORES JSON footer."""
+    if path.stem in ("connection_log", "README"):
+        return False
+    return "```json" in path.read_text(encoding="utf-8")
+
+
 def parse_old_scores(old_dir: Path) -> dict[str, tuple[str, str]]:
     out: dict[str, tuple[str, str]] = {}
-    for f in old_dir.glob("[0-9]*.md"):
+    for f in (f for f in old_dir.glob("*.md") if _is_report(f)):
         text = f.read_text(encoding="utf-8")
         tm = re.search(r"^\|\s*TOTAL[^|]*\|[^\n]*?([\d.]+)\s*/\s*100", text, re.M)
         band = _grab(r"Grade [Bb]and:\s*([^\n]+)", text).replace("*", "")
@@ -426,7 +442,9 @@ def main() -> int:
     args = ap.parse_args()
 
     rep_dir = Path(args.dir)
-    files = sorted(f for f in rep_dir.glob("[0-9]*.md"))
+    # Any per-call report, not just numeric SmrtPhone ids: UUID-named and
+    # hand-supplied recordings (wa_*, etc.) carry the same JSON footer.
+    files = sorted(f for f in rep_dir.glob("*.md") if _is_report(f))
     if args.caller:
         files = [f for f in files if args.caller.lower() in f.stem.lower()]
     if not files:

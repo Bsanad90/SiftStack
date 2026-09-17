@@ -15,8 +15,7 @@
     "Coaching & Performance",
     "Deal Analysis",
     "Market Intelligence",
-    "Operations",
-    "Uncategorized"
+    "Operations"
   ],
   "tiers": {
     "none": "Works the moment it is installed. No key, no login.",
@@ -124,9 +123,9 @@
         "scripts/transcribe.py"
       ],
       "file_count": 8,
-      "bytes": 76898,
+      "bytes": 77389,
       "download": "https://raw.githubusercontent.com/DataSift-Ty-Personal/SiftStack/main/dist/closer-coach.skill",
-      "sha256": "d795bfa383c10e3cac099cc31bd736046cdd522dda9face1580ecd3742d910b1",
+      "sha256": "cdf64b9753d7fae597a6340dbcc6ee52d0ae6edb1ca9d8de16a753dda1516d09",
       "requires": {
         "tier": "account",
         "accounts": [
@@ -154,6 +153,7 @@
         "references/calibration/example_short_call.md",
         "references/reliability.md",
         "references/rubric.md",
+        "scripts/dialer_report.py",
         "scripts/env.example",
         "scripts/export_excel.py",
         "scripts/pull_calls.py",
@@ -161,10 +161,10 @@
         "scripts/smrtphone_login.py",
         "scripts/transcribe.py"
       ],
-      "file_count": 13,
-      "bytes": 104768,
+      "file_count": 14,
+      "bytes": 124503,
       "download": "https://raw.githubusercontent.com/DataSift-Ty-Personal/SiftStack/main/dist/cold-call-coach.skill",
-      "sha256": "a50055ea32e7eb853e0f29c1f869346edf557b6d1b5c253840b3a319587267c7",
+      "sha256": "06958d97fade8e60a0485cbb116b69d043f70ba138aef2e52d1e29a9032439e1",
       "requires": {
         "tier": "account",
         "accounts": [
@@ -225,9 +225,9 @@
         "scripts/transcribe.py"
       ],
       "file_count": 8,
-      "bytes": 76590,
+      "bytes": 77081,
       "download": "https://raw.githubusercontent.com/DataSift-Ty-Personal/SiftStack/main/dist/lead-manager-coach.skill",
-      "sha256": "6eb37dd410c56d7f9101469c446cbb1e9aedcdf2e468bac9caed7c3ea68fc4bc",
+      "sha256": "22aa0c3f5e0126e146f663c18b369b35b7b5b8107683fc96bd10c9c9fb488433",
       "requires": {
         "tier": "account",
         "accounts": [
@@ -274,7 +274,7 @@
       "kind": "plugin",
       "category": "Deal Analysis",
       "version": "0.1.0",
-      "description": "End-to-end investment property deal analysis: photos → comps → rehab estimate → offer strategy. Combines comping and rehab estimation into one streamlined workflow.",
+      "description": "End-to-end investment property deal analysis: photos \u2192 comps \u2192 rehab estimate \u2192 offer strategy. Combines comping and rehab estimation into one streamlined workflow.",
       "status": "current",
       "source_dir": "plugins/deal-analyzer",
       "files": [
@@ -416,7 +416,7 @@
       "kind": "skill",
       "category": "Deal Analysis",
       "version": null,
-      "description": "Find real property owned by probate decedents when you only have the case filing (PR number, decedent name, executor details) but no property address. Browses county assessor/CAD sites, deed records, and aggregators to discover every parcel the decedent owned, then outputs a Sift-ready CSV with formatted addresses and property data. Works on single records or bulk CSV. Use whenever someone says \"find the property for this probate\", \"what did the decedent own\", \"complete this probate list\", \"enrich probate records\", \"fill in missing property addresses\", \"probate property lookup\", \"property discovery\", or uploads a CSV of probate filings missing property addresses. Also use when someone has a decedent name and county but no property address. Even if the user just says \"I have probates but no addresses\" or \"find the properties for these\" — use this skill.",
+      "description": "Find real property owned by probate decedents when you only have the case filing (PR number, decedent name, executor details) but no property address. Browses county assessor/CAD sites, deed records, and aggregators to discover every parcel the decedent owned, then outputs a Sift-ready CSV with formatted addresses and property data. Works on single records or bulk CSV. Use whenever someone says \"find the property for this probate\", \"what did the decedent own\", \"complete this probate list\", \"enrich probate records\", \"fill in missing property addresses\", \"probate property lookup\", \"property discovery\", or uploads a CSV of probate filings missing property addresses. Also use when someone has a decedent name and county but no property address. Even if the user just says \"I have probates but no addresses\" or \"find the properties for these\" \u2014 use this skill.",
       "status": "current",
       "source_dir": "skills/probate-property-finder",
       "files": [
@@ -440,7 +440,7 @@
       "kind": "skill",
       "category": "Deal Analysis",
       "version": null,
-      "description": "Perform AI-powered property valuation and comparable sales analysis for real estate wholesaling. Use when the user needs to comp a property, determine ARV, analyze comparable sales, or perform property valuation. Automatically detects disclosure vs non-disclosure states and applies the appropriate methodology (standard comping for disclosure states, triangulation method for non-disclosure states like Texas). This skill focuses purely on comping — determining market value through comparable sales analysis. It does NOT estimate rehab costs or renovation budgets; those are handled separately.",
+      "description": "Perform AI-powered property valuation and comparable sales analysis for real estate wholesaling. Use when the user needs to comp a property, determine ARV, analyze comparable sales, or perform property valuation. Automatically detects disclosure vs non-disclosure states and applies the appropriate methodology (standard comping for disclosure states, triangulation method for non-disclosure states like Texas). This skill focuses purely on comping \u2014 determining market value through comparable sales analysis. It does NOT estimate rehab costs or renovation budgets; those are handled separately.",
       "status": "current",
       "source_dir": "skills/real-estate-comping",
       "files": [
@@ -500,7 +500,7 @@
       "kind": "skill",
       "category": "Market Intelligence",
       "version": null,
-      "description": "Build a real estate buyers list for any US county by pulling from a nationwide database of active buyers, categorizing entities (LLCs, Trusts, Corporations), and researching decision-makers for skip tracing. Use this skill whenever someone wants to find buyers in a specific county, build a buyers list, identify who's buying in a market, research active investors in an area, prospect cash buyers, or needs to know who the top buyers are in a county. Trigger for \"buyers list\", \"find buyers\", \"who's buying in\", \"cash buyers\", \"active buyers\", \"buyer prospecting\", \"build a buyers list for [county]\", \"investors buying in [market]\", \"buyer research\", or any request to identify and research real estate buyers in a specific geographic area. Even if the user just says \"pull buyers for Knox County\" or \"who's buying in Harris County TX\" — use this skill.",
+      "description": "Build a real estate buyers list for any US county by pulling from a nationwide database of active buyers, categorizing entities (LLCs, Trusts, Corporations), and researching decision-makers for skip tracing. Use this skill whenever someone wants to find buyers in a specific county, build a buyers list, identify who's buying in a market, research active investors in an area, prospect cash buyers, or needs to know who the top buyers are in a county. Trigger for \"buyers list\", \"find buyers\", \"who's buying in\", \"cash buyers\", \"active buyers\", \"buyer prospecting\", \"build a buyers list for [county]\", \"investors buying in [market]\", \"buyer research\", or any request to identify and research real estate buyers in a specific geographic area. Even if the user just says \"pull buyers for Knox County\" or \"who's buying in Harris County TX\" \u2014 use this skill.",
       "status": "current",
       "source_dir": "skills/buyer-prospector",
       "files": [
@@ -696,11 +696,39 @@
       }
     },
     {
+      "name": "dispo-deal-blast",
+      "kind": "skill",
+      "category": "Operations",
+      "version": null,
+      "description": "Text one named wholesale deal to the cash buyers whose own deed history says they buy at that price, and hand every reply to a human. Builds a buyer registry from investor transactions, gates it on recency, matches an asymmetric price band, renders copy that cannot leak the contract price or the address, stages the batch as HELD behind a deliberate release, and turns the responses into a permanent buyer phonebook. Trigger for: blast a deal to my buyers, dispo this property, text my cash buyer list, who should I send this deal to, build a cash buyer list, or set up dispo SMS.",
+      "status": "current",
+      "source_dir": "skills/dispo-deal-blast",
+      "files": [
+        "SKILL.md",
+        "references/buyer-registry.md",
+        "references/copy-rules.md",
+        "references/sms-guards.md",
+        "scripts/cohort.py"
+      ],
+      "file_count": 5,
+      "bytes": 21817,
+      "download": "https://raw.githubusercontent.com/DataSift-Ty-Personal/SiftStack/main/dist/dispo-deal-blast.skill",
+      "sha256": "48b17ea3ab9ad7ecb7eda5d85ed92723a2a7d7b185eca751683482eeecc9de0a",
+      "requires": {
+        "tier": "none",
+        "fallback": null,
+        "note": "The method, the guards and the copy rules. The bundled cohort calculator is stdlib only. Wiring it to your own CRM and SMS provider is your call, and every send stays behind a human release.",
+        "env": [],
+        "accounts": [],
+        "cost": "Free"
+      }
+    },
+    {
       "name": "phone-validator",
       "kind": "skill",
       "category": "Operations",
       "version": null,
-      "description": "Score and validate phone numbers via Trestle's phone_intel API, then generate DataSift/REISift-ready CSVs with phone tags for upload. Use whenever someone wants to: validate phones, score activity, check if connected, generate phone tags for DataSift, prepare dial lists, prioritize a call list, identify dead numbers, check line types, or create tiered dial lists. Trigger for \"phone validation\", \"validate phones\", \"activity score\", \"phone tags\", \"tag phones\", \"dial first\", \"Trestle\", \"phone_intel\", \"dead phones\", \"line type\", \"prioritize phones\", \"DataSift phone upload\", \"REISift phone tags\", \"score these phones\", or \"which numbers should I call first\" — use this skill.",
+      "description": "Score and validate phone numbers via Trestle's phone_intel API, then generate DataSift/REISift-ready CSVs with phone tags for upload. Use whenever someone wants to: validate phones, score activity, check if connected, generate phone tags for DataSift, prepare dial lists, prioritize a call list, identify dead numbers, check line types, or create tiered dial lists. Trigger for \"phone validation\", \"validate phones\", \"activity score\", \"phone tags\", \"tag phones\", \"dial first\", \"Trestle\", \"phone_intel\", \"dead phones\", \"line type\", \"prioritize phones\", \"DataSift phone upload\", \"REISift phone tags\", \"score these phones\", or \"which numbers should I call first\" \u2014 use this skill.",
       "status": "current",
       "source_dir": "skills/phone-validator",
       "files": [
@@ -712,9 +740,9 @@
         "scripts/validate_phones.py"
       ],
       "file_count": 6,
-      "bytes": 76925,
+      "bytes": 96373,
       "download": "https://raw.githubusercontent.com/DataSift-Ty-Personal/SiftStack/main/dist/phone-validator.skill",
-      "sha256": "bc00ed89023f1c572b9beb2f390fa7cd465924d26e901f3f0be5c98ee293d850",
+      "sha256": "e6a74fb4443e244ff54f8cd2e0dfc0a5ea130d78dbd948f18406e61534556e98",
       "requires": {
         "tier": "api",
         "env": [
@@ -730,7 +758,7 @@
       "kind": "skill",
       "category": "Operations",
       "version": null,
-      "description": "Create professional playbooks and SOPs with process maps, visual aids, and structured workflows. Accepts raw transcripts, meeting recordings, or written descriptions as input and transforms them into polished documentation with Mermaid flowcharts, decision trees, and screenshot placeholders. Use when user requests a playbook, SOP, standard operating procedure, process documentation, training manual, workflow guide, or says things like \"turn this into a playbook\", \"create an SOP from this call\", \"document this process\", \"make a training doc\", or \"write up how to do X\". Also triggers for \"process map\", \"flowchart\", \"workflow diagram\", or any request to visualize a process. Even if the user just gives you a transcript and says \"make this into something useful\" — if it describes a repeatable process, use this skill.",
+      "description": "Create professional playbooks and SOPs with process maps, visual aids, and structured workflows. Accepts raw transcripts, meeting recordings, or written descriptions as input and transforms them into polished documentation with Mermaid flowcharts, decision trees, and screenshot placeholders. Use when user requests a playbook, SOP, standard operating procedure, process documentation, training manual, workflow guide, or says things like \"turn this into a playbook\", \"create an SOP from this call\", \"document this process\", \"make a training doc\", or \"write up how to do X\". Also triggers for \"process map\", \"flowchart\", \"workflow diagram\", or any request to visualize a process. Even if the user just gives you a transcript and says \"make this into something useful\" \u2014 if it describes a repeatable process, use this skill.",
       "status": "current",
       "source_dir": "skills/playbook-creator",
       "files": [
@@ -746,9 +774,9 @@
         "scripts/build_pdf.py"
       ],
       "file_count": 10,
-      "bytes": 113610,
+      "bytes": 120726,
       "download": "https://raw.githubusercontent.com/DataSift-Ty-Personal/SiftStack/main/dist/playbook-creator.skill",
-      "sha256": "9c24cd232114f77c115181b74f53a2a515f49c579b682b90d72f7fe297f95bc7",
+      "sha256": "c90495f5b82f31bae3e83dd552530301d94eb195ad0098a3bf8cae25c1cedc91",
       "requires": {
         "tier": "none",
         "fallback": null,
@@ -868,34 +896,6 @@
         "tier": "none",
         "fallback": null,
         "note": "Community mining needs your logged-in browser for private groups. The Excel engine is pure openpyxl.",
-        "env": [],
-        "accounts": [],
-        "cost": "Free"
-      }
-    },
-    {
-      "name": "dispo-deal-blast",
-      "kind": "skill",
-      "category": "Uncategorized",
-      "version": null,
-      "description": "Text one named wholesale deal to the cash buyers whose own deed history says they buy at that price, and hand every reply to a human. Builds a buyer registry from investor transactions, gates it on recency, matches an asymmetric price band, renders copy that cannot leak the contract price or the address, stages the batch as HELD behind a deliberate release, and turns the responses into a permanent buyer phonebook. Trigger for: blast a deal to my buyers, dispo this property, text my cash buyer list, who should I send this deal to, build a cash buyer list, or set up dispo SMS.",
-      "status": "current",
-      "source_dir": "skills/dispo-deal-blast",
-      "files": [
-        "SKILL.md",
-        "references/buyer-registry.md",
-        "references/copy-rules.md",
-        "references/sms-guards.md",
-        "scripts/cohort.py"
-      ],
-      "file_count": 5,
-      "bytes": 21817,
-      "download": "https://raw.githubusercontent.com/DataSift-Ty-Personal/SiftStack/main/dist/dispo-deal-blast.skill",
-      "sha256": "48b17ea3ab9ad7ecb7eda5d85ed92723a2a7d7b185eca751683482eeecc9de0a",
-      "requires": {
-        "tier": "none",
-        "fallback": null,
-        "note": "The method, the guards and the copy rules. The bundled cohort calculator is stdlib only. Wiring it to your own CRM and SMS provider is your call, and every send stays behind a human release.",
         "env": [],
         "accounts": [],
         "cost": "Free"

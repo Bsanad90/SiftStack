@@ -106,6 +106,9 @@ redfin_*.html
 jarboe_*.pdf
 deed_*.pdf
 132 main street/
+# Cold-call coaching roster: real staff names plus the phone-alias -> identity map.
+# The coach skills read it from the project root; only scripts/roster.example.json ships.
+roster.json
 
 # Local scratch (screenshots, crops, temp dirs)
 .tmp_*
