@@ -27,6 +27,7 @@ Usage:
   python -u src/scripts/ancestry_dp_pilot.py --dry-run                 # selection only
   python -u src/scripts/ancestry_dp_pilot.py                           # 15 records, headed browser
   python -u src/scripts/ancestry_dp_pilot.py --n 15 --run-dir output/dp_obit_aug27 --no-fallback
+  python -u src/scripts/ancestry_dp_pilot.py --n 0 --exclude-done --birth-only   # the rest of the cohort
 
 Outputs: output/ancestry_pilot/pilot_<ts>.{json,csv,md} + pilot_<ts>.log
 """
@@ -104,11 +105,15 @@ def load_cohort(run_dir: Path) -> list[dict]:
     return rows
 
 
-def select(rows: list[dict], n: int) -> tuple[list[dict], dict]:
+def select(rows: list[dict], n: int, exclude_keys: set[str] | None = None) -> tuple[list[dict], dict]:
+    """n <= 0 means every eligible record (the "rest of the cohort" run, 2026-09-18)."""
     reasons = Counter()
     eligible = []
+    exclude_keys = exclude_keys or set()
     for r in rows:
-        if r["state"] not in FOOTPRINT_STATES:
+        if r["key"] in exclude_keys:
+            reasons["already_looked_up"] += 1
+        elif r["state"] not in FOOTPRINT_STATES:
             reasons["out_of_footprint"] += 1
         elif r["is_trust"]:
             reasons["trust_or_business"] += 1
@@ -123,6 +128,8 @@ def select(rows: list[dict], n: int) -> tuple[list[dict], dict]:
         else:
             eligible.append(r)
     eligible.sort(key=lambda r: r["key"])
+    if n <= 0:
+        n = len(eligible)
     per_state = {s: n // len(FOOTPRINT_STATES) for s in FOOTPRINT_STATES}
     for s in ("MD", "VA", "DC")[: n - sum(per_state.values())]:
         per_state[s] += 1
@@ -159,7 +166,28 @@ def classify(result: dict | None) -> str:
     return "dated_death_weak_basis" if result.get("date_of_death") else "match_weak_basis_no_date"
 
 
-async def run_live(picked: list[dict], fallback: bool, out_prefix: Path) -> list[dict]:
+def done_keys(out_dir: Path) -> set[str]:
+    """Keys already looked up live by an earlier pilot report in out_dir (dry runs excluded)."""
+    keys: set[str] = set()
+    for f in sorted(out_dir.glob("pilot_*.json")):
+        try:
+            payload = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if f.name.endswith(".partial.json"):
+            rows = payload            # the per-record checkpoint of an interrupted run
+        elif payload.get("dry_run"):
+            continue
+        else:
+            rows = payload.get("records") or []
+        for r in rows:
+            if "outcome" in r and "result" in r:   # a live row, not a dry-run pick
+                keys.add(r["key"])
+    return keys
+
+
+async def run_live(picked: list[dict], fallback: bool, out_prefix: Path,
+                   birth_only: bool = False) -> list[dict]:
     loads_start = anc._get_page_loads_today()
     log.info("Page loads already counted today: %d / %d", loads_start, anc.DAILY_LIMIT)
     pw, context, page = await anc.launch_browser()
@@ -183,11 +211,23 @@ async def run_live(picked: list[dict], fallback: bool, out_prefix: Path) -> list
             log.info("[%d/%d] %s | %s, %s | age %s -> birth ~%s | obit %s -> death %s",
                      i, len(picked), name, r["city"], r["state"], r["age"],
                      r["expected_birth_year"], r["obit_date"], r["expected_death_year"])
-            res = await anc.lookup_deceased(page, name=name, city=r["city"], state=r["state"],
-                                            expected_birth_year=r["expected_birth_year"],
-                                            expected_death_year=r["expected_death_year"])
-            if res:
-                row["pass_hit"] = "A"
+            res = None
+            if birth_only:
+                # Pilot 2026-09-18: pass A scored 0/15 and REJECTS the real match on unresolved
+                # records (the SiftMap obituary date is usually not the owner's death) -- skip it.
+                res = await anc.lookup_deceased(page, name=name, city=r["city"], state=r["state"],
+                                                expected_birth_year=r["expected_birth_year"],
+                                                expected_death_year=None)
+                if res:
+                    row["pass_hit"] = "B"
+            else:
+                res = await anc.lookup_deceased(page, name=name, city=r["city"], state=r["state"],
+                                                expected_birth_year=r["expected_birth_year"],
+                                                expected_death_year=r["expected_death_year"])
+                if res:
+                    row["pass_hit"] = "A"
+            if res or birth_only:
+                pass
             elif fallback and not anc.is_circuit_broken() and anc._can_load_page():
                 await anc._delay(2, 4)
                 res = await anc.lookup_deceased(page, name=name, city=r["city"], state=r["state"],
@@ -283,6 +323,10 @@ def main() -> int:
     ap.add_argument("--out-dir", default="output/ancestry_pilot")
     ap.add_argument("--dry-run", action="store_true", help="select and report, open no browser")
     ap.add_argument("--no-fallback", action="store_true", help="pass A only (skip the birth-only pass)")
+    ap.add_argument("--birth-only", action="store_true",
+                    help="skip pass A; one birth-hint lookup per record (the measured-useful pass)")
+    ap.add_argument("--exclude-done", action="store_true",
+                    help="skip keys already looked up by an earlier live pilot report in --out-dir")
     a = ap.parse_args()
 
     run_dir = ROOT / a.run_dir if not Path(a.run_dir).is_absolute() else Path(a.run_dir)
@@ -297,7 +341,10 @@ def main() -> int:
     logging.getLogger("ancestry_enricher").setLevel(logging.DEBUG)
 
     rows = load_cohort(run_dir)
-    picked, audit = select(rows, a.n)
+    exclude = done_keys(out_dir) if a.exclude_done else set()
+    picked, audit = select(rows, a.n, exclude_keys=exclude)
+    audit["excluded_already_done"] = len(exclude)
+    audit["birth_only"] = bool(a.birth_only)
     log.info("Selection: %s", json.dumps(audit))
     for r in picked:
         log.info("  %s | %s %s | %s, %s | age %s | obit %s", r["key"], r["owner_first"], r["owner_last"],
@@ -310,7 +357,8 @@ def main() -> int:
     if not picked:
         log.error("Nothing eligible to look up")
         return 2
-    results = asyncio.run(run_live(picked, fallback=not a.no_fallback, out_prefix=out_prefix))
+    results = asyncio.run(run_live(picked, fallback=not a.no_fallback, out_prefix=out_prefix,
+                                   birth_only=a.birth_only))
     md = write_report(results, audit, picked, out_prefix, loads_before, dry_run=False)
     log.info("Report: %s", md)
     return 0 if results else 1
