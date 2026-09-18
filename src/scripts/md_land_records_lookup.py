@@ -980,7 +980,13 @@ def name_match_level(decedent_full: str, last_name: str, first_name: str, owner:
     # middle name ("SAMPLE WILLIAM H" vs "WILLIAM HENRY SAMPLE"): credit a
     # decedent token whose first letter is a bare initial on the owner side.
     owner_initials = _initial_tokens(owner)
-    matched = {t for t in full_t if t in owner_t or t[0] in owner_initials}
+    # The initial credit is for MIDDLE names only. The decedent's first and
+    # last name must be on the owner as whole tokens: with the credit applied
+    # to every token, "Mychael Torres" scored HIGH against "TORRES, MARIA M"
+    # (M = Mychael) and the pull adopted a stranger's house as owned
+    # elsewhere (2026-ADM-001011, measured 2026-09-18).
+    anchor = _name_tokens(last_name) | _name_tokens(first_name.split()[0] if first_name else "")
+    matched = {t for t in full_t if t in owner_t or (t not in anchor and t[0] in owner_initials)}
     if full_t and matched == full_t:
         # A decedent middle INITIAL is dropped by _name_tokens (single
         # letter), so "ROBERT E KAISER" was matching ANY Robert Kaiser and

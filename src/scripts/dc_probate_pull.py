@@ -963,7 +963,7 @@ def _get_parties(context, case_id: str):
 
 # ── ITSPE (DC property records) ────────────────────────────────────────────
 
-ITSPE_FIELDS = "OWNERNAME,PREMISEADD,SSL,ADDRESS1,CITYSTZIP,SALEDATE,SALEPRICE"
+ITSPE_FIELDS = "OWNERNAME,OWNNAME2,PREMISEADD,SSL,ADDRESS1,CITYSTZIP,SALEDATE,SALEPRICE"
 
 
 def itspe_query(where: str, limit: int = 50) -> list[dict]:
@@ -1004,7 +1004,8 @@ def _sale_after_dod(attrs: dict, dod_mdy: str) -> bool:
         return False
 
 
-def itspe_find_by_owner(last: str, first: str, full_name: str, dod_mdy: str = "") -> dict:
+def itspe_find_by_owner(last: str, first: str, full_name: str, dod_mdy: str = "",
+                        party_surnames: set[str] | None = None) -> dict:
     """Discover a DC parcel by decedent name. HIGH-only auto-accept with the
     Johnson guard: >10 candidates, or MEDIUM-best across >=2 distinct owner
     spellings, refuses rather than guesses."""
@@ -1012,10 +1013,12 @@ def itspe_find_by_owner(last: str, first: str, full_name: str, dod_mdy: str = ""
     if not last_u:
         return {"found": False, "reason": "no decedent last name"}
     tiers = [
-        f"UPPER(OWNERNAME) LIKE '{last_u} {first_u}%' OR UPPER(OWNERNAME) LIKE '{last_u}, {first_u}%'",
+        f"UPPER(OWNERNAME) LIKE '{last_u} {first_u}%' OR UPPER(OWNERNAME) LIKE '{last_u}, {first_u}%' OR "
+        f"UPPER(OWNNAME2) LIKE '{last_u} {first_u}%' OR UPPER(OWNNAME2) LIKE '{last_u}, {first_u}%'",
     ]
     if first_u:
-        tiers.append(f"UPPER(OWNERNAME) LIKE '{last_u} {first_u[0]}%' OR UPPER(OWNERNAME) LIKE '{last_u}, {first_u[0]}%'")
+        tiers.append(f"UPPER(OWNERNAME) LIKE '{last_u} {first_u[0]}%' OR UPPER(OWNERNAME) LIKE '{last_u}, {first_u[0]}%' OR "
+                     f"UPPER(OWNNAME2) LIKE '{last_u} {first_u[0]}%' OR UPPER(OWNNAME2) LIKE '{last_u}, {first_u[0]}%'")
     candidates: list[dict] = []
     for where in tiers:
         try:
@@ -1033,7 +1036,8 @@ def itspe_find_by_owner(last: str, first: str, full_name: str, dod_mdy: str = ""
 
     scored = []
     for c in candidates:
-        level = name_match_level(full_name, last, first, c.get("OWNERNAME", ""))
+        level, matched, other = _score_owner(full_name, last, first, c)
+        c["_matched"], c["_other"] = matched, other
         if level == "LOW":
             continue
         if _sale_after_dod(c, dod_mdy):
@@ -1061,9 +1065,56 @@ def itspe_find_by_owner(last: str, first: str, full_name: str, dod_mdy: str = ""
     primary = next((c for c in pool if is_primary(c)), pool[0])
     addr = _premise_split(primary.get("PREMISEADD", ""))
     extra = [c.get("PREMISEADD", "") for c in pool if c is not primary]
+    co_owner = primary.get("_other", "")
+    # The 506 Nicholson rule (2026-ADM-000864, 2026-09-16): a by-NAME hit on a
+    # common name can be a stranger's house. When the parcel has a co-owner,
+    # that co-owner must be a party to the case (a PR or heir surname) or
+    # share the decedent's surname; otherwise the hit is a possible collision
+    # and is handed back for review instead of being adopted as the address.
+    if co_owner and party_surnames is not None:
+        co_last = _surname_of(co_owner)
+        if co_last and co_last not in party_surnames and co_last != (last or "").upper():
+            return {"found": False, "collision": True,
+                    "reason": (f"possible name collision: {addr['street']} is {primary.get('_matched', '')} "
+                               f"with co-owner {co_owner}, who matches no party on the case -- verify by hand"),
+                    "street": addr["street"], "zip": addr.get("zip", ""),
+                    "sdat_owner_names": [primary.get("_matched", ""), co_owner]}
     return {"found": True, **addr, "confidence": confidence, "source": "ITSPE owner-name",
-            "owner_names": [primary.get("OWNERNAME", "")], "ssl": primary.get("SSL", ""),
+            "owner_names": [primary.get("_matched") or primary.get("OWNERNAME", "")],
+            "co_owner": co_owner, "ssl": primary.get("SSL", ""),
             "additional_parcels": extra}
+
+
+_SUFFIX_TOKENS = {"JR", "SR", "II", "III", "IV", "IIII", "ESQ"}
+
+
+def _surname_of(name: str) -> str:
+    """Surname of an ITSPE owner string: 'LAST, FIRST M' or, without the
+    comma, still 'LAST FIRST M' ('BROWN MARSHELL'). Upper-cased, suffix dropped."""
+    n = " ".join((name or "").upper().replace(".", "").split())
+    if not n:
+        return ""
+    if "," in n:
+        return n.split(",", 1)[0].strip()
+    toks = [t for t in n.split() if t not in _SUFFIX_TOKENS]
+    return toks[0] if toks else ""
+
+
+def _party_surnames(rec: dict) -> set[str]:
+    """Surnames of the PRs and heirs on the case. Portal parties are spelled
+    'First Last Jr' (last real token is the surname); a PR written
+    'LAST, FIRST' takes the ITSPE rule."""
+    names = [p.get("name", "") for p in (rec.get("personal_reps") or [])] + \
+            [h.get("name", "") for h in (rec.get("heirs") or [])]
+    out: set[str] = set()
+    for n in names:
+        if "," in n:
+            out.add(_surname_of(n))
+        else:
+            toks = [t for t in n.upper().replace(".", "").split() if t not in _SUFFIX_TOKENS]
+            if toks:
+                out.add(toks[-1])
+    return {x for x in out if x}
 
 
 # The portal spells street suffixes in full ("145 Elmira STREET SW"); ITSPE
@@ -1082,32 +1133,78 @@ def _normalize_street_for_itspe(street: str, strip_unit: bool = True) -> str:
     s = " ".join((street or "").upper().split())
     if strip_unit:
         s = _UNIT_RE.sub("", s).strip()
-    s = s.replace(",", " ")  # "2555 PEN AVE, #1019" -> drop the comma too
+    s = s.replace(",", " ").replace(".", " ")  # "2555 PEN AVE, #1019" / "NW. #1120": drop punctuation
     return " ".join(_SUFFIX_ABBR.get(tok, tok) for tok in s.split() if tok).strip()
 
 
+def _unit_of(street: str) -> str:
+    """The unit designator of a stated address, spelled the way ITSPE writes
+    it in PREMISEADD ("# 104"): every condo unit on the roll is
+    '<street> # <unit> WASHINGTON DC ...'."""
+    m = _UNIT_RE.search(" ".join((street or "").upper().split()))
+    if not m:
+        return ""
+    unit = re.sub(r"^\s*(?:#|UNIT|APT|APARTMENT|STE|SUITE)\s*", "", m.group(0)).strip(" .,")
+    return f"# {unit}" if unit else ""
+
+
+_LEVELS = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
+
+
+def _score_owner(full_name: str, last: str, first: str, row: dict) -> tuple[str, str, str]:
+    """Best name-match level over BOTH owner columns -> (level, matched, other).
+    The decedent can sit in OWNNAME2 -- joint title with the surviving spouse.
+    Measured 2026-09-18: 3121 Davenport St NW (2026-ADM-001013) read as a
+    RELATIVE (MUOIO, ANN W) while the roll held MUOIO, RALPH M, the decedent,
+    in the second column; 1935 Lamont St NW (000941) and 3413 P St NW
+    (000891) had the same shape."""
+    o1 = (row.get("OWNERNAME") or "").strip()
+    o2 = (row.get("OWNNAME2") or "").strip()
+    l1 = name_match_level(full_name, last, first, o1) if o1 else "LOW"
+    l2 = name_match_level(full_name, last, first, o2) if o2 else "LOW"
+    if _LEVELS[l2] > _LEVELS[l1]:
+        return l2, o2, o1
+    return l1, o1, o2
+
+
 def itspe_verify_address(street: str, last: str, first: str, full_name: str) -> dict:
+    """Owner of record at the stated residence.
+
+    UNIT-AWARE as of 2026-09-18. The old bare-street LIKE over a condo building
+    returned whichever six units sorted first, and the decedent was then
+    'verified' against a NEIGHBOUR: 1419 Clifton St NW #104 (2026-ADM-000901)
+    came back as ROTH, STACY, who owns #G-8 and #204, while #104 is ROBERTS,
+    GEORGE D; 4200 Massachusetts Ave NW #110 (001014) came back as SERBES,
+    FILIZ A of #412 while #110 is the decedent's own trust. So a stated unit is
+    queried as '<street> # <unit> ' FIRST. A stated address with NO unit that
+    resolves to several unit parcels, none in the decedent's name, is reported
+    as level MULTI_UNIT (unit unknown), never as a stranger on title."""
     norm = _normalize_street_for_itspe(street)
     st = _sql_escape(norm)
     if not st:
         return {"level": "", "owners": []}
+    unit = _unit_of(street)
     rows = []
     try:
-        rows = itspe_query(f"UPPER(PREMISEADD) LIKE '{st}%'", limit=6)
-        if not rows and norm != _normalize_street_for_itspe(street, strip_unit=False):
-            # A condo may carry its unit in PREMISEADD -- retry with the unit.
-            st2 = _sql_escape(_normalize_street_for_itspe(street, strip_unit=False))
-            rows = itspe_query(f"UPPER(PREMISEADD) LIKE '{st2}%'", limit=6)
+        if unit:
+            rows = itspe_query(f"UPPER(PREMISEADD) LIKE '{_sql_escape(norm + ' ' + unit)} %'", limit=6)
+            if not rows:  # a few parcels carry the unit without the space
+                rows = itspe_query(f"UPPER(PREMISEADD) LIKE '{_sql_escape(norm + ' #' + unit[2:])} %'", limit=6)
+        if not rows:
+            rows = itspe_query(f"UPPER(PREMISEADD) LIKE '{st}%'", limit=50)
     except Exception as e:  # noqa: BLE001
         return {"level": "", "owners": [], "error": str(e)}
     if not rows:
         return {"level": "NO_PARCEL", "owners": []}
-    levels = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
-    scored = [(name_match_level(full_name, last, first, r.get("OWNERNAME", "")), r.get("OWNERNAME", ""))
-              for r in rows]
-    best_level, best_owner = max(scored, key=lambda t: levels[t[0]])
-    return {"level": best_level, "owner": best_owner,
-            "owners": [r.get("OWNERNAME", "") for r in rows]}
+    scored = [(_score_owner(full_name, last, first, r), r) for r in rows]
+    (best_level, best_owner, best_co), best_row = max(scored, key=lambda t: _LEVELS[t[0][0]])
+    premises = {" ".join((r.get("PREMISEADD") or "").split()) for r in rows}
+    multi_unit = not unit and len(premises) > 1 and any("#" in pr for pr in premises)
+    if best_level == "LOW" and multi_unit:
+        best_level = "MULTI_UNIT"
+    return {"level": best_level, "owner": best_owner, "co_owner": best_co,
+            "premise": best_row.get("PREMISEADD", ""), "sale_date": best_row.get("SALEDATE"),
+            "parcels": len(premises), "owners": [r.get("OWNERNAME", "") for r in rows]}
 
 
 _COMPANY_RE = re.compile(r"\b(INC|LLC|L\.?L\.?C|CORP|CO|COMPANY|FOUNDATION|TRUST|ASSOCIATION|"
@@ -1148,23 +1245,46 @@ def fill_addresses_itspe(ledger: dict, keys: set[str], save_cb=None) -> None:
             check = itspe_verify_address(residence, last, first, full_name)
             owner = check.get("owner") or (check.get("owners") or [""])[0]
             rec["property_itspe_owner"] = owner
+            co_owner = check.get("co_owner") or ""
+            if co_owner:
+                rec["property_itspe_co_owner"] = co_owner
             level = check.get("level")
             if level in ("HIGH", "MEDIUM"):
                 rec["property_lookup_confidence"] = level
-                rec["property_ownership"] = f"Decedent OWNS residence ({level} name match: {owner})"
-                print(f"    {key}: residence OWNED by decedent -> {residence} ({level})")
-            elif level == "LOW" and _owner_surname_matches(owner, last):
+                joint = f", jointly with {co_owner}" if co_owner else ""
+                rec["property_ownership"] = f"Decedent OWNS residence ({level} name match: {owner}{joint})"
+                # A unit-less stated address that resolved to a unit parcel in
+                # the decedent's name: the roll's premise IS the property.
+                premise_street = _premise_split(check.get("premise", "")).get("street", "")
+                if premise_street and "#" in premise_street and not _UNIT_RE.search(residence.upper()):
+                    rec["property_street"] = premise_street
+                    rec["property_lookup_reason"] = f"unit taken from the tax roll ({premise_street})"
+                print(f"    {key}: residence OWNED by decedent -> {rec['property_street']} ({level}{joint})")
+            elif level == "MULTI_UNIT":
+                rec["property_lookup_confidence"] = "REVIEW"
+                verdict = (f"Residence is a multi-unit building ({check.get('parcels', 0)} parcels) and the case "
+                           f"states no unit; no parcel in the decedent's name -- verify the unit by hand")
+                rec["property_ownership"] = rec["property_lookup_reason"] = verdict
+                print(f"    {key}: {verdict}")
+            elif level == "LOW" and (_owner_surname_matches(owner, last) or _owner_surname_matches(co_owner, last)):
                 # Same surname as the decedent (often the surviving spouse /
                 # heir / PR) -- family-owned, a real lead, NOT a rental.
                 rec["property_lookup_confidence"] = "FAMILY"
-                verdict = f"Residence owned by a RELATIVE ({owner}) -- likely joint/heir property"
+                who = owner if _owner_surname_matches(owner, last) else co_owner
+                other = co_owner if who == owner else owner
+                with_ = f" with {other}" if other else ""
+                verdict = f"Residence owned by a RELATIVE ({who}{with_}) -- likely joint/heir property"
                 rec["property_ownership"] = rec["property_lookup_reason"] = verdict
                 print(f"    {key}: {verdict}")
             else:
                 # Not the decedent and not a namesake relative -> look for
                 # property the decedent owns ELSEWHERE, then classify.
-                elsewhere = itspe_find_by_owner(last, first, full_name, rec.get("dod", "")) if last else {}
-                if elsewhere.get("found"):
+                elsewhere = itspe_find_by_owner(last, first, full_name, rec.get("dod", ""),
+                                                party_surnames=_party_surnames(rec)) if last else {}
+                if elsewhere.get("collision"):
+                    rec["property_lookup_confidence"] = "REVIEW"
+                    verdict = elsewhere["reason"]
+                elif elsewhere.get("found"):
                     rec["property_owned_elsewhere"] = elsewhere["street"]
                     rec["property_owned_elsewhere_zip"] = elsewhere.get("zip", "")
                     rec["property_lookup_confidence"] = elsewhere["confidence"]
@@ -1182,8 +1302,13 @@ def fill_addresses_itspe(ledger: dict, keys: set[str], save_cb=None) -> None:
                 rec["property_ownership"] = rec["property_lookup_reason"] = verdict
                 print(f"    {key}: {verdict}")
         elif last:
-            result = itspe_find_by_owner(last, first, full_name, rec.get("dod", ""))
-            if result.get("found"):
+            result = itspe_find_by_owner(last, first, full_name, rec.get("dod", ""),
+                                         party_surnames=_party_surnames(rec))
+            if result.get("collision"):
+                rec["property_lookup_confidence"] = "REVIEW"
+                rec["property_ownership"] = rec["property_lookup_reason"] = result["reason"]
+                print(f"    {key}: {result['reason']}")
+            elif result.get("found"):
                 rec["property_street"] = result["street"]
                 rec["property_city"] = result["city"]
                 rec["property_state"] = result["state"]
