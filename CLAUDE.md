@@ -561,6 +561,71 @@ shared MIDDLE name is not an identity; a same-name relative is a duplicate only 
 age fits (or Sr., or a shared line); the predeceased drop yields to a survivor match. Nothing
 has been written to the account; the write step reuses the rel_pr_name_repair pattern.
 
+## Owner-died namesake audit (built + free pass run 2026-09-18, READ-ONLY)
+
+`src/scripts/dp_owner_died_namesake_audit.py` scores every `owner did die` finding in every live DP
+run dir (783 across 18 dirs) on the signals that would have caught 8131 Turn Loop Rd, and writes
+`output/namesake_audit/owner_died_namesake_audit_<stamp>.csv` + `summary_<stamp>.md`. Free pass
+2026-09-18 (`--owner-of-record --sdat-limit 0`): **LIKELY_FALSE 28** (all pushed live, 23 of them as
+`Deceased Owner`), REVIEW 141 (31 GENERATION_GAP, 13 SPOUSE_OR_RELATIVE), NO_SIGNAL 124, CLEAN 490.
+Nothing written to the account; a confirmed false positive is repaired the Zimmerman way on Basem's
+go. Offline guard `tools/manual/test_namesake_audit.py` -- run after ANY change to `recommend` or the
+age/place regexes. Facts it rests on:
+1. **The LLM's `age_at_death` and `city` are DROPPED by `cmd_research`** (asked for in
+   `OBITUARY_PROMPT`, never copied out of `parsed`), so no DP file holds a decedent age or city. The
+   free source is the search hit `title`+`snippet` kept in `searched[].trail[0].hits[]` (age on 58%
+   of owner-died rows, residence on 32%). Persisting them is the cheap upstream fix.
+2. **Compare BIRTH years, not ages** (SmartSkip's age is now, the obituary's is at death): gap <=2 ok,
+   4-17 conflict, **>=18 is a parent/child pair** -- SmartSkip returned the namesake CHILD and no
+   re-root fired -- where the verdict may be right and the signer tree wrong (REVIEW, never LIKELY).
+3. **A title city is the FUNERAL HOME's** on legacy.com, dignitymemorial AND tributearchive ("Jen
+   Chen Obituary - Falls Church, VA" for a McLean resident). Only body text ("of <City>, MD",
+   "resident of") is residence; the title city is recorded and never scored.
+4. The shell-override shape (a match:false page >=3000 chars, then a match:true page <3000) exists on
+   22 rows; `_llm_match` still takes the first true.
+5. **CRM `owner_first` carries a middle initial on 0 of 783 rows**, so initial evidence comes only
+   from the tax roll: DC ITSPE is free (`itspe_verify_address`; 53/57 resolved, 34 decedent on title,
+   12 initial CONFLICTS), MD SDAT is one billed Firecrawl scrape per row (`--sdat-limit N`; 93 MD rows
+   sit in the review buckets; `records.county` says plain `Baltimore`, which `SDAT_COUNTY_ID` lacks,
+   so `sdat_county()` maps it), VA has no lookup at all (265 rows). `name_match_level` returns MEDIUM
+   for a conflicting initial, never a conflict; women's maiden names ride as middles, so a roll
+   initial conflicts only when it matches NONE of the decedent's middle initials.
+6. `given_name_differs` (same surname, another first name) is the SPOUSE shape: 15 rows where the
+   spouse died and the CRM owner is alive under an "owner did die" verdict. Strip honorifics first
+   ("Capt. Roberta J. Grace, USN" IS Roberta Grace).
+Built, not run: Tier 1 `--fetch-pages` (275 rows lack both age and place; 483 of 782 obituary URLs
+are on Firecrawl-only hosts, so `--allow-firecrawl` bills) and the MD SDAT tier.
+
+**The 23 LIKELY_FALSE `Deceased Owner` records REPAIRED live 2026-09-18 (QA 23/23 clean)** with
+`src/scripts/dp_namesake_repair.py` -- the Zimmerman path scripted: `plan` (dry run) -> `apply
+--commit` (per-run-dir backup `namesake_repair_backup_<stamp>/` of the 4 plan files; verdict
+rewritten WITH the evidence, original under `namesake_correction`; dead same-name relative onto
+`drop_names`; obituary-injected relatives removed; a re-rooted record's owner phones restored from
+`decedent_from_smartskip`; Trestle on the new numbers only, $0.65; ONLY those records rebuilt
+through the real `cmd_build` in a temp dir and spliced into push_plan.json; note gets a CORRECTED
+header, "DO NOT open with condolences", living-owner SIGNERS/MUST VERIFY, tax-roll owner, prior
+match kept as a labelled trace) -> `push --keys-file --force --commit` per run dir -> `untag
+--commit` -> QA. 21 presumed alive, 2 spouse-died (`Owner Alive - Spouse Deceased`); co-owners on
+title loaded as REL1. Numbers 76 removed / 84 loaded; review in `output/namesake_audit/repair_<stamp>/`.
+Four traps, the first two fixed in code:
+1. `_push_one_api` ran the REL step only `if p["custom_fields"]`, so a plan that dropped EVERY
+   relative never ran `_ghost_blanks` (5908 Veranda Dr kept the son in REL1). Now gated on
+   "anything to write OR blank".
+2. `obituary_dp_qa.py --clear-extra-rel` required the CURRENT plan to hold a REL field; an
+   owner-alive plan never does, so 7 of 9 provenanced ghosts were skipped. Now also true when the
+   `--extra-source` plan wrote REL fields for that key.
+3. **Shared-line ghosts:** when the old plan gave a relative a number the OWNER also holds, the
+   new plan keeps the number as `Owner.N`, so it is never "removed" and the relative's REL slot
+   survives the number rule. After ANY owner-alive re-push run `obituary_dp_qa.py --repair
+   --clear-extra-rel --extra-source <the plan just replaced>` -- the value rule is the only one
+   that sees it (31 fields blanked here).
+4. **A 404 on a known uuid can be a MERGE.** 3718 Calvert St NW: the 04:03 SiftMap bulk import
+   created a new record and `property.merged` absorbed the old uuid (in the survivor's `/logs/`);
+   the survivor inherited `Deceased Owner`, the push resolved by address and POSTED a fresh note
+   (nothing same-family to edit). Re-resolve by address on a 404 before calling it a deletion.
+Still open from the audit: the 5 LIKELY_FALSE pushed as `DP Death Unverified` (plan_group
+`unverified`; `load_rows` filters on `deceased`), REVIEW 141, the paid tiers, the upstream fixes.
+
 ## Mailed-history index — screen EVERY mailing list before it goes out (built 2026-09-17)
 
 The CRM's only "was this property mailed" signal is `directmail_attempts` on the thin row, and

@@ -2473,7 +2473,11 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool, prior: "se
                                 else f"upsert-phones failed (status {st})")
                 return log
     # 2. custom fields
-    if p["custom_fields"]:
+    # Run this step whenever there is something to WRITE or something to BLANK. Gated on
+    # the plan's own fields alone, a plan with NO REL fields (an owner-alive re-push that
+    # dropped every relative) skipped the ghost check entirely and left the dropped
+    # relative's name + numbers in REL1 -- 5908 Veranda Dr, 2026-09-18 namesake repair.
+    if p["custom_fields"] or prior or log["steps"].get("phones_removed_numbers"):
         body = []
         for lbl, val in p["custom_fields"].items():
             f = fields.get(lbl)

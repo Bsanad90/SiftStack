@@ -242,7 +242,12 @@ def audit_one(api, key, p, repair=False, known_uuid=None, fields=None, opts=None
                             + ", ".join(f"{k}={got_cf[k]!r}" for k in cf_extra_other[:4]))
     out["cf_missing"], out["cf_wrong"], out["cf_extra"] = cf_missing, cf_wrong, cf_extra
     out["cf_extra_ours"], out["cf_extra_other"] = cf_extra_ours, cf_extra_other
-    plan_has_rel = any(REL_RE.match(k) for k in p["custom_fields"])
+    # "Is this a REL plan at all?" -- the guard that keeps a non-DP plan from blanking DP
+    # slots. It must also accept a plan that DROPPED every relative (owner-alive re-push,
+    # custom_fields == {}) when the extra-source plan for the same key wrote REL fields:
+    # that is the exact case the blank exists for. 2026-09-18 namesake repair: 7 of 9
+    # provenanced ghosts were skipped because the corrected plan had no REL slot left.
+    plan_has_rel = any(REL_RE.match(k) for k in p["custom_fields"]) or any(REL_RE.match(k) for k in src_cf)
     clear_extra = bool(opts.get("clear_extra_rel")) and plan_has_rel and bool(cf_extra_ours)
     if repair and (cf_missing or cf_wrong or clear_extra):
         if fields is None:
