@@ -169,7 +169,8 @@ def classify(result: dict | None) -> str:
 def load_rows_file(path: Path, rows: list[dict]) -> list[dict]:
     """Hand-authored lookups that bypass select(): trust titles mapped to the person named,
     owners whose mailing state differs searched WHERE THEY LIVE (2026-09-18, Basem).
-    Columns: key, owner_first, owner_last, city, state, age (blank = no birth hint), note.
+    Columns: key, owner_first, owner_last, city, state, age (blank = no birth hint), note,
+    and optionally death_year / obit_date (a known death year makes pass A a 1-load lookup).
     A key may carry a suffix after '|' (e.g. '...|b' for the second spouse on a trust title);
     the base key is used to pull obit_date / street / zip from the cohort row."""
     by_key = {r["key"]: r for r in rows}
@@ -191,7 +192,9 @@ def load_rows_file(path: Path, rows: list[dict]) -> list[dict]:
                 "state": (row.get("state") or base.get("state") or "").strip().upper(),
                 "mail_state": "", "age": age, "rerooted": bool(base.get("rerooted")),
                 "expected_birth_year": (this_year - age) if age else None,
-                "expected_death_year": base.get("expected_death_year"),
+                "expected_death_year": (int(row["death_year"]) if (row.get("death_year") or "").strip().isdigit()
+                                        else base.get("expected_death_year")),
+                "obit_date": (row.get("obit_date") or base.get("obit_date") or "").strip(),
                 "note": (row.get("note") or "").strip(),
             })
     return out
