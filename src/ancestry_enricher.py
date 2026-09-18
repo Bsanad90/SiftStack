@@ -41,7 +41,7 @@ STATE_NAMES = {
     "NC": "north carolina", "VA": "virginia", "MD": "maryland",
     "DC": "district of columbia", "PA": "pennsylvania", "DE": "delaware",
     "WV": "west virginia", "OH": "ohio", "FL": "florida", "TX": "texas",
-    "NY": "new york", "NJ": "new jersey", "CA": "california",
+    "NY": "new york", "NJ": "new jersey", "CA": "california", "KS": "kansas",
 }
 # Extra spellings that also prove the right state (lower-case substrings).
 STATE_ALIASES = {

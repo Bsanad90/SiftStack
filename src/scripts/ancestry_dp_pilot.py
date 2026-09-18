@@ -119,8 +119,8 @@ def select(rows: list[dict], n: int, exclude_keys: set[str] | None = None) -> tu
             reasons["trust_or_business"] += 1
         elif not (r["owner_first"] and r["owner_last"]):
             reasons["no_owner_name"] += 1
-        elif len(r["owner_first"]) < 3 or not r["owner_first"].isalpha():
-            reasons["first_name_not_a_name"] += 1     # "Ex", initials, "J."
+        elif len(r["owner_first"]) < 3 or not r["owner_first"].replace("-", "").replace("'", "").isalpha():
+            reasons["first_name_not_a_name"] += 1     # "Ex", initials, "J."  (Chu-yuan is a name)
         elif not r["age"]:
             reasons["no_smartskip_age"] += 1
         elif r["mail_state"] and r["mail_state"] != r["state"]:
@@ -164,6 +164,37 @@ def classify(result: dict | None) -> str:
     if basis & STRONG_BASIS:
         return "dated_death_strong_basis" if result.get("date_of_death") else "match_strong_basis_no_date"
     return "dated_death_weak_basis" if result.get("date_of_death") else "match_weak_basis_no_date"
+
+
+def load_rows_file(path: Path, rows: list[dict]) -> list[dict]:
+    """Hand-authored lookups that bypass select(): trust titles mapped to the person named,
+    owners whose mailing state differs searched WHERE THEY LIVE (2026-09-18, Basem).
+    Columns: key, owner_first, owner_last, city, state, age (blank = no birth hint), note.
+    A key may carry a suffix after '|' (e.g. '...|b' for the second spouse on a trust title);
+    the base key is used to pull obit_date / street / zip from the cohort row."""
+    by_key = {r["key"]: r for r in rows}
+    this_year = date.today().year
+    out = []
+    with path.open(encoding="utf-8", newline="") as fh:
+        for row in csv.DictReader(fh):
+            if not (row.get("owner_first") or "").strip():
+                continue
+            base_key = row["key"].rsplit("|", 1)[0] if row["key"].count("|") > 1 else row["key"]
+            base = by_key.get(base_key) or by_key.get(row["key"]) or {}
+            age = (row.get("age") or "").strip()
+            age = int(age) if age.isdigit() else None      # blank = no birth hint, on purpose
+            out.append({
+                **{k: base.get(k, "") for k in ("street", "zip", "lists", "obit_date", "dod_source", "evidence")},
+                "key": row["key"], "owner_first": row["owner_first"].strip(),
+                "owner_last": row["owner_last"].strip(), "is_trust": False,
+                "city": (row.get("city") or base.get("city") or "").strip(),
+                "state": (row.get("state") or base.get("state") or "").strip().upper(),
+                "mail_state": "", "age": age, "rerooted": bool(base.get("rerooted")),
+                "expected_birth_year": (this_year - age) if age else None,
+                "expected_death_year": base.get("expected_death_year"),
+                "note": (row.get("note") or "").strip(),
+            })
+    return out
 
 
 def done_keys(out_dir: Path) -> set[str]:
@@ -276,7 +307,7 @@ def write_report(results: list[dict], audit: dict, picked: list[dict], out_prefi
                                                encoding="utf-8")
     cols = ["key", "owner_first", "owner_last", "street", "city", "state", "zip", "age",
             "expected_birth_year", "obit_date", "expected_death_year", "rerooted", "pass_hit",
-            "outcome", "loads_used", "anc_full_name", "anc_date_of_death", "anc_source_type",
+            "outcome", "loads_used", "note", "anc_full_name", "anc_date_of_death", "anc_source_type",
             "anc_match_basis", "anc_last_residence", "anc_source_url"]
     with out_prefix.with_suffix(".csv").open("w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=cols, extrasaction="ignore")
@@ -327,6 +358,8 @@ def main() -> int:
                     help="skip pass A; one birth-hint lookup per record (the measured-useful pass)")
     ap.add_argument("--exclude-done", action="store_true",
                     help="skip keys already looked up by an earlier live pilot report in --out-dir")
+    ap.add_argument("--rows-file", help="CSV of hand-authored lookups (trust names, mailing-state rows); "
+                                        "replaces select()")
     a = ap.parse_args()
 
     run_dir = ROOT / a.run_dir if not Path(a.run_dir).is_absolute() else Path(a.run_dir)
@@ -342,7 +375,14 @@ def main() -> int:
 
     rows = load_cohort(run_dir)
     exclude = done_keys(out_dir) if a.exclude_done else set()
-    picked, audit = select(rows, a.n, exclude_keys=exclude)
+    if a.rows_file:
+        picked = [r for r in load_rows_file(Path(a.rows_file), rows) if r["key"] not in exclude]
+        audit = {"unresolved_total": len(rows), "rows_file": a.rows_file, "excluded": {},
+                 "eligible": len(picked), "eligible_by_state": dict(Counter(r["state"] for r in picked)),
+                 "picked": len(picked), "picked_by_state": dict(Counter(r["state"] for r in picked)),
+                 "target_per_state": {}}
+    else:
+        picked, audit = select(rows, a.n, exclude_keys=exclude)
     audit["excluded_already_done"] = len(exclude)
     audit["birth_only"] = bool(a.birth_only)
     log.info("Selection: %s", json.dumps(audit))
