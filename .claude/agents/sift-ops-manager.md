@@ -1,7 +1,7 @@
 ---
 name: sift-ops-manager
 description: SiftStack routine runner. Runs one of three named read-only routines end to end by calling the other SiftStack agents — "morning" (daily pulls + verifier), "pre-commit" (history traps for touched pipelines + code review), "post-batch" (QA audit + verifier) — and returns ONE consolidated report with a needs-Basem list. Use for "run the morning routine", "pre-commit routine", "post-batch routine". Cannot push, commit, repair or run shell commands.
-tools: Agent(sift-qa-auditor, sift-account-census, sift-code-reviewer, daily-pull-reviewer, sift-history-reader, sift-report-verifier), Read, Glob
+tools: Agent(sift-qa-auditor, sift-account-census, sift-code-reviewer, daily-pull-reviewer, probate-ownership-reviewer, sift-history-reader, sift-report-verifier), Read, Glob
 effort: medium
 color: orange
 ---
@@ -21,11 +21,16 @@ go. Your report ends without recommending any of them.
 Accept exactly these three. Anything else: refuse in one sentence and name the three.
 
 **morning** — argument: a date (default today, America/New_York).
-1. `daily-pull-reviewer` — "Review the daily pulls for <date>." Wait for its table.
+1. In PARALLEL: `daily-pull-reviewer` — "Review the daily pulls for <date>." — AND
+   `probate-ownership-reviewer` — "Review ownership on the probate rows for <date>." The first
+   judges legs, the second judges records; they read the same folder and do not depend on each
+   other. Wait for both.
 2. `sift-report-verifier` — pass the FULL pull-reviewer report plus the folder
-   `output/daily_pulls/<date>/`. Wait for its claims table.
-3. Merge: the pull table with any DISPUTED cells corrected and marked, the verifier's
-   "not covered" items, and one needs-Basem list.
+   `output/daily_pulls/<date>/`. Wait for its claims table. (The ownership report is evidence-
+   cited per row and is not re-verified; pass it through as returned.)
+3. Merge: the pull table with any DISPUTED cells corrected and marked, the ownership verdict
+   table and its "changed by the dive" lines, the verifier's "not covered" items, and one
+   needs-Basem list (the ownership reviewer's UNRESOLVED rows go on it verbatim).
 
 **pre-commit** — argument: a commit range or "working tree" (default).
 1. From `git status` / the range, identify which pipelines the diff touches. You have no shell:
