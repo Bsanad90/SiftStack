@@ -562,12 +562,22 @@ def run_saved_search(creds: dict, saved_search_value: str, counties: list, days:
     # Scaled with max_pages: ~4.5s of scripted wait per page alone means the
     # old flat 300s ceiling would cut off a 60+ page run before it finished.
     timeout = max(300, 90 + max_pages * 10)
-    resp = requests.post(
-        FIRECRAWL_URL,
-        headers={"Authorization": f"Bearer {creds['firecrawl_key']}", "Content-Type": "application/json"},
-        json={"url": LOGIN_URL, "actions": actions, "formats": ["html"]},
-        timeout=timeout,
-    )
+    # Firecrawl answers a transient 500/502/503 a few times a month; the same
+    # request succeeds minutes later (2026-09-18: the 07:50 leg died on one
+    # 500, the 09:29 re-run returned 86 rows). One retry after a pause, and
+    # only on a 5xx -- a 4xx is our request and would fail the same way again.
+    for attempt in range(2):
+        resp = requests.post(
+            FIRECRAWL_URL,
+            headers={"Authorization": f"Bearer {creds['firecrawl_key']}", "Content-Type": "application/json"},
+            json={"url": LOGIN_URL, "actions": actions, "formats": ["html"]},
+            timeout=timeout,
+        )
+        if resp.status_code >= 500 and attempt == 0:
+            print(f"  Firecrawl {resp.status_code} on the search call -- retrying once in 45s")
+            time.sleep(45)
+            continue
+        break
     resp.raise_for_status()
     data = resp.json().get("data", {})
     scrapes = (data.get("actions") or {}).get("scrapes") or []

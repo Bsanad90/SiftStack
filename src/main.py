@@ -380,14 +380,16 @@ async def actor_main() -> None:
                 if do_notify_slack and config.SLACK_WEBHOOK_URL:
                     try:
                         from slack_notifier import _send_webhook
+                        # (text, webhook_url) -- the arguments were swapped until
+                        # 2026-09-18, so this alert could never send.
                         _send_webhook(
-                            config.SLACK_WEBHOOK_URL,
                             ":rotating_light: *SiftStack scrape produced ZERO notices*\n"
                             "Searches ran and completed, but nothing was captured. "
                             "This is how the scrape sat broken for 19 days in July 2026 "
                             "(reCAPTCHA -> Cloudflare Turnstile migration).\n"
                             "Check: notice gate/CAPTCHA type, residential proxy, "
                             "and whether detail pages return a logged-out shell.",
+                            webhook_url=config.SLACK_WEBHOOK_URL,
                         )
                     except Exception as exc:
                         Actor.log.warning("Slack stale-run alert failed: %s", exc)

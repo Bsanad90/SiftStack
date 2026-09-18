@@ -59,7 +59,11 @@ _COUNTY_PREFIXES = [
 
 
 def canon_county(raw: str) -> str:
-    c = (raw or "").strip().casefold()
+    # The grid cell sometimes bleeds the next sentence in after a run of
+    # spaces ("Fairfax   This", 2026-09-18: a real Fairfax County row at
+    # 6112 HOUSTON COURT 22310 was dropped as out_of_footprint). Keep only
+    # the text before the first double space or period.
+    c = re.split(r"\s{2,}|\.", (raw or "").strip())[0].strip().casefold()
     if not c:
         return ""
     for prefix, name in _COUNTY_PREFIXES:
