@@ -598,7 +598,9 @@ async def _search_obituaries(page, first_name: str, last_name: str, state: str =
     # Navigate directly to search results URL — bypasses SPA form issues
     # Category 34 = "Death, Burial, Cemetery & Obituaries"
     import urllib.parse
-    state_name = {"TN": "Tennessee", "AL": "Alabama"}.get(state, state)
+    # Full state name, like the SSDI tier: the abbreviated ``_md-usa`` is only a
+    # soft hint and ranks out-of-state rows first (measured 2026-09-18 on SSDI).
+    state_name = state_full_name(state) or state
     params = {
         "name": f"{first_name}_{last_name}",
         "birth": "",
