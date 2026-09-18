@@ -16,6 +16,7 @@ Account protection is #1 priority:
 import asyncio
 import json
 import logging
+import os
 import random
 import re
 from datetime import date
@@ -113,9 +114,15 @@ def state_full_name(state: str) -> str:
     """'MD' -> 'Maryland' (title case); unknown codes pass through unchanged."""
     return STATE_NAMES.get((state or "").upper(), state or "").title() if state else ""
 
-# Daily page load counter
+# Daily page load counter. The cap is OURS, not Ancestry's -- a protective
+# guess, overridable with ANCESTRY_DAILY_LIMIT in .env (raised from 100 to
+# 300 on 2026-09-18 with Basem's go; step it up while the circuit breaker
+# stays quiet, never drop the human-like delays).
 PAGE_LOAD_FILE = Path(__file__).resolve().parent.parent / ".ancestry_page_loads.json"
-DAILY_LIMIT = 100
+DAILY_LIMIT = int(os.getenv("ANCESTRY_DAILY_LIMIT", "300") or 300)
+
+SSDI_COLLECTION_ID = "3693"
+SSDI_LAST_YEAR = 2014          # the public Death Master File extract Ancestry holds stops here
 
 # ── Page load tracking ──────────────────────────────────────────────
 
@@ -364,62 +371,36 @@ async def _search_ssdi(page, first_name: str, last_name: str, state: str = "TN",
     if not _can_load_page() or _circuit_broken:
         return None
 
-    # SSDI collection ID is 3693
-    ssdi_url = f"{ANCESTRY_URL}/search/collections/ssdi/"
+    # SSDI ends in 2014. A death the caller already places after that cannot
+    # be here, so the two page loads this tier costs would buy nothing.
+    if expected_death_year and expected_death_year > SSDI_LAST_YEAR:
+        logger.debug("SSDI skip: expected death %d is after the index's last year %d",
+                     expected_death_year, SSDI_LAST_YEAR)
+        return None
+
+    # One page load: the results page takes the query in the URL, like the
+    # obituary tier. Measured 2026-09-18: the form's "Lived In" autocomplete
+    # submits ``residence=_maryland-usa_23`` (full state name + place id) and
+    # the plain ``_maryland-usa`` returns the SAME rows, in-state first
+    # (Millersville, Baltimore, Kingsville MD led the list). The abbreviated
+    # ``_md-usa`` is accepted but is only a soft hint -- it ranked 20 out-of-
+    # state rows first and the Kingsville 2011 match never appeared. The old
+    # form fill + submit cost two loads for these rows. Out-of-state rows still
+    # follow the in-state ones, so the state check in the scoring loop stays.
+    import urllib.parse
+    params = {"name": f"{first_name}_{last_name}"}
+    if state:
+        full = STATE_NAMES.get(state.upper(), state.lower())
+        params["residence"] = f"_{full.replace(' ', '-')}-usa"
+    ssdi_url = f"{ANCESTRY_URL}/search/collections/{SSDI_COLLECTION_ID}/?" + urllib.parse.urlencode(params)
+    logger.debug("SSDI search URL: %s", ssdi_url)
     await page.goto(ssdi_url, wait_until="domcontentloaded")
     _increment_page_loads()
-    await _delay(2, 3)
-
-    if await _check_blocked(page):
-        return None
-
-    # Fill first name
-    el = await page.query_selector("#sfs_FirstNameExactModule")
-    if el and await el.is_visible():
-        await el.fill(first_name)
-    await _delay(0.3, 0.6)
-
-    # Fill last name
-    el = await page.query_selector("#sfsLastNameExactModule")
-    if el and await el.is_visible():
-        await el.fill(last_name)
-    await _delay(0.3, 0.6)
-
-    # Fill "Lived In Location" to narrow results to state
-    if state:
-        loc_el = await page.query_selector("#sfs__SelfResidencePlace")
-        if loc_el and await loc_el.is_visible():
-            state_name = state_full_name(state)
-            await loc_el.fill(state_name)
-            await _delay(1, 2)
-            # Wait for autocomplete dropdown and select first match
-            try:
-                suggestion = await page.wait_for_selector(
-                    "[class*='autocomplete'] li, [class*='suggestion'], [role='option']",
-                    timeout=3000,
-                )
-                if suggestion:
-                    await suggestion.click()
-                    await _delay(0.3, 0.6)
-            except Exception:
-                # No autocomplete — just leave the text
-                pass
-
-    # Submit
-    btn = await page.query_selector("#searchButton")
-    if btn and await btn.is_visible():
-        await btn.click()
-    else:
-        logger.warning("SSDI: no search button found")
-        return None
-
-    # Wait for results page to load
     try:
-        await page.wait_for_load_state("domcontentloaded", timeout=10000)
+        await page.wait_for_selector("table tbody tr", timeout=10000)
     except Exception:
         pass
-    await _delay(3, 5)
-    _increment_page_loads()
+    await _delay(2, 4)
 
     if await _check_blocked(page):
         return None
@@ -642,7 +623,9 @@ async def _search_obituaries(page, first_name: str, last_name: str, state: str =
         pass
 
     await _delay(3, 5)
-    _increment_page_loads()
+    # (No second _increment_page_loads() here: the goto above already counted
+    # this navigation. The double count made every obituary lookup look like
+    # two loads and burned the daily budget twice as fast -- measured 2026-09-18.)
 
     if await _check_blocked(page):
         return None
