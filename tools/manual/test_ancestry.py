@@ -15,23 +15,27 @@ import random
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+# This harness lives in tools/manual/; src/ is two levels up. (The old
+# ``parent / "src"`` pointed at tools/manual/src, which does not exist, since
+# the 2026-08-28 move -- every run needed PYTHONPATH=src to import anything.)
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 import config as cfg
 from playwright.async_api import async_playwright
 
+# Share the profile, page-load counter and daily cap with the production
+# enricher, so a --login here seeds the SAME session that
+# ancestry_enricher.launch_browser() reuses. The harness used to write its
+# own tools/manual/.ancestry_profile, which production never read.
+from ancestry_enricher import DAILY_LIMIT, PAGE_LOAD_FILE, PROFILE_DIR  # noqa: E402
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
-# Persistent browser profile directory
-PROFILE_DIR = Path(__file__).parent / ".ancestry_profile"
 ANCESTRY_URL = "https://www.ancestry.com"
 SIGNIN_URL = "https://www.ancestry.com/account/signin"
 NEWSPAPERS_URL = "https://www.newspapers.com"
-
-# Daily page load counter
-PAGE_LOAD_FILE = Path(__file__).parent / ".ancestry_page_loads.json"
-DAILY_LIMIT = 100
 
 
 def _get_page_loads_today() -> int:

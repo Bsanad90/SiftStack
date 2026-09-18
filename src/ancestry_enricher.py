@@ -30,6 +30,89 @@ PROFILE_DIR = Path(__file__).resolve().parent.parent / ".ancestry_profile"
 ANCESTRY_URL = "https://www.ancestry.com"
 SIGNIN_URL = "https://www.ancestry.com/account/signin"
 
+# Full state names as Ancestry prints them in "Last Residence" / "Death Place"
+# strings ("Glen Burnie, Anne Arundel, Maryland, USA"). The old code knew six
+# states and none of the DMV ones, so every Maryland/DC result was rejected as
+# "wrong state" or left at score 1 and dropped as ambiguous (measured
+# 2026-09-18 on a DP-confirmed Glen Burnie decedent).
+STATE_NAMES = {
+    "TN": "tennessee", "AL": "alabama", "GA": "georgia", "KY": "kentucky",
+    "NC": "north carolina", "VA": "virginia", "MD": "maryland",
+    "DC": "district of columbia", "PA": "pennsylvania", "DE": "delaware",
+    "WV": "west virginia", "OH": "ohio", "FL": "florida", "TX": "texas",
+    "NY": "new york", "NJ": "new jersey", "CA": "california",
+}
+# Extra spellings that also prove the right state (lower-case substrings).
+STATE_ALIASES = {
+    "DC": ["washington, dc", "washington dc", "washington, d.c.", ", dc", " dc,"],
+    "MD": [", md", " md,", " md."],
+    "VA": [", va", " va,", " va."],
+}
+
+# city -> county, keyed by state so that Knoxville TN (Knox) and Knoxville MD
+# (Frederick) never collide. Cities are lower-case. Counties are the token
+# Ancestry prints between city and state; VA independent cities map to
+# themselves. Footprint (2026-09-01): DC; Montgomery, Anne Arundel, Frederick
+# MD; Fairfax, Arlington VA. TN kept for the original Knox/Blount pipeline.
+CITY_COUNTY = {
+    "TN": {
+        "knoxville": "knox", "farragut": "knox", "powell": "knox", "corryton": "knox",
+        "maryville": "blount", "alcoa": "blount",
+    },
+    "DC": {"washington": "district of columbia"},
+    "MD": {
+        # Anne Arundel
+        "annapolis": "anne arundel", "glen burnie": "anne arundel", "severna park": "anne arundel",
+        "pasadena": "anne arundel", "odenton": "anne arundel", "crofton": "anne arundel",
+        "arnold": "anne arundel", "severn": "anne arundel", "millersville": "anne arundel",
+        "edgewater": "anne arundel", "linthicum": "anne arundel", "linthicum heights": "anne arundel",
+        "gambrills": "anne arundel", "crownsville": "anne arundel", "davidsonville": "anne arundel",
+        "riva": "anne arundel", "shady side": "anne arundel", "deale": "anne arundel",
+        "churchton": "anne arundel", "lothian": "anne arundel", "harwood": "anne arundel",
+        "brooklyn park": "anne arundel", "ferndale": "anne arundel", "fort meade": "anne arundel",
+        "hanover": "anne arundel", "jessup": "anne arundel", "laurel": "anne arundel",
+        "west river": "anne arundel", "galesville": "anne arundel", "tracys landing": "anne arundel",
+        # Montgomery
+        "bethesda": "montgomery", "north bethesda": "montgomery", "chevy chase": "montgomery",
+        "silver spring": "montgomery", "rockville": "montgomery", "gaithersburg": "montgomery",
+        "germantown": "montgomery", "potomac": "montgomery", "wheaton": "montgomery",
+        "kensington": "montgomery", "takoma park": "montgomery", "olney": "montgomery",
+        "burtonsville": "montgomery", "damascus": "montgomery", "clarksburg": "montgomery",
+        "boyds": "montgomery", "poolesville": "montgomery", "montgomery village": "montgomery",
+        "derwood": "montgomery", "sandy spring": "montgomery", "ashton": "montgomery",
+        "brookeville": "montgomery", "laytonsville": "montgomery", "cabin john": "montgomery",
+        "glen echo": "montgomery", "garrett park": "montgomery", "aspen hill": "montgomery",
+        "colesville": "montgomery", "beallsville": "montgomery", "dickerson": "montgomery",
+        "barnesville": "montgomery", "spencerville": "montgomery", "brinklow": "montgomery",
+        "washington grove": "montgomery", "leisure world": "montgomery",
+        # Frederick
+        "frederick": "frederick", "brunswick": "frederick", "thurmont": "frederick",
+        "middletown": "frederick", "walkersville": "frederick", "mount airy": "frederick",
+        "urbana": "frederick", "new market": "frederick", "emmitsburg": "frederick",
+        "myersville": "frederick", "ijamsville": "frederick", "monrovia": "frederick",
+        "adamstown": "frederick", "point of rocks": "frederick", "jefferson": "frederick",
+        "woodsboro": "frederick", "knoxville": "frederick", "libertytown": "frederick",
+        "sabillasville": "frederick", "rocky ridge": "frederick", "tuscarora": "frederick",
+        "keymar": "frederick", "ladiesburg": "frederick", "buckeystown": "frederick",
+    },
+    "VA": {
+        "arlington": "arlington",
+        "fairfax": "fairfax", "fairfax station": "fairfax", "annandale": "fairfax",
+        "burke": "fairfax", "centreville": "fairfax", "chantilly": "fairfax", "clifton": "fairfax",
+        "dunn loring": "fairfax", "falls church": "fairfax", "fort belvoir": "fairfax",
+        "great falls": "fairfax", "herndon": "fairfax", "lorton": "fairfax", "mclean": "fairfax",
+        "merrifield": "fairfax", "oakton": "fairfax", "reston": "fairfax", "springfield": "fairfax",
+        "vienna": "fairfax", "mount vernon": "fairfax", "newington": "fairfax",
+        "franconia": "fairfax", "kingstowne": "fairfax", "west springfield": "fairfax",
+        "tysons": "fairfax", "tysons corner": "fairfax", "alexandria": "fairfax",
+    },
+}
+
+
+def state_full_name(state: str) -> str:
+    """'MD' -> 'Maryland' (title case); unknown codes pass through unchanged."""
+    return STATE_NAMES.get((state or "").upper(), state or "").title() if state else ""
+
 # Daily page load counter
 PAGE_LOAD_FILE = Path(__file__).resolve().parent.parent / ".ancestry_page_loads.json"
 DAILY_LIMIT = 100
@@ -111,34 +194,36 @@ def reset_circuit_breaker():
 # ── Login ───────────────────────────────────────────────────────────
 
 
+ACCOUNT_URL = f"{ANCESTRY_URL}/account/"
+
+
+def _is_signin_url(url: str) -> bool:
+    return "/account/signin" in (url or "").lower()
+
+
 async def _ensure_logged_in(page) -> bool:
     """Check existing session or auto-login.
 
-    Ancestry allows anonymous browsing (no redirect to signin), so we can't
-    just check the URL. Instead, check for 'Sign In' link in the nav bar
-    which indicates no active session.
+    Measured 2026-09-18: the anonymous /search/ page carries an
+    ``a[href*="account/profile"]`` link, so the old DOM check ("account link
+    present OR no sign-in link") reported a brand-new, never-logged-in profile
+    as authenticated -- and every search then ran anonymously and returned
+    "no match". The one signal that does not lie is the redirect: /account/
+    bounces an anonymous session to /account/signin?returnUrl=... and leaves
+    a signed-in session on an account page.
     """
-    await page.goto(f"{ANCESTRY_URL}/search/", wait_until="domcontentloaded")
+    await page.goto(ACCOUNT_URL, wait_until="domcontentloaded")
     _increment_page_loads()
     await _delay(1, 3)
 
     if await _check_blocked(page):
         return False
 
-    # Check for actual login state — not just URL
-    is_signed_in = await page.evaluate("""() => {
-        const text = document.body.textContent || '';
-        // "Sign In" in nav = NOT logged in; user menu/account link = logged in
-        const hasSignIn = !!document.querySelector('a[href*="signin"]');
-        const hasAccount = !!document.querySelector('a[href*="account/profile"], [class*="userName"]');
-        return hasAccount || !hasSignIn;
-    }""")
-
-    if is_signed_in:
-        logger.info("Ancestry session valid (authenticated)")
+    if not _is_signin_url(page.url):
+        logger.info("Ancestry session valid (authenticated): %s", page.url)
         return True
 
-    logger.info("Not logged in — auto-logging in...")
+    logger.info("Not logged in (redirected to %s) — auto-logging in...", page.url)
     return await _auto_login(page)
 
 
@@ -150,58 +235,70 @@ async def _auto_login(page) -> bool:
         logger.error("ANCESTRY_EMAIL or ANCESTRY_PASSWORD not set")
         return False
 
-    await page.goto(SIGNIN_URL, wait_until="domcontentloaded")
-    _increment_page_loads()
-    await _delay(2, 4)
+    # Measured 2026-09-18: the sign-in page is a single step (username +
+    # password on one form, submit id ``signInBtn``), but it navigates once
+    # more after domcontentloaded, so a bare query_selector right after goto
+    # raced the redirect ("Execution context was destroyed"). And the submit
+    # keeps the button in a spinner for well over the old 3-5 s wait, so the
+    # old code logged "Login failed" on a login that then completed. The
+    # locator API auto-waits through the redirect; the redirect away from
+    # /account/signin is the only trustworthy success signal.
+    from playwright.async_api import Error as PlaywrightError, TimeoutError as PlaywrightTimeout
 
+    EMAIL_SEL = "input[name='username'], input[type='email'], #username"
+    PASSWORD_SEL = "input[name='password'], input[type='password'], #password"
+    SUBMIT_SEL = "#signInBtn, button[type='submit'], input[type='submit']"
+
+    try:
+        await page.goto(SIGNIN_URL, wait_until="domcontentloaded")
+        _increment_page_loads()
+        await _delay(2, 4)
+
+        if await _check_blocked(page):
+            return False
+
+        if not _is_signin_url(page.url):
+            # /account/signin bounced us straight to the site: already signed in.
+            logger.info("Login not needed — sign-in page redirected to %s", page.url)
+            return True
+
+        email_box = page.locator(EMAIL_SEL).first
+        await email_box.wait_for(state="visible", timeout=30_000)
+        await email_box.click()
+        await _delay(0.3, 0.6)
+        await email_box.fill(email)
+        await _delay(0.5, 1)
+
+        password_box = page.locator(PASSWORD_SEL).first
+        await password_box.wait_for(state="visible", timeout=15_000)
+        await password_box.click()
+        await _delay(0.3, 0.6)
+        await password_box.fill(password)
+        await _delay(0.5, 1)
+
+        await page.locator(SUBMIT_SEL).first.click()
+
+        try:
+            await page.wait_for_url(lambda u: not _is_signin_url(u), timeout=60_000)
+        except PlaywrightTimeout:
+            if await _check_blocked(page):
+                return False
+            try:
+                visible = await page.evaluate(
+                    "() => (document.body.innerText || '').replace(/\\s+/g, ' ').slice(0, 400)")
+            except PlaywrightError:
+                visible = ""
+            logger.error("Login failed — still on %s after 60s. Page says: %s", page.url, visible)
+            return False
+    except PlaywrightTimeout as e:
+        logger.error("Login failed — sign-in form never appeared: %s", str(e).splitlines()[0])
+        return False
+    except PlaywrightError as e:
+        logger.error("Login failed — browser error: %s", str(e).splitlines()[0])
+        return False
+
+    await _delay(1, 2)
     if await _check_blocked(page):
-        return False
-
-    # Fill email
-    for sel in ["input[name='username']", "input[type='email']", "#username"]:
-        el = await page.query_selector(sel)
-        if el and await el.is_visible():
-            await el.click()
-            await _delay(0.3, 0.6)
-            await el.fill(email)
-            break
-    else:
-        logger.error("Cannot find email field")
-        return False
-
-    await _delay(0.5, 1)
-
-    # Fill password
-    for sel in ["input[name='password']", "input[type='password']", "#password"]:
-        el = await page.query_selector(sel)
-        if el and await el.is_visible():
-            await el.click()
-            await _delay(0.3, 0.6)
-            await el.fill(password)
-            break
-    else:
-        logger.error("Cannot find password field")
-        return False
-
-    await _delay(0.5, 1)
-
-    # Submit
-    for sel in ["button[type='submit']", "input[type='submit']"]:
-        btn = await page.query_selector(sel)
-        if btn and await btn.is_visible():
-            await btn.click()
-            break
-    else:
-        logger.error("Cannot find sign-in button")
-        return False
-
-    await _delay(3, 5)
-
-    if await _check_blocked(page):
-        return False
-
-    if "signin" in page.url.lower():
-        logger.error("Login failed — still on signin page")
         return False
 
     logger.info("Login successful: %s", page.url)
@@ -260,7 +357,9 @@ async def close_browser(pw, context):
 
 
 async def _search_ssdi(page, first_name: str, last_name: str, state: str = "TN",
-                       middle_initial: str = "", city: str = "") -> dict | None:
+                       middle_initial: str = "", city: str = "",
+                       expected_birth_year: int | None = None,
+                       expected_death_year: int | None = None) -> dict | None:
     """Search SSDI death index. Returns structured result or None."""
     if not _can_load_page() or _circuit_broken:
         return None
@@ -290,7 +389,7 @@ async def _search_ssdi(page, first_name: str, last_name: str, state: str = "TN",
     if state:
         loc_el = await page.query_selector("#sfs__SelfResidencePlace")
         if loc_el and await loc_el.is_visible():
-            state_name = {"TN": "Tennessee", "AL": "Alabama"}.get(state, state)
+            state_name = state_full_name(state)
             await loc_el.fill(state_name)
             await _delay(1, 2)
             # Wait for autocomplete dropdown and select first match
@@ -342,6 +441,11 @@ async def _search_ssdi(page, first_name: str, last_name: str, state: str = "TN",
         if not _name_matches(first_name, last_name, rname, middle_initial):
             continue
 
+        ok, why = _years_ok(r.get("birth_date", ""), rdeath, expected_birth_year, expected_death_year)
+        if not ok:
+            logger.debug("SSDI skip (%s): %s", why, rname)
+            continue
+
         loc_ok, loc_score = _location_matches(rloc, state, city)
         if not loc_ok:
             logger.debug("SSDI skip (wrong state): %s — %s", rname, rloc)
@@ -375,8 +479,8 @@ async def _search_ssdi(page, first_name: str, last_name: str, state: str = "TN",
     # If multiple candidates remain and NONE have county-level match,
     # this is ambiguous — could be anyone in TN with this name
     if len(scored) > 1 and best_loc_score < 2:
-        logger.info("SSDI: %d ambiguous TN matches for %s %s — skipping (no county match)",
-                     len(scored), first_name, last_name)
+        logger.info("SSDI: %d ambiguous %s matches for %s %s — skipping (no county match)",
+                     len(scored), state, first_name, last_name)
         for _, ls, r in scored[:5]:
             logger.debug("  candidate: %s (death: %s, loc: %s, loc_score: %d)",
                          r.get("name"), r.get("death_date", ""), r.get("location", ""), ls)
@@ -419,6 +523,9 @@ async def _search_ssdi(page, first_name: str, last_name: str, state: str = "TN",
         "last_residence": best.get("location", ""),
         "family_members": [],
         "obituary_text": None,
+        "match_basis": _match_basis(best.get("name", ""), best.get("birth_date", ""),
+                                    best.get("death_date", ""), best_loc_score, middle_initial,
+                                    expected_birth_year, expected_death_year),
     }
 
 
@@ -500,7 +607,9 @@ async def _parse_ssdi_results(page) -> list[dict]:
 
 
 async def _search_obituaries(page, first_name: str, last_name: str, state: str = "TN",
-                             city: str = "", middle_initial: str = "") -> dict | None:
+                             city: str = "", middle_initial: str = "",
+                             expected_birth_year: int | None = None,
+                             expected_death_year: int | None = None) -> dict | None:
     """Search Ancestry obituary collection via direct URL. Returns result or None."""
     if not _can_load_page() or _circuit_broken:
         return None
@@ -551,6 +660,11 @@ async def _search_obituaries(page, first_name: str, last_name: str, state: str =
         rdeath = r.get("death_date", "")
 
         if not _name_matches(first_name, last_name, rname, middle_initial):
+            continue
+
+        ok, why = _years_ok(r.get("birth_date", ""), rdeath, expected_birth_year, expected_death_year)
+        if not ok:
+            logger.debug("Obituary skip (%s): %s", why, rname)
             continue
 
         # Check both residence AND death location for best loc_score
@@ -619,37 +733,54 @@ async def _search_obituaries(page, first_name: str, last_name: str, state: str =
         "full_name": best.get("name", ""),
         "birth_date": best.get("birth_date", ""),
         "last_residence": best.get("location", ""),
+        "death_location": best.get("death_location", ""),
         "family_members": best.get("family_members", []),
         "obituary_text": None,
+        "match_basis": _match_basis(best.get("name", ""), best.get("birth_date", ""),
+                                    best.get("death_date", ""), best_loc_score, middle_initial,
+                                    expected_birth_year, expected_death_year),
     }
 
 
 async def _search_newspapers(page, first_name: str, last_name: str, state: str = "TN",
-                              city: str = "", middle_initial: str = "") -> dict | None:
+                              city: str = "", middle_initial: str = "",
+                              expected_birth_year: int | None = None,
+                              expected_death_year: int | None = None) -> dict | None:
     """Search Newspapers.com obituary index via All-Access SSO (Tier 3).
 
     Newspapers.com has 930M+ pages including recent TN obituaries from
     Knoxville News Sentinel, The Daily Times (Blount), etc.
     Shares SSO with Ancestry All-Access — no separate login needed.
+
+    Measured 2026-09-18 on this account: the session does NOT carry over. An
+    anonymous visitor gets a ``MarketingResults`` page -- a match COUNT
+    ("1,776,232 matches for Ronald Zimmerman"), a per-state table and a
+    free-trial offer -- with zero result cards and the ``pl`` filter ignored.
+    Nothing is parseable there, so once that page is seen the tier switches
+    itself off for the rest of the run instead of paying a page load and a
+    cross-site delay per record for nothing.
     """
+    global _newspapers_unavailable
+    if _newspapers_unavailable:
+        logger.debug("Newspapers.com tier disabled for this run (paywall, see earlier warning)")
+        return None
     if not _can_load_page() or _circuit_broken:
         return None
 
     import urllib.parse
 
     # Build search URL with obituary category filter
-    # Newspapers.com search URL format: /search/?query=FIRSTNAME+LASTNAME&t=4268
-    # t=4268 = Obituaries category (from the category dropdown)
-    state_abbr_to_full = {"TN": "Tennessee", "AL": "Alabama"}
-    state_full = state_abbr_to_full.get(state, state)
+    # Newspapers.com search URL: /search/?query=FIRSTNAME+LASTNAME[&pl=City, State]
+    # (redirects to /results/?keyword=...). Measured 2026-09-18: the old
+    # ``t=4268`` was NOT an obituary category -- the site rewrote it to
+    # ``publication-ids=4268``, i.e. one single newspaper, so every search
+    # returned "We did not find any matches" by construction.
+    state_full = state_full_name(state)
 
     query_parts = [first_name, last_name]
     search_query = " ".join(query_parts)
 
-    params = {
-        "query": search_query,
-        "t": "4268",  # Obituaries category
-    }
+    params = {"query": search_query}
 
     # Add location filter if available
     if city:
@@ -673,10 +804,32 @@ async def _search_newspapers(page, first_name: str, last_name: str, state: str =
         logger.info("Newspapers.com requires separate login — SSO did not carry over. Skipping.")
         return None
 
+    # Say WHY there is nothing, instead of returning None in silence.
+    try:
+        page_text = await page.evaluate("() => (document.body.innerText || '').slice(0, 4000)")
+        marketing = await page.evaluate(
+            "() => !!document.querySelector('[class*=\"MarketingResults\"]')")
+    except Exception:
+        page_text, marketing = "", False
+    if "did not find any matches" in page_text.lower():
+        logger.info("Newspapers.com: site reports no matches for %s %s (%s)",
+                    first_name, last_name, page.url)
+        return None
+    if marketing:
+        m = re.search(r"([\d,]+)\s+matches for", page_text)
+        _newspapers_unavailable = True
+        logger.warning("Newspapers.com: NOT signed in — the Ancestry session did not carry over "
+                       "(this subscription does not include Newspapers.com). The paywall page "
+                       "shows %s matches for %s %s but no result cards, so the tier is DISABLED "
+                       "for the rest of this run. URL: %s",
+                       m.group(1) if m else "some", first_name, last_name, page.url)
+        return None
+
     # Parse search results
     results = await _parse_newspapers_results(page)
     if not results:
-        logger.debug("Newspapers.com: no results for %s %s", first_name, last_name)
+        logger.info("Newspapers.com: page has matches but the parser read 0 result cards — "
+                    "layout changed? %s", page.url)
         return None
 
     # Score and filter results (same logic as obituary search)
@@ -687,6 +840,11 @@ async def _search_newspapers(page, first_name: str, last_name: str, state: str =
         rdeath = r.get("date", "")
 
         if not _name_matches(first_name, last_name, rname, middle_initial):
+            continue
+
+        ok, why = _years_ok("", rdeath, None, expected_death_year)
+        if not ok:
+            logger.debug("Newspapers.com skip (%s): %s", why, rname)
             continue
 
         loc_ok, loc_score = _location_matches(rloc, state, city) if rloc else (True, 0)
@@ -730,7 +888,12 @@ async def _search_newspapers(page, first_name: str, last_name: str, state: str =
         "last_residence": best.get("location", ""),
         "family_members": [],
         "obituary_text": best.get("snippet", None),
+        "match_basis": _match_basis(best.get("name", ""), "", best.get("date", ""),
+                                    best_loc_score, middle_initial, None, expected_death_year),
     }
+
+
+_newspapers_unavailable = False   # set once the paywall page is seen; reset per process
 
 
 async def _parse_newspapers_results(page) -> list[dict]:
@@ -844,7 +1007,9 @@ async def _parse_obituary_results(page) -> list[dict]:
                 const r = { raw_text: text.substring(0, 400) };
 
                 // Extract Name field: "NameJohn Smith[Jane Doe]" or "NameJohn Smith"
-                const nameMatch = text.match(/Name([A-Z][a-zA-Z .'-]+?)(?:\\[|Spouse|Father|Mother|Parent|Birth|Death|Residence|Relative)/);
+                // Terminators: every field label Ancestry prints after the name. "Child" and
+                // "Relatives" were missing, so "Ronald P. ZimmermanChildShaffer" was a "name".
+                const nameMatch = text.match(/Name([A-Z][a-zA-Z .'-]+?)(?:\\[|Spouse|Father|Mother|Parent|Child|Sibling|Relative|Marriage|Burial|Birth|Death|Residence)/);
                 if (nameMatch) r.name = nameMatch[1].trim();
 
                 // Extract death info: "Death12 Dec 2008 City, County, State" or "Deathxx xxx 1996"
@@ -868,7 +1033,8 @@ async def _parse_obituary_results(page) -> list[dict]:
                 }
 
                 // Extract birth year
-                const birthMatch = text.match(/Birth[x\\d]+\\s+[x\\w]+\\s+([x\\d]{4})/);
+                // "Birth17 Nov 1933 Maryland" or year-only "Birth1902"
+                const birthMatch = text.match(/Birth(?:[x\\d]{1,2}\\s+[x\\w]+\\s+)?([x\\d]{4})/);
                 if (birthMatch) {
                     const yr = birthMatch[1];
                     r.birth_date = /\\d{4}/.test(yr) ? yr : '';
@@ -1072,48 +1238,83 @@ def _location_matches(location: str, state: str = "TN", city: str = "") -> tuple
       - score: 0 = no location data, 1 = right state, 2 = right county/city
     """
     loc_lower = location.lower().strip()
-    state_names = {
-        "TN": "tennessee", "AL": "alabama", "GA": "georgia",
-        "KY": "kentucky", "NC": "north carolina", "VA": "virginia",
-    }
-    state_name = state_names.get(state, state.lower())
+    state_code = (state or "").upper()
+    state_name = STATE_NAMES.get(state_code, state_code.lower())
 
     # No location data — can't confirm or deny
     if not loc_lower or loc_lower.startswith("x"):
         return True, 0
 
-    # Must be in the right state
-    if state_name not in loc_lower and state.lower() not in loc_lower:
+    # Must be in the right state. The bare two-letter code is only accepted
+    # as a delimited token ("Aberdeen, MD.") -- "md" as a free substring would
+    # match inside words, and "dc" alone matched nothing useful.
+    state_hit = state_name in loc_lower
+    if not state_hit:
+        state_hit = any(a in loc_lower for a in STATE_ALIASES.get(state_code, []))
+    if not state_hit and state_code:
+        state_hit = bool(re.search(rf"(?:^|[\s,]){re.escape(state_code.lower())}(?:[\s,.]|$)", loc_lower))
+    if not state_hit:
         return False, 0
 
     # Right state — base score 1
     score = 1
 
-    # Check county/city match for extra confidence
-    # SSDI locations look like: "Knox, Tennessee, USA" or "Knoxville, Knox, Tennessee"
-    city_lower = city.lower() if city else ""
-    # Map cities to counties for Knox/Blount area
-    county_aliases = {
-        "knoxville": ["knox"],
-        "farragut": ["knox"],
-        "powell": ["knox"],
-        "corryton": ["knox"],
-        "maryville": ["blount"],
-        "alcoa": ["blount"],
-    }
-
+    # County/city match for extra confidence. Ancestry prints
+    # "City, County, State, USA" (SSDI) or "City, ST" (obituary collection).
+    city_lower = (city or "").lower().strip()
     if city_lower:
-        # Direct city name match
-        if city_lower in loc_lower:
+        if re.search(rf"(?:^|[\s,]){re.escape(city_lower)}(?:[\s,.]|$)", loc_lower):
             score = 2
-        # County match via city mapping
-        counties = county_aliases.get(city_lower, [])
-        for county in counties:
-            if county in loc_lower:
+        else:
+            county = CITY_COUNTY.get(state_code, {}).get(city_lower)
+            if county and re.search(rf"(?:^|[\s,]){re.escape(county)}(?:[\s,.]|$)", loc_lower):
                 score = 2
-                break
 
     return True, score
+
+
+def _year_of(value) -> int:
+    """First 4-digit year in a date string ('22 Dec 1998', '2020', 'abt 1940'); 0 if none."""
+    m = re.search(r"\d{4}", str(value or ""))
+    return int(m.group()) if m else 0
+
+
+def _years_ok(birth_str, death_str, expected_birth_year: int | None,
+              expected_death_year: int | None, birth_tol: int = 2, death_tol: int = 1) -> tuple[bool, str]:
+    """Reject a same-name candidate whose birth or death year contradicts what the caller knows.
+
+    Measured 2026-09-18: 'Ronald Zimmerman / Glen Burnie / MD' (DP research: died 2026-07-31)
+    matched Find a Grave's Ronald B. Zimmerman, 1933-2020, Glen Burnie -- same name, same county,
+    a different man. A county match is not an identity in a county of half a million people;
+    the birth year (owner age from SmartSkip) or the death year (DP research) is.
+    A candidate with NO year on the disputed axis is not rejected -- it is merely unconfirmed.
+    """
+    if expected_birth_year:
+        by = _year_of(birth_str)
+        if by and abs(by - expected_birth_year) > birth_tol:
+            return False, f"birth {by} vs expected {expected_birth_year}"
+    if expected_death_year:
+        dy = _year_of(death_str)
+        if dy and abs(dy - expected_death_year) > death_tol:
+            return False, f"death {dy} vs expected {expected_death_year}"
+    return True, ""
+
+
+def _match_basis(full_name: str, birth_str, death_str, loc_score: int, middle_initial: str,
+                 expected_birth_year: int | None, expected_death_year: int | None) -> list[str]:
+    """What this match rests on, for the caller to gate: state/county, middle initial, years."""
+    basis = []
+    if loc_score >= 2:
+        basis.append("county")
+    elif loc_score == 1:
+        basis.append("state")
+    if middle_initial and re.search(rf"\b{re.escape(middle_initial)}\b", full_name or "", re.IGNORECASE):
+        basis.append("middle_initial")
+    if expected_birth_year and _year_of(birth_str) and abs(_year_of(birth_str) - expected_birth_year) <= 2:
+        basis.append("birth_year")
+    if expected_death_year and _year_of(death_str) and abs(_year_of(death_str) - expected_death_year) <= 1:
+        basis.append("death_year")
+    return basis
 
 
 def _parse_owner_name(name: str) -> tuple[str, str, str]:
@@ -1153,13 +1354,19 @@ async def lookup_deceased(
     name: str,
     city: str = "",
     state: str = "TN",
+    expected_birth_year: int | None = None,
+    expected_death_year: int | None = None,
 ) -> dict | None:
     """Search Ancestry for a deceased person. Returns structured result or None.
 
     Search cascade:
-      1. SSDI death records (89M+ records, 1935-2014)
-      2. Ancestry obituary collection (Death category 34)
+      1. SSDI death records (89M+ records, 1935-2014 -- a 2020s death is NEVER here)
+      2. Ancestry obituary collection (Death category 34: obituaries, Find a Grave, etc.)
       3. Newspapers.com obituary index (930M+ pages, shares All-Access SSO)
+
+    ``expected_birth_year`` (owner age from SmartSkip) and ``expected_death_year``
+    (DP research) reject same-name candidates whose years contradict them; a
+    county match alone is not an identity in a DMV county (see ``_years_ok``).
 
     Returns dict with keys:
       confirmed_deceased: bool
@@ -1169,6 +1376,7 @@ async def lookup_deceased(
       full_name: str
       family_members: list[dict]  (empty for now)
       obituary_text: str | None
+      match_basis: list[str]  -- subset of county/state/middle_initial/birth_year/death_year
     """
     if _circuit_broken or not _can_load_page():
         return None
@@ -1182,7 +1390,9 @@ async def lookup_deceased(
     # Tier 1: SSDI
     mi_label = f" {middle_initial}." if middle_initial else ""
     logger.info("Ancestry SSDI search: %s%s %s", first_name, mi_label, last_name)
-    result = await _search_ssdi(page, first_name, last_name, state, middle_initial, city)
+    result = await _search_ssdi(page, first_name, last_name, state, middle_initial, city,
+                                expected_birth_year=expected_birth_year,
+                                expected_death_year=expected_death_year)
     if result:
         return result
 
@@ -1191,7 +1401,9 @@ async def lookup_deceased(
     # Tier 2: Obituary collection
     if _can_load_page() and not _circuit_broken:
         logger.info("Ancestry obituary search: %s %s", first_name, last_name)
-        result = await _search_obituaries(page, first_name, last_name, state, city, middle_initial)
+        result = await _search_obituaries(page, first_name, last_name, state, city, middle_initial,
+                                          expected_birth_year=expected_birth_year,
+                                          expected_death_year=expected_death_year)
         if result:
             return result
 
@@ -1200,7 +1412,9 @@ async def lookup_deceased(
     # Tier 3: Newspapers.com obituary index (shares All-Access SSO)
     if _can_load_page() and not _circuit_broken:
         logger.info("Newspapers.com obituary search: %s %s", first_name, last_name)
-        result = await _search_newspapers(page, first_name, last_name, state, city, middle_initial)
+        result = await _search_newspapers(page, first_name, last_name, state, city, middle_initial,
+                                          expected_birth_year=expected_birth_year,
+                                          expected_death_year=expected_death_year)
         if result:
             return result
 

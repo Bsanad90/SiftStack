@@ -2590,10 +2590,14 @@ def enrich_obituary_data(
                             continue
 
                         search_name = names[0]
-                        city = notice.city.strip() or "Knoxville"
+                        # State from the record, not a hardcoded TN: the Ancestry matcher
+                        # rejects every result outside the given state, so a TN default
+                        # silently discarded all MD/DC/VA hits (measured 2026-09-18).
+                        rec_state = (notice.state or "TN").strip().upper()
+                        city = notice.city.strip() or ("Knoxville" if rec_state == "TN" else "")
 
                         result = await ancestry_enricher.lookup_deceased(
-                            page, name=search_name, city=city, state="TN"
+                            page, name=search_name, city=city, state=rec_state
                         )
                         if result and result.get("confirmed_deceased"):
                             notice.owner_deceased = "yes"

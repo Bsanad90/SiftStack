@@ -14,8 +14,8 @@ import logging
 import os
 import sys
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+# Add src to path (this harness lives in tools/manual/; src/ is two levels up)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "src"))
 
 from dotenv import load_dotenv
 load_dotenv()
