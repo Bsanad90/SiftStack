@@ -204,6 +204,28 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
   masked as `unknown_page_state` because Scrapfly reports quota errors in `scrape_result["error"]`
   while returning empty content. Now surfaced, and `scrapfly_preflight()` aborts before the loop
   so a dead quota no longer bills one 2Captcha solve per row. → [history](docs/history/mddc-va-md.md)
+- **Cross-day full-text reuse (`--prior`, both fulltext legs) — BUILT + validated live 2026-09-21.**
+  `mddc_fetch_full_text_browser.py` and `va_fetch_full_text_browser.py` re-fetched the WHOLE 7-day
+  window every run (87 MDDC Turnstile solves, ~53 VA Scrapfly replays at ~65 s each, the VA leg ran
+  ~60 min) although the sites add ~3-4 notices a day. Notice ids are stable across days (77/77 MDDC
+  ids on 09-21 were in 09-20's file) and a republication carries a NEW id, so `src/scripts/fulltext_prior.py`
+  keys reuse on `notice_id`: `--prior <path>` (repeatable, globs; a previous `_full.csv` or the new
+  `<stem>_details.json` sidecar) or `--prior-auto` (scans the sibling `daily_pulls/YYYY-MM-DD/` dirs,
+  14 days back by default -- needed because the Tue-Sat schedule makes "yesterday" wrong on Tuesdays).
+  Reused text passes the SAME street guard as fetched text and `auction_date` / `loan_principal` are
+  ALWAYS re-parsed from the text, never copied. The sidecar holds EVERY resolved detail, including grid
+  rows that match no CSV row (13 of 53 VA fetches on 09-21 were such rows and were re-fetched daily),
+  and MERGES on write so the VA `--fill-missing` pass cannot shrink it. Republications are now skipped
+  BEFORE the fetch (they used to be fetched and discarded). **Measured live 09-21 against the day's
+  real grid:** MDDC 87 targets -> **4 fetched**, 77 reused, 6 republications skipped, 80/80 rows
+  matched, every id / auction date / loan principal identical to the un-cached run (the only text
+  differences are the site's per-render GUID tokens at the head and tail of each page). Two traps the
+  build encodes: the "first 5 fetches failed -> abort" gate must count FETCHES, not resolved rows
+  (with reuse, `results` fills up and a dead gate would grind through every new id --
+  `FetchBudget`); and the Scrapfly preflight is now lazy, run before the first REAL fetch, so an
+  all-reused day needs no Scrapfly at all. Offline guard `tools/manual/test_fulltext_prior.py` (45
+  checks, incl. the real MDDC loop with a fake browser) -- run after ANY change to the resolve loop.
+  The runner passes `--prior-auto` on all three fulltext invocations.
 - **MD Probates + MD Legal Notices** — `--date` exact-date pulls, PRs split into columns, co-PR and
   foreign-PR notices parsed (the latter state the MD property), SDAT checked BY STREET ADDRESS with a
   full-name owner match (HIGH/MEDIUM/LOW; LOW = sold since the deed). **Checkpoint HEALTHY as of

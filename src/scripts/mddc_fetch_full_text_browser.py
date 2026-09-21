@@ -56,6 +56,15 @@ from playwright.sync_api import sync_playwright
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import mddc_trustee_sale_pull as mp  # noqa: E402
+from fulltext_prior import (  # noqa: E402
+    FetchBudget,
+    add_prior_args,
+    is_republication,
+    resolve_prior,
+    sidecar_path,
+    street_in_text,
+    write_sidecar,
+)
 from va_trustee_sale_pull import (  # noqa: E402
     _solve_turnstile,
     extract_full_notice_text,
@@ -281,9 +290,20 @@ def fetch_detail(page, notice_id: str, captcha_api_key: str) -> dict:
 
 
 def fetch_all(creds: dict, saved_search: str, counties: list, days: int,
-              max_pages: int, limit: int, headed: bool) -> dict:
-    """{row_key: {notice_id, full_text, auction_date, loan_principal}}."""
+              max_pages: int, limit: int, headed: bool,
+              prior: dict | None = None) -> tuple[dict, dict, FetchBudget]:
+    """Returns (results, details, budget):
+      results  {row_key: {notice_id, full_text, auction_date, loan_principal}}
+               -- what the CSV rows are matched against;
+      details  {notice_id: {...}} -- EVERY resolved detail (fetched or reused,
+               matched or not) for the `_details.json` sidecar;
+      budget   fetch/reuse counters for the summary line.
+    `prior` ({notice_id: {full_text, ...}}, see fulltext_prior) short-circuits
+    the detail fetch for an id we already hold."""
+    prior = prior or {}
     results: dict = {}
+    details: dict = {}
+    budget = FetchBudget()
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=not headed)
         page = browser.new_page()
@@ -302,59 +322,87 @@ def fetch_all(creds: dict, saved_search: str, counties: list, days: int,
             print(f"  NOTE: {no_id} grid row(s) still had no id after settle -- they get no full text")
         if limit:
             targets = targets[:limit]
-        print(f"fetching {len(targets)} detail page(s)...")
+        in_prior = sum(1 for r in targets if r["notice_id"] in prior)
+        print(f"resolving {len(targets)} detail page(s): {in_prior} already in --prior, "
+              f"up to {len(targets) - in_prior} to fetch...")
 
-        failures = 0
         for i, row in enumerate(targets, 1):
             nid = row["notice_id"]
-            res = fetch_detail(page, nid, creds.get("captcha_api_key", ""))
             label = row.get("street") or row.get("notice_text_snippet", "")[:40]
-            if not res["ok"]:
-                failures += 1
-                print(f"  [{i}/{len(targets)}] id={nid} FAILED: {res['error']} ({label})")
-                if failures >= 5 and not results:
-                    raise SystemExit("first 5 detail fetches all failed -- aborting before "
-                                     "burning more 2Captcha solves; investigate the gate")
-                continue
-            full = res["full_text"]
-            # Wrong-notice guard (VA lesson 2026-09-01): the row's own street
-            # must appear in what came back, or this is some other notice.
-            parts = (row.get("street") or "").split()
-            if parts and not re.search(
-                    re.escape(parts[0]) + (r"\s+" + re.escape(parts[1]) if len(parts) > 1 else ""),
-                    full, re.I):
-                failures += 1
-                print(f"  [{i}/{len(targets)}] id={nid} WRONG NOTICE returned ({label})")
-                continue
             key = _row_key(row.get("street", ""), row.get("zip", ""),
                            row.get("notice_text_snippet", ""))
-            if key in results and results[key]["notice_id"] != nid:
-                if key[0] == "addr":
-                    # Same street+zip under a different id = the weekly
-                    # REPUBLICATION of the same foreclosure notice (they
-                    # republish by law). The grid is newest-first, so the
-                    # entry already stored is the current one -- keep it.
-                    print(f"  [{i}/{len(targets)}] id={nid} republication of "
-                          f"id={results[key]['notice_id']} ({label}) -- keeping the newer")
+            # Same street+zip under a different id = the weekly REPUBLICATION
+            # of the same foreclosure notice (they republish by law). The grid
+            # is newest-first, so the entry already stored is the current one
+            # -- keep it, and since 2026-09-21 decide BEFORE fetching: the
+            # old code paid a solve for text it then threw away (6 of 87).
+            if is_republication(key, nid, results):
+                budget.skipped_republication += 1
+                print(f"  [{i}/{len(targets)}] id={nid} republication of "
+                      f"id={results[key]['notice_id']} ({label}) -- keeping the newer, not fetched")
+                continue
+
+            full, source = None, ""
+            if nid in prior:
+                cand = prior[nid].get("full_text", "")
+                # Reused text passes the SAME street guard as fetched text.
+                if street_in_text(row.get("street", ""), cand):
+                    full, source = cand, "prior"
+                else:
+                    budget.refetched_after_guard += 1
+                    print(f"  [{i}/{len(targets)}] id={nid} prior text fails the street guard "
+                          f"-- re-fetching ({label})")
+            if full is None:
+                res = fetch_detail(page, nid, creds.get("captcha_api_key", ""))
+                if not res["ok"]:
+                    budget.note_failure()
+                    print(f"  [{i}/{len(targets)}] id={nid} FAILED: {res['error']} ({label})")
+                    if budget.should_abort():
+                        raise SystemExit("first 5 detail fetches all failed -- aborting before "
+                                         "burning more 2Captcha solves; investigate the gate")
                     continue
+                full = res["full_text"]
+                # Wrong-notice guard (VA lesson 2026-09-01): the row's own street
+                # must appear in what came back, or this is some other notice.
+                if not street_in_text(row.get("street", ""), full):
+                    budget.note_failure()
+                    print(f"  [{i}/{len(targets)}] id={nid} WRONG NOTICE returned ({label})")
+                    continue
+                budget.note_success()
+                source = "fetched"
+            else:
+                budget.reused += 1
+
+            entry = {
+                "notice_id": nid,
+                "full_text": full,
+                # Always re-mined from the text (never copied from the prior
+                # file) so a parser fix reaches every row on the next run.
+                "auction_date": parse_auction_date(full, row.get("date_published", "")),
+                "loan_principal": mp.parse_loan_principal(full),
+                "street": row.get("street", ""),
+                "zip": row.get("zip", ""),
+                "date_published": row.get("date_published", ""),
+                "source": source if source == "fetched" else prior[nid].get("source", "prior"),
+                "fetched_at": (time.strftime("%Y-%m-%dT%H:%M:%S") if source == "fetched"
+                               else prior[nid].get("fetched_at", "")),
+            }
+            details[nid] = entry
+            if key in results and results[key]["notice_id"] != nid:
                 # Streetless boilerplate collision: two genuinely different
                 # notices we cannot tell apart -- drop both rather than
-                # attaching the wrong text to a record.
+                # attaching the wrong text to a record. (Address keys were
+                # handled as republications above.)
                 print(f"  [{i}/{len(targets)}] id={nid} KEY COLLISION with "
                       f"id={results[key]['notice_id']} -- dropping both rather than "
                       f"attaching the wrong notice")
                 del results[key]
                 continue
-            results[key] = {
-                "notice_id": nid,
-                "full_text": full,
-                "auction_date": parse_auction_date(full, row.get("date_published", "")),
-                "loan_principal": mp.parse_loan_principal(full),
-            }
-            print(f"  [{i}/{len(targets)}] id={nid} ok auction={results[key]['auction_date'] or '-'} "
+            results[key] = entry
+            print(f"  [{i}/{len(targets)}] id={nid} {source} auction={entry['auction_date'] or '-'} "
                   f"({label})")
         browser.close()
-    return results
+    return results, details, budget
 
 
 def main():
@@ -367,6 +415,7 @@ def main():
     ap.add_argument("--max-pages", type=int, default=12)
     ap.add_argument("--limit", type=int, default=0, help="spike: stop after N fetched details")
     ap.add_argument("--headed", action="store_true")
+    add_prior_args(ap)
     args = ap.parse_args()
 
     creds = mp.load_credentials()
@@ -389,9 +438,15 @@ def main():
     if "full_text" not in fieldnames:
         fieldnames.append("full_text")
 
-    results = fetch_all(creds, args.saved_search, counties, args.days,
-                        args.max_pages, args.limit, args.headed)
-    print(f"fetched {len(results)} detail page(s)")
+    prior = resolve_prior(args, out_path)
+    results, details, budget = fetch_all(creds, args.saved_search, counties, args.days,
+                                         args.max_pages, args.limit, args.headed, prior=prior)
+    print(budget.summary(len(results)))
+    # Sidecar: every resolved detail keyed by notice_id, so tomorrow's
+    # --prior-auto reuses even the rows that match no CSV row today.
+    side = sidecar_path(out_path)
+    write_sidecar(side, details)
+    print(f"wrote {len(details)} detail(s) to {side}")
 
     matched = 0
     for r in rows:

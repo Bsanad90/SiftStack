@@ -42,7 +42,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import re
 import sys
 import time
 from pathlib import Path
@@ -51,6 +50,15 @@ from playwright.sync_api import sync_playwright
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import va_trustee_sale_pull as va  # noqa: E402
+from fulltext_prior import (  # noqa: E402
+    FetchBudget,
+    add_prior_args,
+    is_republication,
+    resolve_prior,
+    sidecar_path,
+    street_in_text,
+    write_sidecar,
+)
 from va_trustee_sale_pull import (  # noqa: E402
     extract_full_notice_text,
     fetch_full_text,
@@ -214,8 +222,16 @@ def harvest_grid(popular_search: str, counties: list, days: int, max_pages: int,
 
 def fetch_all(popular_search: str, counties: list, days: int, max_pages: int,
               limit: int, captcha_api_key: str, scrapfly_key: str, headed: bool,
-              need_keys: set | None = None) -> dict:
+              need_keys: set | None = None,
+              prior: dict | None = None) -> tuple[dict, dict, FetchBudget]:
+    """Returns (results, details, budget): results keyed by row key for the
+    CSV match; details keyed by notice_id for the `_details.json` sidecar
+    (every resolved detail, matched or not); budget = fetch/reuse counters.
+    `prior` ({notice_id: {full_text, ...}}) short-circuits the Scrapfly fetch."""
+    prior = prior or {}
     results: dict = {}
+    details: dict = {}
+    budget = FetchBudget()
     grid_rows = harvest_grid(popular_search, counties, days, max_pages, headed)
 
     seen: set = set()
@@ -242,12 +258,23 @@ def fetch_all(popular_search: str, counties: list, days: int, max_pages: int,
         targets = targets[:limit]
 
     # Preflight Scrapfly BEFORE any 2Captcha spend (each detail pays a solve
-    # first, so a dead quota would bill one per row for nothing).
-    ok, why = scrapfly_preflight(scrapfly_key)
-    if not ok:
-        raise SystemExit(f"Scrapfly unusable ({why}) -- aborting before any 2Captcha spend; "
-                         "fix the Scrapfly account/quota and re-run")
-    print(f"fetching {len(targets)} detail page(s) via Scrapfly (click-by-id)...")
+    # first, so a dead quota would bill one per row for nothing). Lazy since
+    # 2026-09-21: a run that reuses every id from --prior needs no Scrapfly
+    # at all, so the preflight runs right before the FIRST real fetch.
+    preflighted = {"done": False}
+
+    def _ensure_preflight() -> None:
+        if preflighted["done"]:
+            return
+        ok, why = scrapfly_preflight(scrapfly_key)
+        if not ok:
+            raise SystemExit(f"Scrapfly unusable ({why}) -- aborting before any 2Captcha spend; "
+                             "fix the Scrapfly account/quota and re-run")
+        preflighted["done"] = True
+
+    in_prior = sum(1 for r in targets if r["notice_id"] in prior)
+    print(f"resolving {len(targets)} detail page(s): {in_prior} already in --prior, "
+          f"up to {len(targets) - in_prior} via Scrapfly (click-by-id)...")
 
     # Errors that are transient Scrapfly render/session hiccups, worth one
     # fresh-session retry (each fetch_full_text call mints a new session).
@@ -256,66 +283,95 @@ def fetch_all(popular_search: str, counties: list, days: int, max_pages: int,
                  # Scrapfly infra blips, not logic failures (both seen live).
                  "ApiHttpServerError", "503", "No backend available")
 
-    failures = 0
     for i, row in enumerate(targets, 1):
+        nid = row["notice_id"]
         label = row.get("street") or row.get("notice_text_snippet", "")[:40]
-        # Replay the search in Scrapfly and click THIS row's View button by
-        # notice_id on its own results page -- exact, drift-proof. The direct
-        # Details.aspx fetch was tried first and returned gate_not_cleared:
-        # the browser-harvested SID is a browser-session token Scrapfly's
-        # separate session/IP cannot resume.
-        res, full = {}, ""
-        for attempt in range(2):
-            res = fetch_full_text(
-                popular_search, counties, days, int(row.get("_view_index") or 0),
-                captcha_api_key=captcha_api_key, scrapfly_key=scrapfly_key,
-                page_no=int(row.get("_page_no") or 1), notice_id=row["notice_id"],
-            )
-            full = extract_full_notice_text(res["html"]) if res.get("ok") else ""
-            if res.get("ok") and len(full) >= 200:
-                break
-            err = res.get("error") or f"short_text ({len(full)} chars)"
-            if attempt == 0 and any(t in err for t in TRANSIENT):
-                print(f"  [{i}/{len(targets)}] id={row['notice_id']} {err} -- retrying once ({label})")
-                continue
-            break
-        if not res.get("ok") or len(full) < 200:
-            failures += 1
-            err = res.get("error") or f"short_text ({len(full)} chars)"
-            print(f"  [{i}/{len(targets)}] id={row['notice_id']} FAILED: {err} ({label})")
-            if failures >= 5 and not results:
-                raise SystemExit("first 5 detail fetches all failed -- aborting before "
-                                 "burning more 2Captcha solves; investigate the gate")
-            continue
-        parts = (row.get("street") or "").split()
-        if parts and not re.search(
-                re.escape(parts[0]) + (r"\s+" + re.escape(parts[1]) if len(parts) > 1 else ""),
-                full, re.I):
-            failures += 1
-            print(f"  [{i}/{len(targets)}] id={row['notice_id']} WRONG NOTICE returned ({label})")
-            continue
         key = _row_key(row.get("street", ""), row.get("zip", ""),
                        row.get("notice_text_snippet", ""))
-        if key in results and results[key]["notice_id"] != row["notice_id"]:
-            if key[0] == "addr":
-                # Weekly republication of the same foreclosure notice;
-                # the grid is newest-first so the stored one is current.
-                print(f"  [{i}/{len(targets)}] id={row['notice_id']} republication of "
-                      f"id={results[key]['notice_id']} ({label}) -- keeping the newer")
+        # Weekly republication of the same foreclosure notice; the grid is
+        # newest-first so the stored one is current. Decided BEFORE the fetch
+        # since 2026-09-21 (the old code paid ~65 s + a solve for text it
+        # then discarded -- 8 of 53 rows on 09-21).
+        if is_republication(key, nid, results):
+            budget.skipped_republication += 1
+            print(f"  [{i}/{len(targets)}] id={nid} republication of "
+                  f"id={results[key]['notice_id']} ({label}) -- keeping the newer, not fetched")
+            continue
+
+        full, source = None, ""
+        if nid in prior:
+            cand = prior[nid].get("full_text", "")
+            # Reused text passes the SAME street guard as fetched text.
+            if street_in_text(row.get("street", ""), cand):
+                full, source = cand, "prior"
+            else:
+                budget.refetched_after_guard += 1
+                print(f"  [{i}/{len(targets)}] id={nid} prior text fails the street guard "
+                      f"-- re-fetching ({label})")
+        if full is None:
+            _ensure_preflight()
+            # Replay the search in Scrapfly and click THIS row's View button by
+            # notice_id on its own results page -- exact, drift-proof. The direct
+            # Details.aspx fetch was tried first and returned gate_not_cleared:
+            # the browser-harvested SID is a browser-session token Scrapfly's
+            # separate session/IP cannot resume.
+            res, fetched = {}, ""
+            for attempt in range(2):
+                res = fetch_full_text(
+                    popular_search, counties, days, int(row.get("_view_index") or 0),
+                    captcha_api_key=captcha_api_key, scrapfly_key=scrapfly_key,
+                    page_no=int(row.get("_page_no") or 1), notice_id=nid,
+                )
+                fetched = extract_full_notice_text(res["html"]) if res.get("ok") else ""
+                if res.get("ok") and len(fetched) >= 200:
+                    break
+                err = res.get("error") or f"short_text ({len(fetched)} chars)"
+                if attempt == 0 and any(t in err for t in TRANSIENT):
+                    print(f"  [{i}/{len(targets)}] id={nid} {err} -- retrying once ({label})")
+                    continue
+                break
+            if not res.get("ok") or len(fetched) < 200:
+                budget.note_failure()
+                err = res.get("error") or f"short_text ({len(fetched)} chars)"
+                print(f"  [{i}/{len(targets)}] id={nid} FAILED: {err} ({label})")
+                if budget.should_abort():
+                    raise SystemExit("first 5 detail fetches all failed -- aborting before "
+                                     "burning more 2Captcha solves; investigate the gate")
                 continue
-            print(f"  [{i}/{len(targets)}] id={row['notice_id']} KEY COLLISION with "
+            if not street_in_text(row.get("street", ""), fetched):
+                budget.note_failure()
+                print(f"  [{i}/{len(targets)}] id={nid} WRONG NOTICE returned ({label})")
+                continue
+            budget.note_success()
+            full, source = fetched, "fetched"
+        else:
+            budget.reused += 1
+
+        entry = {
+            "notice_id": nid,
+            "full_text": full,
+            # Always re-mined from the text, never copied from the prior file.
+            "auction_date": parse_auction_date(full, row.get("date_published", "")),
+            "loan_principal": va.parse_loan_principal(full),
+            "street": row.get("street", ""),
+            "zip": row.get("zip", ""),
+            "date_published": row.get("date_published", ""),
+            "source": source if source == "fetched" else prior[nid].get("source", "prior"),
+            "fetched_at": (time.strftime("%Y-%m-%dT%H:%M:%S") if source == "fetched"
+                           else prior[nid].get("fetched_at", "")),
+        }
+        details[nid] = entry
+        if key in results and results[key]["notice_id"] != nid:
+            # Streetless boilerplate collision (address keys were handled as
+            # republications above): drop both rather than attach the wrong text.
+            print(f"  [{i}/{len(targets)}] id={nid} KEY COLLISION with "
                   f"id={results[key]['notice_id']} -- dropping both")
             del results[key]
             continue
-        results[key] = {
-            "notice_id": row["notice_id"],
-            "full_text": full,
-            "auction_date": parse_auction_date(full, row.get("date_published", "")),
-            "loan_principal": va.parse_loan_principal(full),
-        }
-        print(f"  [{i}/{len(targets)}] id={row['notice_id']} ok "
-              f"auction={results[key]['auction_date'] or '-'} ({label})")
-    return results
+        results[key] = entry
+        print(f"  [{i}/{len(targets)}] id={nid} {source} "
+              f"auction={entry['auction_date'] or '-'} ({label})")
+    return results, details, budget
 
 
 def main():
@@ -332,6 +388,7 @@ def main():
                          "(the grid harvest is free; this avoids re-spending a solve on rows "
                          "already enriched). Writes back in place unless --out is given.")
     ap.add_argument("--headed", action="store_true")
+    add_prior_args(ap)
     args = ap.parse_args()
 
     creds = va.load_credentials()
@@ -368,9 +425,16 @@ def main():
             return
         print(f"--fill-missing: {len(need_keys)} row(s) still missing an auction date")
 
-    results = fetch_all(args.popular_search, counties, args.days, args.max_pages,
-                        args.limit, captcha_key, scrapfly_key, args.headed, need_keys=need_keys)
-    print(f"fetched {len(results)} detail page(s)")
+    prior = resolve_prior(args, out_path)
+    results, details, budget = fetch_all(
+        args.popular_search, counties, args.days, args.max_pages,
+        args.limit, captcha_key, scrapfly_key, args.headed, need_keys=need_keys, prior=prior)
+    print(budget.summary(len(results)))
+    # Sidecar beside the output (merged into any existing one, so the
+    # --fill-missing pass cannot shrink the first pass's complete file).
+    side = sidecar_path(out_path)
+    write_sidecar(side, details)
+    print(f"wrote {len(details)} detail(s) to {side}")
 
     matched = 0
     for r in rows:
