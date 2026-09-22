@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Two-page front/back "how to use it" sheet for the Dialer Day Card.
+"""One-page "how to use it" sheet for the Dialer Day Card.
 
 Regenerate this WHENEVER the card is rebuilt - the sheet carries the card's build
 date, and a sheet that disagrees with the card in the dialer's hand is worse than no
@@ -22,7 +22,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_LEFT
 from reportlab.platypus import (BaseDocTemplate, PageTemplate, Frame, Flowable,
-                                PageBreak, Paragraph, Spacer)
+                                Paragraph, Spacer)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root
 DEFAULT_OUT = os.path.join(ROOT, "output", "Dialer_Day_Card_Instructions.pdf")
@@ -111,76 +111,56 @@ def steps(items):
 story = []
 
 story += section("Set up once", steps([
-    "Open the card file on your work computer in <b>Chrome</b> or <b>Edge</b>. Bookmark it so you find it every morning.",
-    "Use the <b>same computer and same browser every day</b>. The card saves your progress on that device only.",
-    "Type your name in the box in the <b>top bar</b>. It is remembered.",
+    "Open the card on your work computer in <b>Chrome</b> or <b>Edge</b> and bookmark it. Same computer every day - it saves there.",
+    "Type your name in the <b>top bar</b>. It is remembered.",
     'Open <b>"Set up my 10 numbers"</b> and paste your 10 caller IDs, one per line, in rotation order.',
 ]))
 
 story += section("Every morning", steps([
-    "Open the card and look at the coloured pill at the top.",
-]) + [
-    Paragraph('<b>OK to dial</b> &nbsp;=&nbsp; 9:00 AM to 7:30 PM Eastern', sub),
-    Paragraph('<b>Last calls</b> &nbsp;=&nbsp; until 7:45 PM', sub),
-    Paragraph('<b>STOP</b> &nbsp;=&nbsp; do not dial', sub),
-    Paragraph('Never plan by your own clock.', note),
-    Paragraph("<b>2.</b>&nbsp; Work the 5 phases in order and tick each box as you finish it:", step),
-    Paragraph("<b>1</b> &nbsp;Morning admin: yesterday's statuses, tasks, appointments, boards. Before any dialing.", sub),
-    Paragraph("<b>2</b> &nbsp;Callbacks: everyone who is expecting your call.", sub),
-    Paragraph("<b>3</b> &nbsp;FTM blitz: load <b>FTM - 02 Ready to Call</b>, Assignee = you, <b>All</b> tab. List order, no cherry-picking.", sub),
-    Paragraph("<b>4</b> &nbsp;Hottest book: <b>Hottest - 02 Ready to Call</b>, same way.", sub),
-    Paragraph("<b>5</b> &nbsp;End of shift checks.", sub),
-])
+    "Check the pill at the top: <b>OK to dial</b> 9:00 AM - 7:30 PM Eastern, <b>Last calls</b> to 7:45, then <b>STOP</b>. Never your own clock.",
+    "Work the 5 phases in order and tick each box: morning admin, callbacks, FTM, Hottest, end of shift.",
+]))
 
-# The lane ladder is the change dialers get wrong most easily, so it gets its own
-# section rather than a hint inside phase 3 (Basem, 2026-09-21).
-story += section("The order: work in rounds", [
+story += section("The order - work in rounds", [
     Paragraph('<b>FTM Ready to Call &rarr; Hottest Ready to Call &rarr; FTM Call 2 &rarr; Hottest Call 2 '
               '&rarr; FTM Call 3 &rarr; Hottest Call 3 &rarr; Call 4</b>', step),
-    Paragraph('When FTM Ready to Call runs dry, go to <b>Hottest</b> - not deeper into FTM.', step),
-    Paragraph('Only when both Ready to Call lists are dry do you drop a rung, and then it is '
-              'FTM Call 2 first, Hottest Call 2 next.', step),
-    Paragraph('Most days you never reach the bottom. That is fine. What is not fine is dialing a '
-              'fourth attempt while fresh records sit untouched.', note),
+    Paragraph('FTM dry? Go to <b>Hottest</b> - not deeper into FTM. Drop a rung only when both are dry.', step),
 ])
 
 story += section("On every record", steps([
-    "Read the pinned note on the message board first. An empty board is normal.",
-    "Dial the best untried number: <b>Dial First</b>, then <b>Dial Second</b>. No tag means top to bottom.",
-    "<b>Set the status right away</b>, while it is fresh. No answer = set nothing.",
-    "Next record. Never dial the same record twice in one day.",
-]) + [Paragraph('Open <b>Quick reference</b> on the card for the status table, dial order and skip list.', note)])
+    "Read the pinned note on the message board. Empty is normal.",
+    "No status yet? Set <b>Prospecting</b> before you dial. It stays Prospecting until a call moves it.",
+    "Dial the best untried number: <b>Dial First</b>, then <b>Dial Second</b>. No tag = top to bottom.",
+    "Set the status right after the call. No answer = leave it. Never dial a record twice in one day.",
+]) + [Paragraph('The full status table, dial order and skip list are under <b>Quick reference</b> on the card.', note)])
 
-story.append(PageBreak())
+# Basem 2026-09-21: counts, not stories. The one exception is a lead they are unsure
+# about - and the rule there is pass it on, because a missed qualified lead is gone.
+story += section("Notes - counts only", [
+    Paragraph('In the top-bar box, as they happen: <b>follow-ups</b>, <b>cold leads</b>, '
+              '<b>warm leads in follow-up</b>, <b>unqualified leads</b>, how many need an '
+              '<b>email</b> or a <b>text</b>.', step),
+    Paragraph('Write a sentence only when you are unsure a lead qualifies. <b>When in doubt, pass it on</b> '
+              '- an unqualified lead costs minutes, a qualified one you talked yourself out of is gone.', step),
+    Paragraph('Problems, questions, a record that looks wrong: say it in the group, not the notes.', step),
+])
 
-story += section("Notes for Shady - the box in the top bar", steps([
-    "Type them <b>during the day, as things happen</b>. At 7:45 PM you will not remember.",
-    "<b>Follow-ups you are carrying</b> - how many, and the ones that matter by name.",
-    "<b>Meaningful conversations</b> - who you actually spoke to and what they said.",
-    "<b>Unqualified leads sitting with you</b> - how many are waiting to be qualified or chased.",
-    "<b>Who needs an email or a text</b>, and what it should say.",
-]) + [Paragraph('The numbers say what you did. The notes say what is alive - that is how you get help '
-                'on the records worth helping.', note)])
-
-story += section("Caller ID rotation", [
-    Paragraph('Click <b>+1 call</b> for every number you dial.', step),
-    Paragraph('At <b>25</b> the box turns red. Click <b>Switched - next number</b> before your next dial.', step),
-    Paragraph('<b>Back a number</b> undoes a mis-click and gives your call count back.', step),
-    Paragraph('The count does not reset overnight. That is on purpose, so numbers 8, 9 and 10 get used too.', note),
+story += section("Caller ID", [
+    Paragraph('Click <b>+1 call</b> for every dial. At <b>25</b>, click <b>Switched - next number</b>. '
+              '<b>Back a number</b> undoes a mis-click. The count carries overnight on purpose.', step),
 ])
 
 story += section("End of day", steps([
-    "Type <b>FTM records worked</b> and <b>Hottest records worked</b> (records touched, not numbers dialed), then <b>Numbers dialed today</b> and <b>People you actually spoke to</b>.",
-    "Check your notes box - everything above under <b>Notes for Shady</b> should be in it.",
-    'Click <b>Copy EOD report</b> and paste it to your manager on WhatsApp. If the copy does not work, the text is already selected in the box: press <b>Ctrl+C</b>.',
-    "You can click Copy again later to send an updated report.",
+    "Type the four numbers: <b>FTM worked</b>, <b>Hottest worked</b>, <b>dials</b>, <b>people you spoke to</b>.",
+    "Click <b>Copy EOD report</b> and paste it to your manager on WhatsApp. If copy fails, press <b>Ctrl+C</b> - the text is already selected.",
 ]))
 
 story += section("Good to know", [
-    Paragraph('Checks clear themselves at <b>midnight Eastern</b>.', step),
-    Paragraph('<b>Clear today</b> (click twice) wipes the day early. Your name and rotation stay.', step),
-    Paragraph('If the card says it is more than <b>14 days old</b>, ask your manager for a fresh one before you dial.', step),
-    Paragraph('<font color="#B3372E"><b>Never</b></font> move records between lists and <font color="#B3372E"><b>never</b></font> press Save on a filter preset. The system advances every record on its own.', step),
+    Paragraph('Checks clear at midnight Eastern. <b>Clear today</b> (click twice) wipes the day early. '
+              'Card more than <b>14 days old</b>? Ask for a fresh one.', step),
+    Paragraph('<font color="#B3372E"><b>Never</b></font> move records between lists and '
+              '<font color="#B3372E"><b>never</b></font> press Save on a filter preset. '
+              'The system advances every record on its own.', step),
 ])
 
 
@@ -191,20 +171,16 @@ def draw_header(canv, doc):
     canv.roundRect(x, y, PW - 2 * M, HEAD_H, 5, stroke=0, fill=1)
     canv.setFillColor(colors.HexColor("#E3ECF5"))
     canv.setFont("Helvetica-Bold", 8.6)
-    canv.drawString(x + 18, y + HEAD_H - 22,
-                    "DIALER DAY CARD" if doc.page == 1 else "DIALER DAY CARD · CONTINUED")
+    canv.drawString(x + 18, y + HEAD_H - 22, "DIALER DAY CARD")
     canv.setFillColor(colors.white)
     canv.setFont("Helvetica-Bold", 21)
-    canv.drawString(x + 18, y + HEAD_H - 48,
-                    "How to use it" if doc.page == 1 else "What you report")
+    canv.drawString(x + 18, y + HEAD_H - 48, "How to use it")
     canv.setFillColor(colors.HexColor("#C7D8EA"))
     canv.setFont("Helvetica", 8.8)
     canv.drawString(x + 18, y + HEAD_H - 64,
-                    "Keep this next to you for the first week." if doc.page == 1
-                    else "Notes, caller ID, end of shift.")
+                    "Keep this next to you for the first week.")
     canv.drawRightString(PW - M - 18, y + HEAD_H - 64,
-                         "All times U.S. Eastern  |  card build %s  |  page %d of 2"
-                         % (BUILD, doc.page))
+                         "All times U.S. Eastern  |  card build %s" % BUILD)
     canv.restoreState()
 
 
@@ -224,7 +200,6 @@ from pypdf import PdfReader
 pages = len(PdfReader(OUT).pages)
 print("card  %s (build %s)" % (os.path.relpath(CARD, ROOT), BUILD))
 print("sheet %s - %d page%s" % (os.path.relpath(OUT, ROOT), pages, "" if pages == 1 else "s"))
-if pages != 2:
+if pages != 1:
     raise SystemExit(
-        "The sheet is designed as a two-page front/back. Got %d - move the PageBreak "
-        "or retune the styles rather than shipping an odd page." % pages)
+        "The sheet must stay ONE page - cut words or tighten the styles, do not ship %d." % pages)
