@@ -138,13 +138,13 @@ there are the kind that fail silently.
 
 | File | Covers |
 |---|---|
-| [docs/history/tn-ftm-pipeline.md](docs/history/tn-ftm-pipeline.md) | TN scheduled first-to-market pull (Fly `siftstack-ftm`), egress/Turnstile gating, backfill, Scrapfly backend, foreclosure master list, courthouse photo import, Dropbox watch, retired notice screenshots |
+| [docs/history/tn-ftm-pipeline.md](docs/history/tn-ftm-pipeline.md) | TN scheduled first-to-market pull (Ty's Fly app `siftstack-ftm`, not ours), egress/Turnstile gating, backfill, Scrapfly backend, foreclosure master list, courthouse photo import, Dropbox watch, retired notice screenshots |
 | [docs/history/mddc-va-md.md](docs/history/mddc-va-md.md) | MDDC Trustee's Sale, VA Public Notice (`publicnoticevirginia.com`), MD Probates + MD Legal Notices (Register of Wills), Land Records/SDAT lookup, the 2026-08-26/27 extraction audit, the external MD Cases task |
 | [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md) | The DPD account build end to end: SiftMap filter contract, tier configs, the 73 Records presets, the DC one-shot, the FTM coverage matrix, the market research tables, and the 2026-08-26 inverted-preset post-mortem |
 | [docs/history/prospecting.md](docs/history/prospecting.md) | Obituary opportunity ranking, the obituary deep-prospecting batch + reload, Deep Prospecting v5 (SmartSkip) and the retired v4/Enformion path |
 | [docs/history/deal-analysis.md](docs/history/deal-analysis.md) | Comp package engine, dispo stack, post-walkthrough package, locked master material list / SKU rehab engine, the lender package |
 | [docs/history/soi-and-knox.md](docs/history/soi-and-knox.md) | Knox first-to-market pull, sphere-of-influence pipeline (Columbus OH), account-wide enrichment/scoring audit, phone validator multi-contact detection |
-| [docs/history/sms-and-coaching.md](docs/history/sms-and-coaching.md) | Two-way SMS agent (Fly, smrtPhone transports, autonomy ladder), call coaching engine |
+| [docs/history/sms-and-coaching.md](docs/history/sms-and-coaching.md) | Two-way SMS agent (Ty's Fly deployment, smrtPhone transports, autonomy ladder), call coaching engine |
 
 Also: `docs/api/` holds the per-vendor API notes, `docs/setup/` the onboarding guides,
 `tools/manual/` the headed-browser and one-off dev harnesses.
@@ -153,9 +153,14 @@ Also: `docs/api/` holds the per-vendor API notes, `docs/setup/` the onboarding g
 
 Each line is the state as of 2026-08-28; the reasoning is in the linked history file.
 
-- **TN FTM scrape** — LIVE on Fly as `siftstack-ftm`, daily 06:30 America/New_York with
-  `--commit`. Backfill complete (1,226 records, 12 months). The `county` stage still skips in the
-  container. Zero notices is a FAILURE, not a quiet day. → [history](docs/history/tn-ftm-pipeline.md)
+- **TN FTM scrape** — **NOT OURS. This is Ty's upstream deployment** (Fly `siftstack-ftm`, daily
+  06:30 America/New_York with `--commit`; backfill 1,226 records over 12 months; the `county` stage
+  skips in the container). **Basem has no Fly account** — no `flyctl`, no `FLY_API_TOKEN` on this
+  machine, and `fly.toml` at the repo root is inherited from upstream (it is configured for Blount
+  County, TN). Nothing on Fly runs for this account and nothing there can be changed from here.
+  THIS account's pulls run locally from `automation/*.ps1` on Basem's PC, Tue–Sat. The rule that
+  does carry over: zero notices is a FAILURE, not a quiet day.
+  → [history](docs/history/tn-ftm-pipeline.md)
 - **MDDC Trustee's Sale** — saved search 41 is GONE from the live site; default is now `["43"]`.
   Always run `--list-searches` first. `BATCH_TAG` now stamps `FTM` (changed 2026-08-28, not yet
   run; the next upload lands in the FTM lane; the browser pipeline imports the same constant).
@@ -424,8 +429,13 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
   people, so the result can be fanned across same-owner records for free (not done).
   The note was rewritten from one `"  ||  "` paragraph to line-broken blocks; **DataSift
   preserves the newlines** (verified live, 37 of them). → [history](docs/history/prospecting.md)
-- **SMS agent** — deployed on Fly, API transport verified. Autonomy ladder controlled by
-  `SMS_AGENT_PHASE`. → [history](docs/history/sms-and-coaching.md)
+- **SMS agent** — **NOT OURS either.** `siftstack.fly.dev` is Ty's live TN campaign (checked
+  2026-09-18: phase 2, `dry_run` false, 3,339 texts sent). Proof it has never touched this account:
+  the agent tags every record it writes `sys_ai_paused` / `sys_ai_handled` / `sys_escalated`, and
+  this account's 444 tags include **zero** starting `sys_`. Do not treat it as ours and do not try
+  to stop it from this machine. If Basem ever wants SMS it is a fresh deploy on his own host with
+  his own keys, off post-08-28 code. The code and the `SMS_AGENT_PHASE` autonomy ladder are real and
+  usable; only the deployment is someone else's. → [history](docs/history/sms-and-coaching.md)
 - **manage-sold (SiftMap sold sweep)** — CODE DONE + SUPPRESSION WIRED 2026-08-31. **No sweep
   has run; no records imported.** Ported from Ty's Knox/Blount flow to all 14 jurisdictions:
   cadence, per-month `Sold YYYY-MM` tags, `--min-sale-price 1000` and the record-importing
