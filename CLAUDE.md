@@ -1050,6 +1050,7 @@ After CSV upload, the pipeline automatically runs two DataSift actions via Playw
 
 1. **Enrich Property Information** (Manage → Enrich Data): Adds SiftMap property data (beds, baths, Zestimate, sqft, sale history) to uploaded records. "Enrich Owners" and "Swap Owners" are OFF — protects our PR/DM contact mapping.
 2. **Skip Trace** (Send To → Skip Trace): Pulls phone numbers (up to 5 per owner) + emails via unlimited plan ($97/mo). Adds auto-tag `skip_traced_YYYY-MM`.
+   **The date tag is mandatory on every path that loads numbers** — see "ALWAYS STAMP THE SKIP-TRACE DATE" under My Defaults. The wizard stamps itself; SmartSkip/Tracerfy/Trestle/DP pushes must stamp it explicitly.
 
 Both run in background — tracked in Activity tab. Both are ON by default when `--upload-datasift` is set.
 
@@ -1226,6 +1227,17 @@ plugin-name.plugin (ZIP containing):
 
 
 ## My Defaults
+
+- **ALWAYS STAMP THE SKIP-TRACE DATE (Basem, 2026-09-22). Non-negotiable.** Every record that
+  gets skip traced must carry its skip-trace date tag (`skip_traced_YYYY-MM`) in the SAME
+  operation that loads the numbers. A record holding phone numbers and tags while reading
+  "never been skipped" is incoherent: the dialers cannot tell a fresh trace from a stale one,
+  the Needs-Skipped presets re-select records that already have numbers, and re-skipping burns
+  spend on data we already hold. This applies to EVERY path that puts numbers on a record, not
+  just the upload wizard: the wizard's Send To -> Skip Trace auto-tag covers itself, but
+  SmartSkip / Tracerfy / Trestle / DP pushes and any API phone upsert must stamp the tag
+  explicitly. If a path cannot stamp it, that path is not finished. When backfilling numbers
+  onto records traced earlier, stamp the date the TRACE happened, not the date of the backfill.
 
 - **Main counties (NARROWED 2026-09-01, from 14 to 6 — these are the ONLY jurisdictions in scope):** Washington DC; Montgomery, Anne Arundel, and Frederick in Maryland; Fairfax and Arlington in Virginia. Dropped: Carroll, Calvert, Charles, Baltimore County (MD); Prince William, Stafford, Spotsylvania, Fredericksburg city (VA). Coverage: DC + the 3 MD counties come through the MDDC Trustee's Sale pipeline (`src/scripts/mddc_trustee_sale_pull.py`) — its `DEFAULT_COUNTIES` still holds the old 7-MD+DC set and should be narrowed before the next pull. The 2 VA counties come through `src/scripts/va_trustee_sale_pull.py` against `publicnoticevirginia.com` — likewise still defaulting to the old 5-county set. **Presets re-narrowed 2026-09-07:** all 73 DPD Records presets now carry ONLY the 6 counties (the 9-call/15-mail split is retired) — done in place over the internal API by `src/scripts/dpd_presets_narrow.py` (filter-preset PATCH WORKS, superseding "presets have no write API"; each write verified by store re-read), `preset_spec.py` updated in lockstep, `dpd_presets_verify.py` exits 0 (73/73, 0 defects). Still wired to the old footprint: `manage-sold` with no `--counties` sweeps all 14 — pass the 6 explicitly.
 - **Which source wins on a record two pushers both load (Basem, 2026-09-11):** the set with
