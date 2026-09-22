@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""One-page "how to use it" sheet for the Dialer Day Card.
+"""Two-page front/back "how to use it" sheet for the Dialer Day Card.
 
 Regenerate this WHENEVER the card is rebuilt - the sheet carries the card's build
 date, and a sheet that disagrees with the card in the dialer's hand is worse than no
@@ -22,7 +22,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_LEFT
 from reportlab.platypus import (BaseDocTemplate, PageTemplate, Frame, Flowable,
-                                Paragraph, Spacer)
+                                PageBreak, Paragraph, Spacer)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root
 DEFAULT_OUT = os.path.join(ROOT, "output", "Dialer_Day_Card_Instructions.pdf")
@@ -70,17 +70,17 @@ COL_W = PW - 2 * M
 BODY_TOP = PH - M - HEAD_H - 0.16 * inch
 BODY_H = BODY_TOP - M
 
-body = ParagraphStyle("body", fontName="Helvetica", fontSize=9.2, leading=11.7,
+body = ParagraphStyle("body", fontName="Helvetica", fontSize=10, leading=12.8,
                       textColor=INK, alignment=TA_LEFT, spaceAfter=0)
 step = ParagraphStyle("step", parent=body, leftIndent=14, firstLineIndent=-14,
-                      spaceAfter=2.9)
-sub = ParagraphStyle("sub", parent=body, fontSize=8.7, leading=11.0,
+                      spaceAfter=3.6)
+sub = ParagraphStyle("sub", parent=body, fontSize=9.4, leading=12.0,
                      leftIndent=28, firstLineIndent=-12, textColor=SOFT,
                      spaceAfter=2.2)
-note = ParagraphStyle("note", parent=body, fontSize=8.7, leading=11.0,
-                      textColor=SOFT, leftIndent=14, spaceAfter=2.9)
-head = ParagraphStyle("head", fontName="Helvetica-Bold", fontSize=10.6,
-                      leading=12.4, textColor=PRIMARY, spaceBefore=0, spaceAfter=4)
+note = ParagraphStyle("note", parent=body, fontSize=9.4, leading=12.0,
+                      textColor=SOFT, leftIndent=14, spaceAfter=3.6)
+head = ParagraphStyle("head", fontName="Helvetica-Bold", fontSize=11.2,
+                      leading=13, textColor=PRIMARY, spaceBefore=0, spaceAfter=4)
 
 
 class Rule(Flowable):
@@ -99,7 +99,7 @@ class Rule(Flowable):
 def section(title, flowables, rule=True):
     out = [Paragraph(title.upper(), head), Rule(COL_W), Spacer(1, 4)]
     out.extend(flowables)
-    out.append(Spacer(1, 6))
+    out.append(Spacer(1, 8))
     return out
 
 
@@ -113,7 +113,7 @@ story = []
 story += section("Set up once", steps([
     "Open the card file on your work computer in <b>Chrome</b> or <b>Edge</b>. Bookmark it so you find it every morning.",
     "Use the <b>same computer and same browser every day</b>. The card saves your progress on that device only.",
-    "Type your name in the box at the bottom. It is remembered.",
+    "Type your name in the box in the <b>top bar</b>. It is remembered.",
     'Open <b>"Set up my 10 numbers"</b> and paste your 10 caller IDs, one per line, in rotation order.',
 ]))
 
@@ -127,9 +127,21 @@ story += section("Every morning", steps([
     Paragraph("<b>2.</b>&nbsp; Work the 5 phases in order and tick each box as you finish it:", step),
     Paragraph("<b>1</b> &nbsp;Morning admin: yesterday's statuses, tasks, appointments, boards. Before any dialing.", sub),
     Paragraph("<b>2</b> &nbsp;Callbacks: everyone who is expecting your call.", sub),
-    Paragraph("<b>3</b> &nbsp;FTM blitz: load <b>FTM - 02 Ready to Call</b>, Assignee = you, <b>All</b> tab. List order, no cherry-picking. If it runs dry go Call 2, Call 3, Call 4.", sub),
-    Paragraph("<b>4</b> &nbsp;Hottest book: <b>Hottest - 02 Ready to Call</b>, same way, rest of the day.", sub),
+    Paragraph("<b>3</b> &nbsp;FTM blitz: load <b>FTM - 02 Ready to Call</b>, Assignee = you, <b>All</b> tab. List order, no cherry-picking.", sub),
+    Paragraph("<b>4</b> &nbsp;Hottest book: <b>Hottest - 02 Ready to Call</b>, same way.", sub),
     Paragraph("<b>5</b> &nbsp;End of shift checks.", sub),
+])
+
+# The lane ladder is the change dialers get wrong most easily, so it gets its own
+# section rather than a hint inside phase 3 (Basem, 2026-09-21).
+story += section("The order: work in rounds", [
+    Paragraph('<b>FTM Ready to Call &rarr; Hottest Ready to Call &rarr; FTM Call 2 &rarr; Hottest Call 2 '
+              '&rarr; FTM Call 3 &rarr; Hottest Call 3 &rarr; Call 4</b>', step),
+    Paragraph('When FTM Ready to Call runs dry, go to <b>Hottest</b> - not deeper into FTM.', step),
+    Paragraph('Only when both Ready to Call lists are dry do you drop a rung, and then it is '
+              'FTM Call 2 first, Hottest Call 2 next.', step),
+    Paragraph('Most days you never reach the bottom. That is fine. What is not fine is dialing a '
+              'fourth attempt while fresh records sit untouched.', note),
 ])
 
 story += section("On every record", steps([
@@ -138,6 +150,17 @@ story += section("On every record", steps([
     "<b>Set the status right away</b>, while it is fresh. No answer = set nothing.",
     "Next record. Never dial the same record twice in one day.",
 ]) + [Paragraph('Open <b>Quick reference</b> on the card for the status table, dial order and skip list.', note)])
+
+story.append(PageBreak())
+
+story += section("Notes for Shady - the box in the top bar", steps([
+    "Type them <b>during the day, as things happen</b>. At 7:45 PM you will not remember.",
+    "<b>Follow-ups you are carrying</b> - how many, and the ones that matter by name.",
+    "<b>Meaningful conversations</b> - who you actually spoke to and what they said.",
+    "<b>Unqualified leads sitting with you</b> - how many are waiting to be qualified or chased.",
+    "<b>Who needs an email or a text</b>, and what it should say.",
+]) + [Paragraph('The numbers say what you did. The notes say what is alive - that is how you get help '
+                'on the records worth helping.', note)])
 
 story += section("Caller ID rotation", [
     Paragraph('Click <b>+1 call</b> for every number you dial.', step),
@@ -148,7 +171,7 @@ story += section("Caller ID rotation", [
 
 story += section("End of day", steps([
     "Type <b>FTM records worked</b> and <b>Hottest records worked</b> (records touched, not numbers dialed), then <b>Numbers dialed today</b> and <b>People you actually spoke to</b>.",
-    "Add anything your manager should know in the notes box.",
+    "Check your notes box - everything above under <b>Notes for Shady</b> should be in it.",
     'Click <b>Copy EOD report</b> and paste it to your manager on WhatsApp. If the copy does not work, the text is already selected in the box: press <b>Ctrl+C</b>.',
     "You can click Copy again later to send an updated report.",
 ]))
@@ -168,16 +191,20 @@ def draw_header(canv, doc):
     canv.roundRect(x, y, PW - 2 * M, HEAD_H, 5, stroke=0, fill=1)
     canv.setFillColor(colors.HexColor("#E3ECF5"))
     canv.setFont("Helvetica-Bold", 8.6)
-    canv.drawString(x + 18, y + HEAD_H - 22, "DIALER DAY CARD")
+    canv.drawString(x + 18, y + HEAD_H - 22,
+                    "DIALER DAY CARD" if doc.page == 1 else "DIALER DAY CARD · CONTINUED")
     canv.setFillColor(colors.white)
     canv.setFont("Helvetica-Bold", 21)
-    canv.drawString(x + 18, y + HEAD_H - 48, "How to use it")
+    canv.drawString(x + 18, y + HEAD_H - 48,
+                    "How to use it" if doc.page == 1 else "What you report")
     canv.setFillColor(colors.HexColor("#C7D8EA"))
     canv.setFont("Helvetica", 8.8)
     canv.drawString(x + 18, y + HEAD_H - 64,
-                    "Keep this next to you for the first week.")
+                    "Keep this next to you for the first week." if doc.page == 1
+                    else "Notes, caller ID, end of shift.")
     canv.drawRightString(PW - M - 18, y + HEAD_H - 64,
-                         "All times U.S. Eastern  |  card build %s" % BUILD)
+                         "All times U.S. Eastern  |  card build %s  |  page %d of 2"
+                         % (BUILD, doc.page))
     canv.restoreState()
 
 
@@ -197,5 +224,7 @@ from pypdf import PdfReader
 pages = len(PdfReader(OUT).pages)
 print("card  %s (build %s)" % (os.path.relpath(CARD, ROOT), BUILD))
 print("sheet %s - %d page%s" % (os.path.relpath(OUT, ROOT), pages, "" if pages == 1 else "s"))
-if pages != 1:
-    raise SystemExit("The sheet must stay ONE page - tighten the styles, do not ship %d." % pages)
+if pages != 2:
+    raise SystemExit(
+        "The sheet is designed as a two-page front/back. Got %d - move the PageBreak "
+        "or retune the styles rather than shipping an odd page." % pages)
