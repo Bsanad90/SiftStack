@@ -1269,8 +1269,11 @@ plugin-name.plugin (ZIP containing):
   **There is NO skip-trace date field anywhere** — all 27 owner keys and the full property
   detail were checked; `skiptraced` is a bare boolean and `skiptrace_attempts` an int. The tag
   is the ONLY record of when, which is why a mis-spelled one loses the fact outright.
-  **Not yet done:** `obituary_dp_batch.py` contains no `skip_traced` reference at all, so every
-  DP push stamps nothing; and `datasift_uploader.py:983` still emits the retired spelling.
+  **BOTH PATHS FIXED 2026-09-23 (`4779dd2`).** `obituary_dp_batch.py` now carries
+  `TAG_SKIPTRACED` into every plan's tags (including zero-phone records -- the trace was paid
+  for either way) and `_push_one_api` PATCHes the owner flag; `--include-no-numbers` is what
+  makes an empty-result record get its date, so a batch with misses wants it. The uploader's
+  wizard tag now matches DataSift's own spelling. No path that loads numbers is unstamped.
 
 - **Main counties (NARROWED 2026-09-01, from 14 to 6 — these are the ONLY jurisdictions in scope):** Washington DC; Montgomery, Anne Arundel, and Frederick in Maryland; Fairfax and Arlington in Virginia. Dropped: Carroll, Calvert, Charles, Baltimore County (MD); Prince William, Stafford, Spotsylvania, Fredericksburg city (VA). Coverage: DC + the 3 MD counties come through the MDDC Trustee's Sale pipeline (`src/scripts/mddc_trustee_sale_pull.py`) — its `DEFAULT_COUNTIES` still holds the old 7-MD+DC set and should be narrowed before the next pull. The 2 VA counties come through `src/scripts/va_trustee_sale_pull.py` against `publicnoticevirginia.com` — likewise still defaulting to the old 5-county set. **Presets re-narrowed 2026-09-07:** all 73 DPD Records presets now carry ONLY the 6 counties (the 9-call/15-mail split is retired) — done in place over the internal API by `src/scripts/dpd_presets_narrow.py` (filter-preset PATCH WORKS, superseding "presets have no write API"; each write verified by store re-read), `preset_spec.py` updated in lockstep, `dpd_presets_verify.py` exits 0 (73/73, 0 defects). Still wired to the old footprint: `manage-sold` with no `--counties` sweeps all 14 — pass the 6 explicitly.
 - **Which source wins on a record two pushers both load (Basem, 2026-09-11):** the set with
