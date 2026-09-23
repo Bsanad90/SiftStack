@@ -2380,7 +2380,24 @@ class WriteApi:
                 time.sleep(2 ** attempt)
         return 0, "retries exhausted"
 def _resolve_uuid(api: WriteApi, p: dict) -> tuple[str, dict, str]:
-    """(uuid, record, why) -- exact street+zip5 match among search hits, else ''."""
+    """(uuid, record, why) -- exact street+zip5 match among search hits, else ''.
+
+    A plan record may carry an explicit `uuid` (set by hand for a record the address search
+    cannot see: a blank street, or a trust title against two duplicate rows). It is fetched
+    directly and still owner-checked, so a stale uuid cannot land on a stranger's record.
+    Added 2026-09-23 for the street-less McLean 22102 record (owner Young Kim).
+    """
+    pinned = (p.get("uuid") or "").strip()
+    if pinned:
+        status, rec = api.get(f"/api/internal/property/{pinned}/")
+        if status != 200:
+            return "", {}, f"pinned uuid {pinned} -> {status}"
+        o = rec.get("owner") or {}
+        want = ((p.get("owner_first") or "").strip().lower(), (p.get("owner_last") or "").strip().lower())
+        got = ((o.get("first_name") or "").strip().lower(), (o.get("last_name") or "").strip().lower())
+        if want != got and any(want):
+            return "", {}, f"pinned uuid {pinned} owner {got} != plan owner {want}"
+        return pinned, rec, ""
     status, body = api.search({"limit": 25, "offset": 0, "query": {"must": {"search": p["street"]}}})
     if status != 200:
         return "", {}, f"search failed {status}: {str(body)[:200]}"
