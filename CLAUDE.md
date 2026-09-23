@@ -794,6 +794,41 @@ evidence, not proof, for this account — each bullet says where it was measured
    creation on this account is the wizard until that port lands; note the MDDC rows carry no owner
    name, so even the ported route could only attach to existing records, never create new ones.
 
+### Record creation over the API — PROVEN HERE 2026-09-23, the wizard is no longer the only path
+
+`POST /api/internal/property/` **works on this account.** Measured end to end by
+`src/scripts/probe_property_create.py` (offline guard `tools/manual/test_property_create_probe.py`,
+30 checks — run it after ANY change to `classify` / `owner_for_create`). This supersedes "record
+creation on this account is the wizard" above: only the OPEN API route `POST /property/` is dead.
+
+- **Stage 1 (`--probe`) proves the route without writing:** POST a record's OWN stored address and
+  owner back at it and expect the duplicate 400. Send no tags/lists/custom fields/notes, so an
+  unexpected upsert is a no-op rather than a pollution event, and count the account on that street
+  before and after — the count is the proof, never the response body. Live: `400
+  {"non_field_errors":["Property address already exists!"],"property":["<uuid>"]}`, count unchanged.
+- **Stage 2 (`--create-one --csv <upload.csv> --row N --commit`) created a real record:**
+  `201` + uuid, then tags `200`, lists `200`, custom fields `200`, note `201`, pin `204`, and the
+  record reads back `type: clean`. Create the record with **address + owner only** and attach
+  everything else with the per-record routes — the create body's `lists` shape is disputed
+  upstream (an array "returns 201 and changes nothing").
+- **The duplicate check NORMALISES the address; `search` does not.** `3220 Ivy Meadow Drive`
+  matched the stored `3220 Ivy Meadow Dr`, and ZIP `21704` matched `21704-7091`. Meanwhile
+  **`{"must":{"search": ...}}` is an EXACT match on the stored street string** — measured:
+  `3220 Ivy Meadow Dr` → 1, `3220 Ivy Meadow Drive` → 0, `3220 Ivy Meadow` → 0, `3220` → 0. So a
+  free-text search can NEVER answer "is this new address already on the account" when the source
+  spells the suffix out; **the create route's 400 is the only reliable existence test**, and it
+  writes nothing when it fires. (It is therefore also a normalising address→uuid resolver — the job
+  `probate_pr_note.py` / `probate_audit_restore.py` still use the dead Open API route for.) A
+  read-only pre-filter must search every abbreviation variant; on the 2026-09-23 Register of Wills
+  pull that moved 25 "absent" candidates to 12 already present.
+- **DataSift rewrites what you send on create:** `10011 Tenbrook Drive` / `20901` was stored as
+  `10011 Tenbrook Dr` / `20901-2152`, and it auto-attached its own `High Equity` + `Owner Occupied`
+  lists beside the two we asked for. Assert on the normalised form, not on what was posted.
+- **`datasift_api_upload.FIELD_MAP` is Ty's TN schema:** `Notice Type`, `County` and `Decedent Name`
+  do not exist as custom fields on this account (only `Personal Representative` resolved), so
+  `field_pairs` silently skips them unless the caller prints its `warn` set. The decedent belongs in
+  the board note here — this account has no deceased-name field.
+
 ### Incomplete records and the owner-block PATCH (learned 2026-09-11, lane cleanup)
 
 - **A record's Clean/Incomplete state is the detail field `type`** (`"clean"` / `"incomplete"`);
