@@ -976,11 +976,16 @@ async def skip_trace_records(page: Page, list_name: str) -> dict:
         await _screenshot(page, "skip_review_step")
 
         # Step 2: Review step — may have tag input and a "Skip Trace" / confirm button
-        # Add a custom tag (optional — DataSift auto-tags too)
+        # Add the skip-trace date tag (Basem, 2026-09-22: non-negotiable on every path that
+        # loads numbers). Spelled to MATCH DataSift's own auto-tag -- "Skip Traced 09/2026",
+        # the series this account has run on unbroken since 10/2025 -- so the two collapse
+        # onto one tag instead of splitting the fact across two vocabularies. This used to
+        # type `skip_traced_YYYY-MM`, which DataSift never emits; that spelling was ours
+        # alone and left exactly one orphan tag in an account of 446.
         tag_input = page.locator('input[placeholder*="tag"], input[placeholder*="Tag"], input[placeholder*="Add tag"]')
         if await tag_input.count() > 0:
             from datetime import datetime as _dt
-            tag = f"skip_traced_{_dt.now().strftime('%Y-%m')}"
+            tag = f"Skip Traced {_dt.now().strftime('%m/%Y')}"
             await tag_input.first.fill(tag)
             await page.wait_for_timeout(500)
             await tag_input.first.press("Enter")

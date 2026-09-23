@@ -66,6 +66,13 @@ TODAY = date.today().isoformat()
 MONTH_TAG = date.today().strftime("%m/%Y")
 
 TAG_DP = f"Deep Prospected {MONTH_TAG}"
+# Basem 2026-09-22, non-negotiable: anything that loads numbers stamps the trace date in the
+# SAME operation. This is DataSift's own auto-tag spelling ("Skip Traced 09/2026"), the series
+# the account has run on unbroken since 10/2025 -- NOT the retired `skip_traced_YYYY-MM`, which
+# only ever came from datasift_uploader.py typing it into the wizard's optional tag box.
+# Stamped on EVERY record in the batch, including the ones SmartSkip returned nothing for: the
+# trace was paid for either way, and an unstamped miss is what gets re-skipped next month.
+TAG_SKIPTRACED = f"Skip Traced {MONTH_TAG}"
 TAG_DECEASED = "Deceased Owner"          # exists on the account already
 TAG_ALIVE = "Owner Alive - Spouse Deceased"
 TAG_UNVERIFIED = "DP Death Unverified"
@@ -2110,7 +2117,7 @@ def cmd_build(a) -> int:
             rel_lines.insert(0, ("OWNER (presumed alive) - " if presumed else "OWNER (alive) - ")
                              + " / ".join(loaded_by_n[0]))
 
-        tags = [TAG_DP]
+        tags = [TAG_DP, TAG_SKIPTRACED]
         if verdict == "owner did die":
             tags.append(TAG_DECEASED)
         elif presumed:
@@ -2417,7 +2424,10 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool, prior: "se
     log["phones_before"] = len(owner.get("phones") or [])
     if not commit:
         log["would_write"] = {"phones": len(p["phones"]), "custom_fields": p["custom_fields"],
-                              "tags": p["tags"], "note_chars": len(p["note"])}
+                              "tags": p["tags"], "note_chars": len(p["note"]),
+                              # so a dry run shows BOTH halves of the skip-trace rule, not
+                              # just the date tag riding along in `tags`
+                              "skiptraced_flag": (not owner.get("skiptraced")) and bool(owner_uuid)}
         return log
 
     # 1. phones (upsert by number on the OWNER)
@@ -2472,6 +2482,23 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool, prior: "se
                 log["error"] = ("403 on upsert-phones" if st == 403
                                 else f"upsert-phones failed (status {st})")
                 return log
+    # 1b. the OTHER half of the skip-trace rule: the CRM's own structured flag.
+    # The tag records WHEN; `owner.skiptraced` is what the CRM and the Needs-Skipped presets
+    # actually read, and upsert-phones does NOT set it -- 7854 Linden Leaf Rd sat at
+    # skiptraced:false / attempts:0 while holding a loaded Dial First number (2026-09-23).
+    # A record that reads "never been skipped" with numbers on it is the precise incoherence
+    # the rule exists to prevent, so this runs whether or not the trace returned phones.
+    # attempts is max(existing, 1), never existing+1: a re-push must not inflate the count.
+    if owner_uuid and not owner.get("skiptraced"):
+        st_sk, _ = api.write("PATCH", f"/api/internal/owner/{owner_uuid}/",
+                             {"skiptraced": True,
+                              "skiptrace_attempts": max(int(owner.get("skiptrace_attempts") or 0), 1)})
+        log["steps"]["skiptraced_flag"] = {"status": st_sk}
+        if st_sk not in (200, 201, 204):
+            # Not fatal -- the numbers and the date tag still land -- but it must be visible
+            # in the log rather than leaving a silently half-stamped record.
+            log.setdefault("warnings", []).append(f"skiptraced flag PATCH returned {st_sk}")
+
     # 2. custom fields
     # Run this step whenever there is something to WRITE or something to BLANK. Gated on
     # the plan's own fields alone, a plan with NO REL fields (an owner-alive re-push that
@@ -2824,7 +2851,11 @@ def main() -> int:
     s.add_argument("--force", action="store_true", help="re-push records already logged ok")
     s.add_argument("--headed", action="store_true")
     s.add_argument("--include-no-numbers", action="store_true",
-                   help="also tag records that got no phones (DP No Numbers)")
+                   help="also tag records that got no phones (DP No Numbers). Since "
+                        "2026-09-23 this ALSO lands their `Skip Traced MM/YYYY` date and "
+                        "the owner.skiptraced flag -- without it, a record the batch paid "
+                        "to trace that came back empty carries no trace date and gets "
+                        "re-skipped next month, which is the spend the rule exists to stop")
     s.add_argument("--prior-plan", metavar="JSON",
                    help="push_plan.json this run dir pushed BEFORE; only numbers it wrote may be "
                         "removed (default: newest push_plan_prestrip_*.json in the run dir)")
