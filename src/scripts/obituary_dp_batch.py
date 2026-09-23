@@ -81,6 +81,11 @@ TAG_NO_NUMBERS = f"DP No Numbers {MONTH_TAG}"
 TAG_TRUST = "DP Trust Trustee Inferred"
 TAG_SIGNERS_DARK = "DP No Signer Numbers"   # signer set phoneless; blood tier loaded instead
 TAG_REACH_ONLY = "DP Reach Path Only"       # owner alive with no number; family is the only route
+# The CRM named a decedent who is NOT the owner -- the MD/DC/VA probate convention where the
+# owner slot holds the PR. Deliberately NOT TAG_ALIVE: that one asserts a researched SPOUSE
+# death, and here the decedent may be no relation by marriage at all (7854 Linden Leaf Rd:
+# decedent Theodore Q Page, owner Robert Page his PR, no spouse involved).
+TAG_OWNER_IS_PR = "DP Owner Is PR"
 
 # The presumed-alive verdict (FTM cohorts, research --presume-alive-without-signal).
 # It deliberately CONTAINS the substring "owner alive" nowhere: score/build test for it
@@ -670,6 +675,14 @@ def cmd_prep(a) -> int:
             "tags": (r.get("Tags") or "").strip(),
             "obit_date": (r.get("Last obituary date") or "").strip(),
             "pr": (r.get("Personal representative") or "").strip(),
+            # The CRM's own answer to "who died", from the Deceased First/Last Name custom
+            # fields the probate + Register of Wills pulls write. cmd_research used to ignore
+            # this entirely and search the OWNER for an obituary, which is wrong whenever the
+            # owner slot holds the PR -- the MD/DC/VA probate convention. 7854 Linden Leaf Rd
+            # (2026-09-23): decedent Theodore Q Page, owner Robert Page his living PR; the
+            # owner search re-rooted the whole family around a man who had not died.
+            "decedent_first": (r.get("Deceased First Name") or "").strip(),
+            "decedent_last": (r.get("Deceased Last Name") or "").strip(),
             "est_value": (r.get("Estimated value") or "").strip(),
             "equity_pct": (r.get("Equity percent") or "").strip(),
             "owned_since": (r.get("Owned since") or "").strip(),
@@ -1349,9 +1362,51 @@ def cmd_research(a) -> int:
         else:
             owner_name = f"{rec['ss_first']} {rec['ss_last']}".strip()
             f = {"record": key, "owner_name": owner_name, "searched": []}
-            parsed, trail = _try_person(owner_name, rec, a.max_fetch)
-            f["searched"].append({"who": "owner", "trail": trail})
-            if parsed:
+            # The CRM already knows who died on a probate/RoW record. When it names someone
+            # who is NOT the owner, that is authoritative -- it came off the court filing --
+            # and searching the owner for an obituary can only manufacture a false death:
+            # any same-name hit becomes "owner did die" and rank re-roots the family around
+            # a living person (7854 Linden Leaf Rd, 2026-09-23: three false signers, a real
+            # title name dropped over the cap, a nameless ghost promoted to decision-maker).
+            # So: research the NAMED DECEDENT for the heir graph, and never search the owner.
+            crm_decedent = f"{rec.get('decedent_first') or ''} {rec.get('decedent_last') or ''}".strip()
+            if crm_decedent and not names_match(crm_decedent, owner_name):
+                f["decedent_from_crm"] = crm_decedent
+                p0, trail0 = _try_person(crm_decedent, rec, a.max_fetch)
+                f["searched"].append({"who": "crm decedent", "name": crm_decedent, "trail": trail0})
+                # "owner alive" is the substring cmd_build keys on to load the OWNER'S own
+                # numbers -- correct here: a living PR is exactly who the dialer must reach.
+                f["verdict"] = "named decedent died; owner alive (likely the PR)"
+                f["decedent_name"] = (p0 or {}).get("full_name") or crm_decedent
+                if p0:
+                    f["dod"] = p0.get("date_of_death") or ""
+                    f["dod_source"] = "obituary" if f["dod"] else ""
+                    f["obituary_url"] = p0.get("obituary_url")
+                    f["confidence"] = p0.get("confidence")
+                    f["survivors"] = p0.get("survivors") or []
+                    f["preceded"] = p0.get("preceded_in_death") or []
+                    f["executor_named"] = p0.get("executor_named") or ""
+                    f["evidence"] = (f"CRM names {crm_decedent} as the decedent, not the owner "
+                                     f"{owner_name}; obituary confirms ({p0.get('obituary_url')})")
+                else:
+                    # No obituary is NOT a reason to doubt the CRM: plenty of estates never
+                    # publish one (7854 Linden Leaf had none; the Register of Wills filing
+                    # was the proof). The verdict stands on the court record, and the
+                    # missing obituary is stated as a gap in the heir graph, not as doubt.
+                    f["survivors"] = []
+                    f["preceded"] = []
+                    f["flags"] = ["no obituary found for the named decedent; "
+                                  "survivors unknown -- heirs not corroborated"]
+                    f["evidence"] = (f"CRM names {crm_decedent} as the decedent, not the owner "
+                                     f"{owner_name}; no obituary found, verdict rests on the "
+                                     f"CRM/court record")
+                parsed = None          # skip the owner-obituary branch entirely
+            else:
+                parsed, trail = _try_person(owner_name, rec, a.max_fetch)
+                f["searched"].append({"who": "owner", "trail": trail})
+            if f.get("decedent_from_crm"):
+                pass                   # verdict already settled above
+            elif parsed:
                 f["verdict"] = "owner did die"
                 f["decedent_name"] = parsed.get("full_name")
                 f["dod"] = parsed.get("date_of_death") or ""
@@ -2120,6 +2175,10 @@ def cmd_build(a) -> int:
         tags = [TAG_DP, TAG_SKIPTRACED]
         if verdict == "owner did die":
             tags.append(TAG_DECEASED)
+        elif f.get("decedent_from_crm"):
+            # Someone else died and the owner is the representative. Must be tested BEFORE
+            # owner_alive, which would otherwise claim a spouse death that never happened.
+            tags.append(TAG_OWNER_IS_PR)
         elif presumed:
             # Not TAG_ALIVE: that tag asserts a researched spouse death. Nothing here was
             # researched -- the record simply carried no deceased signal.
@@ -2850,12 +2909,15 @@ def main() -> int:
     s.add_argument("--commit", action="store_true")
     s.add_argument("--force", action="store_true", help="re-push records already logged ok")
     s.add_argument("--headed", action="store_true")
-    s.add_argument("--include-no-numbers", action="store_true",
-                   help="also tag records that got no phones (DP No Numbers). Since "
-                        "2026-09-23 this ALSO lands their `Skip Traced MM/YYYY` date and "
-                        "the owner.skiptraced flag -- without it, a record the batch paid "
-                        "to trace that came back empty carries no trace date and gets "
-                        "re-skipped next month, which is the spend the rule exists to stop")
+    s.add_argument("--include-no-numbers", action=argparse.BooleanOptionalAction, default=True,
+                   help="push records that got no phones too. DEFAULT ON since 2026-09-23 "
+                        "(Basem: 'including the no numbers allows for deep prospecting') -- "
+                        "a record with no numbers is the DP candidate, not the exception, "
+                        "and it is the one that most needs the pinned note naming who to "
+                        "find. It also lands the `Skip Traced MM/YYYY` date and the "
+                        "owner.skiptraced flag, without which a record the batch paid to "
+                        "trace that came back empty gets re-skipped next month. "
+                        "--no-include-no-numbers restores the old phones-only behaviour")
     s.add_argument("--prior-plan", metavar="JSON",
                    help="push_plan.json this run dir pushed BEFORE; only numbers it wrote may be "
                         "removed (default: newest push_plan_prestrip_*.json in the run dir)")
