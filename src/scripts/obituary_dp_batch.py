@@ -130,7 +130,12 @@ TRUST_WORDS = {"trust", "tr", "trs", "ttee", "ttees", "trustee", "trustees", "li
                "residuary", "family", "fam", "estate", "of", "the", "declaration", "dated",
                "agreement", "u/a", "ua", "dtd", "etal", "et", "al", "life", "marital", "survivor",
                "survivors", "credit", "shelter", "bypass", "qtip", "supplemental", "needs",
-               "special", "heritage", "co", "successor", "sole", "joint"}
+               "special", "heritage", "co", "successor", "sole", "joint",
+               # 2026-09-23: "Joseph C Hottel Jr Discretionary Trust" parsed as "Joseph
+               # Discretionary" -- a trust-type word not on this list reads as a surname.
+               "discretionary", "charitable", "remainder", "testamentary", "grantor",
+               "inter", "vivos", "unitrust", "annuity", "lead", "dynasty", "asset",
+               "protection"}
 # A title carrying one of these names a company, not a person: no human to trace.
 CORP_WORDS = {"llc", "inc", "corp", "corporation", "properties", "holdings", "company",
               "partners", "lp", "llp", "ltd", "foundation", "church", "bank", "ministries",
@@ -565,6 +570,13 @@ def _order_tokens(toks: list[str], style_default: bool | None) -> tuple[str, str
             recorder_order = True
         elif g0 and not g1:
             recorder_order = False
+        elif g0 and g1 and len(words) >= 3 and not _gender_known(words[-1]):
+            # "Nathan Wayne Gross Trustee": two given names followed by a token that is
+            # not one is FIRST MIDDLE LAST whatever the title's style says. The recorder
+            # form of the same person, "Gross Nathan Wayne", fails g0 and takes the
+            # branch above. Without this the trailing "Trustee" forced recorder order and
+            # produced "Wayne Nathan" (2026-09-23).
+            recorder_order = False
     if recorder_order is None:
         recorder_order = bool(style_default)
     if recorder_order:
@@ -582,7 +594,11 @@ def parse_owner_blob(biz: str) -> dict:
     raw = (biz or "").strip()
     low = " " + re.sub(r"[.,()/]", " ", raw.lower()) + " "
     words = set(re.findall(r"[a-z]+", low))
-    is_entity = bool(words & ENTITY_WORDS)
+    # The shared list lacks the singular "trustee" and the recorder abbreviations "trs" /
+    # "ttees", so "Nathan Wayne Gross Trustee" and "Adams Belle H & Harold B Trs" were
+    # classed as plain owner blobs and never earned TAG_TRUST (2026-09-23). Widened HERE,
+    # not in obituary_dp_input, so the mail consolidator's entity test is unchanged.
+    is_entity = bool(words & (ENTITY_WORDS | {"trs", "trustee", "ttees", "irrevocable"}))
     if not raw:
         return {"first": "", "last": "", "source": "none", "confidence": "none", "is_entity": False}
 
