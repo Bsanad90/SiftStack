@@ -709,7 +709,21 @@ as of 2026-09-17.
 The contract for pushing records into DataSift entirely over the API (`src/datasift_api_upload.py`).
 The pull side that feeds it is in [docs/history/soi-and-knox.md](docs/history/soi-and-knox.md).
 
-**Auth: mint the JWT, never paste one.** `POST /api/token/` with `DATASIFT_EMAIL` / `DATASIFT_PASSWORD` from `.env` returns `{access, refresh}`. The uploader mints on start and re-mints every 30 minutes so long runs cannot die on expiry. **The Open API key cannot do this job** — custom fields do not exist anywhere in its 93-route surface and every write 401s. The minted user JWT reaches `/api/internal/` where they do.
+**Auth: mint the JWT, never paste one.** `POST /api/token/` with `DATASIFT_EMAIL` / `DATASIFT_PASSWORD` from `.env` returns `{access, refresh}`. The uploader mints on start and re-mints every 30 minutes so long runs cannot die on expiry. **The Open API key cannot do this job on the OPEN API surface** — custom fields do not exist anywhere in its 93 public routes and every write there 401s (and `POST /property/` has 403'd for both auth types since 2026-09-01, trap 6 below). The minted user JWT reaches `/api/internal/` where they do.
+
+**CORRECTION 2026-09-23: the same Open API key DOES write on `/api/internal/`.** Measured live on
+one record (7854 Linden Leaf Rd) with `authorization: Api-Key <key>` from `REISIFT_API_KEY`, every
+one read back: `PATCH /property/{uuid}/custom-field/update-values/` (200, stored),
+`POST /owner/{uuid}/upsert-phones/` (200, `{"added":[...]}`), `PATCH /property/{uuid}/` for both
+`tags` (merge-only, as documented) and a built-in field (`probate_open_date`),
+`PATCH /owner/{uuid}/` for `skiptraced` / `skiptrace_attempts`, and
+`POST /message/` + `POST /message/{uuid}/pin/` (pin genuinely `true` on read-back). Reads are
+equally fine: `property/` (30,912), `custom-fields/` (92), `status/` (34), `account/user/` (11),
+`filter-preset-folder/` (18), `tag/` (446). So "every write 401s" is TRUE of the Open API surface
+and FALSE of the internal one — the distinction is the SURFACE, not the credential. The JWT is
+still the default because it is what every existing script mints, and because no CREATE route has
+been probed on this account with either credential; but an Api-Key path no longer needs a JWT
+fallback for these routes. `src/sms_agent/crm_standalone.py` is the working Api-Key client.
 
 Four traps, each of which fails silently or cryptically:
 1. **Tags must be an ARRAY.** A comma string creates one tag literally named `"Courthouse Data, code_violation, Knox"`.
@@ -1049,7 +1063,7 @@ DataSift added an **Enrichment** step between Setup and Add Tags; the wizard cod
 After CSV upload, the pipeline automatically runs two DataSift actions via Playwright:
 
 1. **Enrich Property Information** (Manage → Enrich Data): Adds SiftMap property data (beds, baths, Zestimate, sqft, sale history) to uploaded records. "Enrich Owners" and "Swap Owners" are OFF — protects our PR/DM contact mapping.
-2. **Skip Trace** (Send To → Skip Trace): Pulls phone numbers (up to 5 per owner) + emails via unlimited plan ($97/mo). Adds auto-tag `skip_traced_YYYY-MM`.
+2. **Skip Trace** (Send To → Skip Trace): Pulls phone numbers (up to 5 per owner) + emails via unlimited plan ($97/mo). DataSift's own auto-tag is **`Skip Traced MM/YYYY`** (the unbroken series in this account). `datasift_uploader.py:983` additionally types `skip_traced_YYYY-MM` into the wizard's optional tag box — that one is OURS, not DataSift's, and is retired; see My Defaults.
    **The date tag is mandatory on every path that loads numbers** — see "ALWAYS STAMP THE SKIP-TRACE DATE" under My Defaults. The wizard stamps itself; SmartSkip/Tracerfy/Trestle/DP pushes must stamp it explicitly.
 
 Both run in background — tracked in Activity tab. Both are ON by default when `--upload-datasift` is set.
@@ -1229,15 +1243,34 @@ plugin-name.plugin (ZIP containing):
 ## My Defaults
 
 - **ALWAYS STAMP THE SKIP-TRACE DATE (Basem, 2026-09-22). Non-negotiable.** Every record that
-  gets skip traced must carry its skip-trace date tag (`skip_traced_YYYY-MM`) in the SAME
-  operation that loads the numbers. A record holding phone numbers and tags while reading
-  "never been skipped" is incoherent: the dialers cannot tell a fresh trace from a stale one,
-  the Needs-Skipped presets re-select records that already have numbers, and re-skipping burns
-  spend on data we already hold. This applies to EVERY path that puts numbers on a record, not
-  just the upload wizard: the wizard's Send To -> Skip Trace auto-tag covers itself, but
-  SmartSkip / Tracerfy / Trestle / DP pushes and any API phone upsert must stamp the tag
-  explicitly. If a path cannot stamp it, that path is not finished. When backfilling numbers
-  onto records traced earlier, stamp the date the TRACE happened, not the date of the backfill.
+  gets skip traced must carry its skip-trace date tag in the SAME operation that loads the
+  numbers. A record holding phone numbers and tags while reading "never been skipped" is
+  incoherent: the dialers cannot tell a fresh trace from a stale one, the Needs-Skipped presets
+  re-select records that already have numbers, and re-skipping burns spend on data we already
+  hold. This applies to EVERY path that puts numbers on a record, not just the upload wizard:
+  the wizard's Send To -> Skip Trace auto-tag covers itself, but SmartSkip / Tracerfy / Trestle
+  / DP pushes and any API phone upsert must stamp the tag explicitly. If a path cannot stamp
+  it, that path is not finished. When backfilling numbers onto records traced earlier, stamp
+  the date the TRACE happened, not the date of the backfill.
+  **THE TAG IS `Skip Traced MM/YYYY` (settled 2026-09-23; either spelling was acceptable to
+  Basem, the account's own history decided it).** That is DataSift's own auto-tag and the
+  account has run on it unbroken from `Skip Traced 10/2025` to `Skip Traced 07/2026`, with the
+  variants `Skip Traced IDI MM/YYYY` and `Skip Traced Batch Skip Tracing MM/YYYY`. The earlier
+  `skip_traced_YYYY-MM` spelling in this file was WRONG about its origin: DataSift never emits
+  it — `datasift_uploader.py:983` types it into the wizard's optional tag box as an EXTRA tag of
+  our own, which is why exactly one such tag (`skip_traced_2026-09`) exists in an account of 446.
+  Do not create more of them; one fact must not have two vocabularies (same reason the sold
+  sweep keeps the `Recently Sold` TAG distinct from the `Already Sold` STATUS).
+  **The boolean is a second, separate half of the same rule.** `owner.skiptraced` and
+  `owner.skiptrace_attempts` are what the CRM itself reads, and an API phone upsert does NOT
+  set them — 7854 Linden Leaf sat at `skiptraced: false` / `attempts: 0` holding a loaded
+  number until it was patched by hand. Stamp both: `PATCH /api/internal/owner/{uuid}/
+  {"skiptraced": true, "skiptrace_attempts": 1}` (200, stores, proven on the Api-Key).
+  **There is NO skip-trace date field anywhere** — all 27 owner keys and the full property
+  detail were checked; `skiptraced` is a bare boolean and `skiptrace_attempts` an int. The tag
+  is the ONLY record of when, which is why a mis-spelled one loses the fact outright.
+  **Not yet done:** `obituary_dp_batch.py` contains no `skip_traced` reference at all, so every
+  DP push stamps nothing; and `datasift_uploader.py:983` still emits the retired spelling.
 
 - **Main counties (NARROWED 2026-09-01, from 14 to 6 — these are the ONLY jurisdictions in scope):** Washington DC; Montgomery, Anne Arundel, and Frederick in Maryland; Fairfax and Arlington in Virginia. Dropped: Carroll, Calvert, Charles, Baltimore County (MD); Prince William, Stafford, Spotsylvania, Fredericksburg city (VA). Coverage: DC + the 3 MD counties come through the MDDC Trustee's Sale pipeline (`src/scripts/mddc_trustee_sale_pull.py`) — its `DEFAULT_COUNTIES` still holds the old 7-MD+DC set and should be narrowed before the next pull. The 2 VA counties come through `src/scripts/va_trustee_sale_pull.py` against `publicnoticevirginia.com` — likewise still defaulting to the old 5-county set. **Presets re-narrowed 2026-09-07:** all 73 DPD Records presets now carry ONLY the 6 counties (the 9-call/15-mail split is retired) — done in place over the internal API by `src/scripts/dpd_presets_narrow.py` (filter-preset PATCH WORKS, superseding "presets have no write API"; each write verified by store re-read), `preset_spec.py` updated in lockstep, `dpd_presets_verify.py` exits 0 (73/73, 0 defects). Still wired to the old footprint: `manage-sold` with no `--counties` sweeps all 14 — pass the 6 explicitly.
 - **Which source wins on a record two pushers both load (Basem, 2026-09-11):** the set with
