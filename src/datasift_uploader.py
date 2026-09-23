@@ -668,6 +668,68 @@ async def _filter_by_block(page: Page, kind: str, value: str) -> bool:
         return False
 
 
+async def _click_all_tab(page: Page) -> bool:
+    """Switch the Records table to the "All" tab. The default "Clean" tab HIDES Incomplete
+    records (CLAUDE.md), so a cohort with entity/blank-owner rows selects short: measured
+    2026-09-23, 25 tagged records -> "Selecting 22 properties" on Clean."""
+    clicked = await page.evaluate("""() => {
+        const leaves = [...document.querySelectorAll('a,button,span,div,li')]
+            .filter(e => e.children.length === 0 && e.textContent.trim() === 'All');
+        for (const e of leaves) {
+            const r = e.getBoundingClientRect();
+            if (r.top > 60 && r.top < 400 && r.left > 400) { e.click(); return true; }
+        }
+        return false;
+    }""")
+    await page.wait_for_timeout(2500)
+    return bool(clicked)
+
+
+async def _set_page_size(page: Page, size: int = 50) -> bool:
+    """Set the Records table's "records per page" (styled Select: 10 / 25 / 50). The header
+    checkbox selects only the rows on the current page and this account offers NO "select all
+    N" link (measured 2026-09-23), so the page must hold the whole cohort."""
+    box = page.locator('[class*="DataTablePerPageContainer"] [class*="SelectValue"]')
+    if await box.count() == 0:
+        logger.warning("records-per-page control not found")
+        return False
+    await box.first.click()
+    await page.wait_for_timeout(1000)
+    opt = page.locator(f'[class*="SelectOption"]:has-text("{size}")')
+    if await opt.count() == 0:
+        logger.warning("page size %s not offered", size)
+        await page.keyboard.press("Escape")
+        return False
+    await opt.first.click()
+    await page.wait_for_timeout(3000)
+    return True
+
+
+async def _selected_count(page: Page) -> int | None:
+    """The table's own selection banner: "Selecting N properties"."""
+    txt = await page.evaluate("() => document.body.innerText")
+    m = re.search(r"Selecting\s+([\d,]+)\s+propert", txt)
+    return int(m.group(1).replace(",", "")) if m else None
+
+
+async def _select_cohort(page: Page, expected: int) -> bool:
+    """All tab -> page size that holds the cohort -> header checkbox -> banner must say
+    exactly `expected`. Returns False (nothing further should run) on any mismatch."""
+    if expected > 50:
+        logger.error("cohort of %d exceeds the 50-row page; split it", expected)
+        return False
+    await _click_all_tab(page)
+    await _set_page_size(page, 50 if expected > 25 else (25 if expected > 10 else 10))
+    if not await _select_all_records(page):
+        return False
+    n = await _selected_count(page)
+    logger.info("selection banner: %s (expected %d)", n, expected)
+    if n != expected:
+        await _screenshot(page, "select_count_mismatch")
+        return False
+    return True
+
+
 async def _select_all_records(page: Page) -> bool:
     """Select all records on the current page. Returns True if selected."""
     try:
@@ -816,12 +878,20 @@ async def enrich_records(page: Page, list_name: str | None = None, *,
             logger.warning(result["message"])
             # Continue anyway — may enrich whatever is showing
 
-        # Select all records
-        selected = await _select_all_records(page)
-        if not selected:
-            result["message"] = "Could not select records for enrichment"
-            logger.error(result["message"])
-            return result
+        # Select the cohort (All tab + page size + banner gate when a count is expected)
+        if expected_count is not None:
+            selected = await _select_cohort(page, expected_count)
+            if not selected:
+                result["message"] = (f"selection did not reach exactly {expected_count} records; "
+                                     "aborting before Manage")
+                logger.error(result["message"])
+                return result
+        else:
+            selected = await _select_all_records(page)
+            if not selected:
+                result["message"] = "Could not select records for enrichment"
+                logger.error(result["message"])
+                return result
 
         # Click Manage dropdown
         manage_btn = page.locator('button:has-text("Manage")')
@@ -974,7 +1044,7 @@ async def enrich_records(page: Page, list_name: str | None = None, *,
 
         # Enrichment runs in background — we don't need to wait for completion
         result["success"] = True
-        result["message"] = "Enrichment started — track progress in Activity → Action Page"
+        result["message"] = "Enrichment started - track progress in Activity -> Action Page"
         logger.info(result["message"])
 
     except Exception as e:
@@ -985,39 +1055,61 @@ async def enrich_records(page: Page, list_name: str | None = None, *,
     return result
 
 
-async def skip_trace_records(page: Page, list_name: str) -> dict:
+async def skip_trace_records(page: Page, list_name: str | None = None, *,
+                             tag_name: str | None = None,
+                             expected_count: int | None = None) -> dict:
     """Skip trace uploaded records for phone numbers + emails.
 
-    UI Flow: Records → Filter by list → Select all → Send To → Skip Trace
+    UI Flow: Records → Filter by list (or tag) → Select all → Send To → Skip Trace
     → agree to terms → add tag → click "Skip Trace Records"
 
-    Uses the unlimited skip trace plan ($97/mo) — no per-record cost.
+    Uses the unlimited skip trace plan ($97/mo) — no per-record cost. With
+    `expected_count` the selection banner must read exactly that many records or the
+    run aborts before Send To (the API route traces the WHOLE account on a mis-scoped
+    body -- CLAUDE.md -- so the wizard's selection is the only scope there is).
 
     Args:
         page: Logged-in Playwright page.
-        list_name: Name of the list to filter and skip trace.
+        list_name: List to filter to (or pass tag_name).
+        tag_name: Tag to filter to.
+        expected_count: records the filter must select.
 
     Returns:
         Dict with {success, message}.
     """
     result = {"success": False, "message": ""}
-    logger.info("Starting DataSift skip trace for list: %s", list_name)
+    if not list_name and not tag_name:
+        raise ValueError("skip_trace_records needs list_name or tag_name")
+    label = f"tag {tag_name!r}" if tag_name else f"list {list_name!r}"
+    logger.info("Starting DataSift skip trace for %s (expect=%s)", label, expected_count)
 
     try:
         # Navigate to Records (may already be there from enrichment)
         await _navigate_to_records(page)
 
-        # Filter to the uploaded list
-        filtered = await _filter_by_list(page, list_name)
+        # Filter to the cohort
+        filtered = await (_filter_by_tag(page, tag_name) if tag_name
+                          else _filter_by_list(page, list_name))
         if not filtered:
+            if expected_count is not None:
+                result["message"] = f"Could not filter to {label} for skip trace; aborting"
+                logger.error(result["message"])
+                return result
             logger.warning("Could not filter to list for skip trace — continuing anyway")
 
-        # Select all records
-        selected = await _select_all_records(page)
-        if not selected:
-            result["message"] = "Could not select records for skip trace"
-            logger.error(result["message"])
-            return result
+        # Select the cohort
+        if expected_count is not None:
+            if not await _select_cohort(page, expected_count):
+                result["message"] = (f"selection did not reach exactly {expected_count} records; "
+                                     "aborting before Send To")
+                logger.error(result["message"])
+                return result
+        else:
+            selected = await _select_all_records(page)
+            if not selected:
+                result["message"] = "Could not select records for skip trace"
+                logger.error(result["message"])
+                return result
 
         # Click "Send To" dropdown
         send_to_btn = page.locator('button:has-text("Send To")')
@@ -1085,20 +1177,28 @@ async def skip_trace_records(page: Page, list_name: str) -> dict:
             await page.wait_for_timeout(500)
             await tag_input.first.press("Enter")
             await page.wait_for_timeout(500)
+            # The tag box is an autocomplete: its suggestion list stays open after Enter and
+            # sits over the confirm button, so a pointer click never lands (2026-09-23: the
+            # "25.3 Upload" suggestion intercepted every retry for 30 s). Do NOT press Escape
+            # -- it closes the whole wizard (measured the same day). The confirm click below
+            # is a JS click, which the overlay cannot intercept.
             logger.info("Added skip trace tag: %s", tag)
 
         await _screenshot(page, "skip_ready")
 
-        # Click the confirm/submit button to start skip trace
-        # Try multiple possible button texts
-        for btn_text in ["Skip Trace", "Skip Trace Records", "Start Skip Trace", "Submit", "Confirm", "Process"]:
+        # Click the confirm/submit button to start skip trace. A JS click bypasses any
+        # element still overlaying the button (pointer interception is the failure mode).
+        clicked = None
+        for btn_text in ["Skip Trace records", "Skip Trace Records", "Skip Trace", "Start Skip Trace",
+                         "Submit", "Confirm", "Process"]:
             skip_btn = page.locator(f'button:has-text("{btn_text}")')
             if await skip_btn.count() > 0:
-                await skip_btn.first.click()
-                logger.info("Clicked '%s' — processing started", btn_text)
+                await skip_btn.first.evaluate("el => el.click()")
+                clicked = btn_text
+                logger.info("Clicked '%s' (JS) - processing started", btn_text)
                 await page.wait_for_timeout(3000)
                 break
-        else:
+        if clicked is None:
             await _screenshot(page, "skip_no_button")
             result["message"] = "Could not find skip trace submit button"
             logger.error(result["message"])
@@ -1106,9 +1206,21 @@ async def skip_trace_records(page: Page, list_name: str) -> dict:
 
         await _screenshot(page, "skip_submitted")
 
+        # Step 3: the wizard's own confirmation. Nothing counts as sent until it says so.
+        sent = await page.locator('text="Sent!"').count()
+        if not sent:
+            body = await page.evaluate("() => document.body.innerText")
+            sent = 1 if re.search(r"Sent!", body) else 0
+        if not sent:
+            result["message"] = "Clicked the confirm button but the wizard never showed 'Sent!'"
+            logger.error(result["message"])
+            await _screenshot(page, "skip_not_sent")
+            return result
+        logger.info("Wizard confirmed: Sent!")
+
         # Skip trace runs in background — we don't need to wait
         result["success"] = True
-        result["message"] = "Skip trace started — track progress in Activity → Skip Trace tab"
+        result["message"] = "Skip trace started - track progress in Activity -> Skip Trace tab"
         logger.info(result["message"])
 
     except Exception as e:
