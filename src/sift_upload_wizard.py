@@ -45,6 +45,21 @@ async def _dismiss_popups(page):
                 await page.wait_for_timeout(400)
         except Exception:
             pass
+    # Clicking "NO, THANKS" is not enough: the Beamer NPS survey iframe and the
+    # Beamer push modal block ALL pointer events globally while present, so a
+    # perfectly-targeted Next click silently bounces off them (2026-09-22: the
+    # 29-record foreclosure batch stalled at Add-tags with the NPS survey up).
+    # They have to come OUT of the DOM, which is what the SiftMap/preset code
+    # has always done -- this wizard just never inherited it.
+    try:
+        await page.evaluate("""() => {
+            for (const sel of ['#npsIframeContainer', '#beamerPushModal',
+                               '.beamer_defaultBackground', '#beamerOverlay']) {
+                document.querySelectorAll(sel).forEach(el => el.remove());
+            }
+        }""")
+    except Exception:
+        pass
 
 
 async def _click_next(page):
@@ -57,6 +72,18 @@ async def _click_next(page):
                 return True
             except Exception as e:
                 logger.debug("Next click %s failed: %s", sel, e)
+                # Playwright refuses a click it believes is intercepted or out
+                # of the viewport. A JS click ignores the overlay -- the same
+                # fallback the preset/SiftMap code uses. Try it before giving up
+                # on this selector, otherwise one stray overlay ends the run.
+                try:
+                    await page.evaluate("(el) => el.click()",
+                                        await b.first.element_handle())
+                    await page.wait_for_timeout(2500)
+                    logger.info("Next clicked via JS fallback (%s)", sel)
+                    return True
+                except Exception as e2:
+                    logger.debug("Next JS click %s failed: %s", sel, e2)
     return False
 
 
@@ -252,6 +279,21 @@ async def upload_csv_v2(page, csv_path, list_name, tags, *, do_finish=False, exi
                 result["tags_added"].append(f"{t}({how})")
                 logger.info("  + %r -> %s", t, how)
             await _shot(page, shot_base, "tags")
+            # The tag suggestion list stays OPEN after the last Add and sits on
+            # top of Next. Close it by clicking the step heading -- never
+            # Escape, which clears the tags just added (documented in the
+            # SiftMap Add-Records flow and true here too).
+            for h in ('text="Additional Tags"', 'text="Custom Tags"'):
+                hl = page.locator(h)
+                if await hl.count() > 0:
+                    try:
+                        await page.evaluate("(el) => el.click()",
+                                            await hl.first.element_handle())
+                        await page.wait_for_timeout(600)
+                        break
+                    except Exception:
+                        pass
+            await _dismiss_popups(page)
             tags_done = True
             await _click_next(page)
             continue
