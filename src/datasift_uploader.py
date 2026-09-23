@@ -9,6 +9,7 @@ Requires: DATASIFT_EMAIL and DATASIFT_PASSWORD in .env or environment.
 """
 
 import logging
+import re
 import os
 from pathlib import Path
 
@@ -543,13 +544,37 @@ async def _navigate_to_records(page: Page) -> None:
     await _dismiss_popups(page)
 
 
+# The two filter blocks this module drives. Block option titles are the panel's own
+# (dpd_filter_blocks.json carries "Any Tags (OR)"); the value picker placeholder is
+# "Search for lists..." for Lists and is matched loosely for Tags.
+_FILTER_BLOCKS = {
+    "list": {"search": "Lists", "options": ["All Lists (AND)", "Any Lists (OR)"],
+             "picker": 'input[placeholder*="Search for lists"]'},
+    "tag": {"search": "Tags", "options": ["Any Tags (OR)", "All Tags (AND)"],
+            "picker": 'input[placeholder*="Search for tags"], input[placeholder*="Search for tag"]'},
+}
+
+
 async def _filter_by_list(page: Page, list_name: str) -> bool:
-    """Filter records page by list name. Returns True if filter applied.
+    """Filter the Records page to one list. See _filter_by_block."""
+    return await _filter_by_block(page, "list", list_name)
+
+
+async def _filter_by_tag(page: Page, tag_name: str) -> bool:
+    """Filter the Records page to one tag (added 2026-09-23 for the Swap Owners run on a
+    hand-picked cohort that spans several lists: tag them, filter on the tag)."""
+    return await _filter_by_block(page, "tag", tag_name)
+
+
+async def _filter_by_block(page: Page, kind: str, value: str) -> bool:
+    """Filter records page by one Lists/Tags block value. Returns True if filter applied.
 
     DataSift filter panel: right-side overlay opened by "Filter Records" link.
     Has an "Add new filter block" search input. Type "Lists" → select "All Lists (AND)"
-    → pick the list name → close panel.
+    → pick the list name → close panel. Tags run the same shape with "Any Tags (OR)".
     """
+    spec = _FILTER_BLOCKS[kind]
+    list_name = value  # the body below predates the generalisation
     try:
         await _dismiss_popups(page)
 
@@ -576,22 +601,22 @@ async def _filter_by_list(page: Page, list_name: str) -> bool:
 
         if await filter_search.count() > 0:
             await filter_search.first.click()
-            await filter_search.first.fill("Lists")
+            await filter_search.first.fill(spec["search"])
             await page.wait_for_timeout(1500)
 
-            # Click "All Lists (AND)" in the suggestions dropdown (inside the overlay)
-            all_lists = page.locator('text="All Lists (AND)"')
-            if await all_lists.count() > 0:
-                await all_lists.first.click()
-                await page.wait_for_timeout(2000)
-                logger.debug("Selected 'All Lists (AND)' filter block")
-            else:
-                # Try "Any Lists (OR)" as fallback
-                any_lists = page.locator('text="Any Lists (OR)"')
-                if await any_lists.count() > 0:
-                    await any_lists.first.click()
+            # Click the block in the suggestions dropdown (inside the overlay); the first
+            # option title is preferred, the second is the fallback.
+            for opt in spec["options"]:
+                block = page.locator(f'text="{opt}"')
+                if await block.count() > 0:
+                    await block.first.click()
                     await page.wait_for_timeout(2000)
-                    logger.debug("Selected 'Any Lists (OR)' filter block")
+                    logger.debug("Selected '%s' filter block", opt)
+                    break
+            else:
+                logger.warning("No %s filter block offered (%s)", kind, spec["options"])
+                await _screenshot(page, "filter_block_missing")
+                return False
         else:
             logger.warning("Filter block search input not found")
 
@@ -599,7 +624,7 @@ async def _filter_by_list(page: Page, list_name: str) -> bool:
 
         # Now a list picker appears with "Search for lists..." input and a dropdown.
         # Type the list name to search, then click the matching option.
-        list_search = page.locator('input[placeholder*="Search for lists"]')
+        list_search = page.locator(spec["picker"])
         if await list_search.count() > 0:
             await list_search.first.fill(list_name)
             await page.wait_for_timeout(2000)
@@ -614,7 +639,9 @@ async def _filter_by_list(page: Page, list_name: str) -> bool:
                 await page.wait_for_timeout(1000)
                 logger.info("Selected list filter: %s", list_name)
         else:
-            logger.warning("'Search for lists...' input not found")
+            logger.warning("%s value picker not found (%s)", kind, spec["picker"])
+            await _screenshot(page, "filter_picker_missing")
+            return False
 
         await _screenshot(page, "filter_list_selected")
 
@@ -735,33 +762,57 @@ async def _select_all_records(page: Page) -> bool:
         return False
 
 
-async def enrich_records(page: Page, list_name: str) -> dict:
+async def enrich_records(page: Page, list_name: str | None = None, *,
+                         tag_name: str | None = None, swap_owners: bool = False,
+                         expected_count: int | None = None) -> dict:
     """Enrich uploaded records with DataSift's SiftMap property data.
 
-    UI Flow: Records → Filter by list → Select all → Manage → Enrich Data
+    UI Flow: Records → Filter by list (or tag) → Select all → Manage → Enrich Data
     → toggle "Enrich Property Information" ON → click "Enrich"
 
-    Only enriches property info (beds, baths, Zestimate, sqft, sale history).
-    Owner enrichment is OFF to protect our PR/DM contact mapping.
+    By default only property info is enriched (beds, baths, Zestimate, sqft, sale
+    history); "Enrich Owners" and "Swap Owners" stay OFF to protect our PR/DM contact
+    mapping. `swap_owners=True` turns BOTH on -- it replaces the record owner with the
+    tax-roll owner of record. Added 2026-09-23 for a hand-picked cohort whose research
+    found nobody, on Basem's instruction; it is a deliberate, per-run choice.
+
+    `expected_count` is the number of records the filter should select. When given, the
+    modal's "Enrich N Records" count must match or the run ABORTS before submit. It is
+    REQUIRED when swap_owners is on: a filter that silently failed to apply would
+    otherwise rewrite the owner on every record showing.
 
     Args:
         page: Logged-in Playwright page.
-        list_name: Name of the list to filter and enrich.
+        list_name: List to filter to (or pass tag_name instead).
+        tag_name: Tag to filter to.
+        swap_owners: turn "Enrich Owners" + "Swap Owners" ON.
+        expected_count: records the filter must select; abort on a mismatch.
 
     Returns:
         Dict with {success, message}.
     """
     result = {"success": False, "message": ""}
-    logger.info("Starting DataSift enrichment for list: %s", list_name)
+    if not list_name and not tag_name:
+        raise ValueError("enrich_records needs list_name or tag_name")
+    if swap_owners and expected_count is None:
+        raise ValueError("swap_owners=True requires expected_count -- the count gate is "
+                         "what stops a failed filter from swapping owners account-wide")
+    label = f"tag {tag_name!r}" if tag_name else f"list {list_name!r}"
+    logger.info("Starting DataSift enrichment for %s (swap_owners=%s, expect=%s)",
+                label, swap_owners, expected_count)
 
     try:
         # Navigate to Records
         await _navigate_to_records(page)
 
-        # Filter to the uploaded list
-        filtered = await _filter_by_list(page, list_name)
+        # Filter to the cohort
+        filtered = await (_filter_by_tag(page, tag_name) if tag_name
+                          else _filter_by_list(page, list_name))
         if not filtered:
-            result["message"] = "Could not filter to list for enrichment"
+            result["message"] = f"Could not filter to {label} for enrichment"
+            if swap_owners or expected_count is not None:
+                logger.error("%s -- aborting, nothing submitted", result["message"])
+                return result
             logger.warning(result["message"])
             # Continue anyway — may enrich whatever is showing
 
@@ -812,7 +863,7 @@ async def enrich_records(page: Page, list_name: str) -> dict:
         # Configure enrichment toggles via JavaScript.
         # Based on the Enrich Records modal structure, toggles appear next to their label text.
         # Use previousElementSibling text to identify each toggle.
-        toggle_result = await page.evaluate("""() => {
+        toggle_result = await page.evaluate("""(swap) => {
             const results = {};
             const toggles = document.querySelectorAll('.react-toggle');
             for (const toggle of toggles) {
@@ -839,7 +890,7 @@ async def enrich_records(page: Page, list_name: str) -> dict:
                 if (!name) continue;
 
                 const isChecked = toggle.classList.contains('react-toggle--checked');
-                const shouldBeOn = name === 'Enrich Property Information';
+                const shouldBeOn = name === 'Enrich Property Information' || swap;
 
                 if (shouldBeOn && !isChecked) {
                     toggle.click();
@@ -852,11 +903,55 @@ async def enrich_records(page: Page, list_name: str) -> dict:
                 }
             }
             return results;
-        }""")
+        }""", swap_owners)
         logger.info("Enrichment toggles: %s", toggle_result)
         await page.wait_for_timeout(1000)
 
         await _screenshot(page, "enrich_toggles_set")
+
+        # GATE 1 -- read the toggles BACK rather than trusting the click log, and require
+        # all three to be present and in the intended state.
+        state = await page.evaluate("""() => {
+            const out = {};
+            for (const t of document.querySelectorAll('.react-toggle')) {
+                const txt = ((t.previousElementSibling || {}).textContent || '')
+                          + ' ' + ((t.nextElementSibling || {}).textContent || '');
+                let name = null;
+                if (txt.includes('Property Information')) name = 'Enrich Property Information';
+                else if (txt.includes('Enrich Owners')) name = 'Enrich Owners';
+                else if (txt.includes('Swap Owners')) name = 'Swap Owners';
+                if (name) out[name] = t.classList.contains('react-toggle--checked');
+            }
+            return out;
+        }""")
+        want = {"Enrich Property Information": True, "Enrich Owners": swap_owners,
+                "Swap Owners": swap_owners}
+        if state != want:
+            result["message"] = f"toggle read-back {state} != wanted {want}; aborting before submit"
+            logger.error(result["message"])
+            await _screenshot(page, "enrich_toggle_mismatch")
+            return result
+
+        # GATE 2 -- the modal's own record count must match the cohort.
+        modal_count = None
+        for cand in await page.locator('button:has-text("Enrich")').all_inner_texts():
+            m = re.search(r"Enrich\s+([\d,]+)\s+Record", cand)
+            if m:
+                modal_count = int(m.group(1).replace(",", ""))
+                break
+        if modal_count is None:
+            body = await page.evaluate("() => document.body.innerText")
+            m = re.search(r"([\d,]+)\s+(?:records?|properties)\s+(?:selected|will be enriched)",
+                          body, re.I)
+            if m:
+                modal_count = int(m.group(1).replace(",", ""))
+        logger.info("Enrich modal record count: %s (expected %s)", modal_count, expected_count)
+        if expected_count is not None and modal_count != expected_count:
+            result["message"] = (f"modal count {modal_count} != expected {expected_count}; "
+                                 "aborting before submit")
+            logger.error(result["message"])
+            await _screenshot(page, "enrich_count_mismatch")
+            return result
 
         # Click "Enrich N Records" button to start processing
         enrich_btn = page.locator('button:has-text("Enrich")')

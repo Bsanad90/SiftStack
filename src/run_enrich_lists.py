@@ -16,6 +16,9 @@ TOGGLES, and the reason they matter:
     Enrich Owners                 OFF   would overwrite our PR contact
     Swap Owners                   OFF   would swap the PR for the dead owner
 
+    --swap-owners turns the last two ON for one tagged cohort (--tag) and REQUIRES
+    --expect N; the run aborts before submit unless the modal shows exactly N records.
+
 `enrich_records` already enforces exactly that; this script only drives login
 and iterates the lists.
 """
@@ -40,7 +43,8 @@ logging.basicConfig(
 logger = logging.getLogger("run_enrich_lists")
 
 
-async def main_async(lists: list[str], headed: bool) -> int:
+async def main_async(lists: list[str], headed: bool, *, tag: str | None = None,
+                     swap_owners: bool = False, expect: int | None = None) -> int:
     from datasift_core import create_browser, load_cookies, login, save_cookies
     from datasift_uploader import enrich_records
 
@@ -56,10 +60,16 @@ async def main_async(lists: list[str], headed: bool) -> int:
         await save_cookies(page)
 
         failures = 0
+        if tag:
+            # One hand-picked cohort, selected by tag. Used 2026-09-23 with --swap-owners on
+            # the 25 zero-relative DP records (Basem: "enrich and swap owners, then deep
+            # prospect the data that comes back if it is different").
+            lists = [None]
         for name in lists:
-            logger.info("=== enriching list: %s ===", name)
+            logger.info("=== enriching %s ===", f"tag {tag!r}" if tag else f"list {name!r}")
             try:
-                res = await enrich_records(page, name)
+                res = await enrich_records(page, name, tag_name=tag, swap_owners=swap_owners,
+                                           expected_count=expect)
             except Exception as exc:
                 logger.exception("Enrichment crashed for %s", name)
                 res = {"success": False, "message": f"{type(exc).__name__}: {exc}"}
@@ -79,12 +89,23 @@ def main() -> int:
                     help="Show the browser. Worth doing the first time: the "
                          "enrichment modal is the one place a wrong toggle is "
                          "expensive, and this is where you see it.")
+    ap.add_argument("--tag", help="Filter by ONE tag instead of lists (a hand-picked cohort)")
+    ap.add_argument("--swap-owners", action="store_true",
+                    help="Turn 'Enrich Owners' + 'Swap Owners' ON: replaces the record owner "
+                         "with the tax-roll owner of record. Requires --expect. Deliberate "
+                         "per-run choice; never a default.")
+    ap.add_argument("--expect", type=int,
+                    help="Records the filter must select; the run aborts before submit if the "
+                         "enrich modal shows a different count. Required with --swap-owners.")
     a = ap.parse_args()
+    if a.swap_owners and a.expect is None:
+        ap.error("--swap-owners requires --expect N (the count gate)")
     names = [x.strip() for x in a.lists.split(",") if x.strip()]
-    if not names:
+    if not names and not a.tag:
         print("No lists given.")
         return 2
-    return asyncio.run(main_async(names, a.headed))
+    return asyncio.run(main_async(names, a.headed, tag=a.tag, swap_owners=a.swap_owners,
+                                  expect=a.expect))
 
 
 if __name__ == "__main__":
