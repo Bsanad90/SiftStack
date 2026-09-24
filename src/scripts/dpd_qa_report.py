@@ -75,7 +75,7 @@ def main() -> int:
     if not man:
         w("_manifest missing — run dpd_siftmap_manifest.py --measure_")
     else:
-        wb_sfr = ((pb or {}).get("overview") or {}).get("County SFR supply")
+        wb_sfr = ((pb or {}).get("overview") or {}).get("SFR supply")
         base_sf = man.get("baseline_single_family")
         if wb_sfr is not None and base_sf is not None:
             agree = ("the two agree to the unit" if int(wb_sfr) == int(base_sf)

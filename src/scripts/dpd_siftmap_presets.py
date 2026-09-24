@@ -4,6 +4,8 @@
     python src/scripts/dpd_siftmap_presets.py --fips 11001 --smoke-test   # save ONE throwaway, reload it
     python src/scripts/dpd_siftmap_presets.py --fips 11001 --commit       # save every manifest preset
     python src/scripts/dpd_siftmap_presets.py --fips 11001 --verify       # enumerate + reload each
+    python src/scripts/dpd_siftmap_presets.py --fips 11001 --commit --save-list <plan>/save_list_11001.txt
+                                                   # save ONLY the names a --plan listed as missing
     python src/scripts/dpd_siftmap_presets.py --audit-auto-add               # read-only AUTO-ADD census, all filters
     python src/scripts/dpd_siftmap_presets.py --fips 11001 --discover-delete "ZZ ..."  # probe one row's icons, click nothing
     python src/scripts/dpd_siftmap_presets.py --fips 11001 --delete-name "ZZ ..."      # delete ONE saved filter (name must start "ZZ ")
@@ -47,6 +49,7 @@ sys.path.insert(0, str(ROOT / "src" / "scripts"))
 
 from datasift_core import DATASIFT_SIFTMAP_URL, create_browser, get_credentials, login  # noqa: E402
 from dpd_siftmap_discover import _clean_map, _result_count  # noqa: E402
+from dpd_siftmap_manifest import bare_name, list_key  # noqa: E402
 
 SHOTS = ROOT / "output" / "dpd_siftmap"
 RAIL_SAVE = "Save Filters"
@@ -286,7 +289,13 @@ async def account_filter_names(page, out: dict | None = None) -> list[str] | Non
         out["total_reported"] = total
     pages = max(1, -(-total // 10)) if total else 1
 
+    # Keep DUPLICATE titles: the completeness check below compares len(names) with the
+    # table's row total, and the account really can hold two filters with one title
+    # (2026-09-24: two "District Of Columbia, DC", one Basem's, one Moe Galal's). A
+    # `not in names` dedupe here read 24 of 25 and made --commit refuse a complete
+    # read. A stalled pagination is caught instead by an unchanged page.
     names: list[str] = []
+    prev_page: list[str] | None = None
     for pageno in range(1, pages + 1):
         if pageno > 1:
             box = await page.query_selector("input[type='number']")
@@ -299,9 +308,12 @@ async def account_filter_names(page, out: dict | None = None) -> list[str] | Non
             "[class*='PresetCardTitle']",
             "els => els.map(e => (e.innerText || '').trim()).filter(Boolean)",
         )
-        for n in got:
-            if n not in names:
-                names.append(n)
+        if pageno > 1 and got == prev_page:
+            print(f"    WARNING: management page {pageno} did not advance (same rows as "
+                  f"page {pageno - 1}); stopping the read")
+            break
+        names.extend(got)
+        prev_page = got
 
     if not names:
         return None
@@ -574,20 +586,23 @@ async def audit_auto_add(page, out: dict) -> None:
         state = await page.evaluate(_AUDIT_PAGE_JS)
         out["total_reported"] = state.get("total") or out.get("total_reported")
         await page.screenshot(path=str(SHOTS / f"audit_autoadd_p{pageno}.png"))
-        titles_this_page = set()
+        texts_this_page = set()
         for r in state["rows"]:
             verdict, why = _autoadd_verdict(r)
             row = {"page": pageno, "title": r["title"], "text": r["text"],
                    "checkbox_checked": r["checkbox_checked"], "toggle_on": r["toggle_on"],
                    "cell_html": r["cell_html"], "auto_add": verdict, "evidence": why}
-            if r["title"] in titles_this_page:
-                # duplicate title on one page = the row anchor regressed to a shared
-                # container again; that invalidates the whole read
-                out["error"] = (f"page {pageno} read the title {r['title']!r} twice -- "
-                                "row anchoring is broken, treat this census as void")
+            # An identical ROW (name + "by <author>" + "on <date>") read twice on one page
+            # means the row anchor regressed to a shared container; that voids the read.
+            # A repeated TITLE alone does not: saved-filter names are NOT unique -- measured
+            # 2026-09-24, two filters both named "District Of Columbia, DC" (Basem Sanad,
+            # Sep 15; Moe Galal, Sep 22) -- and the title-only check voided a good census.
+            if r["text"] in texts_this_page:
+                out["error"] = (f"page {pageno} read an identical row twice ({r['title']!r}) "
+                                "-- row anchoring is broken, treat this census as void")
                 results.append(row)
                 return
-            titles_this_page.add(r["title"])
+            texts_this_page.add(r["text"])
             results.append(row)
             label = {True: "ON ", False: "off", None: "?? "}[verdict]
             print(f"  [{label}] p{pageno} {str(r['title'])[:70]}  ({why})", flush=True)
@@ -762,9 +777,10 @@ def _describe(e: dict) -> str:
     if e.get("tier") == "Tier 2":
         return ("Doors-per-deal Tier 2 geography: workbook 4-5 star ZIPs by deals; single-family. "
                 "Bulk + mail tier.")
-    bits = [f"Doors-per-deal P{e.get('priority')} rank {e.get('rank')}",
-            f"lift {e.get('lift')}x", f"dpd {e.get('dpd')}",
-            f"workbook list {int(e['workbook_list_size']) if e.get('workbook_list_size') else '-'}"]
+    bits = [f"Doors-per-deal P{e.get('priority')} rank {e.get('rank')} (no-AI pull order, "
+            f"rung {e.get('rung')})",
+            f"next-pull dpd {e.get('dpd')}", f"{e.get('deals')} new deals",
+            f"list {int(e['workbook_list_size']) if e.get('workbook_list_size') else '-'}"]
     if e.get("proxy"):
         bits.append("Tired Landlord = absentee + owned 10+ yrs (measured 2,050 vs workbook 2,046)")
     bits.append("single-family")
@@ -948,7 +964,8 @@ async def reload_check(page, base_url: str, name: str, src_url: str, expect_coun
     return row
 
 
-async def run(mode: str, fips: str | None, headless: bool, target: str | None = None) -> dict:
+async def run(mode: str, fips: str | None, headless: bool, target: str | None = None,
+              save_list: str | None = None) -> dict:
     if mode == "list":
         # Read-only census of the management page. No manifest, no fips, no writes.
         out = {"mode": mode, "at": datetime.now().isoformat(timespec="seconds")}
@@ -1015,6 +1032,23 @@ async def run(mode: str, fips: str | None, headless: bool, target: str | None = 
     items = list(man["presets"]) + ([man["tier2"]] if man.get("tier2") else [])
     out = {"mode": mode, "fips": fips, "at": datetime.now().isoformat(timespec="seconds"),
            "results": []}
+    if save_list:
+        # Restrict to the names a dpd_siftmap_manifest.py --plan listed as missing. A name
+        # the manifest does not know means the plan and the manifest were built from
+        # different data: refuse rather than save a guess.
+        wanted = [ln.strip() for ln in Path(save_list).read_text(encoding="utf-8").splitlines()
+                  if ln.strip() and not ln.startswith("#")]
+        known = {e["name"] for e in items}
+        unknown = [n for n in wanted if n not in known]
+        if unknown:
+            raise SystemExit(f"--save-list names {len(unknown)} preset(s) this manifest does not "
+                             f"hold (plan and manifest out of step): {unknown[:5]} -- rebuild the "
+                             "manifest with dpd_siftmap_manifest.py --fips ... --measure and re-plan")
+        items = [e for e in items if e["name"] in set(wanted)]
+        out["save_list"] = save_list
+        if not items:
+            out["note"] = "save list is empty: nothing to do"
+            return out
     base_url = man["baseline_url"]
     # Smallest live count first, so a mechanical fault surfaces cheaply; unmeasured last.
     def _k(e):
@@ -1100,12 +1134,34 @@ async def run(mode: str, fips: str | None, headless: bool, target: str | None = 
                 print(f"  X {out['error']}")
                 return out
             out["existing_before"] = existing
+            # The management page returns each title with its description glued on
+            # ("DC P1-18 Out-of-StateDoors-per-deal P1 rank 18; ..."), so an exact or
+            # prefix test on the raw titles saw EVERY existing preset as absent and would
+            # re-save it as a duplicate. Compare bare names.
+            # And compare by LIST, not by label: a rank label moves whenever the ladder
+            # is re-measured ("DC P1-12 Free & Clear + Out-of-State" is now rung 16), so
+            # a label match would save a second copy of a list that is already saved
+            # under its old label. list_key() reduces both sides to the signal set (or
+            # the ZIP set for Tier 2). Renames are a plan decision (--plan --renames),
+            # never a side effect of commit.
+            existing_bare = {bare_name(n) for n in existing}
+            existing_keys = {}
+            for n in existing_bare:
+                k = list_key(n)
+                if k:
+                    existing_keys.setdefault(k, n)
             await goto_map(page, base_url)
             for e in items:
                 name = e["name"]
                 row = {"name": name, "url": e["url"], "measured_count": e.get("measured_count")}
-                if name in existing or any(n and name.startswith(n) and len(n) >= 20 for n in existing):
+                held_as = existing_keys.get(list_key(name))
+                if name in existing_bare or held_as:
                     row["status"] = "already_present"
+                    if held_as and held_as != name:
+                        row["present_as"] = held_as
+                        print(f"  = {name}  (already present as {held_as!r})")
+                        out["results"].append(row)
+                        continue
                     out["results"].append(row)
                     print(f"  = {name}  (already present)")
                     continue
@@ -1132,8 +1188,10 @@ async def run(mode: str, fips: str | None, headless: bool, target: str | None = 
                                          "not computed -- verify on the management page")
                 print(f"  ! {out['readback_error']}")
                 return out
-            missing = [e["name"] for e in items if e["name"] not in after
-                       and not any(n and e["name"].startswith(n) and len(n) >= 20 for n in after)]
+            after_bare = {bare_name(n) for n in after}
+            after_keys = {list_key(n) for n in after_bare} - {None}
+            missing = [e["name"] for e in items
+                       if e["name"] not in after_bare and list_key(e["name"]) not in after_keys]
             out["missing_after"] = missing
             return out
 
@@ -1172,6 +1230,9 @@ def main() -> int:
                    help="delete every saved filter named in this reviewed allowlist file "
                         "(one name per line, # comments); the ZZ-prefix guard is waived "
                         "ONLY for names in the file")
+    ap.add_argument("--save-list", metavar="PATH",
+                    help="with --commit/--verify: act ONLY on the preset names in this file "
+                         "(a dpd_siftmap_manifest.py --plan save list)")
     ap.add_argument("--headed", action="store_true")
     a = ap.parse_args()
     mode = ("list" if a.list_account else
@@ -1183,7 +1244,10 @@ def main() -> int:
     if mode not in ("list", "audit") and not a.fips:
         ap.error("--fips is required for every mode except --list-account/--audit-auto-add")
     target = a.discover_delete or a.delete_name or a.delete_from_file
-    out = asyncio.run(run(mode, a.fips, headless=not a.headed, target=target))
+    if a.save_list and mode not in ("commit", "verify"):
+        ap.error("--save-list only applies to --commit and --verify")
+    out = asyncio.run(run(mode, a.fips, headless=not a.headed, target=target,
+                          save_list=a.save_list))
     path = ROOT / "output" / f"dpd_siftmap_presets_{a.fips or 'account'}_{mode}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(out, indent=1), encoding="utf-8")

@@ -552,7 +552,81 @@ Each line is the state as of 2026-08-28; the reasoning is in the linked history 
 - **`data/dpd_playbook_*_shards.json` were deleted** — write-only cross-check artifacts, and
   byte-identical per state (the fetcher pulls per state, writes per county). Re-derive with
   `python src/scripts/dpd_playbook_extract.py --fips <fips> --fetch`. The parsed
-  `data/dpd_playbook_<fips>.json` files, which ARE read, are untouched.
+  `data/dpd_playbook_<fips>.json` files, which ARE read, were REBUILT 2026-09-24 from the new
+  Work Order export (see "Doors-per-deal data: the Work Order format" below); the August
+  versions are in `output/_archive/dpd_playbook_json_20260828/`, the August workbooks in
+  `output/market_research/_archive_export_20260827/`, the August SiftMap manifests in
+  `output/_archive/dpd_siftmap_manifest_json_20260831/`.
+
+## Doors-per-deal data: the Work Order format (2026-09-24) and the SiftMap preset planner
+
+**The playbook page changed its export in 2026-09.** `learn.datasift.ai/county-list-playbook`
+now downloads a workbook with sheets Overview / **Work Order** / **Obituary** / First to Market /
+Top ZIPs / Price Bands / Read Me. Priority Ranking, AI Score and Benchmarks are gone.
+`dpd_playbook_extract.py` reads ONLY this layout and refuses the old one (it will not roll back).
+Facts that change how every number is read:
+
+- **The Work Order is a PULL ORDER and its doors/deal are MARGINAL.** Each rung counts only the
+  new deals the rungs above it do not already reach, so a rung's figure prices the NEXT pull,
+  not the list on its own. Never re-sort rungs by dpd (it is not monotonic); the ladder order is
+  the ranking. Each rung's standalone `list_size` and stable `keys` come from the page's free
+  `capture-data/<st>.json` shard (`--fetch`), not from the sheet.
+- **The page publishes TWO ladders per county and exports only one.** `variants.ai` (default
+  on screen, and what Download Excel carries) and `variants.lists` (AI rungs removed, the deals
+  AI would have claimed re-credited to the lists below). This account does not buy AI data, so
+  **`rows_no_ai` is the ranking**; `dpd_siftmap_manifest.build()` reads it and refuses a
+  playbook file without it. `merge_shard` detects which variant the export carried by matching
+  the rung label sequence.
+- **The baseline moved because the deal count did, not the window.** DC: 632 deals / 76.8
+  (Aug export) -> 771 / 62.9 (live page); same Jan-Jun 2026 window, same 48,530 homes. The
+  page's own Overview mixes two sources: deals + baseline dpd from capture-data
+  (`base_supply / deals`), but "SFR supply" from county-data `baseline.list_size`, and the two
+  supplies differ in Calvert / Frederick / Spotsylvania (47,615 vs 49,628). The cross-check
+  compares each figure with the source the page used.
+- **Obituary is now partly MEASURED and reads worse than the model.** Every county's Obituary
+  sheet models 34 dpd (22/34/50); where Obituary is its own rung it measures 67.5 (Montgomery),
+  72.5 (Carroll), 86.2 (Baltimore Co), 107 (Fairfax, negative spread), on 4-7 deals each and as
+  late rungs. Stacked (`High Equity + Obituary + Senior`, Baltimore Co) it runs 27.7. Probate
+  appears in NO county's ladder. Flags began 2025-12, so the number is not settled.
+- **Export by browser, not by hand:** the page's `#xlsxbtn` button; the `#<fips>` hash is read
+  only at load, so navigate to `...playbook#<fips>` fresh per county and wait for the text
+  "single-family homes" (no global to poll). `openpyxl` read-only workbooks must be `close()`d
+  or Windows keeps the file locked.
+
+**The SiftMap preset planner (`dpd_siftmap_manifest.py --plan`, offline).** Compares the
+COMPLETE saved-filter inventory (`dpd_siftmap_presets.py --audit-auto-add` output, from the
+management page — never the ~100-row popover) with manifests built from current data and sorts
+every saved filter into keep / keep-old-label / stale / rename / duplicate / missing / hold /
+decide / out-of-scope / foreign. Writes `output/dpd_siftmap_plan/<stamp>/plan.md`,
+`delete_allowlist.txt` (for the EXISTING gated `--delete-from-file`; no second delete path) and
+`save_list_<fips>.txt` (for `--commit --save-list`). Rules it encodes: presets come from **P1
+rungs only** by default (`DEFAULT_PRIORITIES`; **Basem 2026-09-24: "No need for P2 filters"**,
+so a saved P2 filter is `stale` and lands on the allowlist); counties default to the 6-county
+footprint (`FOOTPRINT_FIPS`; the 34 out-of-footprint filters were deleted on purpose and are
+`out_of_scope`); **a filter with auto-add ON is never deletable** (`hold`), nor is one whose
+auto-add state is unknown, nor `HOLD_NAMES` (Montgomery P1-04, held pull); anything not named
+like a DPD preset is `foreign`. **Identity is the LIST, not the label** (`list_key`: county +
+signal set, or ZIP set) — rank labels move every time the ladder is re-measured, so a
+label-based presence check re-saves an existing list as a duplicate. `--commit` now uses
+`list_key` too, and `bare_name()` because the management page glues each filter's DESCRIPTION
+onto its name (`"DC P1-18 Out-of-StateDoors-per-deal P1 rank 18; ..."`) — the earlier
+exact/prefix check saw every existing preset as absent. `--renames` (opt-in) re-saves same-list
+filters under their current label; never for auto-add or held ones. Offline guard:
+`python tools/manual/test_dpd_playbook_format.py` (42 checks) — run after ANY change to
+`parse_ladder` / `merge_shard` / `build` / `list_key` / `plan`. A rebuilt manifest carries
+`measured_at` over ONLY when every live preset carries a count; otherwise `build_all` would skip
+the measure stage with unmeasured presets. Every write step still needs Basem's go.
+**PLAN APPLIED 2026-09-24 on Basem's go** (`output/dpd_siftmap_plan/20260924T115321/apply_logs/`):
+28/28 stale + P2 filters deleted, 18/18 saved and verified (each reloads to its measured
+count), re-audit 43/43 rows, re-plan clean (keep 26 / keep-old-label 10 / hold 3 / foreign 4).
+Three Fairfax Tax Delinquent stacks (P1-05 / P1-10 / P1-11) are saved but measure **0** in
+SiftMap against workbook sizes 102 / 305 / 212 — empty until that layer carries data. **Trap
+fixed the same day:** `account_filter_names()` deduped titles, so the two same-named
+"District Of Columbia, DC" filters read as 24 of 25 and `--commit` refused (correctly) on the
+first attempt; the reader now counts rows and catches a stalled pagination by an unchanged
+page. Saved-filter TITLES ARE NOT UNIQUE — any reader that dedupes by name under-counts.
+The 3 `hold` filters (Montgomery P1-05 Abs+F&C+OOS, DC P1-04 NOF, DC P1-03 F&C+NOF: auto-add
+ON, no longer ranked) and the 10 old-label renames still wait on Basem.
 
 ## "Unknown <Surname>" DP relatives — the ghost resolver (step 1 built 2026-09-17)
 
@@ -1332,7 +1406,7 @@ Full build narrative, including every panel trap and the inverted-preset post-mo
 - `src/scripts/dpd_presets_create.py` — the builder, **PROVEN on all 73**: container-scoped `audit_panel`, hit-tested `_click_leaf`, section-scoped `_PICK_INPUT_JS` / `set_tokens` with one retry, the scrolled folder pick, polling `open_panel`, a pre-save panel screenshot per folder (`output/dpd_panel_*.png`), and preset deletion (`--discover-delete | --delete-junk-dry | --delete-junk [--delete-names ...]`, refuses anything not `^ZZ ` or explicitly allowlisted). Resumable; skips by name prefix.
 - `src/scripts/dpd_presets_verify.py` — **Phase 7 QA for presets.** Reads every stored definition over the internal API and checks counties, suppression, statuses, counters, params and tag-uuid algebra against `preset_spec`; lists extras. Exit 0 only when all 73 are present and defect-free. **Currently exits 0.** Run it after any preset change.
 - `src/scripts/dpd_doctor.py` — `capture_presets` rewritten onto the builder's panel primitives (positional per-folder read, full scroll of `PresetsBelowBody`, no-toggle re-read for a folder that is open by default); writes `preset_items`, `preset_folders`, `preset_tree`. `--verify` diff is trustworthy again.
-- `src/scripts/dpd_playbook_extract.py`, `dpd_siftmap_manifest.py`, `dpd_siftmap_presets.py`, `dpd_qa_report.py` — the county-agnostic DC one-shot pipeline (see [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md)).
+- `src/scripts/dpd_playbook_extract.py`, `dpd_siftmap_manifest.py`, `dpd_siftmap_presets.py`, `dpd_qa_report.py` — the county-agnostic DC one-shot pipeline (see [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md)). **Reworked 2026-09-24 for the Work Order export and the no-AI ladder; `dpd_siftmap_manifest.py --plan` is the check/rebuild/delete planner for the saved SiftMap filters** — see "Doors-per-deal data: the Work Order format" above.
 
 **Stated gaps, omitted on purpose rather than approximated** (all in `block_map.GAPS`): the mail cadence's 30-day spacing (date blocks are absolute-only, and a fixed date silently hides work as time passes); the four Reactivation status-age timers (nothing filters on time-in-status); the single-family filter (would drop the 2,892 blank-`structure_type` records, and the buy box is applied at pull time instead); the recently-sold tag (does not exist on this account). Also: the Property Status picker offers 19 of 38 statuses — `DNC` and `Opt-out` are recovered through Params & Others, but `Lost Deal`, `Close Out`, `Buyer`, `Buyer Found` and `Buyer Lost` cannot be selected at all.
 

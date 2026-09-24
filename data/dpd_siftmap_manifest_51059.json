@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-08-31T05:46:58",
+ "generated_at": "2026-09-24T12:50:22",
  "fips": "51059",
  "jurisdiction": "Fairfax, VA",
  "state_abbr": "VA",
@@ -31,21 +31,93 @@
    "extra_owners_with_multiple_properties=true"
   ],
   "status": "confirmed",
-  "workbook_list_size": 11332,
+  "workbook_list_size": 11401,
   "probes": [
    {
     "param": "preset_absentee_owners=true&extra_years_owned_min=10",
-    "count": 11455,
+    "count": 11496,
     "verdict": "FILTERS"
    }
   ],
-  "count": 11455
+  "count": 11496
  },
  "presets": [
   {
-   "name": "Fairfax P1-01 Notice of Default",
+   "name": "Fairfax P1-01 Notice of Default + Senior",
    "priority": 1,
    "rank": 1,
+   "rung": 1,
+   "doors_added": 17,
+   "signal": "Notice of Default + Senior",
+   "signals": [
+    "Notice of Default",
+    "Senior"
+   ],
+   "keys": [
+    "is_notice_of_default",
+    "is_senior_homeowners"
+   ],
+   "lift": 80.5,
+   "dpd": 2.8,
+   "deals": 6,
+   "workbook_list_size": 17,
+   "typical_gross": 205000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_foreclosure_notice_type=ND",
+    "extra_owner_age_min=65"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&extra_foreclosure_notice_type=ND&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&extra_foreclosure_notice_type=ND&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 14,
+   "measured_not_in_account": 0,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Fairfax P1-02 Free & Clear + Notice of Default",
+   "priority": 1,
+   "rank": 2,
+   "rung": 2,
+   "doors_added": 17,
+   "signal": "Free & Clear + Notice of Default",
+   "signals": [
+    "Free & Clear",
+    "Notice of Default"
+   ],
+   "keys": [
+    "is_free_and_clear",
+    "is_notice_of_default"
+   ],
+   "lift": 53.7,
+   "dpd": 4.2,
+   "deals": 4,
+   "workbook_list_size": 24,
+   "typical_gross": 383500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Starter",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "preset_free_clear=true",
+    "extra_foreclosure_notice_type=ND"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&extra_foreclosure_notice_type=ND&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&extra_foreclosure_notice_type=ND&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 8,
+   "measured_not_in_account": 0,
+   "measure_status": "ok"
+  },
+  {
+   "name": "Fairfax P1-04 Notice of Default",
+   "priority": 1,
+   "rank": 4,
+   "rung": 4,
+   "doors_added": 47,
    "signal": "Notice of Default",
    "signals": [
     "Notice of Default"
@@ -53,14 +125,14 @@
    "keys": [
     "is_notice_of_default"
    ],
-   "lift": 37.3,
-   "dpd": 7.8,
-   "deals": 12,
-   "workbook_list_size": 93,
-   "typical_gross": 94900,
-   "caveat": "small live list: quick and cheap to market in full",
-   "verify_reason": "small",
-   "plan": "Expert plan",
+   "lift": 33.6,
+   "dpd": 6.7,
+   "deals": 7,
+   "workbook_list_size": 81,
+   "typical_gross": 85000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Starter",
    "proxy": false,
    "buildable": true,
    "params": [
@@ -68,83 +140,55 @@
    ],
    "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&extra_foreclosure_notice_type=ND&type_single_family=true",
    "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&extra_foreclosure_notice_type=ND&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 92,
-   "measured_not_in_account": 91,
+   "measured_count": 91,
+   "measured_not_in_account": 0,
    "measure_status": "ok"
   },
   {
-   "name": "Fairfax P1-04 Free & Clear + Tax Delinquent + Senior",
+   "name": "Fairfax P1-05 Free & Clear + Tax Delinquent + Tired Landlord (proxy)",
    "priority": 1,
-   "rank": 4,
-   "signal": "Free & Clear + Tax Delinquent + Senior",
+   "rank": 5,
+   "rung": 5,
+   "doors_added": 102,
+   "signal": "Free & Clear + Tax Delinquent + Tired Landlord",
    "signals": [
     "Free & Clear",
     "Tax Delinquent",
-    "Senior"
+    "Tired Landlord"
    ],
    "keys": [
     "is_free_and_clear",
     "is_recent_deliquent",
-    "is_senior_homeowners"
+    "is_tired_landlord"
    ],
-   "lift": 10.3,
-   "dpd": 28.3,
-   "deals": 12,
-   "workbook_list_size": 340,
-   "typical_gross": 208000,
+   "lift": 11.0,
+   "dpd": 20.4,
+   "deals": 5,
+   "workbook_list_size": 102,
+   "typical_gross": 78500,
    "caveat": null,
    "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
+   "plan": "Expert",
+   "proxy": true,
    "buildable": true,
    "params": [
     "preset_free_clear=true",
     "preset_tax_lien=true",
-    "extra_owner_age_min=65"
+    "preset_absentee_owners=true",
+    "extra_years_owned_min=10"
    ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&preset_tax_lien=true&extra_owner_age_min=65&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&preset_tax_lien=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&preset_tax_lien=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&preset_tax_lien=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
    "measured_count": 0,
    "measured_not_in_account": 0,
    "measure_status": "measured_zero"
   },
   {
-   "name": "Fairfax P1-05 Free & Clear + Tax Delinquent",
+   "name": "Fairfax P1-09 Free & Clear + Out-of-State",
    "priority": 1,
-   "rank": 5,
-   "signal": "Free & Clear + Tax Delinquent",
-   "signals": [
-    "Free & Clear",
-    "Tax Delinquent"
-   ],
-   "keys": [
-    "is_free_and_clear",
-    "is_recent_deliquent"
-   ],
-   "lift": 8.8,
-   "dpd": 33,
-   "deals": 29,
-   "workbook_list_size": 956,
-   "typical_gross": 122250,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_free_clear=true",
-    "preset_tax_lien=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&preset_tax_lien=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&preset_tax_lien=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 0,
-   "measured_not_in_account": 0,
-   "measure_status": "measured_zero"
-  },
-  {
-   "name": "Fairfax P1-06 Free & Clear + Out-of-State",
-   "priority": 1,
-   "rank": 6,
+   "rank": 9,
+   "rung": 9,
+   "doors_added": 1467,
    "signal": "Free & Clear + Out-of-State",
    "signals": [
     "Free & Clear",
@@ -154,14 +198,14 @@
     "is_free_and_clear",
     "is_oos_owners"
    ],
-   "lift": 8.6,
-   "dpd": 33.7,
-   "deals": 45,
-   "workbook_list_size": 1516,
-   "typical_gross": 81000,
+   "lift": 8.4,
+   "dpd": 26.7,
+   "deals": 55,
+   "workbook_list_size": 1515,
+   "typical_gross": 44200,
    "caveat": null,
    "verify_reason": null,
-   "plan": "Expert plan",
+   "plan": "Expert",
    "proxy": false,
    "buildable": true,
    "params": [
@@ -170,278 +214,92 @@
    ],
    "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
    "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 1499,
-   "measured_not_in_account": 1470,
+   "measured_count": 1495,
+   "measured_not_in_account": 1465,
    "measure_status": "ok"
   },
   {
-   "name": "Fairfax P1-08 Absentee + Free & Clear + Out-of-State",
+   "name": "Fairfax P1-10 Absentee + Free & Clear + Tax Delinquent",
    "priority": 1,
-   "rank": 8,
-   "signal": "Absentee + Free & Clear + Out-of-State",
+   "rank": 10,
+   "rung": 10,
+   "doors_added": 158,
+   "signal": "Absentee + Free & Clear + Tax Delinquent",
    "signals": [
     "Absentee",
     "Free & Clear",
-    "Out-of-State"
+    "Tax Delinquent"
    ],
    "keys": [
     "is_absentee_owners",
     "is_free_and_clear",
-    "is_oos_owners"
+    "is_recent_deliquent"
    ],
-   "lift": 6.7,
-   "dpd": 43.3,
-   "deals": 35,
-   "workbook_list_size": 1516,
-   "typical_gross": 80539,
+   "lift": 8.6,
+   "dpd": 26.3,
+   "deals": 6,
+   "workbook_list_size": 305,
+   "typical_gross": 55795,
    "caveat": null,
    "verify_reason": null,
-   "plan": "Expert plan",
+   "plan": "Starter",
    "proxy": false,
    "buildable": true,
    "params": [
     "preset_absentee_owners=true",
     "preset_free_clear=true",
-    "extra_absentee_in_state=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 1498,
-   "measured_not_in_account": 1469,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P1-09 Tax Delinquent",
-   "priority": 1,
-   "rank": 9,
-   "signal": "Tax Delinquent",
-   "signals": [
-    "Tax Delinquent"
-   ],
-   "keys": [
-    "is_recent_deliquent"
-   ],
-   "lift": 5.8,
-   "dpd": 50.4,
-   "deals": 38,
-   "workbook_list_size": 1917,
-   "typical_gross": 123000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": true,
-   "params": [
     "preset_tax_lien=true"
    ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_tax_lien=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_tax_lien=true&type_single_family=true&in_my_account_mode=not_in",
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&preset_tax_lien=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&preset_tax_lien=true&type_single_family=true&in_my_account_mode=not_in",
    "measured_count": 0,
    "measured_not_in_account": 0,
    "measure_status": "measured_zero"
   },
   {
-   "name": "Fairfax P1-10 Out-of-State",
-   "priority": 1,
-   "rank": 10,
-   "signal": "Out-of-State",
-   "signals": [
-    "Out-of-State"
-   ],
-   "keys": [
-    "is_oos_owners"
-   ],
-   "lift": 4.6,
-   "dpd": 62.7,
-   "deals": 72,
-   "workbook_list_size": 4511,
-   "typical_gross": 44200,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "extra_absentee_in_state=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 4481,
-   "measured_not_in_account": 4439,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P1-11 Absentee + Free & Clear",
+   "name": "Fairfax P1-11 High Equity + Tax Delinquent + Senior",
    "priority": 1,
    "rank": 11,
-   "signal": "Absentee + Free & Clear",
+   "rung": 11,
+   "doors_added": 210,
+   "signal": "High Equity + Tax Delinquent + Senior",
    "signals": [
-    "Absentee",
-    "Free & Clear"
+    "High Equity",
+    "Tax Delinquent",
+    "Senior"
    ],
    "keys": [
-    "is_absentee_owners",
-    "is_free_and_clear"
+    "is_high_equity",
+    "is_recent_deliquent",
+    "is_senior_homeowners"
    ],
-   "lift": 3.9,
-   "dpd": 74.5,
-   "deals": 119,
-   "workbook_list_size": 8863,
-   "typical_gross": 40000,
+   "lift": 7.5,
+   "dpd": 30.0,
+   "deals": 7,
+   "workbook_list_size": 212,
+   "typical_gross": 29000,
    "caveat": null,
    "verify_reason": null,
-   "plan": "All plans",
+   "plan": "Expert",
    "proxy": false,
    "buildable": true,
    "params": [
-    "preset_absentee_owners=true",
-    "preset_free_clear=true"
+    "preset_high_equity=true",
+    "preset_tax_lien=true",
+    "extra_owner_age_min=65"
    ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 8783,
-   "measured_not_in_account": 8618,
-   "measure_status": "ok"
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_high_equity=true&preset_tax_lien=true&extra_owner_age_min=65&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_high_equity=true&preset_tax_lien=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 0,
+   "measured_not_in_account": 0,
+   "measure_status": "measured_zero"
   },
   {
-   "name": "Fairfax P1-12 Senior + Tired Landlord (proxy)",
+   "name": "Fairfax P1-12 Tax Delinquent + Senior",
    "priority": 1,
    "rank": 12,
-   "signal": "Senior + Tired Landlord",
-   "signals": [
-    "Senior",
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_senior_homeowners",
-    "is_tired_landlord"
-   ],
-   "lift": 3.4,
-   "dpd": 85.5,
-   "deals": 25,
-   "workbook_list_size": 2138,
-   "typical_gross": 106000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "extra_owner_age_min=65",
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 2145,
-   "measured_not_in_account": 2113,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P1-13 Free & Clear + Tired Landlord (proxy)",
-   "priority": 1,
-   "rank": 13,
-   "signal": "Free & Clear + Tired Landlord",
-   "signals": [
-    "Free & Clear",
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_free_and_clear",
-    "is_tired_landlord"
-   ],
-   "lift": 3.4,
-   "dpd": 86.7,
-   "deals": 39,
-   "workbook_list_size": 3383,
-   "typical_gross": 81500,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "preset_free_clear=true",
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 3392,
-   "measured_not_in_account": 3336,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P1-14 Absentee + Out-of-State",
-   "priority": 1,
-   "rank": 14,
-   "signal": "Absentee + Out-of-State",
-   "signals": [
-    "Absentee",
-    "Out-of-State"
-   ],
-   "keys": [
-    "is_absentee_owners",
-    "is_oos_owners"
-   ],
-   "lift": 3.1,
-   "dpd": 93.8,
-   "deals": 48,
-   "workbook_list_size": 4501,
-   "typical_gross": 17500,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_absentee_owners=true",
-    "extra_absentee_in_state=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 4469,
-   "measured_not_in_account": 4427,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P1-15 Out-of-State + Tired Landlord (proxy)",
-   "priority": 1,
-   "rank": 15,
-   "signal": "Out-of-State + Tired Landlord",
-   "signals": [
-    "Out-of-State",
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_oos_owners",
-    "is_tired_landlord"
-   ],
-   "lift": 3,
-   "dpd": 98.2,
-   "deals": 24,
-   "workbook_list_size": 2357,
-   "typical_gross": 114000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "extra_absentee_in_state=true",
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 2374,
-   "measured_not_in_account": 2354,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P2-01 Tax Delinquent + Senior",
-   "priority": 2,
-   "rank": 1,
+   "rung": 12,
+   "doors_added": 333,
    "signal": "Tax Delinquent + Senior",
    "signals": [
     "Tax Delinquent",
@@ -451,14 +309,14 @@
     "is_recent_deliquent",
     "is_senior_homeowners"
    ],
-   "lift": 8.1,
-   "dpd": 35.9,
-   "deals": 17,
-   "workbook_list_size": 611,
-   "typical_gross": 192500,
+   "lift": 7.4,
+   "dpd": 30.3,
+   "deals": 11,
+   "workbook_list_size": 607,
+   "typical_gross": 216000,
    "caveat": null,
    "verify_reason": null,
-   "plan": "Expert plan",
+   "plan": "Expert",
    "proxy": false,
    "buildable": true,
    "params": [
@@ -472,305 +330,39 @@
    "measure_status": "measured_zero"
   },
   {
-   "name": "Fairfax P2-02 High Equity + Senior + Tired Landlord (proxy)",
-   "priority": 2,
-   "rank": 2,
-   "signal": "High Equity + Senior + Tired Landlord",
-   "signals": [
-    "High Equity",
-    "Senior",
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_high_equity",
-    "is_senior_homeowners",
-    "is_tired_landlord"
-   ],
-   "lift": 3.1,
-   "dpd": 93.1,
-   "deals": 12,
-   "workbook_list_size": 1117,
-   "typical_gross": 82200,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "preset_high_equity=true",
-    "extra_owner_age_min=65",
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_high_equity=true&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_high_equity=true&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 1117,
-   "measured_not_in_account": 1103,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P2-04 High Equity + Out-of-State + Tired Landlord (proxy)",
-   "priority": 2,
-   "rank": 4,
-   "signal": "High Equity + Out-of-State + Tired Landlord",
-   "signals": [
-    "High Equity",
-    "Out-of-State",
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_high_equity",
-    "is_oos_owners",
-    "is_tired_landlord"
-   ],
-   "lift": 2.4,
-   "dpd": 120.5,
-   "deals": 13,
-   "workbook_list_size": 1567,
-   "typical_gross": 100625,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "preset_high_equity=true",
-    "extra_absentee_in_state=true",
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 1588,
-   "measured_not_in_account": 1580,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P2-05 Free & Clear",
-   "priority": 2,
-   "rank": 5,
-   "signal": "Free & Clear",
-   "signals": [
-    "Free & Clear"
-   ],
-   "keys": [
-    "is_free_and_clear"
-   ],
-   "lift": 2.1,
-   "dpd": 136.8,
-   "deals": 282,
-   "workbook_list_size": 38589,
-   "typical_gross": 57569,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "All plans",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_free_clear=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 37449,
-   "measured_not_in_account": 36608,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P2-06 Absentee",
-   "priority": 2,
-   "rank": 6,
-   "signal": "Absentee",
-   "signals": [
-    "Absentee"
-   ],
-   "keys": [
-    "is_absentee_owners"
-   ],
-   "lift": 2.1,
-   "dpd": 138.3,
-   "deals": 166,
-   "workbook_list_size": 22962,
-   "typical_gross": 24500,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "All plans",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_absentee_owners=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 23095,
-   "measured_not_in_account": 22764,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P2-07 Tired Landlord (proxy)",
-   "priority": 2,
-   "rank": 7,
-   "signal": "Tired Landlord",
-   "signals": [
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_tired_landlord"
-   ],
-   "lift": 2.1,
-   "dpd": 139.9,
-   "deals": 81,
-   "workbook_list_size": 11332,
-   "typical_gross": 76000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 11455,
-   "measured_not_in_account": 11324,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P2-08 Absentee + Free & Clear + Senior",
-   "priority": 2,
-   "rank": 8,
-   "signal": "Absentee + Free & Clear + Senior",
-   "signals": [
-    "Absentee",
-    "Free & Clear",
-    "Senior"
-   ],
-   "keys": [
-    "is_absentee_owners",
-    "is_free_and_clear",
-    "is_senior_homeowners"
-   ],
-   "lift": 2,
-   "dpd": 143.2,
-   "deals": 12,
-   "workbook_list_size": 1718,
-   "typical_gross": 47000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_absentee_owners=true",
-    "preset_free_clear=true",
-    "extra_owner_age_min=65"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 1716,
-   "measured_not_in_account": 1687,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P2-10 Free & Clear + Senior",
-   "priority": 2,
-   "rank": 10,
-   "signal": "Free & Clear + Senior",
+   "name": "Fairfax P1-13 Free & Clear + Tax Delinquent",
+   "priority": 1,
+   "rank": 13,
+   "rung": 13,
+   "doors_added": 358,
+   "signal": "Free & Clear + Tax Delinquent",
    "signals": [
     "Free & Clear",
-    "Senior"
+    "Tax Delinquent"
    ],
    "keys": [
     "is_free_and_clear",
-    "is_senior_homeowners"
+    "is_recent_deliquent"
    ],
-   "lift": 1.6,
-   "dpd": 181.2,
-   "deals": 76,
-   "workbook_list_size": 13768,
-   "typical_gross": 92500,
+   "lift": 5.0,
+   "dpd": 44.8,
+   "deals": 8,
+   "workbook_list_size": 948,
+   "typical_gross": 104000,
    "caveat": null,
    "verify_reason": null,
-   "plan": "Expert plan",
+   "plan": "Starter",
    "proxy": false,
    "buildable": true,
    "params": [
     "preset_free_clear=true",
-    "extra_owner_age_min=65"
+    "preset_tax_lien=true"
    ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 13642,
-   "measured_not_in_account": 13308,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P2-11 Absentee + Senior",
-   "priority": 2,
-   "rank": 11,
-   "signal": "Absentee + Senior",
-   "signals": [
-    "Absentee",
-    "Senior"
-   ],
-   "keys": [
-    "is_absentee_owners",
-    "is_senior_homeowners"
-   ],
-   "lift": 1.5,
-   "dpd": 188.6,
-   "deals": 18,
-   "workbook_list_size": 3395,
-   "typical_gross": 47000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_absentee_owners=true",
-    "extra_owner_age_min=65"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&extra_owner_age_min=65&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_absentee_owners=true&extra_owner_age_min=65&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 3392,
-   "measured_not_in_account": 3342,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Fairfax P2-12 High Equity + Tired Landlord (proxy)",
-   "priority": 2,
-   "rank": 12,
-   "signal": "High Equity + Tired Landlord",
-   "signals": [
-    "High Equity",
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_high_equity",
-    "is_tired_landlord"
-   ],
-   "lift": 1.5,
-   "dpd": 198.3,
-   "deals": 36,
-   "workbook_list_size": 7140,
-   "typical_gross": 55000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "preset_high_equity=true",
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 7273,
-   "measured_not_in_account": 7205,
-   "measure_status": "ok"
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&preset_tax_lien=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&preset_free_clear=true&preset_tax_lien=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 0,
+   "measured_not_in_account": 0,
+   "measure_status": "measured_zero"
   }
  ],
  "tier2": {
@@ -778,6 +370,7 @@
   "tier": "Tier 2",
   "zips": [
    {
+    "rank": 1,
     "zip": "22101",
     "stars": 5,
     "deals": 52,
@@ -786,6 +379,7 @@
     "momentum": 1.47
    },
    {
+    "rank": 5,
     "zip": "22180",
     "stars": 4,
     "deals": 41,
@@ -794,6 +388,7 @@
     "momentum": 1.82
    },
    {
+    "rank": 2,
     "zip": "22003",
     "stars": 5,
     "deals": 33,
@@ -802,6 +397,7 @@
     "momentum": 4.4
    },
    {
+    "rank": 6,
     "zip": "20191",
     "stars": 4,
     "deals": 24,
@@ -810,6 +406,7 @@
     "momentum": 2
    },
    {
+    "rank": 7,
     "zip": "22043",
     "stars": 4,
     "deals": 24,
@@ -825,29 +422,33 @@
   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Fairfax%20County%2C%20VA%22%2C%20%22county%22%3A%20%22Fairfax%22%2C%20%22state%22%3A%20%22VA%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2251059%22%2C%20%22county_name%22%3A%20%22Fairfax%22%7D%5D%7D&zip_codes=%5B%2222101%22%2C%20%2222180%22%2C%20%2222003%22%2C%20%2220191%22%2C%20%2222043%22%5D&type_single_family=true&in_my_account_mode=not_in",
   "note": "geography only, no distressor stack; the bulk + mail tier trades lift for reach. ZIPs are the workbook's own 4-5 star ratings by deals.",
   "measured_count": 34266,
-  "measured_not_in_account": 33839,
+  "measured_not_in_account": 33789,
   "measure_status": "ok"
  },
  "gaps": [
   {
-   "name": "Fairfax P1-02 HOA Lien",
+   "name": "Fairfax P1-03 Free & Clear + HOA Lien",
    "priority": 1,
-   "rank": 2,
-   "signal": "HOA Lien",
+   "rank": 3,
+   "rung": 3,
+   "doors_added": 38,
+   "signal": "Free & Clear + HOA Lien",
    "signals": [
+    "Free & Clear",
     "HOA Lien"
    ],
    "keys": [
+    "is_free_and_clear",
     "is_hoa_lien"
    ],
-   "lift": 14.7,
-   "dpd": 19.8,
-   "deals": 12,
-   "workbook_list_size": 237,
-   "typical_gross": 57500,
-   "caveat": "small live list: quick and cheap to market in full",
-   "verify_reason": "small",
-   "plan": "Expert plan",
+   "lift": 35.8,
+   "dpd": 6.3,
+   "deals": 6,
+   "workbook_list_size": 39,
+   "typical_gross": 97500,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert",
    "proxy": false,
    "buildable": false,
    "missing_signals": [
@@ -856,100 +457,116 @@
    "reason": "no SiftMap filter (badge only on property cards)"
   },
   {
-   "name": "Fairfax P1-03 AI Score 90-100",
+   "name": "Fairfax P1-06 HOA Lien",
    "priority": 1,
-   "rank": 3,
-   "signal": "AI Score 90-100",
+   "rank": 6,
+   "rung": 6,
+   "doors_added": 191,
+   "signal": "HOA Lien",
    "signals": [
-    "AI Score 90-100"
+    "HOA Lien"
    ],
    "keys": [
-    "investor_score"
+    "is_hoa_lien"
    ],
-   "lift": 13.5,
-   "dpd": 21.5,
-   "deals": 121,
-   "workbook_list_size": 2602,
-   "typical_gross": 86500,
+   "lift": 9.4,
+   "dpd": 23.9,
+   "deals": 8,
+   "workbook_list_size": 235,
+   "typical_gross": 58500,
    "caveat": null,
    "verify_reason": null,
-   "plan": "AI plan",
+   "plan": "Expert",
    "proxy": false,
    "buildable": false,
    "missing_signals": [
-    "AI Score 90-100"
+    "HOA Lien"
    ],
-   "reason": "AI data not bought on this account (decision 2026-08-26)"
+   "reason": "no SiftMap filter (badge only on property cards)"
   },
   {
-   "name": "Fairfax P1-07 Obituary",
+   "name": "Fairfax P1-07 Absentee + Free & Clear + Heirs",
    "priority": 1,
    "rank": 7,
-   "signal": "Obituary",
+   "rung": 7,
+   "doors_added": 178,
+   "signal": "Absentee + Free & Clear + Heirs",
    "signals": [
-    "Obituary"
-   ],
-   "keys": null,
-   "lift": 8.5,
-   "dpd": 34,
-   "deals": null,
-   "workbook_list_size": 552,
-   "typical_gross": null,
-   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": false,
-   "missing_signals": [
-    "Obituary"
-   ],
-   "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
-  },
-  {
-   "name": "Fairfax P2-03 AI Score 80-90",
-   "priority": 2,
-   "rank": 3,
-   "signal": "AI Score 80-90",
-   "signals": [
-    "AI Score 80-90"
+    "Absentee",
+    "Free & Clear",
+    "Heirs"
    ],
    "keys": [
-    "investor_score"
+    "is_absentee_owners",
+    "is_free_and_clear",
+    "is_heirs_property"
    ],
-   "lift": 2.9,
-   "dpd": 99.5,
-   "deals": 52,
-   "workbook_list_size": 5172,
-   "typical_gross": 104000,
+   "lift": 8.9,
+   "dpd": 25.4,
+   "deals": 7,
+   "workbook_list_size": 190,
+   "typical_gross": 93500,
    "caveat": null,
    "verify_reason": null,
-   "plan": "AI plan",
+   "plan": "Expert",
    "proxy": false,
    "buildable": false,
    "missing_signals": [
-    "AI Score 80-90"
+    "Heirs"
    ],
-   "reason": "AI data not bought on this account (decision 2026-08-26)"
+   "reason": "no SiftMap filter"
   },
   {
-   "name": "Fairfax P2-09 Low Income",
-   "priority": 2,
-   "rank": 9,
-   "signal": "Low Income",
+   "name": "Fairfax P1-08 Bankruptcy",
+   "priority": 1,
+   "rank": 8,
+   "rung": 8,
+   "doors_added": 78,
+   "signal": "Bankruptcy",
    "signals": [
+    "Bankruptcy"
+   ],
+   "keys": [
+    "is_bankruptcy_property"
+   ],
+   "lift": 8.7,
+   "dpd": 26.0,
+   "deals": 3,
+   "workbook_list_size": 91,
+   "typical_gross": 71000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bankruptcy"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Fairfax P1-14 Absentee + Low Income",
+   "priority": 1,
+   "rank": 14,
+   "rung": 14,
+   "doors_added": 200,
+   "signal": "Absentee + Low Income",
+   "signals": [
+    "Absentee",
     "Low Income"
    ],
    "keys": [
+    "is_absentee_owners",
     "is_low_income"
    ],
-   "lift": 1.7,
-   "dpd": 168.6,
-   "deals": 10,
-   "workbook_list_size": 1686,
-   "typical_gross": 78500,
+   "lift": 4.5,
+   "dpd": 50.0,
+   "deals": 4,
+   "workbook_list_size": 220,
+   "typical_gross": 74500,
    "caveat": null,
    "verify_reason": null,
-   "plan": "Expert plan",
+   "plan": "Expert",
    "proxy": false,
    "buildable": false,
    "missing_signals": [
@@ -958,6 +575,12 @@
    "reason": "no SiftMap filter"
   }
  ],
+ "ladder": "no-AI (rows_no_ai)",
+ "ladder_measured": "2026-08-10",
+ "priorities": [
+  1
+ ],
+ "tired_landlord_list_size": 11401,
  "baseline_single_family": 193586,
- "measured_at": "2026-08-31T05:55:30"
+ "measured_at": "2026-09-24T12:54:29"
 }

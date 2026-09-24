@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-08-31T08:38:30",
+ "generated_at": "2026-09-24T10:37:50",
  "fips": "24005",
  "jurisdiction": "Baltimore County, MD",
  "state_abbr": "MD",
@@ -46,6 +46,8 @@
    "name": "Baltimore County P1-01 Out-of-State + Vacant",
    "priority": 1,
    "rank": 1,
+   "rung": 1,
+   "doors_added": 51,
    "signal": "Out-of-State + Vacant",
    "signals": [
     "Out-of-State",
@@ -55,14 +57,14 @@
     "is_oos_owners",
     "is_vacant_property"
    ],
-   "lift": 24.5,
-   "dpd": 6.8,
+   "lift": 22.0,
+   "dpd": 6.4,
    "deals": 8,
-   "workbook_list_size": 54,
+   "workbook_list_size": 51,
    "typical_gross": 24000,
-   "caveat": "small live list: quick and cheap to market in full; extreme efficiency on a thin sample (8 deals): verify locally, then work the full list",
-   "verify_reason": "small",
-   "plan": "Expert plan",
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert",
    "proxy": false,
    "buildable": true,
    "params": [
@@ -76,42 +78,11 @@
    "measure_status": "ok"
   },
   {
-   "name": "Baltimore County P1-02 High Equity + Vacant",
-   "priority": 1,
-   "rank": 2,
-   "signal": "High Equity + Vacant",
-   "signals": [
-    "High Equity",
-    "Vacant"
-   ],
-   "keys": [
-    "is_high_equity",
-    "is_vacant_property"
-   ],
-   "lift": 16.6,
-   "dpd": 10,
-   "deals": 16,
-   "workbook_list_size": 160,
-   "typical_gross": 47500,
-   "caveat": "small live list: quick and cheap to market in full",
-   "verify_reason": "small",
-   "plan": "All plans",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_high_equity=true",
-    "preset_vacant=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_high_equity=true&preset_vacant=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_high_equity=true&preset_vacant=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 171,
-   "measured_not_in_account": 168,
-   "measure_status": "ok"
-  },
-  {
    "name": "Baltimore County P1-03 Senior + Vacant",
    "priority": 1,
    "rank": 3,
+   "rung": 3,
+   "doors_added": 171,
    "signal": "Senior + Vacant",
    "signals": [
     "Senior",
@@ -121,14 +92,14 @@
     "is_senior_homeowners",
     "is_vacant_property"
    ],
-   "lift": 16.5,
-   "dpd": 10.1,
-   "deals": 19,
-   "workbook_list_size": 192,
-   "typical_gross": 104000,
-   "caveat": "small live list: quick and cheap to market in full",
-   "verify_reason": "small",
-   "plan": "Expert plan",
+   "lift": 16.3,
+   "dpd": 8.6,
+   "deals": 20,
+   "workbook_list_size": 191,
+   "typical_gross": 106000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert",
    "proxy": false,
    "buildable": true,
    "params": [
@@ -142,75 +113,46 @@
    "measure_status": "ok"
   },
   {
-   "name": "Baltimore County P1-04 Free & Clear + Senior + Vacant",
+   "name": "Baltimore County P1-04 High Equity + Vacant",
    "priority": 1,
    "rank": 4,
-   "signal": "Free & Clear + Senior + Vacant",
+   "rung": 4,
+   "doors_added": 128,
+   "signal": "High Equity + Vacant",
    "signals": [
-    "Free & Clear",
-    "Senior",
+    "High Equity",
     "Vacant"
    ],
    "keys": [
-    "is_free_and_clear",
-    "is_senior_homeowners",
+    "is_high_equity",
     "is_vacant_property"
    ],
-   "lift": 12.8,
-   "dpd": 13,
-   "deals": 11,
-   "workbook_list_size": 143,
-   "typical_gross": 104000,
-   "caveat": "small live list: quick and cheap to market in full",
-   "verify_reason": "small",
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_free_clear=true",
-    "extra_owner_age_min=65",
-    "preset_vacant=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&preset_vacant=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&preset_vacant=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 138,
-   "measured_not_in_account": 134,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P1-06 Vacant",
-   "priority": 1,
-   "rank": 6,
-   "signal": "Vacant",
-   "signals": [
-    "Vacant"
-   ],
-   "keys": [
-    "is_vacant_property"
-   ],
-   "lift": 11.1,
-   "dpd": 15,
-   "deals": 52,
-   "workbook_list_size": 780,
-   "typical_gross": 57000,
+   "lift": 13.1,
+   "dpd": 10.7,
+   "deals": 12,
+   "workbook_list_size": 170,
+   "typical_gross": 39500,
    "caveat": null,
    "verify_reason": null,
-   "plan": "All plans",
+   "plan": "Starter",
    "proxy": false,
    "buildable": true,
    "params": [
+    "preset_high_equity=true",
     "preset_vacant=true"
    ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_vacant=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_vacant=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 768,
-   "measured_not_in_account": 756,
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_high_equity=true&preset_vacant=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_high_equity=true&preset_vacant=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 171,
+   "measured_not_in_account": 168,
    "measure_status": "ok"
   },
   {
-   "name": "Baltimore County P1-07 Absentee + Vacant",
+   "name": "Baltimore County P1-05 Absentee + Vacant",
    "priority": 1,
-   "rank": 7,
+   "rank": 5,
+   "rung": 5,
+   "doors_added": 265,
    "signal": "Absentee + Vacant",
    "signals": [
     "Absentee",
@@ -220,14 +162,14 @@
     "is_absentee_owners",
     "is_vacant_property"
    ],
-   "lift": 8.4,
-   "dpd": 19.8,
-   "deals": 24,
+   "lift": 6.4,
+   "dpd": 22.1,
+   "deals": 12,
    "workbook_list_size": 476,
    "typical_gross": 44000,
    "caveat": null,
    "verify_reason": null,
-   "plan": "All plans",
+   "plan": "Starter",
    "proxy": false,
    "buildable": true,
    "params": [
@@ -241,39 +183,11 @@
    "measure_status": "ok"
   },
   {
-   "name": "Baltimore County P1-09 Out-of-State",
+   "name": "Baltimore County P1-09 Free & Clear + Out-of-State",
    "priority": 1,
    "rank": 9,
-   "signal": "Out-of-State",
-   "signals": [
-    "Out-of-State"
-   ],
-   "keys": [
-    "is_oos_owners"
-   ],
-   "lift": 4.7,
-   "dpd": 35.2,
-   "deals": 87,
-   "workbook_list_size": 3061,
-   "typical_gross": 43500,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "extra_absentee_in_state=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 3053,
-   "measured_not_in_account": 3023,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P1-10 Free & Clear + Out-of-State",
-   "priority": 1,
-   "rank": 10,
+   "rung": 9,
+   "doors_added": 1853,
    "signal": "Free & Clear + Out-of-State",
    "signals": [
     "Free & Clear",
@@ -283,14 +197,14 @@
     "is_free_and_clear",
     "is_oos_owners"
    ],
-   "lift": 4.6,
-   "dpd": 36.5,
-   "deals": 52,
-   "workbook_list_size": 1900,
+   "lift": 4.5,
+   "dpd": 30.9,
+   "deals": 60,
+   "workbook_list_size": 1892,
    "typical_gross": 43000,
    "caveat": null,
    "verify_reason": null,
-   "plan": "Expert plan",
+   "plan": "Expert",
    "proxy": false,
    "buildable": true,
    "params": [
@@ -304,181 +218,78 @@
    "measure_status": "ok"
   },
   {
-   "name": "Baltimore County P1-11 Absentee + Free & Clear + Out-of-State",
+   "name": "Baltimore County P1-10 Out-of-State + Senior + Tired Landlord (proxy)",
    "priority": 1,
-   "rank": 11,
-   "signal": "Absentee + Free & Clear + Out-of-State",
+   "rank": 10,
+   "rung": 10,
+   "doors_added": 127,
+   "signal": "Out-of-State + Senior + Tired Landlord",
    "signals": [
-    "Absentee",
-    "Free & Clear",
-    "Out-of-State"
-   ],
-   "keys": [
-    "is_absentee_owners",
-    "is_free_and_clear",
-    "is_oos_owners"
-   ],
-   "lift": 4,
-   "dpd": 41.5,
-   "deals": 44,
-   "workbook_list_size": 1828,
-   "typical_gross": 43000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_absentee_owners=true",
-    "preset_free_clear=true",
-    "extra_absentee_in_state=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_absentee_owners=true&preset_free_clear=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 1812,
-   "measured_not_in_account": 1796,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P1-12 Absentee + Out-of-State",
-   "priority": 1,
-   "rank": 12,
-   "signal": "Absentee + Out-of-State",
-   "signals": [
-    "Absentee",
-    "Out-of-State"
-   ],
-   "keys": [
-    "is_absentee_owners",
-    "is_oos_owners"
-   ],
-   "lift": 3.5,
-   "dpd": 47.4,
-   "deals": 61,
-   "workbook_list_size": 2893,
-   "typical_gross": 44500,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_absentee_owners=true",
-    "extra_absentee_in_state=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_absentee_owners=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 2880,
-   "measured_not_in_account": 2859,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P2-01 Free & Clear + Vacant",
-   "priority": 2,
-   "rank": 1,
-   "signal": "Free & Clear + Vacant",
-   "signals": [
-    "Free & Clear",
-    "Vacant"
-   ],
-   "keys": [
-    "is_free_and_clear",
-    "is_vacant_property"
-   ],
-   "lift": 8,
-   "dpd": 20.9,
-   "deals": 20,
-   "workbook_list_size": 417,
-   "typical_gross": 77000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "All plans",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_free_clear=true",
-    "preset_vacant=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_free_clear=true&preset_vacant=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_free_clear=true&preset_vacant=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 402,
-   "measured_not_in_account": 397,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P2-03 High Equity + Out-of-State",
-   "priority": 2,
-   "rank": 3,
-   "signal": "High Equity + Out-of-State",
-   "signals": [
-    "High Equity",
-    "Out-of-State"
-   ],
-   "keys": [
-    "is_high_equity",
-    "is_oos_owners"
-   ],
-   "lift": 3.4,
-   "dpd": 49.5,
-   "deals": 13,
-   "workbook_list_size": 643,
-   "typical_gross": 44000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_high_equity=true",
-    "extra_absentee_in_state=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_high_equity=true&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 667,
-   "measured_not_in_account": 663,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P2-04 High Equity + Senior + Tired Landlord (proxy)",
-   "priority": 2,
-   "rank": 4,
-   "signal": "High Equity + Senior + Tired Landlord",
-   "signals": [
-    "High Equity",
+    "Out-of-State",
     "Senior",
     "Tired Landlord"
    ],
    "keys": [
-    "is_high_equity",
+    "is_oos_owners",
     "is_senior_homeowners",
     "is_tired_landlord"
    ],
-   "lift": 2.9,
-   "dpd": 56.5,
-   "deals": 12,
-   "workbook_list_size": 678,
-   "typical_gross": 62500,
+   "lift": 4.4,
+   "dpd": 31.8,
+   "deals": 4,
+   "workbook_list_size": 394,
+   "typical_gross": 45500,
    "caveat": null,
    "verify_reason": null,
-   "plan": "Expert plan",
+   "plan": "Expert",
    "proxy": true,
    "buildable": true,
    "params": [
-    "preset_high_equity=true",
+    "extra_absentee_in_state=true",
     "extra_owner_age_min=65",
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
+    "preset_absentee_owners=true&extra_years_owned_min=10"
    ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_high_equity=true&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_high_equity=true&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 685,
-   "measured_not_in_account": 675,
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&extra_absentee_in_state=true&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&extra_absentee_in_state=true&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in"
+  },
+  {
+   "name": "Baltimore County P1-11 Out-of-State",
+   "priority": 1,
+   "rank": 11,
+   "rung": 11,
+   "doors_added": 832,
+   "signal": "Out-of-State",
+   "signals": [
+    "Out-of-State"
+   ],
+   "keys": [
+    "is_oos_owners"
+   ],
+   "lift": 4.4,
+   "dpd": 32.0,
+   "deals": 26,
+   "workbook_list_size": 3057,
+   "typical_gross": 46300,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert",
+   "proxy": false,
+   "buildable": true,
+   "params": [
+    "extra_absentee_in_state=true"
+   ],
+   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true",
+   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&extra_absentee_in_state=true&type_single_family=true&in_my_account_mode=not_in",
+   "measured_count": 3053,
+   "measured_not_in_account": 3023,
    "measure_status": "ok"
   },
   {
-   "name": "Baltimore County P2-06 Absentee + Free & Clear",
-   "priority": 2,
-   "rank": 6,
+   "name": "Baltimore County P1-13 Absentee + Free & Clear",
+   "priority": 1,
+   "rank": 13,
+   "rung": 13,
+   "doors_added": 13920,
    "signal": "Absentee + Free & Clear",
    "signals": [
     "Absentee",
@@ -488,14 +299,14 @@
     "is_absentee_owners",
     "is_free_and_clear"
    ],
-   "lift": 2.6,
-   "dpd": 62.9,
-   "deals": 343,
-   "workbook_list_size": 21558,
-   "typical_gross": 34500,
+   "lift": 3.3,
+   "dpd": 42.4,
+   "deals": 328,
+   "workbook_list_size": 21504,
+   "typical_gross": 14500,
    "caveat": null,
    "verify_reason": null,
-   "plan": "All plans",
+   "plan": "Starter",
    "proxy": false,
    "buildable": true,
    "params": [
@@ -507,236 +318,6 @@
    "measured_count": 21431,
    "measured_not_in_account": 21310,
    "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P2-07 Out-of-State + Tired Landlord (proxy)",
-   "priority": 2,
-   "rank": 7,
-   "signal": "Out-of-State + Tired Landlord",
-   "signals": [
-    "Out-of-State",
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_oos_owners",
-    "is_tired_landlord"
-   ],
-   "lift": 2.5,
-   "dpd": 66.4,
-   "deals": 16,
-   "workbook_list_size": 1063,
-   "typical_gross": 42500,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "extra_absentee_in_state=true",
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&extra_absentee_in_state=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 1060,
-   "measured_not_in_account": 1045,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P2-08 Absentee",
-   "priority": 2,
-   "rank": 8,
-   "signal": "Absentee",
-   "signals": [
-    "Absentee"
-   ],
-   "keys": [
-    "is_absentee_owners"
-   ],
-   "lift": 2.3,
-   "dpd": 72.5,
-   "deals": 421,
-   "workbook_list_size": 30509,
-   "typical_gross": 31000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "All plans",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_absentee_owners=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_absentee_owners=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 30415,
-   "measured_not_in_account": 30231,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P2-10 High Equity + Tired Landlord (proxy)",
-   "priority": 2,
-   "rank": 10,
-   "signal": "High Equity + Tired Landlord",
-   "signals": [
-    "High Equity",
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_high_equity",
-    "is_tired_landlord"
-   ],
-   "lift": 2,
-   "dpd": 82,
-   "deals": 29,
-   "workbook_list_size": 2378,
-   "typical_gross": 34500,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "preset_high_equity=true",
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_high_equity=true&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 2400,
-   "measured_not_in_account": 2377,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P2-11 Senior + Tired Landlord (proxy)",
-   "priority": 2,
-   "rank": 11,
-   "signal": "Senior + Tired Landlord",
-   "signals": [
-    "Senior",
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_senior_homeowners",
-    "is_tired_landlord"
-   ],
-   "lift": 2,
-   "dpd": 83,
-   "deals": 39,
-   "workbook_list_size": 3238,
-   "typical_gross": 63500,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "extra_owner_age_min=65",
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 3245,
-   "measured_not_in_account": 3198,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P2-13 Free & Clear + Senior + Tired Landlord (proxy)",
-   "priority": 2,
-   "rank": 13,
-   "signal": "Free & Clear + Senior + Tired Landlord",
-   "signals": [
-    "Free & Clear",
-    "Senior",
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_free_and_clear",
-    "is_senior_homeowners",
-    "is_tired_landlord"
-   ],
-   "lift": 1.8,
-   "dpd": 93.4,
-   "deals": 26,
-   "workbook_list_size": 2429,
-   "typical_gross": 60000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "preset_free_clear=true",
-    "extra_owner_age_min=65",
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_free_clear=true&extra_owner_age_min=65&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 2430,
-   "measured_not_in_account": 2394,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P2-14 Free & Clear",
-   "priority": 2,
-   "rank": 14,
-   "signal": "Free & Clear",
-   "signals": [
-    "Free & Clear"
-   ],
-   "keys": [
-    "is_free_and_clear"
-   ],
-   "lift": 1.7,
-   "dpd": 98,
-   "deals": 625,
-   "workbook_list_size": 61272,
-   "typical_gross": 66000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "All plans",
-   "proxy": false,
-   "buildable": true,
-   "params": [
-    "preset_free_clear=true"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_free_clear=true&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_free_clear=true&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 61323,
-   "measured_not_in_account": 60226,
-   "measure_status": "ok"
-  },
-  {
-   "name": "Baltimore County P2-15 Tired Landlord (proxy)",
-   "priority": 2,
-   "rank": 15,
-   "signal": "Tired Landlord",
-   "signals": [
-    "Tired Landlord"
-   ],
-   "keys": [
-    "is_tired_landlord"
-   ],
-   "lift": 1.6,
-   "dpd": 105.4,
-   "deals": 98,
-   "workbook_list_size": 10331,
-   "typical_gross": 45000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": true,
-   "buildable": true,
-   "params": [
-    "preset_absentee_owners=true",
-    "extra_years_owned_min=10"
-   ],
-   "url": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true",
-   "url_not_in": "https://app.reisift.io/siftmap?location=%7B%22searchType%22%3A%20%22county%22%2C%20%22title%22%3A%20%22Baltimore%20County%2C%20MD%22%2C%20%22county%22%3A%20%22Baltimore%22%2C%20%22state%22%3A%20%22MD%22%2C%20%22counties%22%3A%20%5B%7B%22fips%22%3A%20%2224005%22%2C%20%22county_name%22%3A%20%22Baltimore%22%7D%5D%7D&preset_absentee_owners=true&extra_years_owned_min=10&type_single_family=true&in_my_account_mode=not_in",
-   "measured_count": 10378,
-   "measured_not_in_account": 10290,
-   "measure_status": "ok"
   }
  ],
  "tier2": {
@@ -744,6 +325,7 @@
   "tier": "Tier 2",
   "zips": [
    {
+    "rank": 1,
     "zip": "21222",
     "stars": 5,
     "deals": 147,
@@ -752,6 +334,7 @@
     "momentum": 1.16
    },
    {
+    "rank": 2,
     "zip": "21227",
     "stars": 5,
     "deals": 73,
@@ -760,6 +343,7 @@
     "momentum": 1.23
    },
    {
+    "rank": 3,
     "zip": "21220",
     "stars": 4,
     "deals": 61,
@@ -768,6 +352,7 @@
     "momentum": 0.79
    },
    {
+    "rank": 4,
     "zip": "21237",
     "stars": 4,
     "deals": 54,
@@ -776,6 +361,7 @@
     "momentum": 2.57
    },
    {
+    "rank": 5,
     "zip": "21221",
     "stars": 4,
     "deals": 49,
@@ -796,48 +382,90 @@
  },
  "gaps": [
   {
-   "name": "Baltimore County P1-05 AI Score 90-100",
+   "name": "Baltimore County P1-02 Bankruptcy + Free & Clear",
    "priority": 1,
-   "rank": 5,
-   "signal": "AI Score 90-100",
+   "rank": 2,
+   "rung": 2,
+   "doors_added": 50,
+   "signal": "Bankruptcy + Free & Clear",
    "signals": [
-    "AI Score 90-100"
+    "Bankruptcy",
+    "Free & Clear"
    ],
    "keys": [
-    "investor_score"
+    "is_bankruptcy_property",
+    "is_free_and_clear"
    ],
-   "lift": 12.1,
-   "dpd": 13.7,
-   "deals": 357,
-   "workbook_list_size": 4903,
-   "typical_gross": 53000,
+   "lift": 19.8,
+   "dpd": 7.1,
+   "deals": 7,
+   "workbook_list_size": 50,
+   "typical_gross": 76000,
    "caveat": null,
    "verify_reason": null,
-   "plan": "AI plan",
+   "plan": "Expert",
    "proxy": false,
    "buildable": false,
    "missing_signals": [
-    "AI Score 90-100"
+    "Bankruptcy"
    ],
-   "reason": "AI data not bought on this account (decision 2026-08-26)"
+   "reason": "no SiftMap filter"
   },
   {
-   "name": "Baltimore County P1-08 Obituary",
+   "name": "Baltimore County P1-06 Out-of-State + Low Equity",
    "priority": 1,
-   "rank": 8,
-   "signal": "Obituary",
+   "rank": 6,
+   "rung": 6,
+   "doors_added": 194,
+   "signal": "Out-of-State + Low Equity",
    "signals": [
-    "Obituary"
+    "Out-of-State",
+    "Low Equity"
    ],
-   "keys": null,
-   "lift": 4.9,
-   "dpd": 34,
-   "deals": null,
-   "workbook_list_size": 596,
-   "typical_gross": null,
-   "caveat": "model estimate (the 22 to 50 band) while the data matures: the full story is in the Obituary data section below",
+   "keys": [
+    "is_oos_owners",
+    "preset_low_equity"
+   ],
+   "lift": 5.1,
+   "dpd": 27.7,
+   "deals": 7,
+   "workbook_list_size": 197,
+   "typical_gross": 11000,
+   "caveat": null,
    "verify_reason": null,
-   "plan": "Expert plan",
+   "plan": "Expert",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Low Equity"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Baltimore County P1-07 High Equity + Obituary + Senior",
+   "priority": 1,
+   "rank": 7,
+   "rung": 7,
+   "doors_added": 194,
+   "signal": "High Equity + Obituary + Senior",
+   "signals": [
+    "High Equity",
+    "Obituary",
+    "Senior"
+   ],
+   "keys": [
+    "is_high_equity",
+    "is_obituary_property",
+    "is_senior_homeowners"
+   ],
+   "lift": 5.1,
+   "dpd": 27.7,
+   "deals": 7,
+   "workbook_list_size": 194,
+   "typical_gross": 123000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert",
    "proxy": false,
    "buildable": false,
    "missing_signals": [
@@ -846,114 +474,101 @@
    "reason": "not a SiftMap filter; the account's Obituary list is an FTM feed"
   },
   {
-   "name": "Baltimore County P2-02 Bankruptcy",
-   "priority": 2,
-   "rank": 2,
-   "signal": "Bankruptcy",
+   "name": "Baltimore County P1-08 Low Income + Senior",
+   "priority": 1,
+   "rank": 8,
+   "rung": 8,
+   "doors_added": 181,
+   "signal": "Low Income + Senior",
    "signals": [
-    "Bankruptcy"
+    "Low Income",
+    "Senior"
    ],
    "keys": [
-    "is_bankruptcy_property"
+    "is_low_income",
+    "is_senior_homeowners"
    ],
-   "lift": 4.3,
-   "dpd": 38.6,
-   "deals": 16,
-   "workbook_list_size": 617,
-   "typical_gross": 88500,
+   "lift": 4.7,
+   "dpd": 30.2,
+   "deals": 6,
+   "workbook_list_size": 182,
+   "typical_gross": 49000,
    "caveat": null,
    "verify_reason": null,
-   "plan": "Expert plan",
+   "plan": "Expert",
    "proxy": false,
    "buildable": false,
    "missing_signals": [
-    "Bankruptcy"
+    "Low Income"
    ],
    "reason": "no SiftMap filter"
   },
   {
-   "name": "Baltimore County P2-05 AI Score 80-90",
-   "priority": 2,
-   "rank": 5,
-   "signal": "AI Score 80-90",
-   "signals": [
-    "AI Score 80-90"
-   ],
-   "keys": [
-    "investor_score"
-   ],
-   "lift": 2.8,
-   "dpd": 60.3,
-   "deals": 85,
-   "workbook_list_size": 5128,
-   "typical_gross": 76000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "AI plan",
-   "proxy": false,
-   "buildable": false,
-   "missing_signals": [
-    "AI Score 80-90"
-   ],
-   "reason": "AI data not bought on this account (decision 2026-08-26)"
-  },
-  {
-   "name": "Baltimore County P2-09 Bad Credit + Free & Clear",
-   "priority": 2,
-   "rank": 9,
-   "signal": "Bad Credit + Free & Clear",
-   "signals": [
-    "Bad Credit",
-    "Free & Clear"
-   ],
-   "keys": [
-    "is_bad_credit",
-    "is_free_and_clear"
-   ],
-   "lift": 2.1,
-   "dpd": 78.7,
-   "deals": 11,
-   "workbook_list_size": 866,
-   "typical_gross": 68000,
-   "caveat": null,
-   "verify_reason": null,
-   "plan": "Expert plan",
-   "proxy": false,
-   "buildable": false,
-   "missing_signals": [
-    "Bad Credit"
-   ],
-   "reason": "no SiftMap filter"
-  },
-  {
-   "name": "Baltimore County P2-12 Free & Clear + Low Income",
-   "priority": 2,
+   "name": "Baltimore County P1-12 Bankruptcy + Senior",
+   "priority": 1,
    "rank": 12,
-   "signal": "Free & Clear + Low Income",
+   "rung": 12,
+   "doors_added": 105,
+   "signal": "Bankruptcy + Senior",
    "signals": [
-    "Free & Clear",
-    "Low Income"
+    "Bankruptcy",
+    "Senior"
    ],
    "keys": [
-    "is_free_and_clear",
-    "is_low_income"
+    "is_bankruptcy_property",
+    "is_senior_homeowners"
    ],
-   "lift": 2,
-   "dpd": 83.4,
-   "deals": 11,
-   "workbook_list_size": 917,
-   "typical_gross": 61500,
+   "lift": 4.0,
+   "dpd": 35.0,
+   "deals": 3,
+   "workbook_list_size": 125,
+   "typical_gross": 101000,
    "caveat": null,
    "verify_reason": null,
-   "plan": "Expert plan",
+   "plan": "Expert",
    "proxy": false,
    "buildable": false,
    "missing_signals": [
-    "Low Income"
+    "Bankruptcy"
+   ],
+   "reason": "no SiftMap filter"
+  },
+  {
+   "name": "Baltimore County P1-14 Bankruptcy + High Equity",
+   "priority": 1,
+   "rank": 14,
+   "rung": 14,
+   "doors_added": 300,
+   "signal": "Bankruptcy + High Equity",
+   "signals": [
+    "Bankruptcy",
+    "High Equity"
+   ],
+   "keys": [
+    "is_bankruptcy_property",
+    "is_high_equity"
+   ],
+   "lift": 3.3,
+   "dpd": 42.9,
+   "deals": 7,
+   "workbook_list_size": 383,
+   "typical_gross": 39000,
+   "caveat": null,
+   "verify_reason": null,
+   "plan": "Expert",
+   "proxy": false,
+   "buildable": false,
+   "missing_signals": [
+    "Bankruptcy"
    ],
    "reason": "no SiftMap filter"
   }
  ],
- "baseline_single_family": 177078,
- "measured_at": "2026-08-31T08:46:45"
+ "ladder": "no-AI (rows_no_ai)",
+ "ladder_measured": "2026-08-14",
+ "priorities": [
+  1
+ ],
+ "tired_landlord_list_size": 10362,
+ "baseline_single_family": 177078
 }

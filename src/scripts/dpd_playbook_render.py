@@ -138,19 +138,26 @@ def render(fips: str, ok: dict[str, str]) -> Path:
     L.append("")
 
     # ---- at a glance
-    cov = ex.get("coverage") or {}
+    # Reach comes from the Work Order's own "market share after" column: the running share
+    # of the county's investor deals once every rung up to that priority is pulled.
+    # (county-data's `coverage` block scores the retired standalone ranking; not used.)
+    def _reach(max_pri):
+        vals = [r.get("market_share_after_pct") for r in d.get("rows") or []
+                if (r.get("priority") or 9) <= max_pri and r.get("market_share_after_pct") is not None]
+        return max(vals) / 100 if vals else None
+    cov = {"p1": _reach(1), "p1p2": _reach(2), "all": _reach(3)}
     L.append("## At a glance")
     L.append("")
     L.append("| | |")
     L.append("|---|---|")
     L.append(f"| Investor purchases (6mo) | {num(ov.get('Investor purchases (6mo)'), 0)} |")
-    L.append(f"| Baseline doors/deal, whole county | {num(ov.get('Baseline doors/deal (whole county)'))} |")
-    L.append(f"| County SFR supply | {num(ov.get('County SFR supply'), 0)} |")
-    L.append(f"| Typical built-in equity | {money(ov.get('Typical built-in equity (median gross)'))} |")
+    L.append(f"| Baseline doors/deal, whole county | {num(ov.get('Baseline doors/deal'))} |")
+    L.append(f"| County SFR supply | {num(ov.get('SFR supply'), 0)} |")
+    L.append(f"| Typical built-in equity | {money(ov.get('Typical built-in equity'))} |")
     if cov:
         L.append(f"| Deals reachable via P1 rows | {pct(cov.get('p1'))} |")
         L.append(f"| Deals reachable via P1 + P2 | {pct(cov.get('p1p2'))} |")
-        L.append(f"| Deals reachable via all ranked rows | {pct(cov.get('all'))} |")
+        L.append(f"| Deals reachable via every rung | {pct(cov.get('all'))} |")
     if ex.get("obit_supply") is not None:
         L.append(f"| Obituary / deceased-owner supply | {num(ex.get('obit_supply'), 0)} |")
     L.append("")
@@ -159,12 +166,13 @@ def render(fips: str, ok: dict[str, str]) -> Path:
     rows = d.get("rows") or []
     fc = foreclosure_verdict(d)
     nulls = [r for r in rows if r.get("dpd") is None]
-    L.append("## Priority ranking")
+    L.append("## Work order (the page's pull order)")
     L.append("")
-    L.append("Doors/Deal is live list size divided by the deals that list produced in the window, "
-             "so lower is better. Lift is baseline doors/deal divided by the row's. "
-             "Evidence A is this county's own sold deals, B is a cross-market benchmark, "
-             "C is a single-market anchor.")
+    L.append("Rungs are listed in the order the playbook says to pull them. Doors/Deal and Lift are "
+             "MARGINAL: each rung counts only the new deals the rungs above it do not already "
+             "reach, so the figure is what pulling that list next costs, not what the list is "
+             "worth on its own. Deals is new deals reached. List size is the standalone list "
+             "(from the capture shard). Lower doors/deal is better.")
     L.append("")
     L.append("**SiftMap** says whether the row can be pulled from SiftMap today. A `no` is not a "
              "bad row, it is an unreachable one: the lift is real but the signal is absent from "
@@ -176,9 +184,9 @@ def render(fips: str, ok: dict[str, str]) -> Path:
              "verdict alone does not settle it either way: Fairfax is rated low and its Notice of "
              "Default filter returns 169 records, Baltimore County is rated low and returns 1.")
     L.append("")
-    tiers = ((1, "Priority 1 - lift 3x baseline or better, pull these first"),
-             (2, "Priority 2 - lift 1.5x or better, strong second wave"),
-             (3, "Priority 3 - coverage plays and caution rows"))
+    tiers = ((1, "Priority 1 - the cheapest deals in the county, work these first"),
+             (2, "Priority 2 - keeps the volume coming at a fair price"),
+             (3, "Priority 3 - maximum market share, at a steep cost per new deal"))
     for p, label in tiers:
         sel = [r for r in rows if r.get("priority") == p]
         L.append(f"### {label}")
@@ -187,7 +195,7 @@ def render(fips: str, ok: dict[str, str]) -> Path:
             L.append("_No rows at this priority._")
             L.append("")
             continue
-        L.append("| # | Signal | Type | Doors/Deal | Lift | Deals | List size | Typical gross "
+        L.append("| # | Signal | Type | Doors/Deal | Lift | New deals | List size | Typical gross "
                  "| Ev | Conf | SiftMap |")
         L.append("|---|---|---|---:|---:|---:|---:|---:|:-:|:-:|---|")
         for r in sel:

@@ -1,7 +1,27 @@
-"""Turn one county's doors-per-deal rows into SiftMap preset definitions, and size them.
+"""Turn one county's doors-per-deal rows into SiftMap preset definitions, size them, and
+plan how the SAVED SiftMap filters should change to match the current data.
 
     python src/scripts/dpd_siftmap_manifest.py --fips 11001            # build
     python src/scripts/dpd_siftmap_manifest.py --fips 11001 --measure  # + live counts
+    python src/scripts/dpd_siftmap_manifest.py --plan                  # check saved filters vs data
+
+SOURCE OF TRUTH: the no-AI pull order (`rows_no_ai` in data/dpd_playbook_<fips>.json,
+written by `dpd_playbook_extract.py --xlsx ... --fetch` from the Work Order export). This
+account does not buy AI data (decision 2026-08-26), so the ladder with AI rungs removed
+is the ranking; rung numbers and doors/deal are MARGINAL (see the extractor). By default
+only Priority 1 rungs (plus the Tier 2 ZIP preset) become presets: every P2 SiftMap
+filter was deleted on purpose (2026-09-07). `--priorities 1,2` widens it.
+
+`--plan` (offline, writes nothing to the account) compares the complete saved-filter
+inventory -- the read-only `dpd_siftmap_presets.py --audit-auto-add` output, which reads
+the management page, NOT the ~100-row popover -- against the manifests built from current
+data, and sorts every saved filter into keep / keep-old-label / stale / missing / hold /
+out-of-scope / foreign. A saved P2 filter is stale (Basem 2026-09-24: "No need for P2
+filters"). It writes a reviewed-allowlist file for the EXISTING gated delete
+(`dpd_siftmap_presets.py --delete-from-file`) and a save list for `--commit --save-list`.
+It never deletes filters with auto-add ON, the held Montgomery P1-04 pull, filters whose
+auto-add state is unknown, or anything not named like a DPD preset: those are held back
+for Basem. Counties default to the 6-county footprint.
 
 The playbook's instruction is literal: "pull your Priority 1 rows ... save each one as its
 own preset in SiftMap, and work them top to bottom." So this emits ONE preset per Priority
@@ -11,7 +31,7 @@ Rows SiftMap cannot filter (HOA Lien, Other Lien, Low Income, Bad Credit, the AI
 bands, Obituary) are kept in the manifest as stated gaps and routed to first-to-market.
 
 Reads  data/dpd_playbook_<fips>.json   (dpd_playbook_extract.py)
-Writes data/dpd_siftmap_manifest_<fips>.json
+Writes data/dpd_siftmap_manifest_<fips>.json; --plan writes output/dpd_siftmap_plan/<stamp>/
 
 Every URL carries the single-family buy box. The saved-preset URL does NOT carry
 `in_my_account_mode=not_in` -- that is a pull-time suppression, so `--measure` records
@@ -30,6 +50,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -79,10 +100,16 @@ UNFILTERABLE = {
     "Estate Sale": "no SiftMap filter",
     "Probate": "no SiftMap filter; first-to-market source",
     "Obituary": "not a SiftMap filter; the account's Obituary list is an FTM feed",
-    "AI Score 90-100": "AI data not bought on this account (decision 2026-08-26)",
-    "AI Score 80-90": "AI data not bought on this account (decision 2026-08-26)",
-    "AI Score 50+ (coverage layer)": "AI data not bought on this account (decision 2026-08-26)",
 }
+# AI rungs arrive as "AI score 95+", "AI score 70-89" ... (the band set differs per county),
+# so they are matched by prefix rather than listed.
+AI_REASON = "AI data not bought on this account (decision 2026-08-26)"
+
+
+def _unfilterable_reason(signal: str) -> str:
+    if signal.lower().startswith("ai score"):
+        return AI_REASON
+    return UNFILTERABLE.get(signal, "no SiftMap filter")
 
 # Tired Landlord has no filter. The nearest control is the "Owners with multiple
 # properties" checkbox (ownerDetails.extra_owners_with_multiple_properties). Its URL value
@@ -105,21 +132,48 @@ PROXY_CANDIDATES = ["preset_absentee_owners=true&extra_years_owned_min=10",
                     "extra_owners_with_multiple_properties=true"]
 PROXY_BAND = (0.5, 2.0)   # count / workbook list size must fall inside this
 
+DEFAULT_PRIORITIES = (1,)   # every P2 SiftMap filter was deleted on purpose (2026-09-07)
+# The 6-county footprint (CLAUDE.md "Main counties", narrowed 2026-09-01). --plan touches
+# only these unless --fips names others; the out-of-footprint filters were deleted on
+# purpose 2026-09-07 and must not be rebuilt by default.
+FOOTPRINT_FIPS = ("11001", "24031", "24003", "24021", "51059", "51013")
+# Saved filters the planner must never propose deleting, whatever the data says.
+HOLD_NAMES = {
+    "Montgomery P1-04 Free & Clear + Out-of-State":
+        "held for a separate go (~1,709 records, auto-add census 2026-09-08)",
+}
+# The management page glues a filter's description onto its name; every description
+# this build writes starts with this prefix (dpd_siftmap_presets._describe).
+DESC_PREFIX = "Doors-per-deal"
+DEFAULT_INVENTORY = ROOT / "output" / "dpd_siftmap_presets_account_audit.json"
+
+
+def bare_name(title: str) -> str:
+    """A saved filter's NAME from a management-page title (name + description glued)."""
+    t = (title or "").strip()
+    i = t.find(DESC_PREFIX)
+    return t[:i].strip() if i > 0 else t
+
 
 def _name(abbr: str, row: dict) -> str:
     sig = row["signal"].replace(PROXY_SIGNAL, PROXY_LABEL)
     return f"{abbr} P{row['priority']}-{row['rank']:02d} {sig}"
 
 
-def build(pb: dict, proxy_param: str | None = PROXY_CANDIDATES[0]) -> dict:
+def build(pb: dict, proxy_param: str | None = PROXY_CANDIDATES[0],
+          priorities: tuple = DEFAULT_PRIORITIES) -> dict:
     # NOTE: the proxy param is a placeholder until --measure confirms or demotes it.
     j = BY_FIPS[pb["fips"]]
     loc = location_param(j.market_finder_label, j.state_abbr, j.fips)
     abbr = j.state_abbr if j.state_abbr == "DC" else j.name.split(",")[0]
 
+    ladder = pb.get("rows_no_ai")
+    if ladder is None:
+        raise SystemExit(f"data/dpd_playbook_{pb['fips']}.json has no rows_no_ai (the no-AI "
+                         "ladder). Re-run dpd_playbook_extract.py --xlsx <export> --fetch.")
     entries, gaps = [], []
-    for row in pb["rows"]:
-        if row["priority"] not in (1, 2):
+    for row in ladder:
+        if row["priority"] not in priorities:
             continue
         params, missing, proxy = [], [], False
         for s in row["signals"]:
@@ -135,6 +189,7 @@ def build(pb: dict, proxy_param: str | None = PROXY_CANDIDATES[0]) -> dict:
                 missing.append(s)
         base = {
             "name": _name(abbr, row), "priority": row["priority"], "rank": row["rank"],
+            "rung": row.get("rung"), "doors_added": row.get("doors_added"),
             "signal": row["signal"], "signals": row["signals"], "keys": row.get("keys"),
             "lift": row["lift"], "dpd": row["dpd"], "deals": row["deals"],
             "workbook_list_size": row["list_size"], "typical_gross": row["typical_gross"],
@@ -144,7 +199,7 @@ def build(pb: dict, proxy_param: str | None = PROXY_CANDIDATES[0]) -> dict:
         if missing:
             base["buildable"] = False
             base["missing_signals"] = missing
-            base["reason"] = "; ".join(UNFILTERABLE.get(m, "no SiftMap filter") for m in missing)
+            base["reason"] = "; ".join(_unfilterable_reason(m) for m in missing)
             gaps.append(base)
             continue
         base.update({
@@ -154,8 +209,9 @@ def build(pb: dict, proxy_param: str | None = PROXY_CANDIDATES[0]) -> dict:
         })
         entries.append(base)
 
-    # Ladder order: priority, then doors/deal ascending (the workbook's own order).
-    entries.sort(key=lambda e: (e["priority"], e["dpd"] if e["dpd"] is not None else 1e9))
+    # Pull order: the ladder's own rung order (marginal dpd is not monotonic, so never
+    # re-sort by it).
+    entries.sort(key=lambda e: (e["priority"], e["rung"]))
 
     # Tier 2: the workbook's rated ZIPs, 4-5 stars, top 5 by deals.
     zips = [z for z in pb.get("top_zips") or [] if (z.get("stars") or 0) >= T2_STARS_MIN]
@@ -186,6 +242,12 @@ def build(pb: dict, proxy_param: str | None = PROXY_CANDIDATES[0]) -> dict:
         "presets": entries,
         "tier2": t2,
         "gaps": gaps,
+        "ladder": "no-AI (rows_no_ai)",
+        "ladder_measured": pb.get("ladder_measured"),
+        "priorities": list(priorities),
+        # the proxy yardstick is the STANDALONE Tired Landlord list, whatever its priority
+        "tired_landlord_list_size": next((r.get("list_size") for r in ladder
+                                          if r.get("signals") == [PROXY_SIGNAL]), None),
     }
 
 
@@ -221,8 +283,9 @@ async def measure(m: dict) -> None:
         chosen = None
         probes = []
         # The standalone Tired Landlord row's workbook size is the yardstick.
-        wb_tl = next((e.get("workbook_list_size") for e in m["presets"] + m["gaps"]
-                      if e.get("signals") == [PROXY_SIGNAL]), None)
+        wb_tl = m.get("tired_landlord_list_size") or next(
+            (e.get("workbook_list_size") for e in m["presets"] + m["gaps"]
+             if e.get("signals") == [PROXY_SIGNAL]), None)
         m["proxy"]["workbook_list_size"] = wb_tl
         for cand in PROXY_CANDIDATES:
             c = await count(build_url(loc, [cand] + BUY_BOX))
@@ -323,22 +386,279 @@ def report(m: dict) -> None:
               f"{str(g['lift']):>6s}x  {g.get('reason')}")
 
 
+# ── plan: saved filters vs current data ───────────────────────────────
+
+_ID_RE = re.compile(r"^(?P<abbr>.+?) (?:(?P<pid>P(?P<p>\d)-(?P<r>\d{2}))|(?P<t2>T2)) (?P<rest>.+)$")
+
+
+def _abbr_for(fips: str) -> str:
+    j = BY_FIPS[fips]
+    return j.state_abbr if j.state_abbr == "DC" else j.name.split(",")[0]
+
+
+def _key_of(kind: str, rest: str) -> tuple:
+    """What a preset IS, independent of its rank label: the signal set, or the ZIP set."""
+    if kind == "T2":
+        return ("T2", frozenset(re.findall(r"\b\d{5}\b", rest)))
+    sig = rest.replace(PROXY_LABEL, PROXY_SIGNAL)
+    return ("SIG", frozenset(x.strip() for x in sig.split(" + ")))
+
+
+def list_key(name: str) -> tuple | None:
+    """A DPD preset name -> what list it is (county + signal set, or county + ZIP set),
+    ignoring the rank label. None for anything not named like a DPD preset."""
+    m = _ID_RE.match(name)
+    if not m:
+        return None
+    kind = "T2" if m.group("t2") else "P"
+    return (m.group("abbr"),) + _key_of(kind, m.group("rest"))
+
+
+def parse_saved(name: str, abbr_to_fips: dict) -> dict | None:
+    m = _ID_RE.match(name)
+    if not m or m.group("abbr") not in abbr_to_fips:
+        return None
+    kind = "T2" if m.group("t2") else "P"
+    return {"fips": abbr_to_fips[m.group("abbr")], "kind": kind,
+            "priority": int(m.group("p")) if m.group("p") else None,
+            "key": _key_of(kind, m.group("rest"))}
+
+
+def load_inventory(path: Path) -> tuple[list[dict], dict]:
+    """Saved filters as [{name, auto_add}] + meta, from --audit-auto-add (preferred: it
+    carries auto-add) or --list-account output (auto-add unknown -> nothing deletable)."""
+    d = json.loads(path.read_text(encoding="utf-8"))
+    if "results" in d:
+        items = [{"name": bare_name(r.get("title") or ""), "auto_add": r.get("auto_add")}
+                 for r in d["results"] if r.get("title")]
+    else:
+        items = [{"name": bare_name(n), "auto_add": None} for n in d.get("names") or []]
+    meta = {"path": str(path), "at": d.get("at"), "total_reported": d.get("total_reported"),
+            "read": len(items), "has_auto_add": "results" in d}
+    return items, meta
+
+
+def plan(fips_list: list[str], inventory: list[dict], priorities: tuple,
+         renames: bool) -> dict:
+    abbr_to_fips = {_abbr_for(f): f for f in BY_FIPS}
+    current: dict = {}      # fips -> {key: entry}
+    for f in fips_list:
+        pb = json.loads((ROOT / "data" / f"dpd_playbook_{f}.json").read_text(encoding="utf-8"))
+        m = build(pb, priorities=priorities)
+        cur = {}
+        for e in m["presets"]:
+            cur[_key_of("P", _ID_RE.match(e["name"]).group("rest"))] = e
+        if m.get("tier2"):
+            cur[_key_of("T2", m["tier2"]["name"])] = m["tier2"]
+        current[f] = cur
+
+    rows, seen = [], {f: set() for f in fips_list}
+    for it in inventory:
+        name, auto = it["name"], it["auto_add"]
+        ps = parse_saved(name, abbr_to_fips)
+        row = {"name": name, "auto_add": auto}
+        if ps is None:
+            row.update(action="foreign", reason="not named like a DPD preset; never touched")
+        elif ps["fips"] not in current:
+            row.update(action="out_of_scope", fips=ps["fips"],
+                       reason="county not in this plan (footprint default; pass --fips to include)")
+        else:
+            f, key = ps["fips"], ps["key"]
+            row["fips"] = f
+            cur = current[f].get(key)
+            if cur is not None and key in seen[f]:
+                if auto:
+                    row.update(action="hold", current_name=cur["name"],
+                               reason="duplicate of another saved filter, but auto-add is ON")
+                else:
+                    row.update(action="duplicate", current_name=cur["name"],
+                               reason="a second saved filter for the same list")
+            elif cur is not None:
+                seen[f].add(key)
+                row["current_name"] = cur["name"]
+                if name == cur["name"]:
+                    row.update(action="keep")
+                elif name in HOLD_NAMES:
+                    row.update(action="keep_old_label", reason=HOLD_NAMES[name])
+                elif auto:
+                    row.update(action="keep_old_label",
+                               reason="auto-add is ON; renaming means delete + re-save and "
+                                      "would stop the drip")
+                elif renames:
+                    row.update(action="rename",
+                               reason="same list, new rank label: delete old, save new")
+                else:
+                    row.update(action="keep_old_label",
+                               reason="same list, rank label out of date (--renames to fix)")
+            elif name in HOLD_NAMES:
+                row.update(action="hold", reason=HOLD_NAMES[name])
+            elif auto:
+                row.update(action="hold", reason="no longer ranked, but auto-add is ON: "
+                                                 "deleting stops the drip -- decide")
+            elif auto is None:
+                row.update(action="hold", reason="auto-add state unknown: run "
+                                                 "dpd_siftmap_presets.py --audit-auto-add")
+            elif ps["kind"] == "P" and ps["priority"] not in priorities:
+                # Basem, 2026-09-24: "No need for P2 filters." A saved filter whose priority
+                # is outside the plan is stale, not a question.
+                row.update(action="stale",
+                           reason=f"P{ps['priority']} filter; only "
+                                  f"{', '.join('P' + str(p) for p in priorities)} rungs are "
+                                  "kept as SiftMap presets (Basem 2026-09-24)")
+            else:
+                row.update(action="stale", reason="list no longer in the current ranking")
+        rows.append(row)
+
+    # A current list is MISSING unless some saved filter already covers it (under any
+    # label). A rename re-saves it under the new label, so it is missing again then.
+    missing = []
+    for f in fips_list:
+        covered = {r["current_name"] for r in rows
+                   if r.get("fips") == f and r.get("current_name")
+                   and r["action"] in ("keep", "keep_old_label", "hold", "duplicate")}
+        for e in current[f].values():
+            if e["name"] in covered:
+                continue
+            missing.append({"fips": f, "name": e["name"], "action": "missing",
+                            "priority": e.get("priority"), "rung": e.get("rung"),
+                            "dpd": e.get("dpd"), "deals": e.get("deals"),
+                            "list_size": e.get("workbook_list_size")})
+    return {"rows": rows, "missing": missing}
+
+
+ACTION_ORDER = ["stale", "rename", "duplicate", "missing", "keep_old_label", "keep", "hold",
+                "decide", "out_of_scope", "foreign"]
+ACTION_TEXT = {"stale": "DELETE (on the allowlist)", "rename": "DELETE old + SAVE new",
+               "duplicate": "DELETE (duplicate)", "missing": "SAVE (on the save lists)",
+               "keep_old_label": "keep, rank label out of date", "keep": "keep",
+               "hold": "HOLD - needs Basem", "decide": "DECIDE - needs Basem (unused since 2026-09-24)",
+               "out_of_scope": "untouched (county not in this plan)",
+               "foreign": "untouched (not a DPD preset)"}
+
+
+def write_plan(res: dict, inv_meta: dict, fips_list: list[str], priorities: tuple,
+               renames: bool) -> Path:
+    stamp = datetime.now().strftime("%Y%m%dT%H%M%S")
+    d = ROOT / "output" / "dpd_siftmap_plan" / stamp
+    d.mkdir(parents=True, exist_ok=True)
+    rel = d.relative_to(ROOT).as_posix()
+    rows, missing = res["rows"], res["missing"]
+    delete = [r["name"] for r in rows if r["action"] in ("stale", "rename", "duplicate")]
+    (d / "delete_allowlist.txt").write_text(
+        "# Reviewed allowlist for dpd_siftmap_presets.py --delete-from-file.\n"
+        f"# Generated by dpd_siftmap_manifest.py --plan at {stamp}.\n"
+        "# Delete a line to keep that filter. Only names listed here can be deleted.\n"
+        + "".join(n + "\n" for n in delete), encoding="utf-8")
+    for f in fips_list:
+        names = [x["name"] for x in missing if x["fips"] == f]
+        (d / f"save_list_{f}.txt").write_text("".join(n + "\n" for n in names), encoding="utf-8")
+    (d / "plan.json").write_text(json.dumps(
+        {"generated_at": stamp, "inventory": inv_meta, "counties": fips_list,
+         "priorities": list(priorities), "renames": renames, "rows": rows, "missing": missing},
+        indent=1), encoding="utf-8")
+
+    allrows = rows + missing
+    L = [f"# SiftMap preset plan {stamp}", "",
+         f"Counties: {', '.join(_abbr_for(f) for f in fips_list)}. Presets from: "
+         f"{', '.join('P' + str(p) for p in priorities)} rungs of the no-AI ladder + Tier 2 ZIPs.",
+         f"Inventory: `{inv_meta['path']}`, read {inv_meta['at']} "
+         f"({inv_meta['read']} of {inv_meta['total_reported']} saved filters"
+         f"{'' if inv_meta['has_auto_add'] else '; NO auto-add data, so nothing is deletable'}).",
+         "", "| Action | Count |", "|---|---:|"]
+    for a in ACTION_ORDER:
+        n = sum(1 for r in allrows if r["action"] == a)
+        if n:
+            L.append(f"| {ACTION_TEXT[a]} | {n} |")
+    for a in ACTION_ORDER:
+        sel = [r for r in allrows if r["action"] == a]
+        if not sel:
+            continue
+        L += ["", f"## {ACTION_TEXT[a]} ({len(sel)})", ""]
+        for r in sel:
+            extra = []
+            if r.get("current_name") and r["current_name"] != r["name"]:
+                extra.append(f"now `{r['current_name']}`")
+            if a == "missing":
+                extra.append(f"rung {r.get('rung')}, {r.get('dpd')} doors/deal, "
+                             f"{r.get('deals')} new deals, list {r.get('list_size')}")
+            if r.get("reason"):
+                extra.append(r["reason"])
+            if r.get("auto_add"):
+                extra.append("auto-add ON")
+            L.append(f"- `{r['name']}`" + (f" -- {'; '.join(extra)}" if extra else ""))
+    L += ["", "## To apply (every write step needs Basem's go)", "",
+          "1. If the inventory is not from today, refresh it (read-only): "
+          "`python src/scripts/dpd_siftmap_presets.py --audit-auto-add`, then re-plan.",
+          f"2. Review `{rel}/delete_allowlist.txt` (delete lines to keep filters), then "
+          f"`python src/scripts/dpd_siftmap_presets.py --fips <any> --delete-from-file "
+          f"{rel}/delete_allowlist.txt`.",
+          "3. For each county with a non-empty save list: "
+          "`python src/scripts/dpd_siftmap_manifest.py --fips <fips> --measure` (rebuilds the "
+          "manifest from current data; read-only counts), then "
+          f"`python src/scripts/dpd_siftmap_presets.py --fips <fips> --commit --save-list "
+          f"{rel}/save_list_<fips>.txt`, then `--verify --save-list` the same file.",
+          "4. Re-run the audit and this plan. A clean plan shows only keep, hold, decide and "
+          "untouched rows."]
+    (d / "plan.md").write_text("\n".join(L) + "\n", encoding="utf-8")
+    return d
+
+
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Build (and size) a county's SiftMap presets")
-    ap.add_argument("--fips", required=True)
+    ap = argparse.ArgumentParser(description="Build, size and plan a county's SiftMap presets")
+    ap.add_argument("--fips", help="one county (build/measure), or a comma list for --plan")
     ap.add_argument("--measure", action="store_true", help="open every URL and record counts")
+    ap.add_argument("--plan", action="store_true",
+                    help="offline: compare the saved SiftMap filters with current data")
+    ap.add_argument("--inventory", default=str(DEFAULT_INVENTORY),
+                    help="--audit-auto-add (or --list-account) output to plan against")
+    ap.add_argument("--priorities", default=",".join(map(str, DEFAULT_PRIORITIES)),
+                    help="which ladder priorities become presets (default 1)")
+    ap.add_argument("--renames", action="store_true",
+                    help="plan: re-save same-list filters under their current rank label "
+                         "(delete + save; never for auto-add or held filters)")
     ap.add_argument("--out")
     a = ap.parse_args()
+    priorities = tuple(int(x) for x in a.priorities.split(",") if x.strip())
 
-    if a.fips not in BY_FIPS:
-        raise SystemExit(f"FIPS {a.fips} is not a target jurisdiction")
+    if a.plan:
+        fips_list = [f.strip() for f in a.fips.split(",")] if a.fips else list(FOOTPRINT_FIPS)
+        for f in fips_list:
+            if f not in BY_FIPS:
+                raise SystemExit(f"FIPS {f} is not a target jurisdiction")
+        inv_path = Path(a.inventory)
+        if not inv_path.exists():
+            raise SystemExit(f"missing {inv_path}; run dpd_siftmap_presets.py --audit-auto-add")
+        inventory, meta = load_inventory(inv_path)
+        if meta["total_reported"] and meta["read"] < meta["total_reported"]:
+            raise SystemExit(f"inventory is incomplete ({meta['read']} of "
+                             f"{meta['total_reported']}); a partial list would call present "
+                             "filters missing. Re-run --audit-auto-add.")
+        res = plan(fips_list, inventory, priorities, a.renames)
+        d = write_plan(res, meta, fips_list, priorities, a.renames)
+        counts: dict = {}
+        for r in res["rows"] + res["missing"]:
+            counts[r["action"]] = counts.get(r["action"], 0) + 1
+        age = ""
+        try:
+            days = (datetime.now() - datetime.fromisoformat(meta["at"])).days
+            if days:
+                age = f"\n  inventory is {days} day(s) old -- refresh it before applying anything"
+        except (TypeError, ValueError):
+            pass
+        print("plan: " + ", ".join(f"{k} {v}" for k, v in counts.items()) + age)
+        print(f"wrote {d.relative_to(ROOT).as_posix()}/  (plan.md, delete_allowlist.txt, "
+              "save_list_<fips>.txt, plan.json)")
+        return 0
+
+    if not a.fips or a.fips not in BY_FIPS:
+        raise SystemExit("--fips must name one target jurisdiction for build/measure")
     src = ROOT / "data" / f"dpd_playbook_{a.fips}.json"
     if not src.exists():
         raise SystemExit(f"missing {src}; run dpd_playbook_extract.py --fips {a.fips} first")
     out_path = Path(a.out) if a.out else ROOT / "data" / f"dpd_siftmap_manifest_{a.fips}.json"
 
     pb = json.loads(src.read_text(encoding="utf-8"))
-    m = build(pb)
+    m = build(pb, priorities=priorities)
     if a.measure:
         asyncio.run(measure(m))
     elif out_path.exists():
@@ -347,14 +667,27 @@ def main() -> int:
         prev = {e["name"]: e for e in old.get("presets", []) + old.get("gaps", [])}
         if old.get("tier2"):
             prev[old["tier2"]["name"]] = old["tier2"]
-        for e in m["presets"] + ([m["tier2"]] if m.get("tier2") else []):
-            p = prev.get(e["name"]) or {}
+        # Match earlier measurements by LIST (list_key), not by name: a rank label moves
+        # whenever the ladder is re-measured and the count belongs to the list.
+        prev_by_key = {list_key(n): e for n, e in prev.items() if list_key(n)}
+        live = m["presets"] + ([m["tier2"]] if m.get("tier2") else [])
+        carried = 0
+        for e in live:
+            p = prev.get(e["name"]) or prev_by_key.get(list_key(e["name"])) or {}
             for k in ("measured_count", "measured_not_in_account", "measure_status"):
                 if k in p:
                     e[k] = p[k]
-        for k in ("baseline_single_family", "measured_at"):
-            if k in old:
-                m[k] = old[k]
+            carried += "measured_count" in p
+        if "baseline_single_family" in old:
+            m["baseline_single_family"] = old["baseline_single_family"]
+        # measured_at is what dpd_siftmap_build_all.py reads to SKIP the measure stage, so
+        # it may only carry over when every live preset actually carries a count.
+        # Otherwise a rebuild after new data would look fully measured and never be sized.
+        if "measured_at" in old and carried == len(live):
+            m["measured_at"] = old["measured_at"]
+        elif "measured_at" in old:
+            print(f"  measured_at dropped: {len(live) - carried} of {len(live)} presets are "
+                  "unmeasured after the rebuild -- run --measure")
         if old.get("proxy", {}).get("status") != "unmeasured":
             m["proxy"] = old["proxy"]
     report(m)
