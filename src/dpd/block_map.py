@@ -35,6 +35,11 @@ BLOCK = {
     "structure": "Structure Types",
     "last_mailed": "Last Direct Mailed",
     "county": "Property County",
+    # OWNER FILTERS section. Three controls: a Properties Owned range, "Show one property
+    # per owner" / "All properties", and a tie-break criterion. Stored NESTED as
+    # `must.ownerPropertiesOwned` (read out of the app bundle 2026-09-24); the live query
+    # spreads it. Every dial-list stage carries the collapse mode -- see preset_spec.
+    "one_owner": "Owner \u2014 Properties Owned",
 }
 
 # Value-entry placeholders, per block.

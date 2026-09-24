@@ -779,6 +779,44 @@ as of 2026-09-17.
 
 ---
 
+## Building-permit portals — surveyed + pulled 2026-09-24 (READ-ONLY, no spend)
+
+`src/scripts/permit_portal_pull.py` pulls the three FREE machine-readable permit feeds in the
+footprint into `output/permits/<YYYYMMDD>/` (per-page JSONL cache + `--resume`, `--analyze-only`
+rebuilds every CSV with zero HTTP) and writes `evaluation.md`: the answer to "what can a permit
+portal fill in for the skills". Offline guard `tools/manual/test_permit_portal_pull.py` (50+
+checks) — run after ANY change to `clean_applicant` / `is_gov_or_institution` / `bucket_subtype` /
+`stall_class` / `fetch_pages`. First full run 2026-09-24: **69,283 permits** (DC 49,725 /
+Montgomery 10,456 / Fairfax 9,102), 3 min, exit 0.
+
+- **DC** (`FEEDS/DCRA/FeatureServer` layers 18 = 2026, 17 = 2025, 13 = Basic Business Licenses)
+  is the only feed with NAMES. `OWNER_NAME` is good. `PERMIT_APPLICANT` is the **applicant, not
+  the licensed contractor** — the top filers are permit EXPEDITERS (Margo Ricks 1,708 permits for
+  1,258 different owners; Bryce Carrington 1,233 / 1,147), and the raw value carries junk prefixes
+  (`NA NA; X`, `NULL NULL; X`, `N / A`) that `clean_applicant` strips. The vendor seed therefore
+  draws ONLY from the BBL contractor-roster join (5,875 active "Contractor and Construction
+  Services" licenses), never from raw applicants. `ZIPCODE` is NULL on every row — the ZIP is
+  parsed off `FULL_ADDRESS`. The layer holds ISSUED permits only (0 rows without an issue date)
+  and no application date, so DC can never show a stalled application, only expired / cancelled.
+  Repeat owners on construction permits are government first (DISTRICT OF COLUMBIA 344, DCHA
+  205, USA 109 — removed by word-boundary rules) then developers (MCMILLAN ASSOCIATES LLC 117,
+  SKYLAND PHASE C-2 71); 100 of the 785 repeat owners are already in the dispo buyer registry.
+- **Montgomery** (Socrata `xfxj-qszi` residential / `i26v-w6bd` commercial / `b6ht-fw3x`
+  demolition) and **Fairfax** (`Building_Records_PLUS/FeatureServer/0`, nightly) carry **no
+  applicant, contractor or owner**: "multiple permits" there is by address / ZIP only. Montgomery
+  has `declaredvaluation` + applied/issued/finaled dates (671 applications open > 6 months =
+  the stalled-permit distress list); Fairfax publishes accepted records only. The Socrata
+  Cloudflare rule holds: `socrata_where()` refuses ANY function syntax in `$where`.
+- **Anne Arundel, Frederick, Arlington have no machine-readable feed.** Contractor names for
+  those and for Montgomery / Fairfax live behind anonymous browser searches (AACO Accela,
+  Montgomery DPS eSearch, Fairfax PLUS Accela, Arlington Accela, Frederick CIVICS + monthly PDF)
+  — the phase-2 list with exact URLs is section 8 of `evaluation.md`. **TRAP:**
+  `aca-prod.accela.com/FREDERICK` is the Town of Frederick, COLORADO.
+- **No portal anywhere carries phone, email, rating or BBB** — the vendor-directory columns that
+  matter most for calling stay blank; permits give company / contact / license / service area.
+- Draft `data/ftm_sources_mddcva.csv` rows are in `evaluation.md` §9 but NOT appended:
+  `dpd_ftm_registry.CANON` has no `building_permit` type, so a row would canon to None.
+
 ## DataSift API upload contract (hard-won, 2026-08)
 
 The contract for pushing records into DataSift entirely over the API (`src/datasift_api_upload.py`).
@@ -1045,7 +1083,9 @@ change to `_stale_numbers` / `_ghost_blanks` / `_place_note`. Memory
   The browser bulk-assign path (`doors_per_deal_bulk_assign.py`) is no longer the only way.
 - **Filter/count by assignee:** the property query accepts `assigned_to` as a bare uuid
   STRING (`{"must": {"assigned_to": "<uuid>"}}`); a list 400s with "Must be a valid UUID."
-  Unknown keys 400 ("Filter can't be empty."), they are not silently ignored.
+  A query holding ONLY unknown keys 400s ("Filter can't be empty."), but an unknown key
+  BESIDE real ones is SILENTLY DROPPED (measured 2026-09-24: nine fake owner-count keys all
+  returned the base count unchanged) -- so the only proof a key is real is a count that MOVES.
 - **No users/team endpoint exists.** uuid→name comes from the rendered UI only:
   `src/scripts/dpd_assignee_name_map.py` (direct route `/records/properties/{uuid}/details`;
   the assignee is the topmost text in the x 650–980 / y 95–145 band, excluding
@@ -1405,6 +1445,46 @@ Full build narrative, including every panel trap and the inverted-preset post-mo
 - `src/dpd/block_map.py` — the panel mapping, the stated gaps, the block budget and its one remaining trim (`Deep - 04 Return Mail`).
 - `src/scripts/dpd_filter_blocks.py` — the 144-block vocabulary dump (`output/dpd_filter_blocks.json`).
 - `src/scripts/dpd_presets_create.py` — the builder, **PROVEN on all 73**: container-scoped `audit_panel`, hit-tested `_click_leaf`, section-scoped `_PICK_INPUT_JS` / `set_tokens` with one retry, the scrolled folder pick, polling `open_panel`, a pre-save panel screenshot per folder (`output/dpd_panel_*.png`), and preset deletion (`--discover-delete | --delete-junk-dry | --delete-junk [--delete-names ...]`, refuses anything not `^ZZ ` or explicitly allowlisted). Resumable; skips by name prefix.
+- `src/scripts/dpd_presets_one_owner.py` — **"Show one property per owner" APPLIED 2026-09-24 on
+  Basem's go** (from the course: click-to-dial must never reach one owner several times a day
+  through their other properties) to the 24 dial-list presets the spec marks `one_owner` (Ready to
+  Call and every Call N stage in the 5 CALL folders, plus `Deep - 02 Obituary/Deceased`); API PATCH
+  with store read-back, every other key byte-identical. **Three facts read out of the app bundle
+  (`app.reisift.io/main.min.js`) that no probe could give:** (1) the `Owner — Properties Owned`
+  block is a THREE-field object `{properties_owned: [min,max], show_properties: one_per_owner|all,
+  highest_criteria}` and "one property per owner" is the COLLAPSE mode (a multi-property owner
+  shows as one row: FTM Ready to Call 315 -> 303), NOT a 1..1 range (which EXCLUDES them: 264);
+  (2) a saved preset stores the block NESTED as `must.ownerPropertiesOwned`, the live query spreads
+  its fields to the top of `must` after `omitEmpty`, and the panel renders ONLY the nested key;
+  (3) `must: {...passThrough, ...}` -- every stored key the panel does not know is sent to the
+  query anyway. So the first write that day (top-level `properties_owned: [1, 1]`, chosen because
+  it moved the count on the query endpoint) was INVISIBLE in the panel yet silently applied with
+  the wrong meaning for ~1 hour; Basem caught it ("I dont see anything here"). Rule: **a key that
+  moves the query count proves the QUERY vocabulary, not the STORE shape; read the bundle's
+  `toPropertiesFilters` before writing any new block into a preset.** The verifier now fails any
+  preset holding the stray top-level key. Stored value is the minimal `{"show_properties":
+  "one_per_owner"}` (the endpoint 400s on an empty range, `["", ""]` or `[null, null]`);
+  `dpd_lane_assignee_report.to_query` spreads the nested block so counts stay honest. Backups
+  `output/dpd_presets_one_owner_backup_20260924T*.json`, `--undo` restores.
+  **Same day, found in the store, NOT changed:** Basem's hand-save on `FTM - 02 Ready to Call`
+  landed a `last_obituary_date: ["24-months", "quarter"]` block (the Last Obituary Date picker in
+  RELATIVE mode) instead of the owner block. Measured as an absolute range it cuts the lane from
+  315 to **33** (only obituary-dated records survive; every foreclosure drops). It also added
+  `Re-Skiptrace` to that one preset's excluded statuses (sensible; not in `DEAD_STATUSES`, so the
+  verifier flags it). Both wait on Basem. **The relative date mode EXISTS** (stores as
+  `["<n>-months", "quarter"|"month"|"today"]`, and `11. Not Interested Qrtrly` already stores
+  `last_updated_date: [{"field": "status", "options": ["72-months", "quarter"]}]`), which
+  disproves the two `block_map.GAPS` entries built on "absolute-only" dates: the mail 30-day
+  spacing and the Reactivation status-age timers are both expressible. Not yet rebuilt.
+  **Owner-grouped assignment, same day, on Basem's "Go":** the collapse works inside ONE preset, and
+  the 09-01 lane split leveled by COUNT, so 32 multi-property owners in the Hottest + FTM call lanes
+  were spread across dialers (one owner on three at once). `src/scripts/dpd_owner_group_assign.py`
+  (plan / `--commit` / `--verify` / `--undo`) put each owner on the dialer already holding most of
+  their rows (tie -> earliest stage; none -> lightest Ready-to-Call load): 48 of 51 moves landed and
+  read back (24 were unassigned rows), 0 splits on verify. The 3 misses are INDEX GHOSTS -- rows the
+  lane query returns whose detail GET and PATCH both 404 (blank address); a lane count can therefore
+  include records that no longer exist. Rule from here: group by owner BEFORE leveling any
+  assignment. Run dir `output/owner_group_assign_20260924T173550/`.
 - `src/scripts/dpd_presets_verify.py` — **Phase 7 QA for presets.** Reads every stored definition over the internal API and checks counties, suppression, statuses, counters, params and tag-uuid algebra against `preset_spec`; lists extras. Exit 0 only when all 73 are present and defect-free. **Currently exits 0.** Run it after any preset change.
 - `src/scripts/dpd_doctor.py` — `capture_presets` rewritten onto the builder's panel primitives (positional per-folder read, full scroll of `PresetsBelowBody`, no-toggle re-read for a folder that is open by default); writes `preset_items`, `preset_folders`, `preset_tree`. `--verify` diff is trustworthy again.
 - `src/scripts/dpd_playbook_extract.py`, `dpd_siftmap_manifest.py`, `dpd_siftmap_presets.py`, `dpd_qa_report.py` — the county-agnostic DC one-shot pipeline (see [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md)). **Reworked 2026-09-24 for the Work Order export and the no-AI ladder; `dpd_siftmap_manifest.py --plan` is the check/rebuild/delete planner for the saved SiftMap filters** — see "Doors-per-deal data: the Work Order format" above.

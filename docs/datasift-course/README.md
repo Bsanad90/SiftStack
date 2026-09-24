@@ -324,10 +324,11 @@ Platform facts worth knowing before building anything (from the guides):
 
 ## Where this account differs from the course (checked 2026-09-24)
 
-- **No "one property per owner" block on the DPD Ready-to-Call presets.** `src/dpd/
-  preset_spec.py` stages `02 Ready to Call` … `08 Call 7` on `has_numbers` + `call_attempts`
-  only. The course toggles Owner Properties Owned = 1 on ready-to-call so click-to-dial does
-  not reach the same owner several times a day. Not changed; decide before adding.
+- ~~No "one property per owner" block on the DPD Ready-to-Call presets.~~ **CLOSED 2026-09-24:**
+  `preset_spec.py` marks `one_owner` on Ready to Call, every Call N stage and Deep 02, and
+  `dpd_presets_one_owner.py` wrote the block's collapse mode (`must.ownerPropertiesOwned:
+  {"show_properties": "one_per_owner"}`) to all 24 live, store-verified. A multi-property
+  owner now shows as ONE row in each dial list (FTM Ready to Call 315 -> 303).
 - **The sold sweep sets a $1,000 minimum sale price but no "unrelated parties" relationship
   filter.** The Data Pipeline SOP calls both mandatory, or $0 deeds and inherited/probate
   transfers get tagged sold. `manage-sold` has not run live yet; grep found no

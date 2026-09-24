@@ -125,6 +125,15 @@ def to_query(filters: dict) -> dict:
     for key, val in src.items():
         if key in ("must_not", "account"):
             continue
+        if key == "ownerPropertiesOwned" and isinstance(val, dict):
+            # The panel stores the Owner -- Properties Owned block NESTED and spreads its
+            # fields into the live query after dropping blanks (app bundle, 2026-09-24).
+            # An empty range 400s on the endpoint, so blanks are dropped here too.
+            for k2, v2 in val.items():
+                if v2 in ("", None, [], ["", ""], [None, None]):
+                    continue
+                must[k2] = v2
+            continue
         if isinstance(val, list) and val and all(isinstance(x, dict) for x in val):
             pos = [x.get("title") or x.get("uuid") for x in val if not x.get("isNegative")]
             neg = [x.get("title") or x.get("uuid") for x in val if x.get("isNegative")]

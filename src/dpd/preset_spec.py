@@ -80,21 +80,42 @@ STRUCTURE = {"prefer": "Single Family", "blank": "surface, never drop"}
 # Six stages per niche CALL folder. 00 and 01 are the data-repair queue: a record with no
 # phone is not a call, it is a skip-trace job, and separating "never skipped" from "skipped
 # and still empty" is what stops the second being re-skipped forever.
+# One property per owner (Basem, 2026-09-24, from the DataSift course): every DIAL-LIST
+# stage carries the Owner -- Properties Owned block in its "Show one property per owner"
+# mode, so click-to-dial never reaches the same owner several times a day through their
+# other properties (the course's reason: that owner reports the number as spam). Stages
+# 00/01 are skip-trace queues, not dial lists, and do not carry it.
+#
+# The block is a COLLAPSE, not an exclusion (read out of the app bundle 2026-09-24): a
+# multi-property owner shows as ONE row. Measured on FTM - 02 Ready to Call: base 315,
+# collapsed 303 (51 multi-owner rows -> 39 owners); a range of 1..1 would have given 264
+# and dropped those owners from the lane -- which is what the first write of this block
+# did, for about an hour, until the panel showed nothing and the bundle was read.
+#
+# Storage: a saved preset keeps the block NESTED under `must.ownerPropertiesOwned`
+# ({properties_owned, show_properties, highest_criteria}); the live query spreads those
+# fields to the top of `must`. The panel renders ONLY the nested key -- and passes every
+# unknown top-level key through to the query unseen. So `ONE_OWNER_STRAY_KEY` at the top
+# level is a defect the verifier fails: invisible in the panel, applied anyway.
+ONE_OWNER_STORE_KEY = "ownerPropertiesOwned"
+ONE_OWNER_VALUE = {"show_properties": "one_per_owner"}
+ONE_OWNER_STRAY_KEY = "properties_owned"
+
 CALL_STAGES = [
     ("00 Needs Skipped", {"has_numbers": False, "skiptraced": False}),
     ("01 Skipped No Numbers", {"has_numbers": False, "skiptraced": True}),
-    ("02 Ready to Call", {"has_numbers": True, "call_attempts": (0, 0)}),
-    ("03 Call 2", {"has_numbers": True, "call_attempts": (1, 1)}),
-    ("04 Call 3", {"has_numbers": True, "call_attempts": (2, 2)}),
-    ("05 Call 4", {"has_numbers": True, "call_attempts": (3, 3)}),
+    ("02 Ready to Call", {"has_numbers": True, "call_attempts": (0, 0), "one_owner": True}),
+    ("03 Call 2", {"has_numbers": True, "call_attempts": (1, 1), "one_owner": True}),
+    ("04 Call 3", {"has_numbers": True, "call_attempts": (2, 2), "one_owner": True}),
+    ("05 Call 4", {"has_numbers": True, "call_attempts": (3, 3), "one_owner": True}),
 ]
 
 # Bulk runs the same shape with an extended runway: the niche cadence stops at 3 attempts,
 # bulk carries on to 6.
 BULK_CALL_STAGES = CALL_STAGES + [
-    ("06 Call 5", {"has_numbers": True, "call_attempts": (4, 4)}),
-    ("07 Call 6", {"has_numbers": True, "call_attempts": (5, 5)}),
-    ("08 Call 7", {"has_numbers": True, "call_attempts": (6, 6)}),
+    ("06 Call 5", {"has_numbers": True, "call_attempts": (4, 4), "one_owner": True}),
+    ("07 Call 6", {"has_numbers": True, "call_attempts": (5, 5), "one_owner": True}),
+    ("08 Call 7", {"has_numbers": True, "call_attempts": (6, 6), "one_owner": True}),
 ]
 
 # The six-piece mail rotation. Piece 01 has NO call prerequisite -- mail runs in parallel
@@ -126,7 +147,9 @@ for _i, _piece in enumerate(MAIL_PIECES, start=1):
 # `Obituaries`) and still missed any record flagged deceased without one of those tags.
 DEEP_STAGES = [
     ("01 No/Bad Phone", {"has_numbers": False, "skiptraced": True}),
-    ("02 Obituary/Deceased", {"deceased": True}),
+    # The course's obituary DP preset carries one-property-per-owner too (the heirs are
+    # dialed from it); the other deep queues are not dial lists.
+    ("02 Obituary/Deceased", {"deceased": True, "one_owner": True}),
     ("03 Exhausted Call", {"has_numbers": True, "call_attempts": (4, None)}),
     ("04 Return Mail", {"tags_any_2": ["Return Mail"]}),
     ("05 Vacant", {"vacant_property": True}),
@@ -273,6 +296,8 @@ def main() -> int:
                 bits.append(f"{k}={'Yes' if b[k] else 'No'}")
         if "last_mailed_days_min" in b:
             bits.append(f"last mailed >={b['last_mailed_days_min']}d")
+        if b.get("one_owner"):
+            bits.append("one property per owner")
         if "status_any" in b:
             bits.append(f"status={b['status_any']}")
         if "status_age_days_min" in b:

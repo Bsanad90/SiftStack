@@ -39,7 +39,8 @@ sys.path.insert(0, str(ROOT / "src" / "scripts"))
 
 from datasift_api_upload import Api  # noqa: E402
 from dpd.block_map import STATUS_NOT_SELECTABLE  # noqa: E402
-from dpd.preset_spec import PRESETS  # noqa: E402
+from dpd.preset_spec import (PRESETS, ONE_OWNER_STORE_KEY, ONE_OWNER_VALUE,  # noqa: E402
+                             ONE_OWNER_STRAY_KEY)
 from dpd_presets_create import allocate_tags  # noqa: E402  (src/scripts on caller path)
 
 OUT = ROOT / "output" / "dpd_presets_verify.json"
@@ -135,6 +136,19 @@ def verify_preset(spec: dict, stored: dict, uuid_of: dict, bad: list[str]) -> No
             fail(f"{dkey} is {got_c!r}, wanted min {lo}")
         elif hi is not None and (len(got_c) < 2 or got_c[1] != hi):
             fail(f"{dkey} is {got_c!r}, wanted max {hi}")
+
+    # One property per owner (2026-09-24): a dial-list stage must store the nested block
+    # in collapse mode; a stage the spec does NOT mark must not carry it; and NO preset
+    # may hold the top-level stray key -- the panel cannot show it, the query applies it.
+    got_owner = f.get(ONE_OWNER_STORE_KEY)
+    if blk.get("one_owner"):
+        if got_owner != ONE_OWNER_VALUE:
+            fail(f"{ONE_OWNER_STORE_KEY} is {got_owner!r}, wanted {ONE_OWNER_VALUE}")
+    elif got_owner is not None:
+        fail(f"{ONE_OWNER_STORE_KEY} is {got_owner!r} on a stage the spec does not mark one_owner")
+    if ONE_OWNER_STRAY_KEY in f:
+        fail(f"stray top-level {ONE_OWNER_STRAY_KEY}={f[ONE_OWNER_STRAY_KEY]!r}: invisible in "
+             "the panel, applied by the query")
 
     # Params booleans the spec sets. A param is satisfied by ANY of its candidate
     # storage keys holding the wanted value; none holding it is a defect.
