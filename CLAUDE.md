@@ -145,6 +145,7 @@ there are the kind that fail silently.
 | [docs/history/deal-analysis.md](docs/history/deal-analysis.md) | Comp package engine, dispo stack, post-walkthrough package, locked master material list / SKU rehab engine, the lender package |
 | [docs/history/soi-and-knox.md](docs/history/soi-and-knox.md) | Knox first-to-market pull, sphere-of-influence pipeline (Columbus OH), account-wide enrichment/scoring audit, phone validator multi-contact detection |
 | [docs/history/sms-and-coaching.md](docs/history/sms-and-coaching.md) | Two-way SMS agent (Ty's Fly deployment, smrtPhone transports, autonomy ladder), call coaching engine |
+| [docs/datasift-course/README.md](docs/datasift-course/README.md) | DataSift's own REI Mastery course (all 15 modules, read 2026-09-24) condensed: how DataSift intends the platform to be run — presets, cadences, statuses, sequences, deep prospecting, team — plus where this account differs. Guide-page digests in `docs/datasift-course/guides/` |
 
 Also: `docs/api/` holds the per-vendor API notes, `docs/setup/` the onboarding guides,
 `tools/manual/` the headed-browser and one-off dev harnesses.
