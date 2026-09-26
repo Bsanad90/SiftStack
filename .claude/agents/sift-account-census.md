@@ -42,6 +42,7 @@ should be reported as such, not counted as coverage.
 | Who is assigned in the call lanes | `python src/scripts/dpd_lane_assignee_report.py` | per-lane, per-dialer counts, `OK` / `MISMATCH vs listed` | one detail GET per record (~1,400): slow; counts lag writes 1–2 min |
 | Panel vs API agreement | `python src/scripts/dpd_lane_panel_crosscheck.py` | `MATCH` / `MISMATCH api=…` rows | headed browser, slow |
 | Property-tag controls | `python src/scripts/dpd_tags_create.py --discover` | the `/tags/property` control dump | |
+| Skip-trace / Trestle / DP buckets, whole account | `python -u src/scripts/skip_dp_census.py --sample 300` | `output/skip_dp_census/<stamp>/census.md`: records with phones but no Trestle tier tag, no phone tags at all, and every record sorted into SKIP_TRACE / DP_* / SCORE / TIERED_UNCALLABLE / OK across all / active / active+footprint; per-bucket CSVs; Trestle price from a hydrated sample | Server-side counts + thin rows, ~1,300 calls, 15-25 min. Blind to partial scoring inside a record, to DP evidence that lives only on a board note or REL fields, and to `Unknown`-tier phones (never tagged, read as unscored). Counts lag writes 1-2 min. |
 | Sold sweep size, nothing written | `python src/main.py manage-sold --dry-run --counties "Washington DC,Montgomery,Anne Arundel,Frederick,Fairfax,Arlington" --months-back 1` | per-county matched counts, no checkpoint | county names must resolve through `dpd.jurisdictions`; an unknown name RAISES, which is correct |
 </entry_points>
 

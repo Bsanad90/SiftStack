@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Response style
+
+- **Start every response with the user's name, "Basem".** Every reply, no exceptions.
+
 ## Project Overview
 
 **SiftStack** — Full-stack real estate investing operations platform built around DataSift.ai CRM. Covers the entire REI business lifecycle:
@@ -942,6 +946,30 @@ creation on this account is the wizard" above: only the OPEN API route `POST /pr
   `field_pairs` silently skips them unless the caller prints its `warn` set. The decedent belongs in
   the board note here — this account has no deceased-name field.
 
+### Skip-trace / Trestle / DP census over the API (built + run 2026-09-25, READ-ONLY)
+
+`src/scripts/skip_dp_census.py` answers "who needs scoring, who needs a skip trace, who needs
+DP" for the WHOLE account from server-side counts + paged uuid sets + the thin list row
+(1,443 calls, 35 min, no hydration except a 300-record sample), writing
+`output/skip_dp_census/<stamp>/{census.md,census.json,records.csv,bucket_*.csv}`. Offline guard
+`tools/manual/test_skip_dp_census.py` (57 checks) -- run after ANY change to `classify` /
+`is_entity` / the tag matchers. First run 2026-09-25 (`20260925T182950`), every guard held:
+**28,350 of 30,913 records hold phones; 21,420 of them (76%) have NO Trestle tier on any
+phone, 5,508 no phone tags at all; only 6,930 carry a tiered phone.** No numbers: 1,396 never
+traced + 1,167 traced-and-empty. Active buckets: SKIP_TRACE 197 (+16 entity), DP no-numbers
+1,781 (273 obituary never traced, 698 traced-empty with a deceased signal, 690 without),
+SCORE 16,161 (7,792 in footprint; sample says 7.2 unscored live numbers/record -> ~$843
+footprint / ~$1,749 all at $0.015), DP_DECEASED_WITH_NUMBERS 3,492 (only 924 of them carry
+an OBITUARY-type signal; the rest are probate-list PRs whose numbers are their own). Query
+facts measured on the way: **`deceased` is TRI-STATE** (3 true / 18,741 false / 12,169 null --
+the Deep-02 preset's `deceased: 1` matches THREE records); a multi-uuid `any_phone_tags` is an
+OR (proven: combined == union on two small tags); `"ordering": "created"` is honoured in the
+POST-as-GET body; `any_tags` / `any_lists` / `any_county` / `last_obituary_date` (absolute)
+/ `any_property_status` all move counts; **`dnc=1` and `opt_out=1` count 0** on this account;
+the 10-name dead-status query and the local 16-name match agree (6,674). 2,035 records carry a
+Skip Traced tag with `skiptraced: false` (external traces never flipped the flag). Every
+set paged equal to its count -- the index lag did not bite on a Thursday evening.
+
 ### Incomplete records and the owner-block PATCH (learned 2026-09-11, lane cleanup)
 
 - **A record's Clean/Incomplete state is the detail field `type`** (`"clean"` / `"incomplete"`);
@@ -1485,6 +1513,28 @@ Full build narrative, including every panel trap and the inverted-preset post-mo
   lane query returns whose detail GET and PATCH both 404 (blank address); a lane count can therefore
   include records that no longer exist. Rule from here: group by owner BEFORE leveling any
   assignment. Run dir `output/owner_group_assign_20260924T173550/`.
+- `src/scripts/dpd_presets_obit_window.py` — **Last Obituary Date on ALL 73 presets, APPLIED
+  2026-09-25 on Basem's go** (reaffirmed after the measured impact was shown): the panel's
+  "Prior to Date / Last 24 Months / prior to Quarter" block, stored RELATIVE as
+  `must.last_obituary_date = ["24-months", "quarter"]` (the shape his hand-save on FTM - 02 Ready
+  to Call already carried; `OBIT_WINDOW_KEY/VALUE` in `preset_spec`, the verifier fails any preset
+  without it). The app resolves it at load: on 09-25 the picker read **Jun 25, 2024 - Jun 25,
+  2026** = [today - quarter - 24 months, today - quarter] (`resolved_window()`), so the query
+  endpoint cannot count it verbatim (400 "wrong format"); count with the resolved dates.
+  **It is an INCLUDE window, measured before the write: a record with NO obituary date does not
+  load.** Effect (output/obit_window_impact_20260925.json): Hottest - 02 Ready to Call 52 -> 1,
+  FTM - 02 Ready to Call 303 -> 33, Bulk - 02 Ready to Call 54 -> 0, every Strong preset -> 0,
+  FTM - Mail 01 1,519 -> 416, Rehash 01/02 286 -> 166. The 24-month floor bites nothing today
+  (DataSift's obituary flags began 2025-12); the "prior to quarter" edge is the whole effect, and
+  the CRM date IS the obituary date (checked against DP research on 4 records, same to the day).
+  An EXCLUSION form (must_not on the last 90 days, keeps foreclosures: Hottest Ready 52 -> 15,
+  FTM Ready 303 -> 197) is honoured by the query endpoint but was NOT chosen and is unverified in
+  the panel. 72 PATCHed (1 probe + 71), each read back byte-identical apart from the key; verifier
+  still shows only the 2 pre-existing defects (FTM 02 Re-Skiptrace exclusion, Deep 02 5th tag).
+  Backups `output/dpd_presets_obit_window_backup_20260925T105851.json` (probe) and
+  `..._20260925T110015.json` (the 71); `--undo <backup>` restores. **Consequence for the
+  dialers, same day:** Bagoury "ran out" because the FTM lane was already 33 with this block;
+  now every Ready to Call lane is that small by design (Hottest 1, FTM 33, Bulk 0).
 - `src/scripts/dpd_presets_verify.py` — **Phase 7 QA for presets.** Reads every stored definition over the internal API and checks counties, suppression, statuses, counters, params and tag-uuid algebra against `preset_spec`; lists extras. Exit 0 only when all 73 are present and defect-free. **Currently exits 0.** Run it after any preset change.
 - `src/scripts/dpd_doctor.py` — `capture_presets` rewritten onto the builder's panel primitives (positional per-folder read, full scroll of `PresetsBelowBody`, no-toggle re-read for a folder that is open by default); writes `preset_items`, `preset_folders`, `preset_tree`. `--verify` diff is trustworthy again.
 - `src/scripts/dpd_playbook_extract.py`, `dpd_siftmap_manifest.py`, `dpd_siftmap_presets.py`, `dpd_qa_report.py` — the county-agnostic DC one-shot pipeline (see [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md)). **Reworked 2026-09-24 for the Work Order export and the no-AI ladder; `dpd_siftmap_manifest.py --plan` is the check/rebuild/delete planner for the saved SiftMap filters** — see "Doors-per-deal data: the Work Order format" above.
