@@ -63,10 +63,12 @@ DEAD, not quiet.
 
 **DC probate** (DWLR half only)
 - Files: `DC-Probate_stdout.log` + `dc_probates.csv`.
-- The Tyler-portal walk (`SiftStack DC Portal Pull`, Mon/Wed/Fri 07:15) is LIVE. On a Mon/Wed/Fri
-  with no `DC-Portal_stdout.log` / `dc_probates_portal.csv`, report the portal leg as MISSING; on
-  other days its absence is expected. The portal checkpoint (`portal_next_case`, currently
-  2026-ADM-001010) must advance, and a run that ends in a WAF failure writes NO file and does NOT
+- The Tyler-portal walk (`SiftStack DC Portal Pull`, **Tue/Thu/Sat 07:15** since the 2026-09-21
+  schedule change; it was Mon/Wed/Fri before) is LIVE. On a Tue/Thu/Sat with no
+  `DC-Portal_stdout.log` / `dc_probates_portal.csv`, report the portal leg as MISSING; on other
+  days its absence is expected -- do not report a Mon/Wed/Fri gap as a fault. The runner
+  `daily_sift_pulls.ps1` itself is `--source dwlr` only; the portal is its own task. The portal checkpoint (`portal_next_case`, 2026-ADM-001040
+  after the 09-24 run) must advance, and a run that ends in a WAF failure writes NO file and does NOT
   advance it -- say so, and say a re-run usually clears it (2026-09-16: the scheduled run died on
   the WAF, a manual re-run the same afternoon walked 28 cases clean). A WAF death is a bad day,
   not a dead pipeline.
