@@ -40,7 +40,7 @@ sys.path.insert(0, str(ROOT / "src" / "scripts"))
 from datasift_api_upload import Api  # noqa: E402
 from dpd.block_map import STATUS_NOT_SELECTABLE  # noqa: E402
 from dpd.preset_spec import (PRESETS, ONE_OWNER_STORE_KEY, ONE_OWNER_VALUE,  # noqa: E402
-                             ONE_OWNER_STRAY_KEY)
+                             ONE_OWNER_STRAY_KEY, OBIT_WINDOW_KEY, OBIT_WINDOW_VALUE)
 from dpd_presets_create import allocate_tags  # noqa: E402  (src/scripts on caller path)
 
 OUT = ROOT / "output" / "dpd_presets_verify.json"
@@ -149,6 +149,10 @@ def verify_preset(spec: dict, stored: dict, uuid_of: dict, bad: list[str]) -> No
     if ONE_OWNER_STRAY_KEY in f:
         fail(f"stray top-level {ONE_OWNER_STRAY_KEY}={f[ONE_OWNER_STRAY_KEY]!r}: invisible in "
              "the panel, applied by the query")
+
+    # Last Obituary Date window (2026-09-25): every preset carries the relative block.
+    if f.get(OBIT_WINDOW_KEY) != OBIT_WINDOW_VALUE:
+        fail(f"{OBIT_WINDOW_KEY} is {f.get(OBIT_WINDOW_KEY)!r}, wanted {OBIT_WINDOW_VALUE}")
 
     # Params booleans the spec sets. A param is satisfied by ANY of its candidate
     # storage keys holding the wanted value; none holding it is a defect.

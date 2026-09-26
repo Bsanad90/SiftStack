@@ -101,6 +101,20 @@ ONE_OWNER_STORE_KEY = "ownerPropertiesOwned"
 ONE_OWNER_VALUE = {"show_properties": "one_per_owner"}
 ONE_OWNER_STRAY_KEY = "properties_owned"
 
+# Last Obituary Date on EVERY preset (Basem, 2026-09-25, reaffirmed after the measured
+# impact was shown): the panel's "Prior to Date" mode, Last 24 Months prior to Quarter,
+# stored RELATIVE as ["24-months", "quarter"] at the top of `must` (the shape Basem's own
+# hand-save on FTM - 02 Ready to Call landed). The app resolves it at load time: on
+# 2026-09-25 the picker read Jun 25, 2024 - Jun 25, 2026, i.e. [today - quarter - 24 months,
+# today - quarter]. Semantics, MEASURED on the query endpoint before the write: it is an
+# INCLUDE window -- a record with no obituary date at all does not load. With it, Hottest -
+# 02 Ready to Call went 52 -> 1, FTM - 02 Ready to Call 303 -> 33, Strong and Bulk Ready to
+# Call to 0 (output/obit_window_impact_20260925.json). The 24-month floor bites nothing
+# today (DataSift's obituary flags began 2025-12); the "prior to quarter" edge is what acts.
+# Written by dpd_presets_obit_window.py; the verifier fails any preset without it.
+OBIT_WINDOW_KEY = "last_obituary_date"
+OBIT_WINDOW_VALUE = ["24-months", "quarter"]
+
 CALL_STAGES = [
     ("00 Needs Skipped", {"has_numbers": False, "skiptraced": False}),
     ("01 Skipped No Numbers", {"has_numbers": False, "skiptraced": True}),
