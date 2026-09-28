@@ -1002,6 +1002,33 @@ set paged equal to its count -- the index lag did not bite on a Thursday evening
   `output/lane_incomplete_cleanup/`. FTM 2026-09-11: 197 → 54 incomplete (141 fixed, 12 review
   rows + 41 worklist rows in `worklist.csv`, 1 group-B row pending). Hottest planned (14 write /
   4 review / 7 worklist), not written.
+- **Re-planned 2026-09-28 (read-only), nothing written:** FTM 72 total / 19 incomplete,
+  Hottest 32 / 5 (the obituary window shrank both lanes). Plans in
+  `output/lane_incomplete_cleanup/{ftm_20260928T141308,hottest_20260928T141315}/`. Three
+  derivation rules added to the planner: on a Register of Wills record the PR fields WIN over the
+  trust title (`row_pr_line` also lifts the PR mailing from the upload note); a truncated A2
+  `last_name` naming two co-trustees (`Lotfi Ali Tr & Lotfi Sedigheh`) fixes the shared first
+  token as the SURNAME (`recorder_pair`, so `Ali Lotfi`, not `Lotfi Ali`); and SiftMap's mangled
+  `secondary_owners` rows (`(None,'Renz')` + `('S','Marisa')` = recorder `RENZ MARISA S`) yield the
+  trustee's given name for a `<Surname> Family Trust` (`secondary_split`, review bucket only).
+  **TRAP fixed the same day:** `to_query()` sent the stored RELATIVE obituary window
+  (`["360-months","month"]`) verbatim and the count endpoint 400s on it ("Date has wrong
+  format"), so EVERY lane reader (cleanup, assignee report, owner-group assign, rebalance) was
+  dead since the 09-25 preset write. `preset_spec.resolve_relative_date` now resolves it inside
+  `to_query` the way the app does (1996-08-28..2026-08-28 on 09-28).
+  **WRITTEN 2026-09-28 on Basem's go ("strong and fixable: do; deeper dive: deep prospect"):**
+  Hottest 5/5 written, lane 32/32 clean; FTM 4 written by the probe (4911 Ridge Crest -> PR Paula
+  Boyer + her mailing, Ali Lotfi, Jimmy Mitchell, Joseph Hottel), verify 4/4 intact, undo variant
+  `null` proven on both lanes. **The auto-mode classifier refused `--commit --group A-same
+  --include-review` on FTM** (same as 09-11), so the 8 approved review rows (6 names + Delano
+  Tucker / Robert Wilson from the tax roll) wait for Basem to run that one command. Deep dive
+  (read-only, `output/lane_incomplete_cleanup/deep_dive_20260928/findings.md`): every held record
+  resolved on SDAT / Fairfax icare / MD Land Records; `dp_cohort.csv` is the prep-ready DP input
+  for the 9. Traps: SDAT spells `LA RUE RD` (not Larue); an UNNUMBERED lot (Helmick Parcel B,
+  Wiggins 0.11-ac sliver) can never be Clean by address; Fairfax icare `mode=owner` is gated
+  (access error) but `mode=address` is open and Playwright-friendly (`#inpNumber`, `#inpStreet`,
+  `#btSearch`, detail rows `Owner / Name / Co-Owners`); the MD open-data roll carries GRANTOR
+  names, not owners, which still finds estate-to-heir transfers (`HELMICK TONI L ESTATE`).
 
 ### Per-record event log + tasks over the API (learned 2026-09-15, Re-Skiptrace review)
 
@@ -1439,6 +1466,17 @@ plugin-name.plugin (ZIP containing):
   our own, which is why exactly one such tag (`skip_traced_2026-09`) exists in an account of 446.
   Do not create more of them; one fact must not have two vocabularies (same reason the sold
   sweep keeps the `Recently Sold` TAG distinct from the `Already Sold` STATUS).
+  **CORRECTION 2026-09-28 (measured on the wizard's Review step and on the records):
+  DataSift's auto-tag is now `REISift Skipped` + `REISift Skipped MM/YY`** (chips shown under
+  AUTO TAGS on the Review step, 09-08 and 09-28; every record traced since 09-08 carries
+  `REISift Skipped 09/26`). The `Skip Traced MM/YYYY` series above (10/2025..07/2026) is what
+  the platform emitted BEFORE its rename; `Skip Traced 09/2026` exists on this account only
+  because `datasift_uploader.py` types it into the optional box. So the wizard path now writes
+  one vocabulary by itself and the uploader adds a second one; scripts that CHECK for a trace
+  date must accept both prefixes (`REISift Skipped`, `Skip Traced`), and the explicit stamp on
+  SmartSkip/Tracerfy/Trestle/DP pushes should follow whatever the wizard emits THAT month, read
+  off a freshly traced record, not a constant. The DPD pull batch clones leave the optional
+  box EMPTY for this reason.
   **The boolean is a second, separate half of the same rule.** `owner.skiptraced` and
   `owner.skiptrace_attempts` are what the CRM itself reads, and an API phone upsert does NOT
   set them — 7854 Linden Leaf sat at `skiptraced: false` / `attempts: 0` holding a loaded
@@ -1535,6 +1573,36 @@ Full build narrative, including every panel trap and the inverted-preset post-mo
   `..._20260925T110015.json` (the 71); `--undo <backup>` restores. **Consequence for the
   dialers, same day:** Bagoury "ran out" because the FTM lane was already 33 with this block;
   now every Ready to Call lane is that small by design (Hottest 1, FTM 33, Bulk 0).
+  **EDGE MOVED 2026-09-28: `["360-months", "month"]` on all 73** (Basem: "no obituary date less
+  than 45 days from today"; first written as `24-months`, then "make it 360 months" the same day
+  so the length is no floor at all). The picker CANNOT say 45 days: read out of `main.min.js`, the PRIOR
+  control stores `["<n>-<days|weeks|months>", <anchor>]` with the anchor limited to today /
+  yesterday / week / month / quarter / year, and the window is the n units ENDING at the anchor
+  — `["45-days", "today"]` would be the LAST 45 days, the opposite. `month` (older than ~30 days)
+  was the nearest and Basem chose it over a fixed date re-saved daily. Measured before the write:
+  Hottest Ready 1 -> 31, FTM Ready 27 -> 67, Bulk Ready 0 -> 29, FTM Mail 01 423 -> 831.
+  `resolved_window()` now resolves any anchor (`OBIT_ANCHOR_MONTHS`). Backups
+  `output/dpd_presets_obit_window_backup_20260928T123033.json` + `..._20260928T123142.json`.
+- `src/scripts/dpd_siftmap_filters_api.py` — **SiftMap saved filters have a READ+PATCH API,
+  proven 2026-09-28 (Basem's go).** `GET https://map.reisift.io/filters/?scope=account&page_size=100`
+  (the JWT from `POST /api/token/`; Ty's account-blueprint `export.py` is the origin) returns every
+  saved filter with `id`, `auto_add_enabled`, `tags`, `lists`, `filter_data.filters`, `updated`,
+  `updated_by` -- the whole management-page audit without a browser, and MORE than the page shows
+  (the page never shows a filter's tags or its stored dates). `PATCH /filters/{id}/` with a partial
+  body (`tags`, `filter_data`, `auto_add_enabled`) returns 200 and STORES, leaving every unnamed
+  field untouched (checked field-by-field on read-back, 9 writes). Backup of all filters before each
+  write, `--undo <backup>` restores. Deletion is still the management page
+  (`dpd_siftmap_presets.py --delete-from-file`). Facts that matter: a filter's `tags` are what an
+  auto-add DRIP stamps -- a filter with auto-add ON and `tags: []` adds untagged records that no
+  preset can see (DC P1-04 NOF sat that way 09-06..09-28; 0 leaked, measured); the manual pull stamps
+  its own tags at pull time, so set the filter's tags BEFORE ever enabling auto-add. The obituary
+  filter's `extra_last_obituary_date_min/max` are ABSOLUTE dates; the live drip is id 11496 (named
+  `District Of Columbia, DC`, six counties, tags FTM + Obituaries, list Obituary) and must be
+  re-saved whenever the Records presets' relative window moves (set to 1996-08-28..2026-08-28 on
+  09-28 to match `["360-months", "month"]`). `dpd_siftmap_tag_in_account.py` (in-mode Add Records
+  with tags, owner protection ON) is the tag-held-records path, but `_result_count` returns None on
+  an in-mode page that renders "2 Properties" -- fix the parser before relying on it; with a handful
+  of records, tag by uuid over the API instead.
 - `src/scripts/dpd_presets_verify.py` — **Phase 7 QA for presets.** Reads every stored definition over the internal API and checks counties, suppression, statuses, counters, params and tag-uuid algebra against `preset_spec`; lists extras. Exit 0 only when all 73 are present and defect-free. **Currently exits 0.** Run it after any preset change.
 - `src/scripts/dpd_doctor.py` — `capture_presets` rewritten onto the builder's panel primitives (positional per-folder read, full scroll of `PresetsBelowBody`, no-toggle re-read for a folder that is open by default); writes `preset_items`, `preset_folders`, `preset_tree`. `--verify` diff is trustworthy again.
 - `src/scripts/dpd_playbook_extract.py`, `dpd_siftmap_manifest.py`, `dpd_siftmap_presets.py`, `dpd_qa_report.py` — the county-agnostic DC one-shot pipeline (see [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md)). **Reworked 2026-09-24 for the Work Order export and the no-AI ladder; `dpd_siftmap_manifest.py --plan` is the check/rebuild/delete planner for the saved SiftMap filters** — see "Doors-per-deal data: the Work Order format" above.

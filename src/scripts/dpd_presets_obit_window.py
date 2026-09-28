@@ -1,4 +1,8 @@
-"""Put the Last Obituary Date block (Last 24 Months, prior to Quarter) on every DPD preset.
+"""Put the Last Obituary Date block (Last 24 Months, prior to Month) on every DPD preset.
+
+2026-09-28 (Basem): the edge moved from Quarter to Month -- "no obituary less than 45 days
+old"; Month is the nearest anchor the picker offers (see OBIT_WINDOW_VALUE in preset_spec).
+A preset holding the OLD pair counts as "to patch": target_filters overwrites the key.
 
 Basem, 2026-09-25: "this should be added to ALL presets", reaffirmed after the measured
 impact was put in front of him (the block is an INCLUDE window: a record with no obituary
@@ -37,7 +41,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "src" / "scripts"))
 
-from dpd.preset_spec import PRESETS, OBIT_WINDOW_KEY, OBIT_WINDOW_VALUE  # noqa: E402
+from dpd.preset_spec import PRESETS, OBIT_WINDOW_KEY, OBIT_WINDOW_VALUE, resolve_relative_date  # noqa: E402
 from dpd_lane_assignee_report import LiveApi, count, to_query  # noqa: E402
 from dpd_presets_narrow import list_presets  # noqa: E402
 from dpd_presets_verify import prefix_match  # noqa: E402
@@ -60,33 +64,15 @@ def has_block(p: dict) -> bool:
     return _must(p).get(OBIT_WINDOW_KEY) == OBIT_WINDOW_VALUE
 
 
-def _back(d: date, months: int) -> date:
-    y, m = d.year, d.month - months
-    while m <= 0:
-        y, m = y - 1, m + 12
-    try:
-        return d.replace(year=y, month=m)
-    except ValueError:  # e.g. the 31st of a shorter month: clamp to month end
-        first_next = (date(y, m, 1) + timedelta(days=31)).replace(day=1)
-        return first_next - timedelta(days=1)
-
-
-def resolved_window(today: date | None = None) -> list[str]:
-    """How the picker resolved ["24-months", "quarter"] on 2026-09-25: end = today minus
-    one quarter (same day-of-month), start = end minus 24 months."""
-    t = today or date.today()
-    end = _back(t, 3)
-    return [_back(end, 24).isoformat(), end.isoformat()]
+def resolved_window(today: date | None = None, value: list[str] | None = None) -> list[str]:
+    """Kept for callers; the resolver itself lives in preset_spec.resolve_relative_date."""
+    return resolve_relative_date(value, today)
 
 
 def approx_count(api: LiveApi, filters: dict) -> str:
-    """Count with the relative block replaced by today's resolution of it."""
+    """Count with the relative block replaced by today's resolution of it (to_query does it)."""
     try:
-        q = to_query(filters)
-        v = q["must"].get(OBIT_WINDOW_KEY)
-        if isinstance(v, list) and v and isinstance(v[0], str) and "-months" in v[0]:
-            q["must"][OBIT_WINDOW_KEY] = resolved_window()
-        return str(count(api, q))
+        return str(count(api, to_query(filters)))
     except Exception as e:
         return f"ERR {str(e)[:60]}"
 

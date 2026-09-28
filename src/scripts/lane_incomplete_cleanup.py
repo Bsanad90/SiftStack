@@ -103,6 +103,12 @@ VERDICT_RE = re.compile(r"VERDICT:\s*(?P<v>[^\n|]+)")
 # PROBATE - Register of Wills note:  PR: Tracey Mulili - 205 Bel Aire Ln, Frederick, MD, 21702
 PR_LINE_RE = re.compile(r"^PR:\s*(?P<name>[^-\n]+?)\s*-\s*(?P<street>[^,\n]+),\s*(?P<city>[^,\n]+),"
                         r"\s*(?P<state>[A-Z]{2}),?\s*(?P<zip>\d{5})", re.M)
+# Register of Wills upload note (create_probates.py, 2026-09-28):
+#   Personal Representative Paula A Boyer, 3916 Point Of Rocks Rd, Jefferson MD 21755-7500.
+ROW_PR_RE = re.compile(r"Personal Representative\s+(?P<name>[^,\n]+?),\s*(?P<street>[^,\n]+),"
+                       r"\s*(?P<city>[^,\n]+?)\s+(?P<state>[A-Z]{2})\s+(?P<zip>\d{5})")
+# A truncated A2 last_name naming two co-trustees: "Lotfi Ali Tr & Lotfi Sedigheh".
+RECORDER_PAIR_RE = re.compile(r"^\s*(?P<a>[A-Za-z'\-]+)\s+(?P<b>[A-Za-z'\-]+)\b[^&]*&\s*(?P<c>[A-Za-z'\-]+)")
 
 
 def say(m: str) -> None:
@@ -282,6 +288,68 @@ def pr_line(messages: list[str]) -> dict | None:
     return None
 
 
+def row_pr_line(messages: list[str]) -> dict | None:
+    """The PR + mailing from a Register of Wills upload note (the `Personal Representative
+    <name>, <street>, <city> <ST> <zip>` sentence); falls back to the `PR:` line shape."""
+    for raw in messages:
+        m = ROW_PR_RE.search(raw or "")
+        if m:
+            toks = clean_person_tokens(m.group("name"))
+            return {"first": title(toks[0]) if toks else "", "last": title(toks[-1]) if len(toks) > 1 else "",
+                    "address": {"street": m.group("street").strip(), "city": m.group("city").strip(),
+                                "state": m.group("state"), "postal_code": m.group("zip")}}
+    return pr_line(messages)
+
+
+def recorder_pair(last_name: str) -> tuple[str, str] | None:
+    """'Lotfi Ali Tr & Lotfi Sedigheh' -> ('Ali', 'Lotfi'). Two co-trustees sharing their FIRST
+    token fix that token as the SURNAME (recorder LAST FIRST order), which the title alone
+    cannot. The 30-char truncation may cut the second surname ('... & Mitche'), so a prefix of
+    at least 3 letters counts."""
+    m = RECORDER_PAIR_RE.match(last_name or "")
+    if not m:
+        return None
+    a, b, c = m.group("a"), m.group("b"), m.group("c")
+    if len(c) >= 3 and a.lower().startswith(c.lower()) and b.lower() not in TRUST_WORDS \
+            and b.lower() not in ORDINALS and len(b) > 1:
+        return title(b), title(a)
+    return None
+
+
+def secondary_split(d: dict, surname: str) -> tuple[bool, list[str]]:
+    """SiftMap imports write a recorder-style trustee ('RENZ MARISA S') as MANGLED
+    secondary_owner rows: (None, 'Renz') then ('S', 'Marisa'). Returns (surname_seen, the
+    given-name tokens that are not initials). Rows naming a real person with the surname as
+    last_name ('Sook Han') are other family members and are skipped."""
+    seen, given = False, []
+    parts = {surname.lower()} | set(surname.lower().split("-"))   # 'Wavelet-Palmer' -> 'Palmer'
+    for so in d.get("secondary_owners") or []:
+        f, l = (so.get("first_name") or "").strip(), (so.get("last_name") or "").strip()
+        if not f and not l:
+            seen = True                    # an all-blank row: the surname row with nothing left
+            continue
+        if l and not f and l.lower() in parts:
+            seen = True
+            continue
+        if f and l and l.lower() in parts:
+            continue                       # a whole other person, not a split row
+        for t in (f, l):
+            if len(t) > 1 and t.lower() not in parts and NAME_TOKEN_RE.match(t) \
+                    and t.lower() not in TRUST_WORDS:
+                given.append(title(t))
+    return seen, given
+
+
+def rel_confirms(rec: dict, first: str, last: str) -> str:
+    """The REL field that names exactly this person, if any ('REL1: LYNNE EDITH KARP')."""
+    for lbl, val in (rec.get("cf") or {}).items():
+        if lbl.startswith("REL") and lbl.endswith("Full Name") and isinstance(val, str):
+            toks = [t.lower() for t in clean_person_tokens(val)]
+            if toks and toks[0] == first.lower() and toks[-1] == last.lower():
+                return f"{lbl.split(':')[0]}: {val}"
+    return ""
+
+
 def known_firsts(rec: dict) -> set[str]:
     """First tokens the record itself vouches for: REL fields, secondary owners, PR field."""
     out = set()
@@ -435,25 +503,66 @@ def derive(rec: dict, name_of: dict) -> dict:
             row["subgroup"] += "/A2"
         if "&" in co or re.search(r"\band\b", co, re.I):
             row["subgroup"] += "/two"
+        # Register of Wills probate: the PR is the person to name (Basem's rule for MD/DC/VA
+        # probates; 4911 Ridge Crest Ct 2026-09-28), the trust title stays in `company`.
+        cf = rec.get("cf") or {}
+        pf, pl = cf.get("PR First Name"), cf.get("PR Last Name")
+        if isinstance(pf, str) and isinstance(pl, str) and pf.strip() and pl.strip() \
+                and any("register of wills" in (m or "").lower() for m in rec.get("messages") or []):
+            ft, lt = clean_person_tokens(pf), clean_person_tokens(pl)
+            if ft and lt:
+                first, last = title(ft[0]), title(" ".join(lt))
+                pr = row_pr_line(rec.get("messages") or [])
+                if pr and pr["last"].lower() == last.lower() and pr["address"]["street"]:
+                    block["address"] = pr["address"]
+                    row["mailing_changed"] = True
+                why = gate(first, last, rec)
+                row["hint"] = "PR wins over the trust title (Register of Wills record)"
+                plan_write(first, last, "pr_fields", "review" if why else "write", why)
+                return row
         parsed = parse_owner_blob(co)
-        if parsed["source"] == "entity_company":
-            row["reason"] = "entity_no_person_name"
-            return row
         title_toks = alpha_tokens(co)
         dp = dp_decedent(rec.get("messages") or [])
+        pair = recorder_pair(block["last_name"] or "")
         first = last = source = ""
-        if dp and dp["last"].lower() in title_toks and \
-                (not parsed["first"] or dp["first"].lower() in title_toks):
-            first, last, source = dp["first"], dp["last"], "dp_note"
-        elif parsed["first"] and parsed["last"]:
-            first, last, source = title(parsed["first"]), title(parsed["last"]), "trust_title"
-        if not (first and last):
+        if parsed["source"] == "entity_company" or not (parsed["first"] and parsed["last"]):
+            # No person in the title ('Renz Family Trust'): SiftMap's mangled secondary-owner
+            # rows may still carry the trustee's given name beside the title's surname.
+            surname = title(parsed["last"] or "")
+            seen, given = secondary_split(d, surname) if surname else (False, [])
+            if surname and seen and given:
+                first = given[0]
+                why = gate(first, surname, rec, {g.lower() for g in given})
+                conf = rel_confirms(rec, first, surname)
+                row["hint"] = (f"secondary rows -> given {given!r} + surname {surname}"
+                               + (f"; {conf} confirms" if conf else "")
+                               + ("; ORDER UNSURE, two given tokens" if len(given) > 1 else ""))
+                plan_write(first, surname, "secondary_split", "review",
+                           why or ("secondary_split_order" if len(given) > 1 else "secondary_split_guess"))
+                return row
             row["reason"] = "entity_no_person_name"
             row["hint"] = f"parsed={parsed['first']} {parsed['last']} ({parsed['confidence']})"
             return row
+        if dp and dp["last"].lower() in title_toks and \
+                (not parsed["first"] or dp["first"].lower() in title_toks):
+            first, last, source = dp["first"], dp["last"], "dp_note"
+        elif pair and pair[1].lower() in title_toks:
+            first, last, source = pair[0], pair[1], "recorder_pair"
+        else:
+            first, last, source = title(parsed["first"]), title(parsed["last"]), "trust_title"
         why = gate(first, last, rec, {dp["first"].lower()} if dp else set())
         if not why and source == "trust_title" and order_ambiguous(co, first, last):
-            why = f"order_ambiguous:{first} {last}"
+            # a last-name-only secondary row names the SURNAME ('Lowry Tucker Living Trust'
+            # beside (None, 'Tucker')): that settles the order the title could not
+            seen_l, _ = secondary_split(d, last)
+            seen_f, _ = secondary_split(d, first)
+            if seen_l and not seen_f:
+                source = "trust_title+secondary"
+            elif seen_f and not seen_l:
+                first, last, source = last, first, "trust_title+secondary"
+                why = gate(first, last, rec, {dp["first"].lower()} if dp else set())
+            else:
+                why = f"order_ambiguous:{first} {last}"
         if mailing_incomplete(block):
             plan_write(first, last, source, "worklist", "mailing_unparseable")
             return row

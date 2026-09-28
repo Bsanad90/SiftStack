@@ -49,6 +49,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "src" / "scripts"))
 
+from dpd.preset_spec import is_relative_date, resolve_relative_date  # noqa: E402
 from dpd_presets_verify import prefix_match  # noqa: E402
 from live_pull import LiveApi  # noqa: E402
 
@@ -141,6 +142,11 @@ def to_query(filters: dict) -> dict:
                 must[key] = pos
             if neg:
                 must_not[key] = neg + list(must_not.get(key) or [])
+        elif is_relative_date(val):
+            # The PRIOR date picker stores a RELATIVE pair (["360-months", "month"], every
+            # preset since 2026-09-25) and resolves it at load; the query endpoint 400s on it
+            # ("Date has wrong format"). Count with today's resolution, as the app does.
+            must[key] = resolve_relative_date(val)
         else:
             must[key] = val
 

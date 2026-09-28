@@ -21,6 +21,9 @@ for it.
 """
 from __future__ import annotations
 
+import re as _re
+from datetime import date as _date, timedelta as _timedelta
+
 # ---------------------------------------------------------------- entry scopes
 # Which records a folder is allowed to see, before any stage filter.
 # Tier 2 subtracts both priority tags so a record is worked at its HIGHEST tier only.
@@ -74,6 +77,10 @@ DEAD_STATUSES = [
 ]
 SUPPRESS_LISTS = ["Low Equity", "Negative Equity"]
 SUPPRESS_TAGS_CALL = ["Mail Only"]
+# 2026-09-28 (Basem: "tag them out of the call lanes"): LLC / company / institution owners carry
+# `Entity Owner` (set by output/dpd_pull_20260928/tag_entities.py; trusts carry `Trust` and stay
+# callable). CALL presets only -- the DEEP lanes keep them, entity research is its own path.
+SUPPRESS_TAGS_CALL_ONLY = ["Entity Owner"]
 STRUCTURE = {"prefer": "Single Family", "blank": "surface, never drop"}
 
 # ------------------------------------------------------------------ the stages
@@ -112,8 +119,63 @@ ONE_OWNER_STRAY_KEY = "properties_owned"
 # Call to 0 (output/obit_window_impact_20260925.json). The 24-month floor bites nothing
 # today (DataSift's obituary flags began 2025-12); the "prior to quarter" edge is what acts.
 # Written by dpd_presets_obit_window.py; the verifier fails any preset without it.
+#
+# 2026-09-28 (Basem): "no obituary date less than 45 days from today". Read out of the app
+# bundle (main.min.js, the PRIOR date-range control): the stored pair is
+# ["<n>-<days|weeks|months>", <anchor>] where the anchor can ONLY be today / yesterday /
+# week / month / quarter / year; the window is the n units ENDING at the anchor. There is no
+# "45 days ago" anchor, and ["45-days", "today"] would be the LAST 45 days (the opposite).
+# Basem chose the nearest expressible edge: anchor `month` (older than ~30 days). Measured
+# before the write: Hottest Ready 1 -> 31, FTM Ready 27 -> 67, Bulk Ready 0 -> 29.
 OBIT_WINDOW_KEY = "last_obituary_date"
-OBIT_WINDOW_VALUE = ["24-months", "quarter"]
+# 2026-09-28 (Basem, same day, later): "Make it 360 months" -- the 24-month floor was never
+# meant as a floor (DataSift's obituary flags began 2025-12); 360 months = no floor in practice.
+# The `month` edge (older than ~30 days, the 45-day rule) is unchanged.
+OBIT_WINDOW_VALUE = ["360-months", "month"]
+# Months back from today for each anchor the picker offers (used to resolve the block for
+# counting; the query endpoint rejects the relative form).
+OBIT_ANCHOR_MONTHS = {"today": 0, "yesterday": 0, "week": 0, "month": 1, "quarter": 3, "year": 12}
+
+_RELATIVE_LEN_RE = _re.compile(r"^(\d+)-(days|weeks|months)$")
+
+
+def is_relative_date(value) -> bool:
+    """True for the picker's stored PRIOR pair, e.g. ["360-months", "month"]."""
+    return (isinstance(value, list) and len(value) == 2 and isinstance(value[0], str)
+            and isinstance(value[1], str) and bool(_RELATIVE_LEN_RE.match(value[0]))
+            and value[1] in OBIT_ANCHOR_MONTHS)
+
+
+def _months_back(d: _date, months: int) -> _date:
+    y, m = d.year, d.month - months
+    while m <= 0:
+        y, m = y - 1, m + 12
+    try:
+        return d.replace(year=y, month=m)
+    except ValueError:  # e.g. the 31st of a shorter month: clamp to month end
+        first_next = (_date(y, m, 1) + _timedelta(days=31)).replace(day=1)
+        return first_next - _timedelta(days=1)
+
+
+def resolve_relative_date(value: list[str] | None = None, today: _date | None = None) -> list[str]:
+    """How the picker resolves the relative pair (app bundle, 2026-09-28): end = today minus
+    the anchor (quarter -> 3 months, month -> 1, same day-of-month), start = end minus the
+    length. On 2026-09-25 ["24-months", "quarter"] read Jun 25, 2024 - Jun 25, 2026.
+    The query endpoint rejects the relative form (400 "Date has wrong format"), so every
+    reader that COUNTS a stored preset must go through this first."""
+    t = today or _date.today()
+    length, anchor = value or OBIT_WINDOW_VALUE
+    n, unit = length.split("-")
+    end = _months_back(t, OBIT_ANCHOR_MONTHS[anchor])
+    if anchor == "yesterday":
+        end = end - _timedelta(days=1)
+    elif anchor == "week":
+        end = end - _timedelta(days=7)
+    if unit == "months":
+        start = _months_back(end, int(n))
+    else:
+        start = end - _timedelta(days=int(n) * (7 if unit == "weeks" else 1))
+    return [start.isoformat(), end.isoformat()]
 
 CALL_STAGES = [
     ("00 Needs Skipped", {"has_numbers": False, "skiptraced": False}),
@@ -245,6 +307,8 @@ def _suppression(channel: str, stage: dict) -> dict:
         s["status_none"] = list(DEAD_STATUSES)
     if channel in ("call", "deep"):
         s["tags_none_extra"] = list(SUPPRESS_TAGS_CALL)
+    if channel == "call":
+        s["tags_none_extra"] += list(SUPPRESS_TAGS_CALL_ONLY)
     return s
 
 
