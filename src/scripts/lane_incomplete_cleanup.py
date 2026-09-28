@@ -971,7 +971,15 @@ def cmd_commit(a) -> int:
             and (r["bucket"] == "write" or (a.include_review and r["bucket"] == "review"))
             and not (state["committed"].get(r["uuid"]) or {}).get("ok")
             and r["uuid"] not in state["probe"]]
-    say(f"commit group {g}: {len(rows)} rows ({'incl. review' if a.include_review else 'write only'})")
+    if a.keys:
+        want = {k.strip().lower() for k in a.keys.split(",") if k.strip()}
+        rows = [r for r in rows if r["uuid"].lower() in want or r["street"].lower() in want]
+        missing = want - {r["uuid"].lower() for r in rows} - {r["street"].lower() for r in rows}
+        if missing:
+            say(f"refusing: --keys not in the eligible {g} rows: {sorted(missing)}")
+            return 2
+    say(f"commit group {g}: {len(rows)} rows ({'incl. review' if a.include_review else 'write only'}"
+        + (f", keys={len(rows)}" if a.keys else "") + ")")
     api = Api()
     consec, done, t0 = 0, 0, time.time()
     for i, r in enumerate(rows, 1):
@@ -1148,6 +1156,7 @@ def main() -> int:
     act.add_argument("--undo", metavar="BACKUP_JSON")
     ap.add_argument("--group", choices=COMMIT_GROUPS, help="required with --commit")
     ap.add_argument("--include-review", action="store_true", help="commit review-bucket rows too")
+    ap.add_argument("--keys", help="with --commit: only these rows (comma-separated uuids or streets)")
     ap.add_argument("--accept-one-way", action="store_true",
                     help="commit group A even though the probe showed the rename cannot be blanked again")
     ap.add_argument("--allow-drift", action="store_true", help="plan even if the incomplete count drifted")

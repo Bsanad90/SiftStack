@@ -1603,6 +1603,17 @@ Full build narrative, including every panel trap and the inverted-preset post-mo
   with tags, owner protection ON) is the tag-held-records path, but `_result_count` returns None on
   an in-mode page that renders "2 Properties" -- fix the parser before relying on it; with a handful
   of records, tag by uuid over the API instead.
+- `src/scripts/dpd_presets_entity_exclude.py` — **`Entity Owner` excluded from all 33 CALL presets
+  (Basem 2026-09-28).** Spec: `SUPPRESS_TAGS_CALL_ONLY` rides on the `call` channel only (DEEP
+  lanes keep entities). The store holds every CALL preset's exclusions under `must_not.any_tags`
+  (multi-value exclusion rule); probe + commit + `--undo`; verifier derives the wanted set from the
+  spec. Tags on records: `Trust` (living/family trusts, STAY callable -- the traced numbers are
+  the named person's), `Entity Owner` (LLC/company; banks and mortgage/REO trusts count as
+  companies), `Entity Owner` + `Institution` (church / government / HOA / placeholder). Classifier
+  + writer: `output/dpd_pull_20260928/tag_entities.py` (cohort-scoped; the account at large is not
+  tagged). **Panel trap:** a tag exclusion renders as a RED minus chip inside the "ALL TAGS (AND)"
+  block whose dropdown still says "Include" -- read chip colour, not the dropdown. Measured effect
+  with the obituary window lifted: Hottest Ready to Call 1,076 -> 912.
 - `src/scripts/dpd_presets_verify.py` — **Phase 7 QA for presets.** Reads every stored definition over the internal API and checks counties, suppression, statuses, counters, params and tag-uuid algebra against `preset_spec`; lists extras. Exit 0 only when all 73 are present and defect-free. **Currently exits 0.** Run it after any preset change.
 - `src/scripts/dpd_doctor.py` — `capture_presets` rewritten onto the builder's panel primitives (positional per-folder read, full scroll of `PresetsBelowBody`, no-toggle re-read for a folder that is open by default); writes `preset_items`, `preset_folders`, `preset_tree`. `--verify` diff is trustworthy again.
 - `src/scripts/dpd_playbook_extract.py`, `dpd_siftmap_manifest.py`, `dpd_siftmap_presets.py`, `dpd_qa_report.py` — the county-agnostic DC one-shot pipeline (see [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md)). **Reworked 2026-09-24 for the Work Order export and the no-AI ladder; `dpd_siftmap_manifest.py --plan` is the check/rebuild/delete planner for the saved SiftMap filters** — see "Doors-per-deal data: the Work Order format" above.
