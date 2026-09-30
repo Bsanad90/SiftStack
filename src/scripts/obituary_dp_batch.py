@@ -67,12 +67,13 @@ MONTH_TAG = date.today().strftime("%m/%Y")
 
 TAG_DP = f"Deep Prospected {MONTH_TAG}"
 # Basem 2026-09-22, non-negotiable: anything that loads numbers stamps the trace date in the
-# SAME operation. This is DataSift's own auto-tag spelling ("Skip Traced 09/2026"), the series
-# the account has run on unbroken since 10/2025 -- NOT the retired `skip_traced_YYYY-MM`, which
-# only ever came from datasift_uploader.py typing it into the wizard's optional tag box.
-# Stamped on EVERY record in the batch, including the ones SmartSkip returned nothing for: the
-# trace was paid for either way, and an unstamped miss is what gets re-skipped next month.
-TAG_SKIPTRACED = f"Skip Traced {MONTH_TAG}"
+# SAME operation. Stamped on EVERY record in the batch, including the ones SmartSkip returned
+# nothing for: the trace was paid for either way, and an unstamped miss is what gets re-skipped
+# next month.
+# Basem 2026-09-30: one trace tag per SOURCE -- this batch's trace is SmartSkip, so `SS Traced
+# MM/YYYY` (the wizard is `REISift Traced`, clerk IDI data `IDI Traced`). The older
+# `Skip Traced MM/YYYY` tags on the account are history and are not created any more.
+TAG_SKIPTRACED = f"SS Traced {MONTH_TAG}"
 TAG_DECEASED = "Deceased Owner"          # exists on the account already
 TAG_ALIVE = "Owner Alive - Spouse Deceased"
 TAG_UNVERIFIED = "DP Death Unverified"
@@ -2947,7 +2948,7 @@ def main() -> int:
                         "(Basem: 'including the no numbers allows for deep prospecting') -- "
                         "a record with no numbers is the DP candidate, not the exception, "
                         "and it is the one that most needs the pinned note naming who to "
-                        "find. It also lands the `Skip Traced MM/YYYY` date and the "
+                        "find. It also lands the `SS Traced MM/YYYY` date and the "
                         "owner.skiptraced flag, without which a record the batch paid to "
                         "trace that came back empty gets re-skipped next month. "
                         "--no-include-no-numbers restores the old phones-only behaviour")
