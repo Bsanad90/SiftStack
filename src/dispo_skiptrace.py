@@ -45,7 +45,6 @@ import config as cfg
 logger = logging.getLogger(__name__)
 
 TRACERFY_TRACE = "https://tracerfy.com/v1/api/trace/"
-TRACERFY_QUEUE = "https://tracerfy.com/v1/api/queue/"
 TRACERFY_PHONES = ["primary_phone", "mobile_1", "mobile_2", "mobile_3", "mobile_4",
                    "mobile_5", "landline_1", "landline_2", "landline_3"]
 TRACERFY_EMAILS = ["email_1", "email_2", "email_3", "email_4", "email_5"]
@@ -127,23 +126,18 @@ def tracerfy_pass(contacts: list[dict]) -> dict[str, dict]:
         logger.warning("Tracerfy HTTP %s: %s", resp.status_code, resp.text[:200])
         return {}
     qid = resp.json().get("queue_id")
-    records = []
-    for _ in range(60):
-        time.sleep(5)
-        try:
-            d = requests.get(f"{TRACERFY_QUEUE}{qid}",
-                            headers={"Authorization": f"Bearer {cfg.TRACERFY_API_KEY}"}, timeout=15).json()
-        except (requests.RequestException, ValueError):
-            continue
-        if isinstance(d, list):
-            records = d
-            break
-        if isinstance(d, dict):
-            if d.get("status") == "failed":
-                return {}
-            if d.get("status") == "completed":
-                records = d.get("records", [])
-                break
+    # Wait for the job to FINISH. The queue route answers a list while the job is still
+    # running ([] then a partial list); taking it as the result read billed hits as misses
+    # (2026-09-29/30). tracerfy_queue waits on the listing's `pending` flag.
+    import tracerfy_queue as tq
+    try:
+        records = tq.wait_for_queue(qid, cfg.TRACERFY_API_KEY)
+    except RuntimeError:
+        return {}
+    if records is None:
+        logger.warning("Tracerfy queue %s timed out -- paid for; recover with "
+                       "tracerfy_queue.fetch_queue(%s, key)", qid, qid)
+        records = []
     # Match records back to contacts by (first,last) order.
     out: dict[str, dict] = {}
     by_name = {(r.get("first_name", "").upper(), r.get("last_name", "").upper()): r for r in records}

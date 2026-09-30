@@ -1392,32 +1392,16 @@ def _batch_tracerfy_lookup(notices: list) -> None:
 
         logger.info("  Tracerfy batch job %s submitted (%d records)", queue_id, len(lookup_map))
 
-        # Poll for results — batch jobs take longer
-        # GET /queue/:id may return a list (records) or dict (status wrapper)
-        for _attempt in range(30):
-            time.sleep(5)
-            result_resp = requests.get(
-                f"https://tracerfy.com/v1/api/queue/{queue_id}",
-                headers={"Authorization": f"Bearer {cfg.TRACERFY_API_KEY}"},
-                timeout=15,
-            )
-            result_resp.raise_for_status()
-            result_data = result_resp.json()
-
-            # Handle both response formats
-            if isinstance(result_data, list):
-                records = result_data
-            elif isinstance(result_data, dict):
-                status = result_data.get("status", "")
-                if status == "failed":
-                    logger.warning("Tracerfy batch job %s failed", queue_id)
-                    return
-                if status != "completed":
-                    continue  # still pending
-                records = result_data.get("records", [])
-            else:
-                continue
-
+        # Wait for the job to FINISH. The queue route answers a list while the job is
+        # still running ([] then a partial list); taking it as the result read billed
+        # hits as misses (2026-09-29/30). tracerfy_queue waits on the `pending` flag.
+        import tracerfy_queue as tq
+        try:
+            records = tq.wait_for_queue(queue_id, cfg.TRACERFY_API_KEY)
+        except RuntimeError:
+            logger.warning("Tracerfy batch job %s failed", queue_id)
+            return
+        if records is not None:
             matched = 0
             for rec in records:
                 if not isinstance(rec, dict):
@@ -1446,7 +1430,8 @@ def _batch_tracerfy_lookup(notices: list) -> None:
             logger.info("  Tracerfy batch complete: %d/%d matched", matched, len(lookup_map))
             return
 
-        logger.warning("Tracerfy batch job %s timed out after 150s", queue_id)
+        logger.warning("Tracerfy batch job %s timed out after 15 min -- paid for; recover with "
+                       "tracerfy_queue.fetch_queue(%s, key)", queue_id, queue_id)
     except Exception as e:
         logger.warning("Tracerfy batch lookup failed: %s", e)
 

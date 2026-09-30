@@ -104,37 +104,23 @@ try:
     if not queue_id:
         print(f"Full response: {json.dumps(queue_data, indent=2)}")
     else:
-        # Poll for results
-        for attempt in range(20):
-            time.sleep(3)
-            result_resp = requests.get(
-                f"https://tracerfy.com/v1/api/queue/{queue_id}",
-                headers={"Authorization": f"Bearer {API_KEY}"},
-                timeout=15,
-            )
-            result_data = result_resp.json()
-
-            if isinstance(result_data, list):
-                records = result_data
-            elif isinstance(result_data, dict):
-                status = result_data.get("status", "")
-                print(f"  Poll {attempt+1}: status={status}")
-                if status == "failed":
-                    break
-                if status != "completed":
-                    continue
-                records = result_data.get("records", [])
-            else:
-                continue
-
+        # Wait for the job to FINISH (the queue route answers [] / a partial list while
+        # it runs -- see src/tracerfy_queue.py).
+        import tracerfy_queue as tq
+        try:
+            records = tq.wait_for_queue(queue_id, API_KEY,
+                                        on_poll=lambda w: print(f"  waiting... {w}s"))
+        except RuntimeError:
+            records = None
+            print("Job failed")
+        if records is None:
+            print(f"No result (failed or timed out); queue {queue_id}")
+        else:
             print(f"\n=== BATCH RESPONSE ({len(records)} records) ===")
             for i, rec in enumerate(records):
                 print(f"\n--- Record {i} ---")
                 print(f"Keys: {sorted(rec.keys())}")
                 print(json.dumps(rec, indent=2, default=str))
-            break
-        else:
-            print("Timed out after 60s")
 except Exception as e:
     print(f"ERROR: {e}")
 

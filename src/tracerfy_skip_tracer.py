@@ -29,7 +29,6 @@ PHONE_FIELDS = [
 EMAIL_FIELDS = ["email_1", "email_2", "email_3", "email_4", "email_5"]
 
 TRACERFY_TRACE_URL = "https://tracerfy.com/v1/api/trace/"
-TRACERFY_QUEUE_URL = "https://tracerfy.com/v1/api/queue/"
 
 
 def _get_contacts_for_trace(
@@ -323,34 +322,21 @@ def batch_skip_trace(
         est_wait = queue_data.get("estimated_wait_seconds", "unknown")
         logger.info("  Tracerfy batch job %s submitted (est. %ss)", queue_id, est_wait)
 
-        # Poll for results (up to 5 minutes)
-        for attempt in range(60):
-            time.sleep(5)
-            result_resp = requests.get(
-                f"{TRACERFY_QUEUE_URL}{queue_id}",
-                headers={"Authorization": f"Bearer {cfg.TRACERFY_API_KEY}"},
-                timeout=15,
-            )
-            result_resp.raise_for_status()
-            result_data = result_resp.json()
+        # Wait for the job to FINISH. The queue route answers a list while the job is
+        # still running ([] then a partial list); taking it as the result read billed
+        # hits as misses (2026-09-29/30). tracerfy_queue waits on the `pending` flag.
+        import tracerfy_queue as tq
 
-            # Handle both response formats
-            if isinstance(result_data, list):
-                records = result_data
-            elif isinstance(result_data, dict):
-                status = result_data.get("status", "")
-                if status == "failed":
-                    logger.warning("Tracerfy batch job %s failed", queue_id)
-                    return stats
-                if status != "completed":
-                    if attempt % 6 == 5:
-                        logger.info("  Tracerfy batch still processing (%ds)...",
-                                    (attempt + 1) * 5)
-                    continue
-                records = result_data.get("records", [])
-            else:
-                continue
+        def _progress(waited):
+            if waited % 150 < 25:
+                logger.info("  Tracerfy batch still processing (%ds)...", waited)
 
+        try:
+            records = tq.wait_for_queue(queue_id, cfg.TRACERFY_API_KEY, on_poll=_progress)
+        except RuntimeError:
+            logger.warning("Tracerfy batch job %s failed", queue_id)
+            return stats
+        if records is not None:
             # Match results back to notices
             _match_results(records, lookup_map, stats)
             stats["cost"] = stats["submitted"] * 0.02
@@ -359,8 +345,10 @@ def batch_skip_trace(
                         stats["phones_found"], stats["emails_found"], stats["cost"])
             return stats
 
-        logger.warning("Tracerfy batch job %s timed out after 5 min", queue_id)
+        logger.warning("Tracerfy batch job %s timed out after 15 min -- paid for; recover with "
+                       "tracerfy_queue.fetch_queue(%s, key)", queue_id, queue_id)
         stats["cost"] = stats["submitted"] * 0.02  # Still charged
+        stats["queue_id"] = queue_id
         return stats
 
     except Exception as e:

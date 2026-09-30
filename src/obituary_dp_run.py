@@ -45,7 +45,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]
                        / "skills" / "deep-prospecting-v5" / "scripts"))
 
 TRACERFY_TRACE_URL = "https://tracerfy.com/v1/api/trace/"
-TRACERFY_QUEUE_URL = "https://tracerfy.com/v1/api/queue/"
 TRESTLE_ENDPOINT = "https://api.trestleiq.com/3.0/phone_intel"
 
 # Dial tiers, identical to phone_validator / the phone-validator skill.
@@ -190,7 +189,7 @@ def rank_record(rec, max_generic, min_score):
 
 # ── Stage D: Tracerfy gap-fill, DMs with no phone only ────────────────
 
-def tracerfy_gapfill(dms, api_key, poll_s=10, max_polls=30):
+def tracerfy_gapfill(dms, api_key, poll_s=25, max_polls=60):
     """Batch-trace only the ranked DMs SmartSkip left without a number.
 
     Returns {dm_key: [numbers]}. Best effort: any failure returns what it has,
@@ -236,28 +235,38 @@ def tracerfy_gapfill(dms, api_key, poll_s=10, max_polls=30):
     except Exception as e:
         return {}, {"attempted": len(targets), "error": str(e)[:200]}
 
-    records = None
-    for _ in range(max_polls):
-        time.sleep(poll_s)
-        try:
-            r = requests.get(f"{TRACERFY_QUEUE_URL}{qid}",
-                             headers={"Authorization": f"Bearer {api_key}"}, timeout=20)
-            r.raise_for_status()
-            d = r.json()
-        except Exception as e:
-            return {}, {"attempted": len(targets), "error": str(e)[:200]}
-        if isinstance(d, list):
-            records = d
-            break
-        if d.get("status") == "failed":
-            return {}, {"attempted": len(targets), "error": "job failed"}
-        if d.get("status") == "completed":
-            records = d.get("records", [])
-            break
+    # The queue route answers a list WHILE the job runs ([] then a growing partial list);
+    # taking the first list froze 2026-09-29/30 runs at 1/56 and 0/453 filled while
+    # Tracerfy billed the hits. tracerfy_queue waits on the listing's `pending` flag.
+    import tracerfy_queue as tq  # noqa: E402
+    try:
+        records = tq.wait_for_queue(qid, api_key, poll_s=poll_s, max_wait_s=poll_s * max_polls)
+    except RuntimeError:
+        return {}, {"attempted": len(targets), "error": "job failed", "queue_id": qid}
     if records is None:
-        return {}, {"attempted": len(targets), "error": "timed out",
+        # Keep the queue id: the job is paid for and its results can be fetched later
+        # (tracerfy_fetch_queue) instead of re-tracing.
+        return {}, {"attempted": len(targets), "error": "timed out", "queue_id": qid,
                     "cost": round(0.02 * len(targets), 2)}
+    out = tracerfy_parse_records(records)
+    return out, {"attempted": len(targets), "filled": len(out), "queue_id": qid,
+                 "cost": round(0.02 * len(targets), 2)}
 
+
+def tracerfy_queue_pending(qid, api_key):
+    """True/False from the /queues/ listing's `pending` flag; None when unknown."""
+    import tracerfy_queue as tq  # noqa: E402
+    return tq.queue_pending(qid, api_key)
+
+
+def tracerfy_fetch_queue(qid, api_key):
+    """Records of a FINISHED queue (no re-trace, no spend); None while not known done."""
+    import tracerfy_queue as tq  # noqa: E402
+    return tq.fetch_queue(qid, api_key)
+
+
+def tracerfy_parse_records(records):
+    """{"first last": {"numbers", "types", "emails", "address"}} from Tracerfy queue rows."""
     # Tracerfy returns phones as FLAT columns, not a list: primary_phone,
     # mobile_1..5, landline_1..3, email_1..5. Reading rec["phones"] silently
     # yields nothing and the run looks like a 0% hit rate when it is not.
@@ -281,9 +290,9 @@ def tracerfy_gapfill(dms, api_key, poll_s=10, max_polls=30):
                             else (rec.get("primary_phone_type") or "").upper() or "UNKNOWN")
         emails = [rec.get(f"email_{i}") for i in range(1, 6) if rec.get(f"email_{i}")]
         if nums or emails:
-            out[key] = {"numbers": nums, "types": types, "emails": emails}
-    return out, {"attempted": len(targets), "filled": len(out),
-                 "cost": round(0.02 * len(targets), 2)}
+            out[key] = {"numbers": nums, "types": types, "emails": emails,
+                        "address": (rec.get("address") or "").strip()}
+    return out
 
 
 # ── Stage E: Trestle scoring, DM numbers only ─────────────────────────
