@@ -82,6 +82,21 @@ check("DC caption, no headline",
       addr("4616 HAYES STREET NORTH EAST, WASHINGTON DC 20019\n \nIn execution of the Superior Court"),
       ("4616 HAYES STREET NORTH EAST", "Washington", "DC", "20019"))
 
+# --- line breaks become commas: the anchor must still match across them
+check("known as across a line break",
+      addr("VALUABLE CONDOMINIUM UNIT KNOWN AS:\n3287 SUTTON PLACE NW, #A, WASHINGTON DC  20016\n\nPursuant to"),
+      ("3287 SUTTON PLACE NW, #A", "Washington", "DC", "20016"))
+check("headline across a line break",
+      addr("SUBSTITUTE TRUSTEES' SALE\nCOMMERCIAL MEDICAL/OFFICE CONDOMINIUM UNITS\n"
+           "5 HILLCREST DRIVE, UNITS 100 & 101\nFREDERICK, MARYLAND 21703\nUnder"),
+      ("5 HILLCREST DRIVE, UNITS 100 & 101", "Frederick", "MD", "21703"))
+check("line-wrapped street suffix rejoins the street",
+      addr("TRUSTEE'S SALE OF 317 WOODSTREAM\nBOULEVARD, STAFFORD, VA 22556 In execution"),
+      ("317 WOODSTREAM BOULEVARD", "Stafford", "VA", "22556"))
+check("two-property headline takes the first",
+      addr("TRUSTEE'S SALE OF 1621 CROMWELL RD, CATLETT, VA 20119 AND 2033 COTTONTAIL LN, CATLETT, VA 20119."),
+      ("1621 CROMWELL RD", "Catlett", "VA", "20119"))
+
 # --- notice-type rule
 check("DC Decree of Sale is foreclosure",
       mp.classify_notice_type("In execution of the Superior Court for the District of Columbias Decree of "

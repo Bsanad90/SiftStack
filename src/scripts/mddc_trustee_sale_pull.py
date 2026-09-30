@@ -415,14 +415,16 @@ def _normalize_state(raw: str) -> str:
 _ADDR_BLOB = (r"(\d+(?:\s*[-–]\s*\d+)?[A-Za-z]?\s[A-Za-z0-9 .,#&\-'/]{3,90}?)\s*,?\s*"
               rf"({STATE_ALT})\.?\s*(\d{{5}})")
 MDDC_HEADLINE_RE = re.compile(
-    "TRUSTEES?['’]?S?['’]?" + r"\s+SALE\s+(?:OF\s+)?"
-    r"(?:(?=\S*[A-Za-z])[A-Za-z0-9/&\-]+[:,]?\s+){0,8}?" + _ADDR_BLOB,
+    # [\s,:]+ rather than \s+: parse_anchored_address turns line breaks into
+    # commas, so "SALE<newline>5 HILLCREST" arrives as "SALE, 5 HILLCREST".
+    "TRUSTEES?['’]?S?['’]?" + r"\s+SALE[\s,:]+(?:OF[\s,:]+)?"
+    r"(?:(?=\S*[A-Za-z])[A-Za-z0-9/&\-]+[:,]?[\s,]+){0,8}?" + _ADDR_BLOB,
     re.I,
 )
 KNOWN_AS_RE = re.compile(
     r"(?:commonly\s+known\s+as|(?:property|premises|unit)\s+known\s+as|known\s+as|"
     r"property\s+located\s+at|improved\s+by\s+a\s+[a-z ]{0,30}?known\s+as)"
-    r"\s*:?\s*" + _ADDR_BLOB,
+    r"[\s:,]*" + _ADDR_BLOB,  # "KNOWN AS:<newline>3287" arrives as "KNOWN AS:, 3287"
     re.I,
 )
 # The unit that follows a comma belongs to the street, not the city:
@@ -434,6 +436,12 @@ _UNIT_LEAD_RE = re.compile(
     r"(?:\s*(?:&|AND|,)\s*#?[A-Z0-9\-]+)*)\s*,?\s+(.+)$",
     re.I,
 )
+# A comma-part that is nothing but unit designators ("UNITS 100 & 101", "#A").
+_UNIT_ONLY_RE = re.compile(
+    r"(?:UNITS?|APT\.?|APARTMENT|SUITE|STE\.?|#)\s*#?\s*[A-Z0-9\-]+"
+    r"(?:\s*(?:&|AND)\s*#?[A-Z0-9\-]+)*",
+    re.I,
+)
 # Office markers: a last-match candidate carrying one of these is the law firm
 # or auctioneer letterhead, never a residential property.
 OFFICE_STREET_RE = re.compile(r"\b(?:suite|ste\.?|floor|fl\.)\s*#?\s*\d", re.I)
@@ -443,12 +451,28 @@ def _split_anchored_blob(blob: str):
     """Split an anchored "street[, unit] city" blob into (street, city)."""
     blob = " ".join(blob.split()).strip(" ,")
     parts = [p.strip() for p in blob.split(",") if p.strip()]
+    # A line-wrapped street ("317 WOODSTREAM<newline>BOULEVARD") arrives as
+    # "317 WOODSTREAM, BOULEVARD": a part that is ONLY a suffix (+ quadrant)
+    # belongs to the part before it.
+    merged = []
+    for p in parts:
+        toks = p.upper().replace(".", "").split()
+        if merged and toks and toks[0] in STREET_SUFFIXES and all(
+                t in STREET_SUFFIXES or t in _QUADRANTS for t in toks) and len(toks) <= 2:
+            merged[-1] = f"{merged[-1]} {p}"
+        else:
+            merged.append(p)
+    parts = merged
     if len(parts) >= 2:
         street, rest = parts[0], parts[1:]
         # Pull leading unit designators off the city side back onto the street.
         while rest:
             m = _UNIT_LEAD_RE.match(rest[0])
-            if m and rest[0].upper().startswith(("UNIT", "APT", "APARTMENT", "SUITE", "STE", "#")):
+            whole_unit = _UNIT_ONLY_RE.fullmatch(rest[0])
+            if whole_unit and len(rest) > 1:
+                street = f"{street}, {rest[0]}"
+                rest = rest[1:]
+            elif m and rest[0].upper().startswith(("UNIT", "APT", "APARTMENT", "SUITE", "STE", "#")):
                 street = f"{street}, {m.group(1)}"
                 rest = [m.group(2)] + rest[1:]
             elif rest[0].upper().startswith(("UNIT", "APT", "APARTMENT", "SUITE", "STE", "#")) and len(rest) > 1:
