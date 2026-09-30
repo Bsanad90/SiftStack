@@ -367,7 +367,17 @@ ORDER_NISI_RE = re.compile(
 
 NOTICE_TYPE_RULES = [
     ("order_nisi", ORDER_NISI_RE),
-    ("foreclosure", re.compile(r"trustee'?s?\s+sale|substitute trustee|deed of trust|power of sale", re.I)),
+    # 2026-09-30: court-ordered foreclosures of a Deed of Trust were landing in
+    # "other" because their grid snippet never says "trustee's sale": DC
+    # Superior Court "Decree of Sale ... the undersigned Trustee(s) will offer
+    # for sale" (4616 Hayes St NE, 5039-5043 A St SE, 1037 Quincy St NE) and
+    # Fairfax "SPECIAL COMMISSIONER'S JUDICIAL SALE" (6935 Compton Ln). The
+    # order_nisi rule above still runs first, so ratifications stay dropped.
+    ("foreclosure", re.compile(
+        r"trustee'?s?\s+sale|substitute trustee|deed of trust|power of sale"
+        r"|decree\s+of\s+sale|trustee\(s\)\s+will\s+offer"
+        r"|commissioner.?s\s+judicial\s+sale",
+        re.I)),
     ("tax_sale", re.compile(r"tax\s+sale|tax\s+lien\s+sale", re.I)),
     ("probate", re.compile(r"notice to creditors|letters testamentary|personal representative|estate of", re.I)),
 ]
@@ -384,22 +394,170 @@ def _normalize_state(raw: str) -> str:
     return STATE_NAMES.get(raw.strip().upper(), raw.strip().upper())
 
 
+# Anchored property-address patterns, tried BEFORE the last-match heuristic
+# (ported from va_trustee_sale_pull.TRUSTEE_HEADLINE_RE, 2026-09-30). A notice
+# carries three real, deliverable addresses -- the property, the courthouse /
+# auctioneer venue, and the trustee's law firm -- so address validation cannot
+# pick the right one; only the notice's own wording can. Measured on the
+# 09-30 MDDC pull, the last-match rule returned the law firm ("6 N. East
+# Street, Suite 202" = McMichael Taylor Gray; real property 5 Hillcrest Dr
+# Units 100 & 101) and the auctioneer ("5335 Wisconsin Avenue, N.W., Suite
+# 440" = Harvey West; real property 3287 Sutton Place NW, #A), and found
+# nothing on "Commonly known as: 1419 Shady Rest Road, Shady Side, MD 20764".
+#
+# Headline: both apostrophes spelled out (the plural "TRUSTEES' SALE" is the
+# dominant form), and up to 8 descriptive words may sit between SALE and the
+# house number ("SALE COMMERCIAL MEDICAL/OFFICE CONDOMINIUM UNITS 5 ...",
+# "SALE 3-STORY BRICK APARTMENT CONVERSION BUILDING 421 ..."). Each gap word
+# must contain a letter, so the gap can never swallow a house number.
+# The blob must open on a real house number ("421 ", "5039 - 5043 ", "12A ")
+# so a descriptive word like "3-STORY" can never be mistaken for one.
+_ADDR_BLOB = (r"(\d+(?:\s*[-–]\s*\d+)?[A-Za-z]?\s[A-Za-z0-9 .,#&\-'/]{3,90}?)\s*,?\s*"
+              rf"({STATE_ALT})\.?\s*(\d{{5}})")
+MDDC_HEADLINE_RE = re.compile(
+    "TRUSTEES?['’]?S?['’]?" + r"\s+SALE\s+(?:OF\s+)?"
+    r"(?:(?=\S*[A-Za-z])[A-Za-z0-9/&\-]+[:,]?\s+){0,8}?" + _ADDR_BLOB,
+    re.I,
+)
+KNOWN_AS_RE = re.compile(
+    r"(?:commonly\s+known\s+as|(?:property|premises|unit)\s+known\s+as|known\s+as|"
+    r"property\s+located\s+at|improved\s+by\s+a\s+[a-z ]{0,30}?known\s+as)"
+    r"\s*:?\s*" + _ADDR_BLOB,
+    re.I,
+)
+# The unit that follows a comma belongs to the street, not the city:
+# "5 HILLCREST DRIVE, UNITS 100 & 101 FREDERICK" / "3287 SUTTON PLACE NW, #A,
+# WASHINGTON". Cutting at the comma would drop the unit -- on a condo that is
+# a DIFFERENT PROPERTY.
+_UNIT_LEAD_RE = re.compile(
+    r"^((?:UNITS?|APT\.?|APARTMENT|SUITE|STE\.?|#)\s*#?\s*[A-Z0-9\-]+"
+    r"(?:\s*(?:&|AND|,)\s*#?[A-Z0-9\-]+)*)\s*,?\s+(.+)$",
+    re.I,
+)
+# Office markers: a last-match candidate carrying one of these is the law firm
+# or auctioneer letterhead, never a residential property.
+OFFICE_STREET_RE = re.compile(r"\b(?:suite|ste\.?|floor|fl\.)\s*#?\s*\d", re.I)
+
+
+def _split_anchored_blob(blob: str):
+    """Split an anchored "street[, unit] city" blob into (street, city)."""
+    blob = " ".join(blob.split()).strip(" ,")
+    parts = [p.strip() for p in blob.split(",") if p.strip()]
+    if len(parts) >= 2:
+        street, rest = parts[0], parts[1:]
+        # Pull leading unit designators off the city side back onto the street.
+        while rest:
+            m = _UNIT_LEAD_RE.match(rest[0])
+            if m and rest[0].upper().startswith(("UNIT", "APT", "APARTMENT", "SUITE", "STE", "#")):
+                street = f"{street}, {m.group(1)}"
+                rest = [m.group(2)] + rest[1:]
+            elif rest[0].upper().startswith(("UNIT", "APT", "APARTMENT", "SUITE", "STE", "#")) and len(rest) > 1:
+                street = f"{street}, {rest[0]}"
+                rest = rest[1:]
+            else:
+                break
+        while rest and rest[0].split() and rest[0].split()[0].upper() in _QUADRANTS:
+            q, _, tail = rest[0].partition(" ")
+            street = f"{street} {q}"
+            rest = ([tail.strip()] if tail.strip() else []) + rest[1:]
+        city = rest[-1] if rest else ""
+        if len(rest) > 1:  # "street, extra, city" -- keep the extra on the street
+            street = ", ".join([street] + rest[:-1])
+        return (street, city) if street and city else None
+    tokens = blob.split()
+    split_idx = None
+    for i, tok in enumerate(tokens):
+        if tok.upper().rstrip(".,") in STREET_SUFFIXES:
+            split_idx = i
+    if split_idx is None:
+        return None
+    street_t, city_t = tokens[: split_idx + 1], tokens[split_idx + 1:]
+    # Unit / quadrant tokens right after the suffix belong to the street:
+    # "7505 DEMOCRACY BLVD #A-417 Bethesda", "421 T STREET N.W. WASHINGTON".
+    while city_t and (_is_unit_or_quadrant(city_t[0]) or
+                      (street_t and street_t[-1].upper().rstrip(".") in _UNIT_WORDS)):
+        street_t.append(city_t.pop(0))
+    street, city = " ".join(street_t), " ".join(city_t)
+    return (street, city) if street and city else None
+
+
+_UNIT_WORDS = {"UNIT", "UNITS", "APT", "APARTMENT", "SUITE", "STE", "NO"}
+_QUADRANTS = {"NW", "NE", "SW", "SE", "N.W.", "N.E.", "S.W.", "S.E.", "N.W", "N.E", "S.W", "S.E"}
+
+
+def _is_unit_or_quadrant(tok: str) -> bool:
+    t = tok.upper().rstrip(",")
+    return (t in _QUADRANTS or t.rstrip(".") in _UNIT_WORDS or t.startswith("#")
+            or bool(re.fullmatch(r"[A-Z]?\d+[A-Z0-9\-]*", t)))
+
+
+def parse_anchored_address(text: str):
+    """The property address named by the notice's own wording, or None.
+
+    Headline first, then "known as". Returns None rather than guessing --
+    callers fall back to the last-match heuristic (snippet stage) or keep the
+    existing value (full-text stage).
+    """
+    # A line break between street and city is a delimiter ("107 HUNTINGTON
+    # COURT / GLEN BURNIE" on two lines); flattening it away leaves the suffix
+    # split to cut at "GLEN". Keep it as a comma.
+    flat = " ".join(re.sub(r"\s*\n\s*", ", ", text or "").split())
+    for rx in (MDDC_HEADLINE_RE, KNOWN_AS_RE):
+        for m in rx.finditer(flat):
+            blob, state, zip5 = m.groups()
+            split = _split_anchored_blob(blob)
+            if not split:
+                continue
+            street, city = split
+            if OFFICE_STREET_RE.search(street):
+                continue
+            return {
+                "street": street,
+                "city": city.strip().title(),
+                "state": _normalize_state(state),
+                "zip": zip5,
+            }
+    return None
+
+
+_SPELLED_QUADRANT_RE = re.compile(r"^(north\s*east|north\s*west|south\s*east|south\s*west)\s+(.+)$", re.I)
+
+
+def _quadrant_to_street(street: str, city: str):
+    """DC's spelled-out quadrant belongs to the street: "4616 HAYES STREET" /
+    "North East Washington" -> "4616 HAYES STREET NORTH EAST" / "Washington"."""
+    m = _SPELLED_QUADRANT_RE.match(city)
+    if m:
+        return f"{street} {m.group(1).upper()}", m.group(2)
+    return street, city
+
+
 def parse_address(text: str):
     """Return the SUBJECT PROPERTY address, not the law firm's letterhead.
 
-    These notices open with the filing firm's own office address (which
-    frequently also matches the address pattern) and name the actual property
-    later, right before "Under a power of sale..." / "Default having been
-    made...". Taking the FIRST regex match returns the firm's office almost
-    every time (verified live 2026-08-21: 4 of 5 sampled notices). Taking the
-    LAST match returns the property in every sampled case instead.
+    The anchored headline / "known as" address is tried FIRST (see
+    MDDC_HEADLINE_RE). Otherwise: these notices open with the filing firm's
+    own office address (which frequently also matches the address pattern)
+    and name the actual property later, right before "Under a power of
+    sale..." / "Default having been made...". Taking the FIRST regex match
+    returns the firm's office almost every time (verified live 2026-08-21: 4
+    of 5 sampled notices). Taking the LAST match returns the property in
+    every sampled case instead -- unless the snippet is truncated before the
+    property, in which case the last match is the office; a candidate with a
+    Suite/Floor number is therefore skipped when any other candidate exists.
     """
-    matches = list(ADDRESS_RE.finditer(text))
+    anchored = parse_anchored_address(text)
+    if anchored:
+        return anchored
+    matches = [m for m in ADDRESS_RE.finditer(text)]
+    non_office = [m for m in matches if not OFFICE_STREET_RE.search(m.group(1))]
+    matches = non_office or matches
     if matches:
         street, city, state, zip5 = matches[-1].groups()
+        street, city = _quadrant_to_street(" ".join(street.split()), city.strip())
         return {
-            "street": " ".join(street.split()),
-            "city": city.strip().title(),
+            "street": street,
+            "city": city.title(),
             "state": _normalize_state(state),
             "zip": zip5,
         }
@@ -423,9 +581,10 @@ def parse_address(text: str):
     city = " ".join(tokens[split_idx + 1 :])
     if not city:
         return None
+    street, city = _quadrant_to_street(street.strip(), city.strip())
     return {
-        "street": street.strip(),
-        "city": city.strip().title(),
+        "street": street,
+        "city": city.title(),
         "state": _normalize_state(state),
         "zip": zip5,
     }

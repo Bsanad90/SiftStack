@@ -101,6 +101,10 @@ def _eval_retry(page, js: str, arg=None, attempts: int = 4):
     raise last
 
 
+def _norm(s: str) -> str:
+    return re.sub(r"\W+", " ", (s or "").lower()).strip()
+
+
 def _row_key(street: str, zip5: str, snippet: str) -> tuple:
     street = " ".join((street or "").lower().split())
     if street:
@@ -448,6 +452,10 @@ def main():
     write_sidecar(side, details)
     print(f"wrote {len(details)} detail(s) to {side}")
 
+    if "street_grid" not in fieldnames:
+        fieldnames.append("street_grid")
+    zip_cache = mp._load_zip_county_cache()
+    corrected = 0
     matched = 0
     for r in rows:
         key = _row_key(r.get("street", ""), r.get("zip", ""), r.get("notice_text_snippet", ""))
@@ -464,12 +472,29 @@ def main():
             r["auction_date"] = d["auction_date"]
         if d["loan_principal"] and not r.get("loan_principal"):
             r["loan_principal"] = d["loan_principal"]
+        # The anchored full-text address WINS over the grid one (2026-09-30):
+        # a truncated snippet often holds only the law firm's / auctioneer's
+        # letterhead ("6 N. East Street, Suite 202"), so the grid street can
+        # be the wrong building. The grid value stays in street_grid. Done
+        # AFTER matching, because matching keys on the grid street.
+        anchored = mp.parse_anchored_address(d["full_text"])
+        if anchored and _norm(anchored["street"]) != _norm(r.get("street", "")):
+            r["street_grid"] = r.get("street", "")
+            old_zip = (r.get("zip") or "")[:5]
+            r.update({f: anchored[f] for f in ("street", "city", "state", "zip")})
+            if anchored["zip"] != old_zip or not r.get("county"):
+                r["county"] = mp.resolve_county_by_zip(anchored["zip"], zip_cache) or r.get("county", "")
+            corrected += 1
 
     with open(out_path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
         w.writerows(rows)
+    mp._save_zip_county_cache(zip_cache)
     print(f"matched {matched} of {len(rows)} CSV row(s); wrote {out_path}")
+    if corrected:
+        print(f"corrected {corrected} address(es) from the notice headline / 'known as' "
+              f"(grid value kept in street_grid)")
     if len(results) and matched < len(results):
         print(f"NOTE: {len(results) - matched} fetched detail(s) matched no CSV row "
               f"(off-footprint/off-type rows the pull dropped, or a key mismatch)")
