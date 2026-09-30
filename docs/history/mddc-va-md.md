@@ -206,3 +206,83 @@ Not part of SiftStack's own automation (no cron/scheduler in this repo runs it) 
 
 **Recovery is just re-running the script**: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "Galal Development\automation\daily_mdcourts_pull.ps1"` — safe to run any time, it no-ops (`"Already have..."`) if today's file is already saved, and skips relaunching the watcher if it's already running.
 
+---
+
+## CLAUDE.md "Order of work (from 2026-08-28)" — moved here verbatim 2026-09-30
+
+Retired from CLAUDE.md as no longer current (Basem, 2026-09-30). Item 3 is the VA parsing record; the rest is DPD build history.
+
+1. ~~Delete the SiftMap saved filter `ZZ DPD SMOKE 153311`~~ **DONE 2026-08-31, and no longer a hand
+   step:** saved filters ARE deletable — the management table at `/siftmap/presets/account` (paginated,
+   trash icon per row, type `DELETE FILTER` to arm the confirm) — via
+   `dpd_siftmap_presets.py --delete-name` (refuses any name not starting `ZZ `). 28 saved filters remain,
+   all verified present after the delete.
+2. ~~Make the daily DC foreclosure feed reach the FTM lane~~ **DONE 2026-08-28 (code only):** `mddc_datasift_upload.BATCH_TAG = "FTM"`. The next MDDC upload — on Basem's go — lands in `05 FTM - CALL` / `06 FTM - MAIL`.
+3. **VA pulls — FORECLOSURE LANE WORKING 2026-08-31; the other two searches parsed the wrong
+   thing by design.** The old text here assumed searches 6 and 8 carry a property address. They
+   do not, and no regex tuning would have found one.
+
+   **Foreclosures (`--popular-search 4`) is the lane that works.** 103 leads in
+   `output/va_foreclosures_final.csv`: 99 with a street, 0 duplicates, 0 wrong-building
+   addresses. Free path, Firecrawl only. Kept for review; NOT uploaded (Basem, 2026-08-31).
+
+   **THE DURABLE LESSON — address validation cannot catch this.** A trustee's sale notice holds
+   THREE real, deliverable, USPS-confirmable addresses: the subject property (in the
+   `TRUSTEE'S SALE` headline), the courthouse (mid-notice, the auction VENUE), and the trustee's
+   law firm (near the end, letterhead). Smarty confirms all three, so `--standardize` cannot tell
+   them apart. `parse_address` was returning the LAW FIRM. Only anchoring on the notice's own
+   semantics works: `TRUSTEE_HEADLINE_RE` / `parse_trustee_headline_address()`, tried first.
+
+   Five defects fixed in `va_trustee_sale_pull.py` (commit c5d4fd5), each measured on live data:
+   - **wrong building** — law-firm address; headline anchor fixes it.
+   - **plural titles missed** — `TRUSTEE'?S\s+SALE` cannot match `SUBSTITUTE TRUSTEES' SALE`
+     (the apostrophe sits between the S and the space). Plural is DOMINANT: 69 of 139 real MDDC
+     notices, 51 ASCII + 18 curly U+2019. Always spell both apostrophes out.
+   - **unit numbers dropped** — `1476 Vineyard Ct Unit# 105XA` became `1476 Vineyard Ct`. On a
+     condo that is a DIFFERENT property. A comma now wins over suffix-splitting.
+   - **25% duplicate output** — foreclosure notices republish weekly by law, so dedup collapses
+     foreclosures dateless on (street, city). 137 -> 103. Scoped to `notice_type ==
+     "foreclosure"` ONLY: keying city-only rows collapsed Estate Claims 26 -> 7, street-bearing
+     ones 26 -> 24 (all carry the courthouse in `street`). **`notice_id` update 2026-09-04:**
+     the View button's onclick DOES carry `Details.aspx?SID&ID` (a real per-notice id), but a
+     Firecrawl capture only sometimes includes it (JS-attached; 31/32 one run, 2/32 another) —
+     and each republication carries a NEW id, so `dedupe()` deliberately checks the foreclosure
+     address collapse BEFORE the id key; id-first keying would reinstate the 25% duplicates.
+   - **auction dates 94% wrong** — matched `recorded on <date>`, the Deed of Trust RECORDING
+     date; 17 of 18 were years in the past. Guarded by deed-context rejection plus "cannot
+     predate publication".
+
+   **`--max-pages` CEILING IS 8. Measured 2026-08-31 against live Firecrawl, two hard limits:**
+   `Number of actions cannot exceed 50` (hit at 16 pages / 57 actions) and `Total wait time
+   (waitFor + wait actions) cannot exceed 60 seconds` (hit at 10 pages / 39 actions — this one
+   binds first). 8 pages = 33 actions = HTTP 200. Anything higher returns a 400 that the script
+   MISDIAGNOSES: it responds by splitting the date window, which cannot reduce an action count,
+   so it splits until it gives up with exit 3 and writes nothing. To go deeper than 8 pages of
+   results, narrow `--days` and merge runs; do not raise `--max-pages`.
+
+   **Cost economics (measured):** the property address resolves from ~120 chars and the loan
+   principal from ~340 — both INSIDE the free 340-char grid snippet. Only the auction date needs
+   ~700 chars, i.e. the paid full-text fetch. `--full-text` is an auction-date ENRICHMENT step,
+   never a prerequisite.
+
+   **Estate Claims (`--popular-search 6`) — needs a property-DISCOVERY step, not an address
+   regex.** These are Notices to Creditors; their legal purpose is telling creditors where to
+   file, so they never state the decedent's real estate. Verified live: the only three addresses
+   are the courthouse (labelled `CIRCUIT COURT CLERK'S MAILING ADDRESS` in the text), the PR's
+   home, and the attorney's firm. What they DO carry is valuable: decedent name, date of death,
+   court file number, and PR name + address + phone (sample: DOD 05/20/2026, FI-2026-0001248, PR
+   out-of-state in WA with a direct phone). Retarget extraction to those, then find the property
+   via **land records, deeds and SDAT** (Basem, 2026-08-31) — the same lookup path the MD lane
+   already uses — or the `probate-property-finder` skill.
+
+   **Tax Deeds (`--popular-search 8`) — deprioritised.** All 26 rows classify as `other` and
+   there is no `tax_deed` rule in `NOTICE_TYPE_RULES`. Basem has never seen a real one come
+   through (2026-08-31), so do not invest here until one does.
+
+   **Still open:** county values carry case and truncation noise (`FAIRFAX`/`Fairfax`, plus
+   `Prin`, `Spotsylvan`, `Spotslyvani`) and a few out-of-footprint rows (`Loudoun`, `Manassas
+   Park city`). Harmless for dedup (which keys on street) but it fragments per-county grouping.
+
+4. **The DC pull (Phase 4) — ONLY on Basem's explicit go.** Described under "What the next (pull) run would do" in [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md). Until it runs, every one of the 73 presets loads empty for DC.
+5. ~~The other 13 jurisdictions~~ **DONE 2026-08-31:** all 13 built and verified via `src/scripts/dpd_siftmap_build_all.py` (sequential per-county driver, halts on first defect, resume-aware) — 152 presets saved, every one reloading to its exact measured count, 72 inexpressible rows routed to FTM, 8 measured-zero rows kept. Fixes that made it survivable: `saved_filter_names` now exhausts "Show more" (was capped at 4 clicks — fatal at 200+ rows), `reload_check` retries an empty popover once (transient mid-session failure seen on Anne Arundel). **Correction 2026-08-31: exhausting "Show more" is not the same as seeing every filter.** `saved_filter_names` reads the SiftMap **Presets popover**, and that popover tops out around 100 rows; the account actually holds **180 saved filters across 18 pages** (measured on the management page). The complete list is under **Configure → `/siftmap/presets/account`** (10 per page, already known to the code as `PRESETS_ACCOUNT_URL`, which is what `--delete-name` drives). Consequence: any presence/skip check built on `saved_filter_names` is working from a partial list — and `dpd_siftmap_presets.py --commit` uses it exactly that way, so it can re-save a name that already exists, which its own comment calls a hard stop. Read the management page, not the popover, when the question is "does this filter exist". QA reports in `output/dpd_qa_report_<fips>.md`. **County split DONE 2026-08-31 (Basem's design: pull all 14, call the core 9, mail everywhere):** the 30 MAIL presets now carry all 15 counties (`COUNTY_SCOPE_MAIL`), added IN PLACE via `dpd_presets_create.py --widen-counties` — load row (JS click on the title, from a FRESH /records navigation per preset), `set_tokens` the 6 new counties, Save (overwrite), then verify the STORE (counties 9→15, every other stored field byte-equal; the panel's exclusion render lies on load but Save does not serialize the lie — proven by the `--widen-smoke` gate). CALL / Deep Prospecting / Reactivation stay at 9. `dpd_presets_verify.py` exits 0: 73/73, 0 defects.
+6. Sign-ups when Basem is ready (DC Recorder of Deeds free registration; DOB eRecords — `CAPTCHA_API_KEY` is now real and working, struck 2026-08-31) — the ordered list is in `output/dpd_dc_ftm_investigation.md`.

@@ -1,0 +1,1703 @@
+﻿# CLAUDE.md — SiftStack
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Response style
+
+- **Start every response with the user's name, "Basem".** Every reply, no exceptions.
+
+## Project Overview
+
+**SiftStack** — Full-stack real estate investing operations platform built around DataSift.ai CRM. Covers the entire REI business lifecycle:
+
+1. **Data Acquisition:** Web scraping tnpublicnotice.com (foreclosures, tax sales, probates), scanned PDF import, courthouse terminal photo import (probate, eviction, code violations, divorce), Dropbox auto-polling
+2. **Enrichment Pipeline:** 10+ steps — Smarty address standardization, Zillow property data, Knox County Tax API, obituary/heir research, Ancestry.com SSDI, Tracerfy skip trace, Trestle phone scoring, entity research
+3. **Deal Analysis:** Comparable sales (Two-Bucket ARV), rehab estimation (4-tier room-by-room), deal analyzer (MAO/ROI/financing scenarios)
+4. **Market Intelligence:** Zip code scoring, Market Finder reports, cash buyer list building, investor portfolio analysis
+5. **CRM Automation:** DataSift upload, 26 TCA sequence templates, 12 niche sequential marketing presets, filter preset management, SiftMap sold property tagging
+6. **Lead Management:** 4 Pillars of Motivation auto-qualification, STABM daily routine, pipeline reporting, deep prospecting (4-level framework)
+7. **Operations:** Acquisition playbook generator (SOPs, scripts, checklists), Slack/Discord notifications, Google Drive upload, Apify Actor deployment
+
+Currently focused on Knox and Blount counties, Tennessee. A realtor sphere-of-influence beta runs on the Columbus OH metro (the `soi_*` modules; see "Sphere of Influence Pipeline").
+
+8. **REI Skill Library:** 25 Claude Co-Work skill files (`.skill`/`.plugin` ZIPs) for distribution to DataSift community via [learn.datasift.ai/claude-skills-rei](https://learn.datasift.ai/claude-skills-rei). Skills teach Claude specific REI workflows when uploaded to Co-Work sessions or Projects.
+
+## Commands
+
+```bash
+# Setup
+pip install -r requirements.txt
+playwright install chromium
+cp .env.example .env  # then fill in credentials
+
+# Run
+python src/main.py daily                          # new notices since last run
+python src/main.py historical                     # last 12 months of data
+python src/main.py daily --split                  # separate CSV per county+type
+python src/main.py daily --counties Knox          # only Knox county
+python src/main.py daily --types foreclosure,probate  # only specific types
+python src/main.py daily -v                       # verbose/debug logging
+
+# Comp package (boundary-filtered comps + dual-track ARV + rehab + buyers -> Excel)
+python src/comp_package.py --address "158 Old State Rd" --zip 37914 \
+    --beds 2 --baths 1 --sqft 1946 --year-built 1938 \
+    --bbox "35.996,36.016,-83.895,-83.840" --streets "old state|nash rd|seahorn"
+
+# Post-walkthrough package (comps + rehab matrix + walk findings + exits + dispo, Sift-linked)
+python src/post_walkthrough.py --walkthrough-template     # writes walkthrough_template.json
+python src/post_walkthrough.py --address "158 Old State Rd" --city Knoxville --zip 37914 \
+    --bbox "35.996,36.016,-83.895,-83.840" --streets "old state|nash rd|seahorn" \
+    --walkthrough walk_158.json --buyers output/buyer_sweep_37914_20260723.json \
+    --outreach output/dispo_skiptrace_158.json
+python src/post_walkthrough.py --address "..." --sold-json output/zillow_37914_sold.json  # free re-run
+
+# DataSift preset/sequence management
+python src/main.py manage-presets --discover                      # list all presets and sequences
+python src/main.py manage-presets --add-sold-exclusion            # add Sold exclusion to all presets
+python src/main.py manage-presets --create-sold-sequence          # create Sold cleanup sequence
+python src/main.py manage-presets --all                           # discovery + update + sequence
+
+# SiftMap sold property tagging (imports + tags sold properties, monthly)
+# ALWAYS dry-run first: with no --counties this covers all 14 jurisdictions, and a
+# live run IMPORTS every sold property in each county-month (~7.9K/month across 14).
+python src/main.py manage-sold --dry-run                          # counts only, writes nothing
+python src/main.py manage-sold --counties Montgomery --dry-run     # one county, prove it resolves
+python src/main.py manage-sold                                    # live, last month, all 14
+python src/main.py manage-sold --counties "Baltimore County,Fairfax" --min-sale-price 5000
+python src/main.py manage-sold --sold-account-scope in            # tag held records only, import nothing
+python src/main.py manage-sold --counties Knox,Blount             # the legacy TN footprint
+
+# Courthouse photo import (build 1.0.28+)
+python src/main.py photo-import --folder ./photos --photo-county Knox --photo-type probate
+python src/main.py photo-import --folder ./photos --photo-county Knox --photo-type eviction --skip-obituary
+python src/main.py dropbox-watch                                  # auto-poll Dropbox for new photos
+python src/main.py dropbox-watch --poll-interval 300 --max-polls 5  # 5-min interval, 5 cycles
+python src/main.py dropbox-watch --no-delete                      # keep photos in Dropbox after processing
+```
+
+All source files are in `src/` and imports assume `src/` is the working directory. Run from project root with `python src/main.py` or set `PYTHONPATH=src`.
+
+## Architecture
+
+**Data flows:**
+- **Web scrape:** `main.py` → `scraper.py` → `captcha_solver.py` → `notice_parser.py` + `foreclosure_filter.py` → enrichment → CSV
+- **PDF import:** `main.py` → `pdf_importer.py` (pypdfium2 → `image_utils.py` OCR) → enrichment → CSV
+- **Photo import:** `main.py` → `photo_importer.py` (OpenCV → `image_utils.py` OCR → `llm_parser.py`) → enrichment → CSV
+- **Dropbox watch:** `dropbox_watcher.py` → `photo_importer.py` → enrichment → CSV (auto-polling loop)
+- **Market Finder:** `extract_market_finder.py` → DataSift Market Finder (Playwright) → paginate all ZIP + neighborhood data → JSON → `generate_knox_report.py` → 7-sheet Excel
+
+- **main.py** — CLI entry point. Parses args (`daily`/`historical`, `--split`, `--counties`, `--types`, `-v`). Filters saved searches by county/type, orchestrates scrape → dedup → export, logs run summary stats.
+- **scraper.py** — Playwright browser automation. Reuses saved session cookies when possible, falls back to fresh login. Selects each saved search from the Smart Search dropdown (triggers ASP.NET postback), paginates results (50/page max), clicks each View button to open notice detail pages. Uses `last_run.json` for daily mode state, `cookies.json` for session persistence.
+- **captcha_solver.py** — Solves reCAPTCHA v2 via **2Captcha API** on every notice detail page. Sends websiteURL + sitekey, gets back a `g-recaptcha-response` token, injects it, clicks "View Notice". Retries up to 3 times. This is the primary bottleneck (~10-30s per notice).
+- **notice_parser.py** — Extracts structured fields from raw notice text using regex. There are NO structured HTML fields on the site — address, owner, dates are all embedded in free-text notice bodies. Defines the `NoticeData` dataclass used throughout.
+- **foreclosure_filter.py** — Filters foreclosure search results to only keep real first-to-market trustee sales. Matches against observed title variations (substitute/successor trustee sales). Non-foreclosure notice types pass through unfiltered.
+- **data_formatter.py** — Deduplicates by address (keeps most recent), then converts `NoticeData` list to Sift upload CSV. Split mode produces `{county}_{type}_{timestamp}.csv` files.
+- **config.py** — Credentials (from `.env`), ASP.NET element selectors, saved search definitions, rate limiting constants, paths, image processing thresholds.
+- **image_utils.py** — Shared OCR utilities used by both `pdf_importer.py` and `photo_importer.py`. Exports `fix_rotation()` (Tesseract OSD) and `ocr_page(image, psm)` with configurable page segmentation mode. Handles Tesseract binary detection.
+- **photo_importer.py** — Courthouse phone photo import. OpenCV preprocessing chain (EXIF transpose → blur check → bilateral filter → perspective correction → Otsu threshold) → Tesseract OCR (PSM 4) → LLM parsing → NoticeData. Supports all 7 notice types.
+- **dropbox_watcher.py** — Cursor-based Dropbox folder polling. Downloads new photos, resolves county + notice_type from folder path (`/Knox/eviction/photo.jpg`), processes through photo_importer, deletes from Dropbox after success. State persisted to `dropbox_state.json` + `photo_state.json`.
+- **report_generator.py** — Generates per-record PDF deep prospecting reports using reportlab. Includes property summary, signing chain with phone tiers, valuation, deceased owner detection. Output to `output/reports/`.
+- **extract_market_finder.py** — Playwright automation to extract ALL ZIP code + neighborhood data from DataSift Market Finder. Handles styled-component dropdowns, pagination (20 rows/page), Beamer popup dismissal. Outputs JSON. See "Market Finder Extraction Patterns" below.
+- **market_analyzer.py** — ZIP code scoring engine. 6-factor weighted composite (Distress 30%, Value 20%, Equity 15%, Tax Delinquency 15%, Competition 10%, DOM 10%). Grades A/B/C/D, budget allocation across top ZIPs. Reads from scraped notice CSVs in `output/`.
+- **drive_uploader.py** — Google Drive upload via service account. `upload_file()` (generic, returns webViewLink) and `upload_csv()` (CSV-specific, returns file ID).
+
+## Site-Specific Details
+
+The site is **ASP.NET WebForms** — all navigation uses `__doPostBack()` with ViewState. Session IDs are embedded in URL paths (`/(S({guid}))/`). Playwright is required because direct HTTP requests would need to manage ViewState/EventValidation manually.
+
+**reCAPTCHA v2 is required on every single notice detail page**, even when logged in. There is no CAPTCHA on login, search, or results pages. The sitekey is hardcoded in `config.py`.
+
+## Saved Searches
+
+8 searches defined in `config.py` as `SAVED_SEARCHES`. Each maps to an exact dropdown option name on the Smart Search dashboard:
+- Knox & Blount × (Foreclosure V2, Tax Sale V2, Tax Delinquent V2, Probate V2)
+
+Filterable via `--counties` and `--types` CLI args (comma-separated, or omit for all).
+
+## Key Domain Rules
+
+- **Foreclosure filtering is critical.** Not all notices from "Foreclosure" saved searches are actual foreclosures. The scraper parses each notice's full text and only includes ones with trustee sale language. See `INCLUDE_PHRASES` / `EXCLUDE_PHRASES` in `foreclosure_filter.py`.
+- **Probate owner_name** should be the Personal Representative/Executor/Administrator — not the deceased.
+- **Owner names** in foreclosure notices typically appear after "executed by" in the deed of trust language.
+- **Rate limiting:** 2-3 second random delays between requests, 3 retries per page.
+- **Address dedup:** Same property can appear in multiple notices; `data_formatter.deduplicate()` keeps the most recent.
+
+## Output
+
+CSV files land in `output/` (gitignored). Logs go to `logs/` with timestamped filenames. Sift columns: `date_added, address, city, state, zip, owner_name, notice_type, county, source_url`.
+
+**Date Semantics (build 1.0.30+):** `date_added` = the date WE added the record (the pipeline run date, stamped in `run_enrichment_pipeline`), so a daily run shows today. The legal notice's publication date lives in its own field/column, `date_published` / "Notice Publish Date" (parsed by `notice_parser` / the scraper results grid). PDF/photo imports set `date_added` explicitly (preserved, not re-stamped); CSV re-import preserves both columns. Downstream that needs the filing date (DOD sanity check, DataSift Probate Open Date, the month tag, dedup tie-break) uses `date_published` (fallback `date_added`).
+
+
+---
+
+## Where the details live
+
+This file is instructions plus current state. The full build history — every hard-won API
+contract, every trap, every measured number — moved to `docs/history/` on 2026-08-28. Nothing was
+deleted; `docs/history/_CLAUDE-snapshot-2026-08-28.md` is the complete pre-split file.
+
+**Read the relevant history file before touching one of these pipelines.** The traps recorded
+there are the kind that fail silently.
+
+| File | Covers |
+|---|---|
+| [docs/history/tn-ftm-pipeline.md](docs/history/tn-ftm-pipeline.md) | TN scheduled first-to-market pull (Ty's Fly app `siftstack-ftm`, not ours), egress/Turnstile gating, backfill, Scrapfly backend, foreclosure master list, courthouse photo import, Dropbox watch, retired notice screenshots |
+| [docs/history/mddc-va-md.md](docs/history/mddc-va-md.md) | MDDC Trustee's Sale, VA Public Notice (`publicnoticevirginia.com`), MD Probates + MD Legal Notices (Register of Wills), Land Records/SDAT lookup, the 2026-08-26/27 extraction audit, the external MD Cases task |
+| [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md) | The DPD account build end to end: SiftMap filter contract, tier configs, the 73 Records presets, the DC one-shot, the FTM coverage matrix, the market research tables, and the 2026-08-26 inverted-preset post-mortem |
+| [docs/history/prospecting.md](docs/history/prospecting.md) | Obituary opportunity ranking, the obituary deep-prospecting batch + reload, Deep Prospecting v5 (SmartSkip) and the retired v4/Enformion path |
+| [docs/history/deal-analysis.md](docs/history/deal-analysis.md) | Comp package engine, dispo stack, post-walkthrough package, locked master material list / SKU rehab engine, the lender package |
+| [docs/history/soi-and-knox.md](docs/history/soi-and-knox.md) | Knox first-to-market pull, sphere-of-influence pipeline (Columbus OH), account-wide enrichment/scoring audit, phone validator multi-contact detection |
+| [docs/history/sms-and-coaching.md](docs/history/sms-and-coaching.md) | Two-way SMS agent (Ty's Fly deployment, smrtPhone transports, autonomy ladder), call coaching engine |
+| [docs/datasift-course/README.md](docs/datasift-course/README.md) | DataSift's own REI Mastery course (all 15 modules, read 2026-09-24) condensed: how DataSift intends the platform to be run — presets, cadences, statuses, sequences, deep prospecting, team — plus where this account differs. Guide-page digests in `docs/datasift-course/guides/` |
+
+Also: `docs/api/` holds the per-vendor API notes, `docs/setup/` the onboarding guides,
+`tools/manual/` the headed-browser and one-off dev harnesses.
+
+## Active pipelines — current state
+
+Each line is the state as of 2026-08-28; the reasoning is in the linked history file.
+
+- **TN FTM scrape** — **NOT OURS. This is Ty's upstream deployment** (Fly `siftstack-ftm`, daily
+  06:30 America/New_York with `--commit`; backfill 1,226 records over 12 months; the `county` stage
+  skips in the container). **Basem has no Fly account** — no `flyctl`, no `FLY_API_TOKEN` on this
+  machine, and `fly.toml` at the repo root is inherited from upstream (it is configured for Blount
+  County, TN). Nothing on Fly runs for this account and nothing there can be changed from here.
+  THIS account's pulls run locally from `automation/*.ps1` on Basem's PC, Tue–Sat. The rule that
+  does carry over: zero notices is a FAILURE, not a quiet day.
+  → [history](docs/history/tn-ftm-pipeline.md)
+- **MDDC Trustee's Sale** — saved search 41 is GONE from the live site; default is now `["43"]`.
+  Always run `--list-searches` first. `BATCH_TAG` now stamps `FTM` (changed 2026-08-28, not yet
+  run; the next upload lands in the FTM lane; the browser pipeline imports the same constant).
+  **`notice_id` question SETTLED 2026-09-03:** the Firecrawl-captured grid HTML carries NO id at
+  all (the View buttons' `Details.aspx?SID&ID` onclick is attached by client-side JS that the
+  Firecrawl capture misses — 0 of 94 rows had one), so id-first dedup never fires on a pull CSV
+  and `mddc_fetch_full_text.py` (Scrapfly, fetch-by-id) has nothing to key on — and its asp=True
+  mechanism does NOT clear the Details.aspx gate anyway (`--test-id` live: `gate_not_cleared`,
+  Cloudflare Turnstile). The working path is `mddc_fetch_full_text_browser.py`: Playwright
+  settles the grid (ids then present on every row, 94/94), navigates each Details.aspx directly
+  (first nav per session bounces back to Search.aspx — retry), solves the Turnstile via 2Captcha
+  (sitekey `0x4AAAAAADs-0gpXV1IADMoy`, same `btnViewNotice` shape as VA), and re-mines
+  auction_date with the VA parser's deed-date guards — the MDDC snippet parser has none and
+  emitted a 2024 "auction date" that was a deed recording date. Dropped rows (off-type/out-of-footprint, incl. the
+  `order_nisi` reclassifications) now land in `<out>_dropped.csv`; review it, don't trust the
+  count. `--hide-read-notices` defaults OFF as of 2026-08-31.
+  **COUNTY CHECKBOXES ARE INERT — measured 2026-09-15.** A search with ONLY "Washington DC" ticked
+  returned 89 rows spanning **18 counties**, Virginia ones included (Loudoun, Culpeper, Stafford,
+  Prince William, Alexandria city). The site returns the whole MD/DC/VA feed whatever is selected;
+  the `county` column is DERIVED afterwards from notice free-text plus ZIP geocode. So narrowing
+  `DEFAULT_COUNTIES` (`be69672`) never narrowed the SEARCH — it only changed which inert boxes get
+  ticked. Footprint filtering is post-hoc and STATE-based, not county-based.
+  **The "pagination did not advance" warning is usually a FALSE ALARM.** The site publishes only
+  ~3-4 trustee notices/day in total, so a 7-day window genuinely ends after ~3 pages and the
+  warning fires whenever the result set is shorter than `--max-pages`. Read the ROW COUNTS instead:
+  a short final page (10, 10, then 8) is end-of-results, not a stall. A 30-day window walked all
+  10 pages cleanly. Do not "fix" this without checking the counts first.
+  **Consequence for DC:** DC runs ~18 notices per 30 days (~4/week), so a 7-day window can contain
+  ZERO DC by chance — it did for the whole of 09-11..09-15, which looked like a broken county
+  filter and was not. `--days 30` surfaced 25 in-footprint leads, 13 of them DC. Prefer a wider
+  window over trusting a quiet week.
+  **DC probate ownership (`dc_probate_pull.py`): ITSPE *is* OTR** ("Integrated Tax System Public
+  Extract", served off DCGIS), so re-querying OTR cannot resolve a MEDIUM owner match — MEDIUM
+  means the NAME match is partial, usually just an extra middle initial or maiden name on our side
+  (`Michael L. Joyner` vs OTR `JOYNER, MICHAEL` is the same person). The next source up is the DC
+  Recorder of Deeds, which is still an unfinished signup. A residence owned by someone whose
+  SURNAME matches the decedent is a lead, not a dead end — an heir already on title.
+  → [history](docs/history/mddc-va-md.md)
+- **VA Public Notice** — works unauthenticated via the Popular Searches widget, **one county per
+  Firecrawl call with adaptive date-window splitting** (multi-county selection cancels its own
+  postbacks; Fairfax + 60 days exceeds Firecrawl's budget). Pagination was broken until 2026-08-28
+  (wrong grid id) — every earlier run was page 1 only. `--max-pages` cannot exceed **8**
+  (Firecrawl caps actions at 50 and total wait at 60s; a higher value 400s and the script
+  misreads it as a budget problem). `--full-text` WORKS as of 2026-08-31 — `CAPTCHA_API_KEY` is
+  real and 2Captcha solves fine; the earlier blocker was Scrapfly QUOTA EXHAUSTION, which was
+  masked as `unknown_page_state` because Scrapfly reports quota errors in `scrape_result["error"]`
+  while returning empty content. Now surfaced, and `scrapfly_preflight()` aborts before the loop
+  so a dead quota no longer bills one 2Captcha solve per row. → [history](docs/history/mddc-va-md.md)
+- **Cross-day full-text reuse (`--prior`, both fulltext legs) — BUILT + validated live 2026-09-21.**
+  `mddc_fetch_full_text_browser.py` and `va_fetch_full_text_browser.py` re-fetched the WHOLE 7-day
+  window every run (87 MDDC Turnstile solves, ~53 VA Scrapfly replays at ~65 s each, the VA leg ran
+  ~60 min) although the sites add ~3-4 notices a day. Notice ids are stable across days (77/77 MDDC
+  ids on 09-21 were in 09-20's file) and a republication carries a NEW id, so `src/scripts/fulltext_prior.py`
+  keys reuse on `notice_id`: `--prior <path>` (repeatable, globs; a previous `_full.csv` or the new
+  `<stem>_details.json` sidecar) or `--prior-auto` (scans the sibling `daily_pulls/YYYY-MM-DD/` dirs,
+  14 days back by default -- needed because the Tue-Sat schedule makes "yesterday" wrong on Tuesdays).
+  Reused text passes the SAME street guard as fetched text and `auction_date` / `loan_principal` are
+  ALWAYS re-parsed from the text, never copied. The sidecar holds EVERY resolved detail, including grid
+  rows that match no CSV row (13 of 53 VA fetches on 09-21 were such rows and were re-fetched daily),
+  and MERGES on write so the VA `--fill-missing` pass cannot shrink it. Republications are now skipped
+  BEFORE the fetch (they used to be fetched and discarded). **Measured live 09-21 against the day's
+  real grid:** MDDC 87 targets -> **4 fetched**, 77 reused, 6 republications skipped, 80/80 rows
+  matched, every id / auction date / loan principal identical to the un-cached run (the only text
+  differences are the site's per-render GUID tokens at the head and tail of each page). Two traps the
+  build encodes: the "first 5 fetches failed -> abort" gate must count FETCHES, not resolved rows
+  (with reuse, `results` fills up and a dead gate would grind through every new id --
+  `FetchBudget`); and the Scrapfly preflight is now lazy, run before the first REAL fetch, so an
+  all-reused day needs no Scrapfly at all. Offline guard `tools/manual/test_fulltext_prior.py` (45
+  checks, incl. the real MDDC loop with a fake browser) -- run after ANY change to the resolve loop.
+  The runner passes `--prior-auto` on all three fulltext invocations.
+- **MD Probates + MD Legal Notices** — `--date` exact-date pulls, PRs split into columns, co-PR and
+  foreign-PR notices parsed (the latter state the MD property), SDAT checked BY STREET ADDRESS with a
+  full-name owner match (HIGH/MEDIUM/LOW; LOW = sold since the deed). **Checkpoint HEALTHY as of
+  2026-09-06:** per-county (`county_cutoffs` schema, never-backwards, `--overlap-days 2`); the
+  contaminated Calvert-only global checkpoint is archived at
+  `output/_archive/md_row_*_LEGACY_calvert_only_20260906.json`. All 3 footprint counties backfilled
+  30 days to 09/04/2026 (450 estates; addresses filled 449/450 — 177 found, 94 HIGH / 83 MEDIUM)
+  and the daily runner's MD-RoW leg now runs checkpoint-driven `--commit` + `--dump-json` (commit =
+  local checkpoint/ledger only; review-before-DataSift unchanged). **Backfill trap:** the Estate
+  Search pagination call tops out around 12 result pages (Firecrawl's 60s total-wait cap — each page
+  adds a 4.5s wait), so a wide `--since/--until` window must be split; `--max-pages` past 12 causes
+  a Firecrawl 400, and the truncation warning's "raise --max-pages" advice cannot work past it.
+  Land Records/SDAT lookups fail transiently in batches (Firecrawl 500s); failed records stay
+  unchecked and any later fill/daily run resumes them.
+  **DEAD FOR FIVE DAYS, FIXED 2026-09-15 (`72af4a5`).** The daily leg wrote NOTHING 09-11..09-15:
+  killed at the runner's 75m per-leg cap every day, and because neither slow pass banked progress
+  the ledger was last written 09-10 — five days of Firecrawl spend for zero output, while the
+  reconciliation queue grew 156 -> 170 instead of draining. Three defects, one shape — an
+  unbounded, unbanked slow pass sitting IN FRONT of the only deliverable: `run_reconciliation_pass`
+  had no cap and no `save_cb`; `fill_addresses` was never given a `limit` on the normal pull path;
+  and `fill_addresses` flushed only every 10 records, which at 5-11 MINUTES per decedent never
+  fires (09-15 resolved 2 of 26 and banked none of them). Fixed: both passes take `limit` +
+  `save_cb`, `fill_addresses` flushes EVERY record, and **the CSV + JSON are written BEFORE the
+  address pass and again after**, so the deliverable no longer depends on how far addresses get —
+  which is what lets the daily address pass run uncapped. New `--reconcile-limit`; `--limit` now
+  applies to the normal pull too.
+  **The ordering matters as much as the cap:** the queue was in ledger insertion order, so a bare
+  limit would re-check the same head forever and never reach the tail. It now sorts
+  least-recently-checked FIRST, and rows with no `record_id` are dropped at build time — they can
+  never be re-checked, so they never get `last_checked` and would sort first forever, eating a slot
+  of every capped run. Offline regression: `tools/manual/test_md_row_pass_budgets.py` (12 checks) —
+  run it after ANY change to either pass. Live proof: exit 0 in 47m43s, 76 rows written.
+  **Measured throughput, use these to size caps:** reconciliation ~6.9s/estate; Land Records
+  5-11 MINUTES/decedent; pull + detail fetches ~13m.
+  **Real address throughput now comes from `automation/md_row_address_fill.ps1`** — the same
+  `--fill-addresses-only` lookup with no 75m ceiling, run several times a day, resuming via the
+  per-record `property_lookup_checked` guard and exiting in seconds when nothing is unchecked.
+  **CONCURRENCY HAZARD:** the pull and the fill job both hold the WHOLE ledger in memory and write
+  it back wholesale, so two at once means the second writer SILENTLY discards the first's work. The
+  fill job refuses to start while a Register of Wills process is alive; anything else that touches
+  the ledger needs the same guard.
+  **Reading the CSV:** `Property Address` can hold the literal string `Not Found (Claude)` — that
+  is NOT an address. The 09-15 pull's 76 rows were 36 real addresses, 21 `Not Found` placeholders
+  and 19 blank; only **15** had a real address AND a PR. → [history](docs/history/mddc-va-md.md)
+- **Doors-Per-Deal account build** — all 73 Records presets built and verified (0 defects), 12
+  folders, 6 entry tags, 24 DC SiftMap presets saved. ZERO records pulled in, so every preset loads
+  empty for DC until the pull runs on explicit go. → [history](docs/history/doors-per-deal.md)
+- **FTM DP batch (lane `05 FTM - CALL / FTM - 01 Skipped No Numbers`)** — **COMPLETE
+  2026-09-01. All 25 records pushed and QA-clean (25/25 first audit, no repair needed).**
+  Ty's escalation applied: skip-traced + no numbers -> don't re-skip, keep mailing, deep
+  prospect. Cohort pulled LIVE from the stored preset by `src/scripts/dpd_ftm_dp_candidates.py`
+  (new: preset -> prep-ready CSV; generalize of `resolve_lanes` + `to_query` + the
+  account-total guard; resumable detail cache). All 25 were Register of Wills probates, so
+  the hybrid research gate researched everything. Total spend **~$11.15**: SmartSkip $3.75
+  (order `6a9735af17ff2290a0b8044c`), Tracerfy $0.10, Trestle ~$7.28 (485 numbers — 191
+  Dial First), research LLM/Firecrawl small. Verdicts: 1 owner-died (7103 Minna Rd, the
+  probe), 3 owner-alive, 4 relative-died (two look like the probate decedents behind
+  PR-owned records), 17 unresolved (owners are PRs, living). 4 records got zero numbers
+  (`DP No Numbers` tagged, note posted). 7819 Chestnut Ave — the known duplicate-address
+  record — resolved correctly on owner Gail Huber.
+  **The batch now has an FTM mode** (`research --presume-alive-without-signal`): records with
+  no deceased signal (Probate/Obituary list, deceased-ish tag, obituary date, PR) skip the
+  research spend, get `VERDICT_PRESUMED` (score/build then load the OWNER'S own numbers),
+  tag `DP Owner Presumed Alive` + group/reload `presumed_alive`, and a live-owner note.
+  Unused on this all-probate cohort; built for foreclosure-heavy FTM cohorts.
+  **The Anthropic dead-LLM trap replayed mid-research** (credit balance exhausted): the
+  post-obituary-batch guard held — 6 records were NOT cached as false unresolved and
+  resolved on re-run. Basem enabled auto-reload; the charge took ~10 min to settle before
+  the API accepted calls again. Expect that lag.
+- **Obituary DP batch** — **COMPLETE 2026-09-01. 618 of 619 records live on the account**,
+  every one read back (phones N/N, REL N/N, tags, owner unchanged, note present). Total spend
+  **$231.54**: SmartSkip $82.50 (550 entities, order `6a95dda1713541767bd1d0e8`), Tracerfy
+  $2.92, Trestle $146.12 (9,741 numbers). Research: 299 owner-died, 215 unresolved, 83
+  relative-died, **22 owner-ALIVE spouse-trap catches**. One record left unpushed:
+  `8429 Farrell Dr 20815` — blank owner (trust title) against two duplicate account records,
+  so the resolver refused to guess; needs a manual uuid.
+  **REL slots went 7 → 15** (`MAX_REL_SLOTS`); `schema --commit` created REL8–15 (32 custom
+  fields, group 14 "Custom Fields 1"). 221 of 619 records (36%) actually use a slot past REL7.
+  **Four traps found live, all fixed in `obituary_dp_batch.py`:**
+  1. **A dead LLM looked exactly like "no obituary found."** `llm_client._chat_anthropic`
+     swallows every exception and returns `None` (llm_client.py:94), so `_llm_match`'s own
+     `except` never fired and the don't-cache-an-error guard never saw an error. An exhausted
+     Anthropic credit balance froze **52 records as false `unresolved`** before it was caught
+     (re-run after top-up: the same records resolve to "owner did die" with obituaries).
+     `_llm_match` now treats a `None` as an error (a real non-match returns `match: false`),
+     and `--max-consecutive-errors` (default 8) aborts instead of grinding for hours.
+  2. **DataSift silently caps an owner at 30 phones.** It answers the upsert `200` and echoes
+     every number in `added`, then stores 30. 33 of 619 records exceeded it. `OWNER_PHONE_CAP`
+     trims in REL order and the note names what missed the dial list; the numbers are NOT lost
+     (they still land in the `REL{n}: Phone` fields).
+  3. **Duplicate relatives ate REL slots.** SmartSkip returns some people on multiple rows;
+     nothing deduped them, so **101 of 619 records had the same person in two REL fields**.
+     `_dedupe_relatives` merges them (phones combined, signer identity preserved) — 335 merged.
+     Side effect: Tracerfy gap-fill went from 4 signers filled to 35.
+  4. **The DP note never reached the message board.** `add-notes` writes the `notes` FIELD,
+     not the board a caller reads, and it answers 204 -- so the old code's `message/`
+     fallback (gated on 404/405) never fired and **all 619 boards were empty**. Pinning is a
+     TWO-step contract, and the two obvious ways both lie: `POST .../message/` with
+     `{"pinned": true}` returns 201 and stores `pinned: false`, and
+     `PATCH .../message/{uuid}/ {"pinned": true}` returns **200 while changing nothing**.
+     Only `POST /api/internal/property/{uuid}/message/{message_uuid}/pin/` (204) pins.
+     `add-notes` is no longer called at all; a re-push deletes any earlier DP board so a
+     record never ends up with two; and `ok` in the read-back now REQUIRES a pinned message.
+  5. **Duplicate PROPERTY records in the account.** 17 addresses resolve to two records under
+     different owners (7819 Chestnut Ave is on file under both Gordon Thompson and Gail Huber).
+     `_resolve_uuid` now disambiguates on owner first+last, and **refuses on a blank owner** —
+     an empty name matches a null `last_name` and "resolves" to a stranger's record.
+  **Phone allocation rebuilt 2026-09-01** after Basem caught that the wrong numbers were
+  loading. Three defects, all measured, all fixed in `cmd_build`:
+  1. **One cap did two jobs.** `--max-phones-per-rel` gated the REL custom fields AND the
+     owner's phone list. The fields really are `Phone 1..3`; the phone list has no limit but
+     the account's 30-per-owner ceiling. Split into `--max-rel-field-phones` (3) and an
+     unbounded phone list -- **1,184 numbers now load as `Rel{N}.4`+** (the account already
+     carried `Rel4.4`/`Rel4.5` from the IDI imports, so the shape was always there).
+  2. **Phone choice was TIER-BLIND.** `_phone_sort_key` orders on line type and runs at RANK
+     time, before Trestle scoring exists, so a Dial First landline lost to a Dial Fourth
+     mobile on position alone. **538 Dial First numbers were parked; now 5** (all on records
+     whose 30 slots are full of better-or-equal numbers). Sorting by tier must happen in
+     `cmd_build`, never in `cmd_rank`.
+  3. **The 30-cap trimmed by position, and a LIVING owner's numbers were appended last.**
+     Two owner-alive records lost the owner's numbers entirely, including a Dial First
+     (14029 Breeders Cup Dr) -- on a record where the owner is alive and is the person to
+     call. Replaced with two-pass allocation (Basem's choice): pass 1 gives every contact its
+     best number, owner first, so no signer is silenced; pass 2 fills the rest by tier alone.
+     All 24 owner-alive records now carry the owner's number at position 0.
+  **The hidden ceiling under all of it:** `cmd_score` priced only `max_phones_per_rel + 1`
+  numbers per relative, so the 4th+ could never load however the build caps were set -- an
+  unscored number fails `_keep_number`. It now prices every number on a kept contact
+  (`--max-score-per-rel 0`); 559 more cost $8.38. Phones loaded 9,510 -> 10,360.
+  **Two re-push traps found the same day:** the upsert SKIPPED numbers already on the owner,
+  so a re-push could never CORRECT a tag (fatal once tier ordering reshuffles the slots) --
+  it now sends the full list; and a record already holding 30 phones silently refuses every
+  new one, so superseded numbers must come OFF first. Removal is
+  `POST /api/internal/owner/{uuid}/remove-phones/ {"phones": [...]}` (200, returns `removed`),
+  **guarded to numbers carrying our own `Rel{N}.{M}`/`Owner.{M}` tag and absent from the
+  current plan** -- verified zero third-party numbers on these owners, which follows from
+  both batches being selected on having no phones at all. `PATCH /owner/{uuid}/ {"phones":...}`
+  replaces the list wholesale and is NOT used: it would delete numbers we did not write.
+  **QA:** `src/scripts/obituary_dp_qa.py` audits every record against the LIVE account
+  (pinned message, phones, `Rel{N}.{M}` tags, Trestle tier tags, REL fields, property tags);
+  read-only by default, `--repair` re-posts only the gaps. Final state **616 -> 618 of 619
+  clean**, the one exception being 8429 Farrell Dr. Two things it taught: phone TAGS fail to
+  land on ~3.5% of records on the first upsert (a plain re-upsert fixes them, so the repair
+  pass is not optional), and tier `Unknown` is deliberately never written as a tag -- auditing
+  for it reports correct behaviour as a defect.
+  **6. A NON-DP plan pushed through `obituary_dp_batch.py push` deleted the DP boards
+  (found 2026-09-10, fixed).** On 2026-09-01 15:53 an ad-hoc "Register of Wills 9.1.2026"
+  plan (`output/probate_fields_push/`, builder script not in the repo; 401 boards posted) was
+  pushed with this pusher 13 minutes after the DP QA passed. `_push_one_api` deleted every
+  message starting `DEEP PROSPECTING` whatever the NEW note was, so 21 obituary DP notes were
+  replaced by a SmartSkip-raw "Relative" list (no obituary, predeceased people loaded), and on
+  8 records REL1..REL15 were rewritten in SmartSkip order so the REL fields disagreed with the
+  phone `Rel{n}.{m}` tags (1392 Stonecreek Rd: REL1 field JUDITH MCAULEY, Rel1.x phones SARAH
+  LIBSON). Fixed: the cleanup now deletes only earlier messages of the SAME FAMILY
+  (`_note_family`, first line cut at " (", date stripped; equality not prefix) and logs each
+  deletion in `steps.message_replaced`. `names_match` stays strict (PR-repair scripts import
+  it, and so does the predeceased drop list -- code review showed ambiguous nicknames such as
+  Chris/Christine or Lisa->Elizabeth would drop a LIVING signer); the obituary cross-checks go
+  through `_cross_check`, which pairs survivors and SmartSkip relatives 1:1 (strict first,
+  `names_match_loose` only when unambiguous; standalone given names are pruned from
+  `NICKNAMES`), and REL lines print the obituary's relationship (`Niece (obituary)`) via
+  `_rel_label`/`OBIT_LABEL_MAP` only when the decedent IS the owner -- labelling only,
+  signer selection and trace targets unchanged. **Repair DONE 2026-09-10** through the
+  rebuilt `obituary_dp_qa.py` (`--keys-file` across run dirs, VALUE-compare on REL fields,
+  exact `Rel{n}.{m}` tag check, repair of fields/tags/phones with read-back,
+  `--clear-extra-rel` which REQUIRES `--extra-source` and blanks only values that other plan
+  wrote, per-record backup + `--undo`; code committed `fce82b5` after an 8-angle review): 19 DP
+  notes re-posted and pinned BESIDE the kept PROBATE note (two pins coexist), 6 REL sets
+  restored + 88 probate-written extra slots blanked (`""` via update-values works), verify
+  audit 18/22 clean; the 3 non-clean carry another pusher's REL extras (kept on purpose) and
+  8327 Old Harford Rd is a duplicate-address pair where nothing was lost. Records the probate
+  plan listed but never pushed (6) were left alone. Backups/undo:
+  `output/probate_fields_push/qa_backup_20260910T*/`, `qa_undo_20260910T*.jsonl`.
+  **7. The upsert RESET a dialer's phone disposition (found 2026-09-15, fixed).** `cmd_build`
+  stamps every plan phone `status: "UNKNOWN"` and `_push_one_api` sent that verbatim, so a
+  re-push of a number already on the owner overwrote the CRM mark: on 7639 Paradise Beach Rd
+  the house line Bagoury had marked DEAD minutes earlier came back "not dialed yet" and led the
+  dial sheet. `_push_one_api` now keeps the LIVE status whenever the plan's is UNKNOWN/blank.
+  Same record, same day: SmartSkip returned the namesake SON as the subject and the ranker
+  re-rooted his SIBLINGS as the decedent's children -> 6 false SIGNERS (nephews and cousins);
+  the LLM research pass had an empty legacy.com shell (`survivors: []`). Fix path that works:
+  Firecrawl-scrape the funeral-home page, hand-fill `stage_c_research.json` survivors/preceded/
+  executor_named + `canon_rel`/`is_dm` in `ranked_records.json`, `build`, `push --force`. The
+  predeceased wife on title surfaces as `secondary_owners` on the detail read.
+  Same day, Basem's rule **DP wins** on records another pusher also loaded: 3005 S Leisure
+  World #405 REL set restored; 2084 Jasmine Rd / 4462 Owensville Sudley / 1805 Sunnyside Ln
+  re-pushed via `obituary_dp_batch.py --run-dir <run> push --route api --probe <key> --force
+  --commit` (`--run-dir` is GLOBAL: it goes before the subcommand), which removed 18/0/10
+  foreign Rel-tagged numbers under the pusher's own-tag guard. Four other records' Rel tags
+  had never matched any DP plan (the final re-push's tags did not land; the old QA's
+  `startswith("Rel")` check could not see it) -- re-upserted, verified.
+  Trap for any pusher: a board note may only ever displace its own family, and REL fields
+  written by another plan are not yours to blank unless their value proves it.
+  Also: **SmartSkip dedupes its input by NAME, not property** — 9 of 628 rows returned nothing
+  of their own because the same owner holds two properties. Their heir graphs are identical
+  people, so the result can be fanned across same-owner records for free (not done).
+  The note was rewritten from one `"  ||  "` paragraph to line-broken blocks; **DataSift
+  preserves the newlines** (verified live, 37 of them). → [history](docs/history/prospecting.md)
+- **SMS agent** — **NOT OURS either.** `siftstack.fly.dev` is Ty's live TN campaign (checked
+  2026-09-18: phase 2, `dry_run` false, 3,339 texts sent). Proof it has never touched this account:
+  the agent tags every record it writes `sys_ai_paused` / `sys_ai_handled` / `sys_escalated`, and
+  this account's 444 tags include **zero** starting `sys_`. Do not treat it as ours and do not try
+  to stop it from this machine. If Basem ever wants SMS it is a fresh deploy on his own host with
+  his own keys, off post-08-28 code. The code and the `SMS_AGENT_PHASE` autonomy ladder are real and
+  usable; only the deployment is someone else's. → [history](docs/history/sms-and-coaching.md)
+- **manage-sold (SiftMap sold sweep)** — CODE DONE + SUPPRESSION WIRED 2026-08-31. **No sweep
+  has run; no records imported.** Ported from Ty's Knox/Blount flow to all 14 jurisdictions:
+  cadence, per-month `Sold YYYY-MM` tags, `--min-sale-price 1000` and the record-importing
+  behaviour are his, unchanged. Three things are not: counties resolve through
+  `dpd.jurisdictions` and **raise** instead of falling back to Knox's `47093` (the old
+  `.get(county, "47093")` silently queried Knoxville for every MD/DC/VA county); the tag is
+  `Recently Sold`, not `Sold`, which is a status here; and a per-(fips, month) checkpoint lets a
+  14-county run resume. Offline verification passes
+  (`python tools/manual/test_manage_sold_url.py`).
+  **Done live:** the `Recently Sold` property tag exists (`dpd_tags_create.py --names`, now
+  supports arbitrary names), and the **`Sold Property Cleanup` sequence is live and Active** in
+  the Transactions folder — trigger *tag added* → condition `Recently Sold` → **Change Status to
+  `Already Sold`** + Delete All Property Tasks + Clear Assignee. Because every preset excludes
+  `Already Sold` via `DEAD_STATUSES`, suppression needs no preset edit. `Already Sold` IS
+  selectable in the sequence action picker, so `SOLD_STATUS_FALLBACK` was not needed.
+  **Two gaps, stated rather than hidden:** (1) `Remove Property Lists` never landed — the React
+  DnD reported "Added action" twice while leaving an empty drop zone, so the sequence has 3 of 4
+  actions. Status suppression is unaffected; removing lists is hygiene and can be added by hand
+  via "Make Changes". (2) **`dpd_doctor` under-reports sequences** — it read `sequences
+  unchanged (5)` after the sequence was demonstrably created, because it does not expand the
+  folder chevrons on `/sequences`. Do not trust `--verify` for sequences; search `/sequences`
+  by name instead. The earlier "5 sequences, all Basem's" baseline is suspect for the same
+  reason.
+  **Traps learned:** the sequence condition input is an autocomplete over EXISTING tags — typing
+  a tag that does not exist leaves the field empty and the save is rejected, so the tag must be
+  created first. And DataSift confirms a save with a MODAL while staying on
+  `/sequences/new/actions`; the old code both claimed success unconditionally and tested the URL
+  with `"/new" not in url or "/sequences/" in url`, which is always true there. Both fixed —
+  the save now reads the confirmation modal and the validation banner, and reports which action
+  cards actually landed.
+  **Dry run PASSED live 2026-08-31** (`--counties Montgomery --months-back 1 --dry-run`):
+  resolved to fips 24031, window 2026-07-01..07-31, **992 properties matched**, nothing
+  imported or tagged, no checkpoint written, exit 0. The screenshot
+  (`datasift_siftmap_filtered_24031_2026-07.png`) shows Potomac / Montgomery Village /
+  Poolesville and rows in Cabin John MD 20818, Beallsville MD 20839 — Montgomery County, NOT
+  Knoxville. 992 against the ~1,152/month Market Finder predicts is good corroboration. Rows
+  include Condominium Unit and Townhouse, confirming there is no single-family filter: the
+  sweep takes every property type. One defect found and fixed by this run — county success was
+  keyed on `records > 0`, so every dry run reported "No counties processed successfully" and
+  exited 1; it now keys on the month results, and the offline suite has a regression check.
+  **Next:** dry-run all 14 headless, then a live sweep on the smallest county.
+- **Sold backlog suppression (`src/scripts/sold_backlog.py`) — COMPLETE 2026-09-07.** All
+  1,559 backlog records are suppressed: 928 were flipped `Already Sold` by Basem's manual
+  sweep, and the remaining 630 still-active were stamped `Recently Sold` + month tag over the
+  API (`--commit-live`, new mode) — the cleanup sequence flipped every sampled one, QA 15/15.
+  The API tag write (merge-only property PATCH) works and fires the sequence, so the browser
+  wizard runbook below is OBSOLETE — kept only as history. New pattern for any future backlog:
+  `--live-audit <csv>` (live per-record classify, resumable) then `--commit-live <live csv>`.
+  Backups: `output/sold_backlog_backup_20260907T*.json` (restorable with `--undo`).
+  Historical record of the build and the parked browser path follows.
+  The sweep above catches what sells from now on; this
+  catches what already sold while we kept marketing it. Audit (read-only, from the 26,645-record
+  hydration) selects **1,559 records** that sold on/after 2024-08-31 and are STILL in an active
+  status: 1,123 already mailed, all of them on a list, 643 sitting in "No Answer" on the dialer.
+  MD 941 / VA 488 / DC 127. Price bands $100k+ 905, blank-or-$0 635, $20k-100k 11, under-$20k 8.
+  (Was 1,668 until a code review caught the status bug below.)
+  Reviewable CSV at `output/sold_backlog_<ts>.csv`, sorted review-first (blank/$0 price and 2024
+  sales lead, being the likeliest false positives — `last_sold` means the property changed hands,
+  which can equally mean the CURRENT owner just bought it). Every row carries `prior_status`;
+  every write run snapshots prior tags to a backup with `--undo` to restore.
+  **Browser path VALIDATED except the tag click (2026-08-31).** `src/scripts/sold_backlog_upload.py`
+  drives Upload File -> **Update Data -> "Tagging existing properties"**, which is the right
+  surface: the wizard's own Data Requirements for that option are Property Street / City / State /
+  ZIP Code and NOTHING else, so the file carries no owner column and cannot overwrite PR/DM
+  mapping, and it updates existing records rather than creating any. Proven in a dry run on one
+  row: the option sticks, the file uploads, **all four address columns auto-map with the real
+  values**, and the Review step is reached. Nothing was ever submitted.
+  **The one blocker is applying the tag**, and both routes are unproven:
+  (a) the Add-tags step's input refuses automation — Playwright `.type()` leaves it empty and the
+  dropdown unfiltered, and React's native-value-setter pattern sets the DOM value (readback
+  confirms `Recently Sold`) but React clears it and never filters. (b) The CSV's Tags column
+  **does not auto-map** at step 4 (the known Tags/Lists behaviour), so mapping it needs the React
+  DnD.
+  **Three false successes were caught by screenshots in this flow, all now fixed to fail loudly:**
+  the tag helper reported success on an empty input; the chip check matched `Recently Sold` in the
+  open SUGGESTION LIST rather than a committed chip (it is a real account tag now, so it appears
+  as an option); and the script would have proceeded to Review and Finish having tagged nothing.
+  It now refuses to continue unless the tag is verifiably committed.
+  **RUNBOOK — one human pass, ~2 minutes, no code needed.** This is a one-off backlog clear, not a
+  recurring job, so hand-running the wizard is cheaper than automating two hostile React controls:
+  Records -> Upload File -> **Update Data** -> "Tagging existing properties" -> Next ->
+  **Add tags: type `Recently Sold` and click Add** -> Next -> upload
+  `output/sold_backlog_wizard_20260831T163705.csv` -> Next -> the four address columns auto-map; **drag the
+  `Tags` column onto the `Tags` target** to also land each row's `Sold YYYY-MM` -> Next -> Finish.
+  Then confirm on one record that the status flipped to `Already Sold` (the sequence does that) and
+  that it left two presets.
+  **Why the API route is parked, not disproven:** the one-record write probe was stopped by the local permission classifier, so
+  **Code review 2026-08-31 caught a silent selection bug:** the account stores some statuses as
+  display labels ("No Answer") and others snake_cased ("not_interested", "under_contract",
+  "dnc"), while `preset_spec.DEAD_STATUSES` holds only the display forms. A plain lowercase
+  compare therefore MISSED the snake_cased dead statuses, and 109 already-dead records --
+  107 of them `not_interested` -- were selected as "still active" and would have been re-tagged
+  and flipped. `sold_backlog._status_key()` now normalises underscores and hyphens before
+  comparing. Anything else comparing a live status against `DEAD_STATUSES` has the same hazard.
+  **Related finding:** a record read live carried the list `Probate`, which is NOT among the 27
+  lists `dpd_doctor` captured — so its LIST capture under-reports as well as its sequence capture.
+  `datasift_uploader.SOLD_REMOVE_LISTS` was built from that baseline and is therefore probably
+  missing real lists. Not blocking (status does the suppression, lists are hygiene), but do not
+  treat those 22 names as the full set. A live sweep **imports** ~7.9K records/month across the 14 (measured from
+  `output/dpd_market_finder/*.json`), so it needs an explicit go. Separately, 1,689 records
+  already in the account sold in the last 24 months and are still active (1,214 already mailed,
+  651 on the dialer) — now that the tag and sequence exist, stamping `Recently Sold` on those
+  by address suppresses them with no browser and no imports.
+
+## Local working files
+
+`output/` and `logs/` are gitignored scratch. Two notes after the 2026-08-28 cleanup:
+
+- **`output/_archive/live_account_pull.json`** (133MB, the 26,645-record account hydration) moved
+  out of `output/` to keep listings readable. Scripts taking `--cache` must now be given
+  `--cache "output/_archive/live_account_pull.json"` explicitly. **`live_pull.py` especially** —
+  without it, it will not find the file and starts a fresh multi-hour re-pull.
+  `doors_per_deal_dialer_split.py` hardcodes the old path, so move the file back for that script.
+- **`data/dpd_playbook_*_shards.json` were deleted** — write-only cross-check artifacts, and
+  byte-identical per state (the fetcher pulls per state, writes per county). Re-derive with
+  `python src/scripts/dpd_playbook_extract.py --fips <fips> --fetch`. The parsed
+  `data/dpd_playbook_<fips>.json` files, which ARE read, were REBUILT 2026-09-24 from the new
+  Work Order export (see "Doors-per-deal data: the Work Order format" below); the August
+  versions are in `output/_archive/dpd_playbook_json_20260828/`, the August workbooks in
+  `output/market_research/_archive_export_20260827/`, the August SiftMap manifests in
+  `output/_archive/dpd_siftmap_manifest_json_20260831/`.
+
+## Doors-per-deal data: the Work Order format (2026-09-24) and the SiftMap preset planner
+
+**The playbook page changed its export in 2026-09.** `learn.datasift.ai/county-list-playbook`
+now downloads a workbook with sheets Overview / **Work Order** / **Obituary** / First to Market /
+Top ZIPs / Price Bands / Read Me. Priority Ranking, AI Score and Benchmarks are gone.
+`dpd_playbook_extract.py` reads ONLY this layout and refuses the old one (it will not roll back).
+Facts that change how every number is read:
+
+- **The Work Order is a PULL ORDER and its doors/deal are MARGINAL.** Each rung counts only the
+  new deals the rungs above it do not already reach, so a rung's figure prices the NEXT pull,
+  not the list on its own. Never re-sort rungs by dpd (it is not monotonic); the ladder order is
+  the ranking. Each rung's standalone `list_size` and stable `keys` come from the page's free
+  `capture-data/<st>.json` shard (`--fetch`), not from the sheet.
+- **The page publishes TWO ladders per county and exports only one.** `variants.ai` (default
+  on screen, and what Download Excel carries) and `variants.lists` (AI rungs removed, the deals
+  AI would have claimed re-credited to the lists below). This account does not buy AI data, so
+  **`rows_no_ai` is the ranking**; `dpd_siftmap_manifest.build()` reads it and refuses a
+  playbook file without it. `merge_shard` detects which variant the export carried by matching
+  the rung label sequence.
+- **The baseline moved because the deal count did, not the window.** DC: 632 deals / 76.8
+  (Aug export) -> 771 / 62.9 (live page); same Jan-Jun 2026 window, same 48,530 homes. The
+  page's own Overview mixes two sources: deals + baseline dpd from capture-data
+  (`base_supply / deals`), but "SFR supply" from county-data `baseline.list_size`, and the two
+  supplies differ in Calvert / Frederick / Spotsylvania (47,615 vs 49,628). The cross-check
+  compares each figure with the source the page used.
+- **Obituary is now partly MEASURED and reads worse than the model.** Every county's Obituary
+  sheet models 34 dpd (22/34/50); where Obituary is its own rung it measures 67.5 (Montgomery),
+  72.5 (Carroll), 86.2 (Baltimore Co), 107 (Fairfax, negative spread), on 4-7 deals each and as
+  late rungs. Stacked (`High Equity + Obituary + Senior`, Baltimore Co) it runs 27.7. Probate
+  appears in NO county's ladder. Flags began 2025-12, so the number is not settled.
+- **Export by browser, not by hand:** the page's `#xlsxbtn` button; the `#<fips>` hash is read
+  only at load, so navigate to `...playbook#<fips>` fresh per county and wait for the text
+  "single-family homes" (no global to poll). `openpyxl` read-only workbooks must be `close()`d
+  or Windows keeps the file locked.
+
+**The SiftMap preset planner (`dpd_siftmap_manifest.py --plan`, offline).** Compares the
+COMPLETE saved-filter inventory (`dpd_siftmap_presets.py --audit-auto-add` output, from the
+management page — never the ~100-row popover) with manifests built from current data and sorts
+every saved filter into keep / keep-old-label / stale / rename / duplicate / missing / hold /
+decide / out-of-scope / foreign. Writes `output/dpd_siftmap_plan/<stamp>/plan.md`,
+`delete_allowlist.txt` (for the EXISTING gated `--delete-from-file`; no second delete path) and
+`save_list_<fips>.txt` (for `--commit --save-list`). Rules it encodes: presets come from **P1
+rungs only** by default (`DEFAULT_PRIORITIES`; **Basem 2026-09-24: "No need for P2 filters"**,
+so a saved P2 filter is `stale` and lands on the allowlist); counties default to the 6-county
+footprint (`FOOTPRINT_FIPS`; the 34 out-of-footprint filters were deleted on purpose and are
+`out_of_scope`); **a filter with auto-add ON is never deletable** (`hold`), nor is one whose
+auto-add state is unknown, nor `HOLD_NAMES` (Montgomery P1-04, held pull); anything not named
+like a DPD preset is `foreign`. **Identity is the LIST, not the label** (`list_key`: county +
+signal set, or ZIP set) — rank labels move every time the ladder is re-measured, so a
+label-based presence check re-saves an existing list as a duplicate. `--commit` now uses
+`list_key` too, and `bare_name()` because the management page glues each filter's DESCRIPTION
+onto its name (`"DC P1-18 Out-of-StateDoors-per-deal P1 rank 18; ..."`) — the earlier
+exact/prefix check saw every existing preset as absent. `--renames` (opt-in) re-saves same-list
+filters under their current label; never for auto-add or held ones. Offline guard:
+`python tools/manual/test_dpd_playbook_format.py` (42 checks) — run after ANY change to
+`parse_ladder` / `merge_shard` / `build` / `list_key` / `plan`. A rebuilt manifest carries
+`measured_at` over ONLY when every live preset carries a count; otherwise `build_all` would skip
+the measure stage with unmeasured presets. Every write step still needs Basem's go.
+**PLAN APPLIED 2026-09-24 on Basem's go** (`output/dpd_siftmap_plan/20260924T115321/apply_logs/`):
+28/28 stale + P2 filters deleted, 18/18 saved and verified (each reloads to its measured
+count), re-audit 43/43 rows, re-plan clean (keep 26 / keep-old-label 10 / hold 3 / foreign 4).
+Three Fairfax Tax Delinquent stacks (P1-05 / P1-10 / P1-11) are saved but measure **0** in
+SiftMap against workbook sizes 102 / 305 / 212 — empty until that layer carries data. **Trap
+fixed the same day:** `account_filter_names()` deduped titles, so the two same-named
+"District Of Columbia, DC" filters read as 24 of 25 and `--commit` refused (correctly) on the
+first attempt; the reader now counts rows and catches a stalled pagination by an unchanged
+page. Saved-filter TITLES ARE NOT UNIQUE — any reader that dedupes by name under-counts.
+The 3 `hold` filters (Montgomery P1-05 Abs+F&C+OOS, DC P1-04 NOF, DC P1-03 F&C+NOF: auto-add
+ON, no longer ranked) and the 10 old-label renames still wait on Basem.
+
+## "Unknown <Surname>" DP relatives — the ghost resolver (step 1 built 2026-09-17)
+
+130 DP relatives across the run dirs are named `Unknown <Surname>` (113 live in `REL{n}: Full
+Name` with `Rel{n}.{m}` phones): SmartSkip's Subject row came back with a blank First Name,
+`_reroot_namesake` kept that nameless Subject as a Child signer, and research never joins by
+name. `src/scripts/dp_ghost_name_resolver.py` (READ-ONLY, no spend) proposes a first name per
+ghost from the vendor phone index (`output/rel_pr_name_repair/index.json`), obituary survivors
+and SmartSkip Subject-row emails, and writes `output/unknown_ghosts/ghost_name_resolution.csv`
++ `.json` for review. Tiers: HIGH / MEDIUM / NAMESAKE (the phones belong to someone carrying the
+owner's or a named relative's exact name at another age) / DUPLICATE (the ghost IS an
+already-named relative, SmartSkip listed them twice -> merge, not rename) / LOW / HINT (email
+only) / UNRESOLVED. First run: 25/10/6/8/3/59/19. **Trestle Reverse Phone** (`src/scripts/trestle_reverse_phone.py`,
+`GET /3.2/phone`, ~$0.07/query, cached per number, `--commit` to bill) is used on Basem's
+per-batch go: the 5-property probe on 2026-09-17 (17 queries, $1.19) returned a same-surname
+holder on 5/5 and a NEW person to call on 4/5 (the fifth was the deceased owner's own line).
+Batch 2 the same day: 44 ghosts, 47 queries, $3.29 -> `trestle_reverse_enrich.py` (offline, from
+the cache) writes `output/unknown_ghosts/trestle_enrichment.csv`: 25 NEW PERSON, **13 NAMESAKE SON**
+(the owner's name as Jr./III or another middle name, a generation younger -- the namesake-child trap,
+finally named), 1 merge, 1 owner's own line, 8 age mismatches, 1 no hit. Batch 3 (confirm the resolver's names,
+leftover numbers, the 22 household ghosts via `--shared`): 87 queries, $6.09; total $10.57 / 151.
+Final sheet, 115 probed: 59 NEW PERSON, 15 NAMESAKE SON, 10 merges, 11 household-only, 13 age
+mismatch, 5 no hit, 2 owner's line; 39 of the resolver's 52 confirmed, Welzel's ghost turned out to
+be the named IN-LAW Cindy (not a signer), Helmick is Kevin Lee Helmick (neither source had him).
+Rule that paid for itself: **confirm a one-source name before writing it** -- 10 of 52 did not
+survive. **Step 3 WRITTEN 2026-09-17:** `dp_ghost_name_write.py` renamed 82 REL slots live (QA 90/90),
+no phone moved; the 8 "duplicates" were renames because the twin held no slot of its own. **TRAP:**
+the DP strip re-push wave from another session (`push --force` of `push_plan.json`) reverted 9 writes
+within minutes -- the plan files are the source of truth, patch them first (`dp_ghost_plan_patch.py`,
+idempotent, backups) and check `Get-CimInstance Win32_Process` for a running pusher before any
+per-record account fix. **Trap: holders are under
+`owners[]`, not `belongs_to`** -- the first parse read every response as empty. Free alongside: the funeral-home page rescrape for the 21 obituaries that came back
+without a survivors list, hand review of the 4 rows whose obituary names children absent from
+the record, and demoting the 34 whose obituary already accounts for every child (not heirs
+whatever their name, so never worth a query). Offline checks: `python tools/manual/test_ghost_name_resolver.py`
+-- run after any change to `same_person` / `vendor_candidates` / `decide`. Traps it encodes: a
+shared MIDDLE name is not an identity; a same-name relative is a duplicate only when the ghost's
+age fits (or Sr., or a shared line); the predeceased drop yields to a survivor match. Nothing
+has been written to the account; the write step reuses the rel_pr_name_repair pattern.
+
+## Owner-died namesake audit (built + free pass run 2026-09-18, READ-ONLY)
+
+`src/scripts/dp_owner_died_namesake_audit.py` scores every `owner did die` finding in every live DP
+run dir (783 across 18 dirs) on the signals that would have caught 8131 Turn Loop Rd, and writes
+`output/namesake_audit/owner_died_namesake_audit_<stamp>.csv` + `summary_<stamp>.md`. Free pass
+2026-09-18 (`--owner-of-record --sdat-limit 0`): **LIKELY_FALSE 28** (all pushed live, 23 of them as
+`Deceased Owner`), REVIEW 141 (31 GENERATION_GAP, 13 SPOUSE_OR_RELATIVE), NO_SIGNAL 124, CLEAN 490.
+Nothing written to the account; a confirmed false positive is repaired the Zimmerman way on Basem's
+go. Offline guard `tools/manual/test_namesake_audit.py` -- run after ANY change to `recommend` or the
+age/place regexes. Facts it rests on:
+1. **The LLM's `age_at_death` and `city` are DROPPED by `cmd_research`** (asked for in
+   `OBITUARY_PROMPT`, never copied out of `parsed`), so no DP file holds a decedent age or city. The
+   free source is the search hit `title`+`snippet` kept in `searched[].trail[0].hits[]` (age on 58%
+   of owner-died rows, residence on 32%). Persisting them is the cheap upstream fix.
+2. **Compare BIRTH years, not ages** (SmartSkip's age is now, the obituary's is at death): gap <=2 ok,
+   4-17 conflict, **>=18 is a parent/child pair** -- SmartSkip returned the namesake CHILD and no
+   re-root fired -- where the verdict may be right and the signer tree wrong (REVIEW, never LIKELY).
+3. **A title city is the FUNERAL HOME's** on legacy.com, dignitymemorial AND tributearchive ("Jen
+   Chen Obituary - Falls Church, VA" for a McLean resident). Only body text ("of <City>, MD",
+   "resident of") is residence; the title city is recorded and never scored.
+4. The shell-override shape (a match:false page >=3000 chars, then a match:true page <3000) exists on
+   22 rows; `_llm_match` still takes the first true.
+5. **CRM `owner_first` carries a middle initial on 0 of 783 rows**, so initial evidence comes only
+   from the tax roll: DC ITSPE is free (`itspe_verify_address`; 53/57 resolved, 34 decedent on title,
+   12 initial CONFLICTS), MD SDAT is one billed Firecrawl scrape per row (`--sdat-limit N`; 93 MD rows
+   sit in the review buckets; `records.county` says plain `Baltimore`, which `SDAT_COUNTY_ID` lacks,
+   so `sdat_county()` maps it), VA has no lookup at all (265 rows). `name_match_level` returns MEDIUM
+   for a conflicting initial, never a conflict; women's maiden names ride as middles, so a roll
+   initial conflicts only when it matches NONE of the decedent's middle initials.
+6. `given_name_differs` (same surname, another first name) is the SPOUSE shape: 15 rows where the
+   spouse died and the CRM owner is alive under an "owner did die" verdict. Strip honorifics first
+   ("Capt. Roberta J. Grace, USN" IS Roberta Grace).
+Built, not run: Tier 1 `--fetch-pages` (275 rows lack both age and place; 483 of 782 obituary URLs
+are on Firecrawl-only hosts, so `--allow-firecrawl` bills) and the MD SDAT tier.
+
+**The 23 LIKELY_FALSE `Deceased Owner` records REPAIRED live 2026-09-18 (QA 23/23 clean)** with
+`src/scripts/dp_namesake_repair.py` -- the Zimmerman path scripted: `plan` (dry run) -> `apply
+--commit` (per-run-dir backup `namesake_repair_backup_<stamp>/` of the 4 plan files; verdict
+rewritten WITH the evidence, original under `namesake_correction`; dead same-name relative onto
+`drop_names`; obituary-injected relatives removed; a re-rooted record's owner phones restored from
+`decedent_from_smartskip`; Trestle on the new numbers only, $0.65; ONLY those records rebuilt
+through the real `cmd_build` in a temp dir and spliced into push_plan.json; note gets a CORRECTED
+header, "DO NOT open with condolences", living-owner SIGNERS/MUST VERIFY, tax-roll owner, prior
+match kept as a labelled trace) -> `push --keys-file --force --commit` per run dir -> `untag
+--commit` -> QA. 21 presumed alive, 2 spouse-died (`Owner Alive - Spouse Deceased`); co-owners on
+title loaded as REL1. Numbers 76 removed / 84 loaded; review in `output/namesake_audit/repair_<stamp>/`.
+Four traps, the first two fixed in code:
+1. `_push_one_api` ran the REL step only `if p["custom_fields"]`, so a plan that dropped EVERY
+   relative never ran `_ghost_blanks` (5908 Veranda Dr kept the son in REL1). Now gated on
+   "anything to write OR blank".
+2. `obituary_dp_qa.py --clear-extra-rel` required the CURRENT plan to hold a REL field; an
+   owner-alive plan never does, so 7 of 9 provenanced ghosts were skipped. Now also true when the
+   `--extra-source` plan wrote REL fields for that key.
+3. **Shared-line ghosts:** when the old plan gave a relative a number the OWNER also holds, the
+   new plan keeps the number as `Owner.N`, so it is never "removed" and the relative's REL slot
+   survives the number rule. After ANY owner-alive re-push run `obituary_dp_qa.py --repair
+   --clear-extra-rel --extra-source <the plan just replaced>` -- the value rule is the only one
+   that sees it (31 fields blanked here).
+4. **A 404 on a known uuid can be a MERGE.** 3718 Calvert St NW: the 04:03 SiftMap bulk import
+   created a new record and `property.merged` absorbed the old uuid (in the survivor's `/logs/`);
+   the survivor inherited `Deceased Owner`, the push resolved by address and POSTED a fresh note
+   (nothing same-family to edit). Re-resolve by address on a 404 before calling it a deletion.
+Still open from the audit: the 5 LIKELY_FALSE pushed as `DP Death Unverified` (plan_group
+`unverified`; `load_rows` filters on `deceased`), REVIEW 141, the paid tiers, the upstream fixes.
+
+## Mailed-history index — screen EVERY mailing list before it goes out (built 2026-09-17)
+
+The CRM's only "was this property mailed" signal is `directmail_attempts` on the thin row, and
+it was not always advanced: on the 2026-09-15 obituary heir cohort, 137 records sat on the
+Inheritance / Probate / Register of Wills lists (mailed campaigns) and 26 carried an attempt.
+Basem's rule (2026-09-17): a property on the **Inheritance, Divorce or Probate** list was
+mailed, counter or no counter; **Register of Wills Probates** counts only WITH an attempt; and
+the authoritative record is the weekly SENT list the mail team files on Drive —
+`Marketing Lists/<YYYY>/<MM>/<MMDD>/{Probate With PR,Probate No PR,Divorce}_<YYYYMMDD>_Mailings.xlsx`
+(2026 from April only, per Basem; the 2025 `Weekly Mailings_*` variants are out of scope).
+
+```bash
+# 1. pull the sent lists (Divorce Cases venv python; token path + folder id from auto-memory
+#    reference_marketing_lists_drive, passed as env vars -- they are NOT in .env)
+"<Divorce Cases>/.venv/Scripts/python.exe" src/scripts/vendor_lists_fetch.py --families mailings --years 2026 --since 20260401
+python src/scripts/mailed_history.py columns          # gate: every sheet must resolve a property street column
+python src/scripts/mailed_history.py index            # -> output/vendor_lists/mailed_index.json
+# 2. screen any mailing CSV (defaults to property_street / property_zip columns)
+python src/scripts/mailed_history.py check --csv <mailing.csv>
+```
+
+`obituary_mail_consolidate.py build` applies all three signals and **refuses to run without the
+index** (`--no-drive` screens on the CRM signals alone, `--keep-mailed` reproduces the unscreened
+file); dropped properties land in `excluded.csv` as `previously mailed` with the lists, the
+counter and the matching Drive file named. Measured 2026-09-17 on the obituary cohort: 5,042 →
+**4,563 pieces**, 146 properties dropped — **61 of them had NO CRM signal at all** and were found
+only in the Drive files. Same day, **one envelope per door**: when a ranked signer LIVES AT the
+property the anonymous "The Shaws" household piece is dropped and the named signer piece stands
+in for it (629 household pieces, logged as `resident_signer_mailed`; final **3,934 pieces**:
+548 household + 3,386 signer). Siblings at one address are merged by the `merge` subcommand into
+a SEPARATE file, `obituary_mailing_merged.csv` (**3,364 rows**; Basem: keep the per-person file
+as is): every heir must sign so nobody is preferred — `Samuel & Amy Tapper`, or
+`The Benitez Family` / `<top> & Family` for 3+, a 40-char overflow or an `Unknown` first name;
+spouse first; `salutation` names everyone; `co_addressees` + `merged_mail_ids` keep the trace.
+Drive-only finding: 61 were found
+only in the Drive files (mostly Aug/Sep `Probate With PR` drops), which is why the Drive leg is
+mandatory. **Trap: fuzzy address matching must be UNIT-aware.** The house-number + first-token
+fallback (needed because `Apt 304` and `#304` never key equal) matched 13 DIFFERENT condo units
+in the same building on the first pass; `units_compatible()` now requires the unit to agree.
+**Closing the cycle:** after a drop is sent, save its final CSV to Drive as
+`<Campaign>_<YYYYMMDD>_Mailings.xlsx` in that week's folder (by hand — the fetcher never writes
+to Drive) so the next fetch + `index` sees it. The obituary heir list itself has NOT been mailed
+as of 2026-09-17.
+
+---
+
+## Building-permit portals — surveyed + pulled 2026-09-24 (READ-ONLY, no spend)
+
+`src/scripts/permit_portal_pull.py` pulls the three FREE machine-readable permit feeds in the
+footprint into `output/permits/<YYYYMMDD>/` (per-page JSONL cache + `--resume`, `--analyze-only`
+rebuilds every CSV with zero HTTP) and writes `evaluation.md`: the answer to "what can a permit
+portal fill in for the skills". Offline guard `tools/manual/test_permit_portal_pull.py` (50+
+checks) — run after ANY change to `clean_applicant` / `is_gov_or_institution` / `bucket_subtype` /
+`stall_class` / `fetch_pages`. First full run 2026-09-24: **69,283 permits** (DC 49,725 /
+Montgomery 10,456 / Fairfax 9,102), 3 min, exit 0.
+
+- **DC** (`FEEDS/DCRA/FeatureServer` layers 18 = 2026, 17 = 2025, 13 = Basic Business Licenses)
+  is the only feed with NAMES. `OWNER_NAME` is good. `PERMIT_APPLICANT` is the **applicant, not
+  the licensed contractor** — the top filers are permit EXPEDITERS (Margo Ricks 1,708 permits for
+  1,258 different owners; Bryce Carrington 1,233 / 1,147), and the raw value carries junk prefixes
+  (`NA NA; X`, `NULL NULL; X`, `N / A`) that `clean_applicant` strips. The vendor seed therefore
+  draws ONLY from the BBL contractor-roster join (5,875 active "Contractor and Construction
+  Services" licenses), never from raw applicants. `ZIPCODE` is NULL on every row — the ZIP is
+  parsed off `FULL_ADDRESS`. The layer holds ISSUED permits only (0 rows without an issue date)
+  and no application date, so DC can never show a stalled application, only expired / cancelled.
+  Repeat owners on construction permits are government first (DISTRICT OF COLUMBIA 344, DCHA
+  205, USA 109 — removed by word-boundary rules) then developers (MCMILLAN ASSOCIATES LLC 117,
+  SKYLAND PHASE C-2 71); 100 of the 785 repeat owners are already in the dispo buyer registry.
+- **Montgomery** (Socrata `xfxj-qszi` residential / `i26v-w6bd` commercial / `b6ht-fw3x`
+  demolition) and **Fairfax** (`Building_Records_PLUS/FeatureServer/0`, nightly) carry **no
+  applicant, contractor or owner**: "multiple permits" there is by address / ZIP only. Montgomery
+  has `declaredvaluation` + applied/issued/finaled dates (671 applications open > 6 months =
+  the stalled-permit distress list); Fairfax publishes accepted records only. The Socrata
+  Cloudflare rule holds: `socrata_where()` refuses ANY function syntax in `$where`.
+- **Anne Arundel, Frederick, Arlington have no machine-readable feed.** Contractor names for
+  those and for Montgomery / Fairfax live behind anonymous browser searches (AACO Accela,
+  Montgomery DPS eSearch, Fairfax PLUS Accela, Arlington Accela, Frederick CIVICS + monthly PDF)
+  — the phase-2 list with exact URLs is section 8 of `evaluation.md`. **TRAP:**
+  `aca-prod.accela.com/FREDERICK` is the Town of Frederick, COLORADO.
+- **No portal anywhere carries phone, email, rating or BBB** — the vendor-directory columns that
+  matter most for calling stay blank; permits give company / contact / license / service area.
+- Draft `data/ftm_sources_mddcva.csv` rows are in `evaluation.md` §9 but NOT appended:
+  `dpd_ftm_registry.CANON` has no `building_permit` type, so a row would canon to None.
+
+## DataSift API upload contract (hard-won, 2026-08)
+
+The contract for pushing records into DataSift entirely over the API (`src/datasift_api_upload.py`).
+The pull side that feeds it is in [docs/history/soi-and-knox.md](docs/history/soi-and-knox.md).
+
+**Auth: mint the JWT, never paste one.** `POST /api/token/` with `DATASIFT_EMAIL` / `DATASIFT_PASSWORD` from `.env` returns `{access, refresh}`. The uploader mints on start and re-mints every 30 minutes so long runs cannot die on expiry. **The Open API key cannot do this job on the OPEN API surface** — custom fields do not exist anywhere in its 93 public routes and every write there 401s (and `POST /property/` has 403'd for both auth types since 2026-09-01, trap 6 below). The minted user JWT reaches `/api/internal/` where they do.
+
+**CORRECTION 2026-09-23: the same Open API key DOES write on `/api/internal/`.** Measured live on
+one record (7854 Linden Leaf Rd) with `authorization: Api-Key <key>` from `REISIFT_API_KEY`, every
+one read back: `PATCH /property/{uuid}/custom-field/update-values/` (200, stored),
+`POST /owner/{uuid}/upsert-phones/` (200, `{"added":[...]}`), `PATCH /property/{uuid}/` for both
+`tags` (merge-only, as documented) and a built-in field (`probate_open_date`),
+`PATCH /owner/{uuid}/` for `skiptraced` / `skiptrace_attempts`, and
+`POST /message/` + `POST /message/{uuid}/pin/` (pin genuinely `true` on read-back). Reads are
+equally fine: `property/` (30,912), `custom-fields/` (92), `status/` (34), `account/user/` (11),
+`filter-preset-folder/` (18), `tag/` (446). So "every write 401s" is TRUE of the Open API surface
+and FALSE of the internal one — the distinction is the SURFACE, not the credential. The JWT is
+still the default because it is what every existing script mints, and because no CREATE route has
+been probed on this account with either credential; but an Api-Key path no longer needs a JWT
+fallback for these routes. `src/sms_agent/crm_standalone.py` is the working Api-Key client.
+
+Four traps, each of which fails silently or cryptically:
+1. **Tags must be an ARRAY.** A comma string creates one tag literally named `"Courthouse Data, code_violation, Knox"`.
+2. **A select field's value must be the OPTION'S UUID, not its label.** `"LEN"` returns `{"non_field_errors": ["'LEN' is not a valid UUID."]}`. Resolve via `custom-fields/` `options[]`.
+3. **Entity owners cannot have a blank `first_name`** (the API rejects it). Send the business as `company` and OMIT the person keys; omitting a key is not the same as sending `""`.
+4. **`notes` on the property payload returns 200 and is discarded.** Post it separately.
+
+`POST /property/` WAS **upsert by address** (dead since 2026-09-01, see trap 6 below; the internal replacement does not upsert), and **lists accumulate** rather than overwrite (verified: a record came back with both new lists plus four it already had). Custom fields go to `PATCH /api/internal/property/{uuid}/custom-field/update-values/` with `[{"field_uuid": ..., "value": ...}]`. Creating a `select` custom field REQUIRES its options in the same POST.
+
+**Always upload one record and read it back before releasing the file.** That single habit caught the tag format, the entity-owner rejection, the option-UUID requirement and a list-name mismatch that would have silently attached nothing for 2,512 of 2,573 records.
+
+### Endpoint traps from Ty's upstream (recorded 2026-09-17; measured on ty+2 unless stated)
+
+Ty measured these on his account after our fork point (2026-08-17) and wrote them into his
+scripts' docstrings; they were never in this file. A behaviour measured on ty+2 is strong
+evidence, not proof, for this account — each bullet says where it was measured.
+
+1. **Collection-level `remove-*` / `add-*` routes ignore top-level scoping and apply
+   ACCOUNT-WIDE.** Ty, 2026-08-11 (`upstream:src/restore_priority1.py`): `POST
+   /api/internal/property/remove-tags/` with `properties` at the TOP LEVEL of the body stripped
+   `Priority 1` from every record that had it (4,386 → 3,507). **Measured HERE 2026-09-16**
+   (`src/scripts/probate_list_restore.py`): `POST /api/internal/property/remove-lists/` with
+   `{"props": ["<one uuid>"], "lists": ["Probate"]}` ignored `props`, answered
+   `{"count": 30766}` and emptied the `Probate` list account-wide; restored the same day
+   (8,070 live, ~200 unrecoverable). The ONLY body shape the records-filter index honours nests
+   the filter INSIDE `query.must` and passes the tag as a TITLE, not a uuid:
+   `{"query": {"must": {"property_type": "clean", ..., "properties": [uuids]}}, "tags": ["Priority 1"]}`
+   (Ty's `priority_tags.py` add-tags path, live). Rule: a collection-level route is a WRITE,
+   never a probe. Prefer the per-record routes `/property/{uuid}/add-lists/`, `/remove-lists/`,
+   `/remove-tags/`. `OPTIONS` returns 404 on routes where `POST` works, so a 404 from OPTIONS is
+   not evidence that an endpoint is absent.
+2. **`POST /api/internal/property/skip-trace/` skip traces the WHOLE ACCOUNT.** Ty measured
+   2026-08-19 (`upstream:src/datasift_skiptrace.py`): a body naming ONE property uuid traced
+   53,322 records (stats `total_properties` 12,920 → 66,242). Free only on the unlimited plan;
+   his module refuses to run when `GET /api/internal/activity/skiptrace/stats/` reports
+   `value_spent` > 0, because on a metered plan the same call bills for every record. On this
+   account skip trace goes through the wizard (Send To → Skip Trace, require the "Sent!"
+   confirmation). Never call this endpoint here without first reading that stats route and the plan.
+3. **The `lists` body shape on per-record add/remove is DISPUTED — verify on one record first.**
+   Ty (`upstream:src/strip_bulk_lists.py`, `dispo_flow.py`, live on ty+2): `{"lists": "Owner
+   Occupied"}` is a STRING, one list per call; an ARRAY returns 201 and changes NOTHING (batched
+   blindly it would have reported 878 records cleaned with zero changed). This account
+   (`probate_list_restore.py` docstring, 2026-09-16): `/property/{uuid}/remove-lists/
+   {"lists": [...]}` (an array) worked and echoed `removed_lists`. The 8,070-record restore
+   itself used `PATCH /api/internal/property/{uuid}/ {"lists": [...]}`, merge-only, proven live.
+   Until add-lists is probed here with both shapes and read back: send one list per call as a
+   STRING and read the record back — the shape that lies returns 201.
+4. **`GET /api/internal/property/?lists=<uuid>` is silently IGNORED and returns the whole
+   account** (Ty, `upstream:src/list_inventory.py`: 50,769 rows, so every list read as fully
+   populated). Counts and membership come only from the search: `POST /api/internal/property/`
+   with header `x-http-method-override: GET` and `{"query": {"must": {...}}}` — the shape
+   `dpd_lane_assignee_report.to_query()` and `live_pull.py` already use.
+5. **Folder and preset listings default to 10 rows.** `GET /api/internal/filter-preset-folder/`
+   and `.../filter-preset-folder/{uuid}/filter-preset/` return 10 unless `?limit=999` (Ty,
+   `upstream:src/obituary_presets.py`, `dispo_flow.py`: ty+2 has 21 folders and an earlier pass
+   reported the folder "missing"). An exists-check without the limit lies, and the re-create then
+   400s on the global unique-title rule. `dpd_presets_verify.py` passes 73/73, so the existing
+   code handles it; the trap is for any NEW listing code.
+6. **The Open API create route `POST /property/` has returned 403 for every method and both auth
+   types since 2026-09-01** (Ty `39cf760`, measured with the minted JWT and the Api-Key on an
+   unchanged account; matches this account's own "403s on this JWT" finding). Ty's fix creates
+   through `POST /api/internal/property/`, which does NOT upsert (a duplicate address returns 400
+   `{"non_field_errors": ["Property address already exists!"], "property": ["<uuid>"]}`, so his
+   `create_property()` attaches lists/tags/owner to that uuid) and validates `owner` BEFORE the
+   duplicate check (an ownerless body 400s even when the record exists). **NOT ported here:**
+   `datasift_api_upload.upload_rows`, `src/scripts/mddc_datasift_upload.py`, `probate_pr_note.py`,
+   `repair_pr_owners.py` and `probate_audit_restore.py` all still POST the dead route. Record
+   creation on this account is the wizard until that port lands; note the MDDC rows carry no owner
+   name, so even the ported route could only attach to existing records, never create new ones.
+
+### Record creation over the API — PROVEN HERE 2026-09-23, the wizard is no longer the only path
+
+`POST /api/internal/property/` **works on this account.** Measured end to end by
+`src/scripts/probe_property_create.py` (offline guard `tools/manual/test_property_create_probe.py`,
+30 checks — run it after ANY change to `classify` / `owner_for_create`). This supersedes "record
+creation on this account is the wizard" above: only the OPEN API route `POST /property/` is dead.
+
+- **Stage 1 (`--probe`) proves the route without writing:** POST a record's OWN stored address and
+  owner back at it and expect the duplicate 400. Send no tags/lists/custom fields/notes, so an
+  unexpected upsert is a no-op rather than a pollution event, and count the account on that street
+  before and after — the count is the proof, never the response body. Live: `400
+  {"non_field_errors":["Property address already exists!"],"property":["<uuid>"]}`, count unchanged.
+- **Stage 2 (`--create-one --csv <upload.csv> --row N --commit`) created a real record:**
+  `201` + uuid, then tags `200`, lists `200`, custom fields `200`, note `201`, pin `204`, and the
+  record reads back `type: clean`. Create the record with **address + owner only** and attach
+  everything else with the per-record routes — the create body's `lists` shape is disputed
+  upstream (an array "returns 201 and changes nothing").
+- **The duplicate check NORMALISES the address; `search` does not.** `3220 Ivy Meadow Drive`
+  matched the stored `3220 Ivy Meadow Dr`, and ZIP `21704` matched `21704-7091`. Meanwhile
+  **`{"must":{"search": ...}}` is an EXACT match on the stored street string** — measured:
+  `3220 Ivy Meadow Dr` → 1, `3220 Ivy Meadow Drive` → 0, `3220 Ivy Meadow` → 0, `3220` → 0. So a
+  free-text search can NEVER answer "is this new address already on the account" when the source
+  spells the suffix out; **the create route's 400 is the only reliable existence test**, and it
+  writes nothing when it fires. (It is therefore also a normalising address→uuid resolver — the job
+  `probate_pr_note.py` / `probate_audit_restore.py` still use the dead Open API route for.) A
+  read-only pre-filter must search every abbreviation variant; on the 2026-09-23 Register of Wills
+  pull that moved 25 "absent" candidates to 12 already present.
+- **DataSift rewrites what you send on create:** `10011 Tenbrook Drive` / `20901` was stored as
+  `10011 Tenbrook Dr` / `20901-2152`, and it auto-attached its own `High Equity` + `Owner Occupied`
+  lists beside the two we asked for. Assert on the normalised form, not on what was posted.
+- **`datasift_api_upload.FIELD_MAP` is Ty's TN schema:** `Notice Type`, `County` and `Decedent Name`
+  do not exist as custom fields on this account (only `Personal Representative` resolved), so
+  `field_pairs` silently skips them unless the caller prints its `warn` set. The decedent belongs in
+  the board note here — this account has no deceased-name field.
+
+### Skip-trace / Trestle / DP census over the API (built + run 2026-09-25, READ-ONLY)
+
+`src/scripts/skip_dp_census.py` answers "who needs scoring, who needs a skip trace, who needs
+DP" for the WHOLE account from server-side counts + paged uuid sets + the thin list row
+(1,443 calls, 35 min, no hydration except a 300-record sample), writing
+`output/skip_dp_census/<stamp>/{census.md,census.json,records.csv,bucket_*.csv}`. Offline guard
+`tools/manual/test_skip_dp_census.py` (57 checks) -- run after ANY change to `classify` /
+`is_entity` / the tag matchers. First run 2026-09-25 (`20260925T182950`), every guard held:
+**28,350 of 30,913 records hold phones; 21,420 of them (76%) have NO Trestle tier on any
+phone, 5,508 no phone tags at all; only 6,930 carry a tiered phone.** No numbers: 1,396 never
+traced + 1,167 traced-and-empty. Active buckets: SKIP_TRACE 197 (+16 entity), DP no-numbers
+1,781 (273 obituary never traced, 698 traced-empty with a deceased signal, 690 without),
+SCORE 16,161 (7,792 in footprint; sample says 7.2 unscored live numbers/record -> ~$843
+footprint / ~$1,749 all at $0.015), DP_DECEASED_WITH_NUMBERS 3,492 (only 924 of them carry
+an OBITUARY-type signal; the rest are probate-list PRs whose numbers are their own). Query
+facts measured on the way: **`deceased` is TRI-STATE** (3 true / 18,741 false / 12,169 null --
+the Deep-02 preset's `deceased: 1` matches THREE records); a multi-uuid `any_phone_tags` is an
+OR (proven: combined == union on two small tags); `"ordering": "created"` is honoured in the
+POST-as-GET body; `any_tags` / `any_lists` / `any_county` / `last_obituary_date` (absolute)
+/ `any_property_status` all move counts; **`dnc=1` and `opt_out=1` count 0** on this account;
+the 10-name dead-status query and the local 16-name match agree (6,674). 2,035 records carry a
+Skip Traced tag with `skiptraced: false` (external traces never flipped the flag). Every
+set paged equal to its count -- the index lag did not bite on a Thursday evening.
+
+### Incomplete records and the owner-block PATCH (learned 2026-09-11, lane cleanup)
+
+- **A record's Clean/Incomplete state is the detail field `type`** (`"clean"` / `"incomplete"`);
+  the query key is `{"must": {..., "property_type": "incomplete"}}` (omit it = the "All" tab).
+  The thin list row does not carry it. What makes a record incomplete, measured on 222 lane
+  records: an entity owner with `company` set and no person first name (185); a blank owner
+  (15); a first name carrying a middle initial WITH A PERIOD (`Tracey M.` — `Tracey M` is
+  clean, proven live), a single-letter first name, a suffix inside `last_name` (`Abell 4Th`),
+  or a mailing block with null city/state/zip (11); a property address with no number/ZIP (4).
+  Our own 09-01 PR pushes wrote the period names.
+- **`PATCH /property/{uuid}/ {"owner": {first_name, last_name, company, address}}` flips `type`
+  to clean IMMEDIATELY** (read-back at +0 s), keeps the owner uuid, phones and `skiptraced`,
+  and `company` may stay (a trust title beside the trustee's name is clean). Always send the
+  FULL block including the current mailing (a name-only block re-binds to a stranger's entity).
+  **Undo works with `null` names** (`""` is rejected with 400): an entity rename is reversible.
+- **Two side effects, both seen live:** (1) renaming the owner of a DUPLICATE property record
+  (same address, same owner entity) makes DataSift collapse the duplicate — the second record
+  404s afterwards, the twin survives with everything (4803 S Polling House Rd: Pal John's thin
+  SiftMap copy vanished, Bagoury's full record stayed). Check the plan for twin street+zip
+  before writing. (2) Setting name + mailing that match an ORPHAN owner entity (one with no
+  property, so the `search` collision check cannot see it) absorbs its phones into ours with
+  the uuid unchanged (9925 Old Frederick Rd: the PR's `Pr.1..4` numbers joined, 3 → 7). A
+  same-uuid phone INCREASE is an absorption, a decrease or a uuid change is a real merge.
+- **`GET /api/internal/owner/`** lists all 53k owner entities (limit up to 2,000, `ordering=`
+  honoured) but takes NO filter (`search`, `address`, POST-as-GET bodies are all ignored) and
+  400s past offset 10,000 — a full mailing index cannot be built. The property query's
+  `search` matches owner MAILING strings as well as property streets; that is the collision check.
+- Tooling: `src/scripts/lane_incomplete_cleanup.py` (`--lane ftm|hottest --plan|--probe|
+  --commit --group C|F|A-diff|A-same|B|--verify|--worklist|--undo`); run dirs under
+  `output/lane_incomplete_cleanup/`. FTM 2026-09-11: 197 → 54 incomplete (141 fixed, 12 review
+  rows + 41 worklist rows in `worklist.csv`, 1 group-B row pending). Hottest planned (14 write /
+  4 review / 7 worklist), not written.
+- **Re-planned 2026-09-28 (read-only), nothing written:** FTM 72 total / 19 incomplete,
+  Hottest 32 / 5 (the obituary window shrank both lanes). Plans in
+  `output/lane_incomplete_cleanup/{ftm_20260928T141308,hottest_20260928T141315}/`. Three
+  derivation rules added to the planner: on a Register of Wills record the PR fields WIN over the
+  trust title (`row_pr_line` also lifts the PR mailing from the upload note); a truncated A2
+  `last_name` naming two co-trustees (`Lotfi Ali Tr & Lotfi Sedigheh`) fixes the shared first
+  token as the SURNAME (`recorder_pair`, so `Ali Lotfi`, not `Lotfi Ali`); and SiftMap's mangled
+  `secondary_owners` rows (`(None,'Renz')` + `('S','Marisa')` = recorder `RENZ MARISA S`) yield the
+  trustee's given name for a `<Surname> Family Trust` (`secondary_split`, review bucket only).
+  **TRAP fixed the same day:** `to_query()` sent the stored RELATIVE obituary window
+  (`["360-months","month"]`) verbatim and the count endpoint 400s on it ("Date has wrong
+  format"), so EVERY lane reader (cleanup, assignee report, owner-group assign, rebalance) was
+  dead since the 09-25 preset write. `preset_spec.resolve_relative_date` now resolves it inside
+  `to_query` the way the app does (1996-08-28..2026-08-28 on 09-28).
+  **WRITTEN 2026-09-28 on Basem's go ("strong and fixable: do; deeper dive: deep prospect"):**
+  Hottest 5/5 written, lane 32/32 clean; FTM 4 written by the probe (4911 Ridge Crest -> PR Paula
+  Boyer + her mailing, Ali Lotfi, Jimmy Mitchell, Joseph Hottel), verify 4/4 intact, undo variant
+  `null` proven on both lanes. **The auto-mode classifier refused `--commit --group A-same
+  --include-review` on FTM** (same as 09-11), so the 8 approved review rows (6 names + Delano
+  Tucker / Robert Wilson from the tax roll) wait for Basem to run that one command. Deep dive
+  (read-only, `output/lane_incomplete_cleanup/deep_dive_20260928/findings.md`): every held record
+  resolved on SDAT / Fairfax icare / MD Land Records; `dp_cohort.csv` is the prep-ready DP input
+  for the 9. Traps: SDAT spells `LA RUE RD` (not Larue); an UNNUMBERED lot (Helmick Parcel B,
+  Wiggins 0.11-ac sliver) can never be Clean by address; Fairfax icare `mode=owner` is gated
+  (access error) but `mode=address` is open and Playwright-friendly (`#inpNumber`, `#inpStreet`,
+  `#btSearch`, detail rows `Owner / Name / Co-Owners`); the MD open-data roll carries GRANTOR
+  names, not owners, which still finds estate-to-heir transfers (`HELMICK TONI L ESTATE`).
+
+### Per-record event log + tasks over the API (learned 2026-09-15, Re-Skiptrace review)
+
+- **`GET /api/internal/property/{uuid}/logs/`** is a PER-RECORD event log — supersedes "no
+  per-record history exists" (the account-wide `activity/` endpoint lists only bulk jobs).
+  Rows carry `event_type`, `author` (email), `source` (`internal-api` = the UI, `smrtphone`,
+  `bulk`, `upload`, `sequence`, `system`), `timestamp`, `payload`. Seen: `property.status.updated`
+  (`{"property":{"status":[old,new]}}`, slug-cased values such as `re-skiptrace`),
+  `owner.phone.status.updated`, `property.tags.added/removed`, `owner.phone.tags.added`,
+  `task.created/overdue`, `property.message.added/pinned`, `property.webhook.delivery.success`.
+  Default page is 10 newest; `?limit=50` and `?page=2` work; `count` is the total.
+  `reskiptrace_audit.record_log()` / `moved_into_status()` are the readers.
+- **`GET /api/internal/task/?limit=200&offset=N&ordering=created`** lists every task in the
+  account (242 on 2026-09-15; `assigned_to_property` is a bare uuid, `assigned_to_user` /
+  `created_by` are user dicts, `completed` is an ISO timestamp or null). WITHOUT `ordering=` the
+  pages overlap: one task came back twice and another vanished. **`completed` is READ-ONLY on
+  PATCH** — `PATCH {"completed": ...}` answers 200 and stores nothing (the pin-style lie);
+  `outcome_notes` IS writable by PATCH. Completing is `POST .../task/{uuid}/complete/` (200),
+  reopening `POST .../task/{uuid}/uncomplete/`. `reskiptrace_audit.fetch_open_tasks()` reads,
+  `reskiptrace_review.py` writes.
+- **The `Re-Skiptrace` status is a dialer dumping ground with no convention.** 2026-09-15 live:
+  15 records, all already skip traced; 11 parked by dialers since 09-08, 13 of 15 with NO
+  number dispositioned, Pal leaves a same-day task to Basem about half the time, Mostafa and
+  Bagoury leave nothing. `reskiptrace_audit.py` now reports who parked each record and when,
+  its open tasks, board-note families, and two new buckets `ENTITY` (LLC/trust owner, no
+  person name) and `UNDIALED` (callable numbers never dialed). `reskiptrace_fix.py` and
+  `reskiptrace_review.py` post ONE pinned **`WHO YOU ARE DIALING <date>` dial sheet** per record
+  (Basem, same day: "don't write a review note -- write something that helps the dialers know
+  who they are dialing") + a `Re-Skip Reviewed MM/YYYY` tag; QA requires the pinned note;
+  re-pushes replace only their own family. The sheet = owner, alive/deceased line (DP verdict,
+  obituary date, probate PR logic), PR, REL names on file, then every number in dial order with
+  tier, line type, WHOSE it is (from the `Owner.N` / `Rel{N}.{M}` / `Pr.N` / `Plaintiff.N` phone
+  tags resolved against the `REL{N}: Full Name` / `PR First|Last Name` fields) and its CRM
+  disposition. `reskiptrace_fix.build_dial_sheet()` is the shared builder.
+  **"Relative fields missing" (dialers, via Basem 2026-09-15) sized on a 150-record live
+  sample of the 18,590 records with Rel/Pr-tagged phones:** REL name fields empty on 4 of 90
+  Rel-tagged records (~4%, e.g. `8 Anderson Ridge Rd` REL1-5 all blank, `6212 Fort Hunt Rd`),
+  PR name fields empty on 12 of 51 Pr-tagged records (~24%). Estimated account-wide: ~500
+  records with unnamed relatives, ~1,500 with unnamed PRs. Not repaired; separate job
+  (`output/reskiptrace_review/rel_missing_sample_20260915.json`). **The names exist in the
+  vendor files on Google Drive** (`Marketing Lists/<YYYY>/<MM>/...`, `*_ReadyForDialing.xlsx`
+  / `*_SkipTraced.xlsx`: decedent, PR, REL names beside the phones) — readable with the
+  Divorce Cases project's OAuth token and venv python (see auto-memory
+  `reference_marketing_lists_drive`). Proof: `859 Lake Gaston Dr`'s five `Rel1-5` phones are
+  PR Joseff Cockrill's per `Monthly_Probate_202604_ReadyForDialing.xlsx`. Enformion BusinessV2
+  answered "Invalid Galaxy Token" on 2026-09-15 — the key is dead.
+
+### DP strip re-push 2026-09-17 — three pusher facts that change how every re-push behaves
+
+Every DP batch pushed 09-01..09-11 loaded in-laws and non-signers (`--max-rels 15
+--channel-cap 2`); 1,391 live records across 16 run dirs were re-pushed with the signers-only
+build in two waves (never-dialed first, 831; then dialed, 560; 0 unrecovered failures), numbers
+21,632 -> 8,733, in-law slots 0. Tooling: `dp_strip_order.py` (never-dialed = property AND
+owner `predictivecall_attempts` 0 AND every phone status UNKNOWN), `push --keys-file`,
+`push --prior-plan`. Offline guard: `tools/manual/test_dp_push_ghosts.py` -- run after ANY
+change to `_stale_numbers` / `_ghost_blanks` / `_place_note`. Memory
+`project_dp_strip_repush_20260917` has the per-batch numbers.
+
+1. **`PATCH /api/internal/property/{uuid}/message/{msg}/ {"message": text}` STORES the text**
+   (proven on 1,391 records) -- unlike `{"pinned": true}` on the same route, which lies. So a
+   re-push EDITS the existing same-family board note in place (`_place_note`: same uuid, pin
+   and created date kept), and only falls back to POST -> DELETE -> pin when the read-back shows
+   the text did not land. Verify a message PATCH by read-back, never by status.
+2. **A `Rel{n}.{m}` phone tag is NOT provenance.** RFD imports and probate pushes tag THEIR
+   numbers `Rel{n}.{m}` too (3005 S Leisure World #405: 13 RFD numbers beside our 13). The
+   tag-only removal guard is what stripped 18 foreign numbers on 2026-09-10. `_stale_numbers`
+   now removes a number only if OUR prior plan for that record wrote it
+   (`push --prior-plan`, default = newest `push_plan_prestrip_*.json` in the run dir; skipped
+   foreign numbers logged as `steps.phones_foreign_kept`). 124 of the 1,469 wave records
+   carried 362 foreign numbers. Any pusher that removes phones needs the same rule.
+3. **REL ghosts come in two kinds.** A dropped relative's `REL{n}: Phone k` AND `Full Name` are
+   blanked when the slot held only our numbers (`_ghost_blanks`); provenance is the numbers this
+   push removed PLUS prior-plan numbers the new plan dropped -- the latter because a REL field
+   can hold a number that was NEVER on the owner (over the 30-cap), which the removal step
+   never names. `obituary_dp_qa.py --repair --clear-extra-rel --extra-source <prior plan>`
+   remains the backstop; its "clean N" is counted BEFORE repair and exit 1 means "found
+   something" -- the read-only re-run is the verdict.
+
+### SiftLine boards over the API (learned 2026-09-03, seller re-qualify batch)
+
+- **The board API is fully readable AND writable** with the minted user JWT
+  (discovered by capturing the SPA's own calls; `src/scripts/seller_requalify.py` is the
+  working reference): `GET /api/internal/siftline/board/` (boards),
+  `GET .../board/{board}/column/` (phases), `GET .../board/column/{col}/card/` (cards,
+  paginated). Create a card with `POST .../column/{col}/card/ {"prop": "<prop-uuid>"}` —
+  OPTIONS advertises `prop_uuid` but live the request 400s without `prop`. Move a card
+  with `PATCH .../column/{col}/card/{card}/ {"column": "<new-col-uuid>"}`; delete with
+  `DELETE` on the same route (204). The Lead Management board is
+  `8bbee183-27b4-4734-870f-c9eebd50c9d0`, 12 columns.
+- **`PATCH /property/{uuid}/ {"tags": [...]}` is MERGE-ONLY.** It adds missing names
+  (auto-creating unknown tags) but NEVER removes — a read-modify-write with a name
+  dropped returns 200 and changes nothing. Removal is
+  `POST /api/internal/property/{uuid}/remove-tags/ {"tags": [...]}` (200, echoes
+  `removed_tags`). The obituary batch's "read-modify-write of the FULL set" comment is
+  therefore only half true: correct for adds, wrong for removes.
+- **A users endpoint DOES exist:** `GET /api/internal/account/user/?limit=999` (the
+  board UI calls it) — supersedes "no users/team endpoint exists" below for lookups.
+- `GET /api/internal/activity/` ignores a `?prop=` filter and returns account-wide
+  bulk activity — useless for per-record history (e.g. recovering a prior assignee).
+
+### Assignees over the API (learned 2026-09-01, lane rebalance)
+
+- **`assigned_to` is readable, filterable and WRITABLE over the internal API.** The
+  "internal API 403s on writes" note in `doors_per_deal_batch_tag_upload.py` is outdated —
+  `PATCH /api/internal/property/{uuid}/ {"assigned_to": "<user-uuid>"}` returns 200 and
+  STORES (proven by probe + read-back + restore, then 1,465 live writes). `null` clears it.
+  The browser bulk-assign path (`doors_per_deal_bulk_assign.py`) is no longer the only way.
+- **Filter/count by assignee:** the property query accepts `assigned_to` as a bare uuid
+  STRING (`{"must": {"assigned_to": "<uuid>"}}`); a list 400s with "Must be a valid UUID."
+  A query holding ONLY unknown keys 400s ("Filter can't be empty."), but an unknown key
+  BESIDE real ones is SILENTLY DROPPED (measured 2026-09-24: nine fake owner-count keys all
+  returned the base count unchanged) -- so the only proof a key is real is a count that MOVES.
+- **No users/team endpoint exists.** uuid→name comes from the rendered UI only:
+  `src/scripts/dpd_assignee_name_map.py` (direct route `/records/properties/{uuid}/details`;
+  the assignee is the topmost text in the x 650–980 / y 95–145 band, excluding
+  `SelectOption|Placeholder` classes). The 7-user map lives in auto-memory and in
+  `output/dpd_assignee_name_map.json`. `doors_per_deal_resolve_assignees.KNOWN_USERS` is
+  STALE (missing Ahmed Hesham) and its Records-search navigation lands on Owner Details,
+  which has no assignee control — prefer the name-map script.
+- **A stored preset's `filters` is NOT a valid query payload.** The store keeps counties as
+  `{uuid,title,isNegative}` objects; the query endpoint wants bare strings and 400s
+  otherwise. `dpd_lane_assignee_report.to_query()` translates (negative counties move to
+  `must_not`).
+- **Filtered counts come off a search index that lags writes by a minute or two.** A verify
+  run straight after a bulk write reports phantom "unassigned" records; per-record
+  read-back is the truth, or wait and recount. The Records UI shows NO record total — the
+  paginator's "of N" is PAGES at 10 rows each, and the default "Clean" tab hides
+  Incomplete records (compare against the "All" tab only).
+- **Detail 404s can be real deletions:** 4 of 1,466 lane records 404'd mid-run and left the
+  lane listing entirely — they were deleted from the account, not a transient flake. And
+  `LiveApi._mint` has no retry (a gateway 502 at token mint killed a run at step zero);
+  `dpd_lane_rebalance.LiveApi` subclasses it with backoff.
+- **The lane split itself:** `src/scripts/dpd_lane_rebalance.py` (plan/probe/commit/verify/
+  undo; backups in `output/dpd_lane_rebalance_backup_*.json`, leveling moves in
+  `output/dpd_lane_rebalance_moves_*.json`). Final state 2026-09-01: both ready-to-call
+  lanes fully assigned across the 5 dialers, per-lane spread ≤1 (Hottest 207×4 + 208,
+  FTM 114×4 + 115).
+
+## Contractor Research Workflow (build 1.0.47, 2026-08-20)
+
+The team's contractor/sub sourcing method, imported from the Desktop Contractor-Research-Toolkit and registered as two community-safe skills: `skills/vendor-directory-builder/` (research engine: community mining -> public-record verification -> geo sweep + gap analysis + niche gatekeeper layer -> Excel via `scripts/build_directory.py`) and `skills/contractor-call-sheet/` (action layer: printable call sheet via `scripts/build_call_sheet.py` + personalized outreach drafts, never sends). Both tier none (pure openpyxl), category Operations, on the agent map under Deal Analysis (`vendordir`, `callsheet`). Internal SOP with the real Knox+Blount worked example (68 providers): `docs/contractor-research-workflow.md`.
+
+**Rules that make it work:** never fabricate a field (unverifiable = "not found" / UNVERIFIED, someone will dial these numbers); cross-validation (2+ independent recommenders) is the call-first signal; service area is the most common silent failure (the geo sweep removed 5 of the first Knox list); ratings always carry the review COUNT; found/AI-generated lists are claims to verify, and catching their wrong numbers IS the deliverable. The distributed bundles carry fictional example data and [Your Company]/[Your Name] placeholders; the real provider data stays in the internal doc and the Desktop toolkit. Community page (learn.datasift.ai/claude-skills-rei) listing is still a follow-up.
+
+
+## Apify Deployment
+
+The project runs as an **Apify Actor** in the cloud. When `APIFY_IS_AT_HOME` or `APIFY_TOKEN` is set, `main.py` uses the Actor SDK instead of CLI args.
+
+```bash
+# Install Apify CLI
+npm install -g apify-cli
+
+# Local test (reads input.json, simulates Actor environment)
+apify run --purge
+
+# Deploy to Apify platform
+apify login
+apify push
+
+# On Apify Console: set up daily schedule and configure secrets in Actor input
+```
+
+### Actor Input (configured in Apify Console or `input.json`)
+- `mode`: "daily" or "historical"
+- `counties` / `types`: arrays to filter saved searches (empty = all)
+- `tn_username`, `tn_password`, `captcha_api_key`: secrets (required)
+- `google_drive_folder_id`, `google_service_account_key`: optional Google Drive upload
+
+### Actor Output
+- **Dataset**: structured records pushed via `Actor.push_data()`
+- **Key-value store**: `output.csv` backup
+- **Google Drive** (optional): CSV + summary text file uploaded via service account
+
+### Key Files
+- `.actor/actor.json` — Actor manifest (name, version, Dockerfile path)
+- `.actor/input_schema.json` — Input fields + validation for Apify Console UI
+- `Dockerfile` — Based on `apify/actor-python-playwright:3.12`
+- `src/drive_uploader.py` — Google Drive upload via base64-encoded service account key
+- `input.json` — Local test input (gitignored, contains credentials)
+
+
+## DataSift.ai (REISift) Integration
+
+DataSift.ai (formerly REISift) is the CRM where scraped records land for niche sequential marketing campaigns. There is **no REST API** — upload is via Playwright browser automation of the web UI.
+
+**Domain:** `app.reisift.io` (NOT `app.datasift.ai`). API at `apiv2.reisift.io`.
+
+**apiv2 JWT (shared with the Deal Room project):** any script hitting `apiv2.reisift.io` reads the shared auth store at `Deal Room Coaching Call/_api/clients/config/reisift_auth.json` (`datasift-admin` = staff ty+1, ~48h access token; NEVER hardcode a Bearer in SiftStack). Refresh: app.reisift.io DevTools -> Copy as cURL -> `python _api/clients/reisift_auth.py add datasift-admin <jwt>` (run with `PYTHONIOENCODING=utf-8`; the checkmark-glyph crash after "saved account" is cosmetic, the save succeeded). Then re-impersonate before client-account calls. Last refresh 2026-07-21, exp 2026-07-23 19:41 UTC.
+
+### Key Files
+- `src/datasift_formatter.py` — Transforms `NoticeData` → DataSift CSV (42 columns)
+- `src/datasift_uploader.py` — Playwright login + upload wizard + enrich + skip trace + preset management + sequence builder + SiftMap sold workflow
+- `tools/manual/test_datasift_upload.py` — Headed browser test (upload + enrich + skip trace)
+- `tools/manual/test_manage_presets.py` — Headed browser test (preset discovery + sold exclusion + sequence creation)
+- `tools/manual/test_manage_sold.py` — Headed browser test (SiftMap sold property tagging; `--dry-run` to count without writing)
+- `tools/manual/test_manage_sold_url.py` — Offline check of county resolution + URL construction (no browser, no account). Run after any change to the sold sweep.
+
+### CSV Column Structure (42 columns)
+- **Core auto-mapped (11):** Property Street/City/State/ZIP, Owner First/Last Name, Mailing Street/City/State/ZIP, Tags
+- **Lists + Notes (2):** Lists (for niche sequential), Notes (contextual per notice type)
+- **Built-in fields (13):** Estimated Value, MSL Status, Last Sale Date/Price, Equity Percentage, Tax Deliquent Value, Tax Delinquent Year, Tax Auction Date, Foreclosure Date, Probate Open Date, Personal Representative, Parcel ID, Structure Type, Year Built, Living SqFt, Bedrooms, Bathrooms, Lot (Acres)
+- **Custom fields (16):** Notice Type, County, Date Added, Owner Deceased, Date of Death, Decedent Name, Decision Maker, DM Relationship, DM Confidence, DM 2/3 Name/Relationship, Obituary URL, Source URL, Notice Screenshot
+
+### Niche Sequential Marketing
+DataSift's niche sequential system uses filter presets to guide records through SMS → Call → Mail → Deep Prospecting phases. Two preset folders: "00 Niche Sequential Marketing" (12 presets, courthouse data) and "01. Bulk Sequential Marketing" (9 presets, bulk data). All 21 presets exclude Sold status (build 1.0.23). A "Sold Property Cleanup" sequence in the Transactions folder auto-fires on the recently-sold tag to change status, remove from lists, clear tasks, and clear assignee.
+
+> **This paragraph describes Ty's TN setup, not necessarily this account.** The `dpd_doctor` baseline reads no `Sold` among this account's 340 property tags and no "Sold Property Cleanup" among its 5 sequences — both artifacts the code would have created — so treat the 21 presets and the sequence as unverified here until `dpd_doctor.py` says otherwise. This account's own suppression runs through the 73 DPD presets, which exclude the `Sold` / `Already Sold` **statuses** via `preset_spec.DEAD_STATUSES`. That is why the sold sweep stamps `Recently Sold` (a tag) and the sequence maps it onto `Already Sold` (a status): a same-named tag would split suppression across two vocabularies.
+
+- **"Courthouse Data" tag:** Every record gets this tag — signals first-to-market county data (prioritized over bulk data in filter presets)
+- **Lists column:** Maps `notice_type` → DataSift list name (`foreclosure` → "Foreclosure", `probate` → "Probate", `tax_sale` → "Tax Sale", `tax_delinquent` → "Tax Delinquent", `eviction` → "Eviction", `code_violation` → "Code Violation", `divorce` → "Divorce"). DataSift auto-creates lists from CSV.
+- **Tags:** Courthouse Data, notice_type, county, YYYY-MM date, deceased/living, DM confidence level, has_auction, tax_delinquent, photo_import (for photo-sourced records)
+
+### Upload Wizard (6 Steps, build 1.0.46 2026-08-22)
+DataSift added an **Enrichment** step between Setup and Add Tags; the wizard code didn't know about it and every subsequent step/locator silently ran one step off. Fixed in `datasift_uploader.py`.
+1. **Setup:** Click "Upload File" sidebar → "Add Data" → dropdown "Uploading a new list not in DataSift yet" → enter list name → organization questions
+2. **Enrichment:** click through (new step, no fields to fill here yet)
+3. **Tags:** Skip through — or fill from a `custom_tag` parameter (see below)
+4. **Upload File:** Set file on `input[type="file"]`
+5. **Map Columns:** Core address fields auto-map; Tags, Lists, and enrichment columns may need manual mapping
+6. **Review + Finish Upload:** Click "Finish Upload" — processing happens in background
+
+**`custom_tag` parameterization:** the Add Tags step used to type a hardcoded tag, silently overriding whatever the CSV's own Tags column already said. It's now a `custom_tag` parameter sourced from the CSV, so any upload — not just one specific pipeline's default tag — can carry its own tag through the wizard.
+
+### Column Mapping Notes
+- Only core address fields (Property Street, City, State, ZIP) reliably auto-map
+- Tags, Lists, Estimated Value, and enrichment columns often stay unmapped in step 4
+- Notes and MSL Status sometimes auto-map
+- Custom fields (TN Public Notice group) require drag-and-drop mapping
+
+### Contact Logic
+- **Deceased owners:** Contact = decision maker (first/last name + mailing address from DM)
+- **Living owners:** Contact = property owner (owner mailing address, falls back to property address)
+
+### Post-Upload: Enrich + Skip Trace
+
+After CSV upload, the pipeline automatically runs two DataSift actions via Playwright:
+
+1. **Enrich Property Information** (Manage → Enrich Data): Adds SiftMap property data (beds, baths, Zestimate, sqft, sale history) to uploaded records. "Enrich Owners" and "Swap Owners" are OFF — protects our PR/DM contact mapping.
+2. **Skip Trace** (Send To → Skip Trace): Pulls phone numbers (up to 5 per owner) + emails via unlimited plan ($97/mo). DataSift's own auto-tag is **`Skip Traced MM/YYYY`** (the unbroken series in this account). `datasift_uploader.py:983` additionally types `skip_traced_YYYY-MM` into the wizard's optional tag box — that one is OURS, not DataSift's, and is retired; see My Defaults.
+   **The date tag is mandatory on every path that loads numbers** — see "ALWAYS STAMP THE SKIP-TRACE DATE" under My Defaults. The wizard stamps itself; SmartSkip/Tracerfy/Trestle/DP pushes must stamp it explicitly.
+
+Both run in background — tracked in Activity tab. Both are ON by default when `--upload-datasift` is set.
+
+### CLI Flags
+```bash
+python src/main.py daily --upload-datasift        # upload + enrich + skip trace
+python src/main.py daily --upload-datasift --no-enrich       # upload only, skip enrichment
+python src/main.py daily --upload-datasift --no-skip-trace   # upload + enrich, skip skip trace
+python src/main.py daily --notify-slack            # send run summary to Slack/Discord
+python src/main.py daily --deep-heirs               # resolve deceased-owner heirs via Enformion ($0.10/match DataSift rate, ~$0.35 rack)
+```
+
+### Environment Variables
+- `DATASIFT_EMAIL` — DataSift login email
+- `DATASIFT_PASSWORD` — DataSift login password
+- `SLACK_WEBHOOK_URL` — Slack/Discord webhook for run summaries
+
+### Login Selectors (SPA quirks)
+- Hidden checkboxes (Remember me, Terms) — click `<label>` elements, not `<input>`
+- Use `wait_until="domcontentloaded"` (not `networkidle` — SPA keeps WebSocket connections open)
+- Cookie validation: check for `/dashboard` or `/records` in URL (5s wait for SPA redirect)
+
+### DataSift UI Automation Patterns
+
+Hard-won patterns from build 1.0.22-1.0.23 (SiftMap, preset management, sequence builder). Follow these to avoid repeating past mistakes.
+
+**Styled-Components (no native HTML controls)**
+- No native `<select>` elements — all dropdowns are `[class*="Selectstyles__Select"]` containers
+- `[class*="SelectValue"]` = current value display; `[class*="SelectOptionContainer"]` = dropdown options
+- Multiple Select dropdowns exist per panel (Lists, Tags, Property Status) — always target the **LAST visible one**
+- Use `x > 450` bounds check in all JS queries to avoid matching sidebar elements (sidebar is 0-400px)
+- React state updates require native setter + event dispatch, not just `.value = ...`:
+  ```js
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+  setter.call(input, 'new value');
+  input.dispatchEvent(new Event('input', {bubbles: true}));
+  input.dispatchEvent(new Event('change', {bubbles: true}));
+  ```
+
+**Panel Scrolling (Playwright scroll fails)**
+- Filter panel is a scrollable `<div>`, NOT the viewport — `scroll_into_view_if_needed()` does nothing
+- Use JS: `el.scrollIntoView({behavior: 'instant', block: 'center'})` instead
+- Filter Presets section is at the BOTTOM of the filter panel — must scroll container down to reveal
+- After scrollIntoView, element y-positions may be negative — don't filter by `y > 0` for the target element
+
+**React DnD (Sequence Builder)**
+- Cards have `draggable="false"` — Playwright's native drag won't work
+- Must use slow mouse drag: `mouse.move()` → `mouse.down()` → 20 incremental steps (50ms each) → `mouse.up()`
+- Add 500ms pauses between down/move/up phases
+- "Add new Action +" button required for 2nd+ actions; first action uses initial drop zone
+- Sidebar cards can scroll out of view when main area scrolls — scroll BOTH source and target into view before drag
+
+**Pointer Interception (common blockers)**
+- Beamer NPS survey iframe (`#npsIframeContainer`) blocks ALL pointer events globally — remove from DOM via `_dismiss_popups()`
+- `RecordsFiltersstyles__RecordsFiltersSection` elements intercept clicks — use `page.evaluate()` JS click or `force=True`
+- When Playwright click fails with "outside of viewport" or "intercept": switch to `page.evaluate(el => el.click())`
+- SiftMap PropertyDetails panel blocks sidebar checkboxes — remove from DOM before interactions
+
+**Preset Management Workflow**
+- Flow: open filter panel → scroll to bottom → expand "Filter Presets" → expand folder → click preset → modify → Save (not Save New) → confirm overwrite
+- Folder names have case variations ("00 Niche" vs "00 NICHE") — use `.toUpperCase()` comparison
+- Preset names follow pattern `^\d{2}\.` (e.g., "00. Needs Skipped")
+- 2 folders: "00 Niche Sequential Marketing" (12 presets), "01. Bulk Sequential Marketing" (9 presets)
+- All 21 presets have Property Status "Do not include" → "Sold" (build 1.0.23)
+
+**Sequence Builder Workflow**
+- Flow: `/sequences` → Create → title + folder → drag trigger → condition → actions tab → drag actions → configure → save
+- Duplicate name handling: detect error toast "different sequence title", retry with " V2" suffix
+- Actions tab: navigate via "Set the Following Actions" button or URL (`/sequences/new/actions`)
+- Autocomplete inputs: after each selection, `fill("")` + Escape to dismiss dropdown before next entry
+- "Sold Property Cleanup" sequence (build 1.0.23): Trigger (Property Tags Added) → Condition (`Recently Sold`, from `datasift_uploader.RECENTLY_SOLD_TAG`) → Actions (Status→`Already Sold` per `SOLD_STATUS`, Remove Lists, Clear Tasks, Clear Assignee). **Not present on this account as of the last `dpd_doctor` capture** — build it before running the sold sweep, or the tag lands with nothing listening. Confirm `Already Sold` is offered by the sequence *action* status picker: the Records *filter* picker exposes only 19 of 38 statuses, and `SOLD_STATUS_FALLBACK` exists for that case.
+
+**SiftMap Automation**
+- Search by city (NOT county): Knox → "Knoxville, TN", Blount → "Maryville, TN"
+- PropertyDetails panel auto-opens on search — remove from DOM before other interactions
+- "Add Records to Account" modal: toggle OFF "Do not replace owners", add tags, dismiss dropdown by clicking heading (NOT Escape — clears tags)
+- Known limitation: SiftMap filters (price, date) set values visually but don't trigger React re-query. Only sidebar-visible properties (~3-5) get added per run
+
+**Market Finder Extraction Patterns (build 1.0.29+)**
+
+Hard-won patterns from building `extract_market_finder.py`. The Market Finder UI differs significantly from the rest of DataSift.
+
+- **NO HTML `<table>` element** — data table is entirely div-based: `Tablestyles__TableContainer` → `TableRow` → `TableCell` (styled-components). Searching for `<table>` or `<tr>/<td>` finds nothing.
+- **PAGINATION, not infinite scroll** — table shows 20 rows per page with "1-20 of N" text and `PaginationInnerContainer` with prev/next `<button>` elements. Must click through ALL pages to get complete data. Knox County has 48 ZIPs (3 pages) and 120+ neighborhoods (7 pages).
+- **State/County selection uses `InputMultiSearch`** — NOT styled-component Select dropdowns. Inputs have placeholders: `"Select States"`, `"Select Counties"`, `"Select ZIP Codes"`. Click input → type name → click dropdown result item (`[class*="Item"]:has-text("...")`).
+- **ZIP/Neighborhood toggle is a styled Select dropdown** — at the top bar with `Selectstyles__SelectValue` showing current view. Check the displayed text BEFORE clicking — if already on the correct view, clicking toggles AWAY from it. Only click to switch if the displayed text doesn't match the desired view.
+- **Beamer push modal (`#beamerPushModal`)** — appears on fresh login, blocks ALL pointer events. Different from the NPS survey (`#npsIframeContainer`). Both must be removed from DOM before any click interactions. Always call dismiss with `force=True` as fallback.
+- **Page body scrolling required** — pagination controls are at `y=1867`, below the viewport (`clientH=824`). Must scroll `AdminPage__AdminPageBody` container down before pagination buttons are accessible.
+- **Summary panel on right side** — shows county-level aggregates: Median Home Value, Homes on Market, Mo. Investor Transactions, Homes Sold Last Month, Market Rent, Gross Rental Yield, Homeownership Rate. Extract via regex on page text.
+
+```bash
+# Extract all Market Finder data for a county
+python src/extract_market_finder.py --state "Tennessee" --county "Knox" -v
+python src/extract_market_finder.py --state "Tennessee" --county "Knox,Blount" --headless
+
+# Output: JSON file in output/market_finder_{state}_{county}_{timestamp}.json
+```
+
+## REI Skill Library (25 Skills)
+
+Distribution-ready Claude Co-Work skill files at top-level `skills/` and `plugins/` (source of truth: `skills/manifest.json` — 25 current entries + 2 superseded, `source_dir` per entry). Each `.skill` is a ZIP containing `SKILL.md` + `references/` folder. Plugins (`.plugin`) also include `commands/` and `.claude-plugin/plugin.json`.
+
+### Skill Inventory
+
+| # | File | Division | Score | What It Does |
+|---|------|----------|-------|-------------|
+| 1 | `sift-market-research.skill` | Market Intel | 9.6 | Market Finder reports, zip code scoring (6 weights verified against `market_analyzer.py`), 7-sheet Excel output |
+| 2 | `first-market-county-data.skill` | Market Intel | 9.7 | County clerk data extraction for all 7 notice types, FOIA templates, marketing windows |
+| 3 | `buyer-prospector.skill` | Market Intel | 9.6 | Cash buyer list from 84K+ records, LLC/trust/corp research, 50-state SOS URLs |
+| 4 | `real-estate-comping.skill` | Deal Analysis | 9.7 | Two-Bucket ARV, disclosure/non-disclosure routing (12 states), adjustments verified against `comp_analyzer.py`. API-first comp acquisition (Zillow /search per comp-package) with manual browsing fallback + bedroom-band dual-track rule (2026-07) |
+| 5 | `rehab-estimator.skill` | Deal Analysis | 9.8 | 912-line skill, complete Repair Cheat Sheet verified against real contractor SOW, 4-tier system |
+| 6 | `deal-analyzer.plugin` | Deal Analysis | 9.6 | Combined comp+rehab pipeline, MAO (75%/70% rules), multi-loan financing, exit strategy comparison. Phase 3 now routes comp acquisition API-first (comp-package contract) with the bedroom-band rule (2026-07) |
+| 7 | `deep-prospecting-v5.skill` | Deal Analysis | v5 | **SmartSkip heir engine** (relatives + phones in one batch call) + mandatory obituary/web research for DOD and true relationships + Tracerfy gap-fill + Trestle tiers. ~$0.24/record, 4.9x cheaper than the retired Enformion person path. Ships the spouse-obituary trap, the unreliable-deceased-flag gotcha, and the owner-rule-on-shared-lines rule. Enformion BusinessV2 kept for entity owners only |
+| 8 | `probate-property-finder.skill` | Deal Analysis | 9.7 | Property lookup for probate decedents, 3-tier search (Tax API→Executor→People search), confidence scoring |
+| 9 | `phone-validator.skill` | Operations | 9.8 | Trestle API scoring, 5-tier dial priority, 3 tier strategies, litigator/invalid/skip-line-type qualification, 4.75x connect rate. Auto-detects both the flat DataSift export and per-contact PR/relative "ready for dialing" layouts (2026-08); writes tags back into a reinsertable export, not just the global tag-by-phone-number CSV |
+| 10 | `sequential-presets.skill` | Operations | 9.5 | 12 niche + 9 bulk filter presets, Pendulum Theory (SMS→Call→Mail→DP), DataSift UI implementation steps |
+| 11 | `sift-sequences.skill` | CRM | 9.5 | 26 TCA sequence templates (verified against `sequence_templates.py`), UI walkthrough, HOT A01-A16 chains |
+| 12 | `sift-operations.plugin` | CRM | 9.3 | CRM operations encyclopedia, STABM routine, lead pipeline (9 statuses), task presets, team roles |
+| 13 | `playbook-creator.skill` | Operations | 9.5 | Playbook/SOP generator from transcripts, 7-node chart limit, 5th grade reading level, Word doc output |
+| 14 | `text-touch-builder.skill` | Operations | 2026-08 | Four-text-touch pre-call SMS sequence per ready-to-call record (identity check, drip, soft ask, breakup) with cold-email style copy rotation; CSV export -> stdlib script -> Add-Data re-import into Text Touch 1-4 custom fields. **Human-voice gate added 2026-08:** `AI_TELLS` refuses (not warns) any message or pool variant containing an em/en dash, a semicolon, a link, emoji, ALL CAPS, stacked exclamations, form-letter openers, or AI vocabulary; `--check-pools` audits the variants and runs on every invocation. Same list mirrored in `src/sms_agent/respond.py` so outbound touches and inbound replies sound like one person. Community-safe (no internal API) |
+| 15 | `cold-call-coach.skill` | Operations | new | Pull SmrtPhone cold-call recordings, audio-model transcription with real tonality notes, grade vs the cold-calling rubric (measured reliability +/-3 pts, calibration examples, short calls on their own scale, JSON score footers), Excel workbook export. Self-contained scripts, config-driven roster |
+| 16 | `lead-manager-coach.skill` | Operations | new | Same engine, lead-management rubric: 4 pillars qualification, roadblocks, no-ladder, next-action discipline. Call quality only (no CRM hygiene scoring) |
+| 17 | `closer-coach.skill` | Operations | new | Same engine, closer rubric: money conversation, three-option offer stack, objection frameworks, commitment locking, negotiation timeline reports |
+| 18 | `kpi-engine.skill` | Operations | new | Universal DataSift KPI reporting from the user's own account: activity-log pull (self-contained stdlib script, own JWT, no internal API), three distinct rates, lead counting incl new_lead statuses, funnel pacing (dials->correct->leads->appts->contracts), record-level detail mode, md/CSV/Excel/Slack outputs. Benchmarks shipped as tune-per-operation baselines; internal production version lives in Deal Room `_api/kpi-engine/` |
+| 19 | `comp-package.skill` | Deal Analysis | new | Boundary-filtered comp package: /search API pull with 41-row-cap band partitioning, condition bucketing by price/Zestimate ratio, dual-track ARV (same-bed base + labeled reconfig upside), 3-scenario rehab, MAO math, buyer targeting, Excel deliverable spec. Community-safe (own OPENWEBNINJA_API_KEY, requests-only script) |
+| 20 | `caller-reputation-monitor.skill` | Operations | new | Keeps outbound cold-calling numbers out of carrier "Spam Likely" labels: daily SmrtPhone-caller-ID health monitoring off your own call outcomes, warm-up/active/watch/rest/retire lifecycle with dial caps, HTML health dashboard, recommended dial pool, carrier registration + flag remediation walkthrough |
+| 21 | `candidate-intake.skill` | Operations | new | Aggregates job applicants from Indeed, Gmail, Facebook group posts/Messenger, or pasted text into one running scored master Google Sheet; reviews the ranked list and sends screening outreach to the best candidates. Runs through the Claude in Chrome extension, no API keys |
+| 22 | `team-hiring.skill` | Operations | new | Plans, posts for, interviews, and onboards a remote REI team (data manager, prospector, lead manager, acquisitions manager, dispo): role KPIs, hiring-geography cost arbitrage, pay bands and commission, job descriptions, KPI-anchored interview guide, first-week onboarding. Pairs with candidate-intake |
+| 23 | `vendor-directory-builder.skill` | Operations | new | Vetted contractor/vendor directory for any market: community mining (FB in-group search, self-promoters + recommendation-thread comments), public-record verification (phone provenance, service area, rating with count, license board, BBB), geo sweep + gap analysis + niche gatekeeper layer (utility districts), Excel via bundled build_directory.py. Never-fabricate rule; also THE tool for vetting a found/AI-generated list. Community-safe (openpyxl only, fictional example data) |
+| 24 | `contractor-call-sheet.skill` | Operations | new | Action layer on a finished directory: printable one-page call sheet (build_call_sheet.py, fuzzy column detection, call-first banner for cross-validated providers) + personalized first-contact texts/voicemails + the 6 vetting-call questions. Drafts only, never sends. Community-safe (openpyxl only) |
+| 25 | `dispo-deal-blast.skill` | Operations | new | Text one named wholesale deal to the cash buyers whose own deed history says they buy at that price, and hand every reply to a human. Buyer registry from investor transactions gated on recency, asymmetric price band matching, copy that cannot leak the contract price or the address, batch staged HELD behind a deliberate release, responses become a permanent buyer phonebook. Community-safe (stdlib-only cohort script; lifted from upstream b5de920 without the internal dispo engine) |
+
+### Cross-Skill Verified Consistency
+
+These values are identical across all skills that reference them:
+- **Phone tiers:** 81-100 (Dial First), 61-80 (Dial Second), 41-60 (Dial Third), 21-40 (Dial Fourth), 0-20 (Drop)
+- **Preset folders:** "00 Niche Sequential Marketing" (12 presets), "01. Bulk Sequential Marketing" (9 presets)
+- **Sequence count:** 26 TCA templates across 5 folders (Lead Management 6, Acquisitions 6, Transactions 6, Deep Prospecting 4, Default 4)
+- **Comp adjustments:** Bedroom $5,000, Bathroom $7,500, $/sqft $85, Age $500/yr (from `comp_analyzer.py`)
+- **Financing defaults:** HML 12%, conventional 7%, 2 points, 2.5% closing (from `deal_analyzer.py`)
+- **DOD sanity:** MAX_DOD_GAP_YEARS = 3 (from `obituary_enricher.py`)
+- **Notice types:** 7 total (foreclosure, tax_sale, tax_delinquent, probate, eviction, code_violation, divorce)
+
+### Key Corrections Made During Optimization (April 2026)
+- **Hardcoded credentials removed** from sift-market-research (had email/password in SKILL.md)
+- **Bedroom adjustment corrected** from $10K to $5K in real-estate-comping (matched to `comp_analyzer.py`)
+- **HML points corrected** from 0% to 2% in deal-analyzer (matched to `deal_analyzer.py DEFAULT_HARD_MONEY_POINTS`)
+- **Linux paths fixed** in sequential-presets (was `/home/ubuntu/skills/...`, now relative)
+- **Preset names aligned** across 3 skills to match `niche_sequential.py` source code
+- **Transfer tax labeled** as Tennessee-specific in deal-analyzer with state reference table for top 10 states
+- **"Substantial renovation" defined** in real-estate-comping: kitchen + 1 bath minimum (~$15K spend)
+
+### Skill File Structure
+```
+skill-name.skill (ZIP containing):
+├── SKILL.md              # Main skill instructions
+├── references/            # Domain knowledge files
+│   ├── *.md              # Reference documents
+│   └── *.pdf             # SOPs, guides
+└── scripts/              # Optional automation scripts
+    └── *.py / *.js
+
+plugin-name.plugin (ZIP containing):
+├── .claude-plugin/
+│   └── plugin.json       # Plugin manifest
+├── commands/             # Slash commands
+│   └── *.md
+├── skills/
+│   └── skill-name/
+│       ├── SKILL.md
+│       └── references/
+└── README.md
+```
+
+
+## My Defaults
+
+- **ALWAYS STAMP THE SKIP-TRACE DATE (Basem, 2026-09-22). Non-negotiable.** Every record that
+  gets skip traced must carry its skip-trace date tag in the SAME operation that loads the
+  numbers. A record holding phone numbers and tags while reading "never been skipped" is
+  incoherent: the dialers cannot tell a fresh trace from a stale one, the Needs-Skipped presets
+  re-select records that already have numbers, and re-skipping burns spend on data we already
+  hold. This applies to EVERY path that puts numbers on a record, not just the upload wizard:
+  the wizard's Send To -> Skip Trace auto-tag covers itself, but SmartSkip / Tracerfy / Trestle
+  / DP pushes and any API phone upsert must stamp the tag explicitly. If a path cannot stamp
+  it, that path is not finished. When backfilling numbers onto records traced earlier, stamp
+  the date the TRACE happened, not the date of the backfill.
+  **THE TAG IS `Skip Traced MM/YYYY` (settled 2026-09-23; either spelling was acceptable to
+  Basem, the account's own history decided it).** That is DataSift's own auto-tag and the
+  account has run on it unbroken from `Skip Traced 10/2025` to `Skip Traced 07/2026`, with the
+  variants `Skip Traced IDI MM/YYYY` and `Skip Traced Batch Skip Tracing MM/YYYY`. The earlier
+  `skip_traced_YYYY-MM` spelling in this file was WRONG about its origin: DataSift never emits
+  it — `datasift_uploader.py:983` types it into the wizard's optional tag box as an EXTRA tag of
+  our own, which is why exactly one such tag (`skip_traced_2026-09`) exists in an account of 446.
+  Do not create more of them; one fact must not have two vocabularies (same reason the sold
+  sweep keeps the `Recently Sold` TAG distinct from the `Already Sold` STATUS).
+  **CORRECTION 2026-09-28 (measured on the wizard's Review step and on the records):
+  DataSift's auto-tag is now `REISift Skipped` + `REISift Skipped MM/YY`** (chips shown under
+  AUTO TAGS on the Review step, 09-08 and 09-28; every record traced since 09-08 carries
+  `REISift Skipped 09/26`). The `Skip Traced MM/YYYY` series above (10/2025..07/2026) is what
+  the platform emitted BEFORE its rename; `Skip Traced 09/2026` exists on this account only
+  because `datasift_uploader.py` types it into the optional box. So the wizard path now writes
+  one vocabulary by itself and the uploader adds a second one; scripts that CHECK for a trace
+  date must accept both prefixes (`REISift Skipped`, `Skip Traced`), and the explicit stamp on
+  SmartSkip/Tracerfy/Trestle/DP pushes should follow whatever the wizard emits THAT month, read
+  off a freshly traced record, not a constant. The DPD pull batch clones leave the optional
+  box EMPTY for this reason.
+  **The boolean is a second, separate half of the same rule.** `owner.skiptraced` and
+  `owner.skiptrace_attempts` are what the CRM itself reads, and an API phone upsert does NOT
+  set them — 7854 Linden Leaf sat at `skiptraced: false` / `attempts: 0` holding a loaded
+  number until it was patched by hand. Stamp both: `PATCH /api/internal/owner/{uuid}/
+  {"skiptraced": true, "skiptrace_attempts": 1}` (200, stores, proven on the Api-Key).
+  **There is NO skip-trace date field anywhere** — all 27 owner keys and the full property
+  detail were checked; `skiptraced` is a bare boolean and `skiptrace_attempts` an int. The tag
+  is the ONLY record of when, which is why a mis-spelled one loses the fact outright.
+  **BOTH PATHS FIXED 2026-09-23 (`4779dd2`).** `obituary_dp_batch.py` now carries
+  `TAG_SKIPTRACED` into every plan's tags (including zero-phone records -- the trace was paid
+  for either way) and `_push_one_api` PATCHes the owner flag; `--include-no-numbers` is what
+  makes an empty-result record get its date, so a batch with misses wants it. The uploader's
+  wizard tag now matches DataSift's own spelling. No path that loads numbers is unstamped.
+
+- **Main counties (NARROWED 2026-09-01, from 14 to 6 — these are the ONLY jurisdictions in scope):** Washington DC; Montgomery, Anne Arundel, and Frederick in Maryland; Fairfax and Arlington in Virginia. Dropped: Carroll, Calvert, Charles, Baltimore County (MD); Prince William, Stafford, Spotsylvania, Fredericksburg city (VA). Coverage: DC + the 3 MD counties come through the MDDC Trustee's Sale pipeline (`src/scripts/mddc_trustee_sale_pull.py`) — its `DEFAULT_COUNTIES` still holds the old 7-MD+DC set and should be narrowed before the next pull. The 2 VA counties come through `src/scripts/va_trustee_sale_pull.py` against `publicnoticevirginia.com` — likewise still defaulting to the old 5-county set. **Presets re-narrowed 2026-09-07:** all 73 DPD Records presets now carry ONLY the 6 counties (the 9-call/15-mail split is retired) — done in place over the internal API by `src/scripts/dpd_presets_narrow.py` (filter-preset PATCH WORKS, superseding "presets have no write API"; each write verified by store re-read), `preset_spec.py` updated in lockstep, `dpd_presets_verify.py` exits 0 (73/73, 0 defects). Still wired to the old footprint: `manage-sold` with no `--counties` sweeps all 14 — pass the 6 explicitly.
+- **Which source wins on a record two pushers both load (Basem, 2026-09-11):** the set with
+  MORE information and BETTER numbers (contacts with callable numbers, Dial First/Second count,
+  relationship labels, obituary/court verification, PR info) -- not the newest, not "DP wins".
+  The other set's unique relatives are appended into free REL slots, never blanked. Not yet
+  enforced in code: `_push_one_api` needs a pre-write compare, and any removal must log the
+  removed numbers with their tags. Until then compare by hand before `--force` / `--clear-extra-rel`.
+- **Daily summary channel:** WhatsApp. Note: not currently a wired notification transport — only `SLACK_WEBHOOK_URL` (Slack or Discord-compatible webhook) exists in `notify_slack` today.
+- **Preferred run time:** 06:30 America/New_York.
+- **Dispositions:** type-based DataSift lists (the auto-created per-notice-type lists — Foreclosure, Probate, Tax Sale, etc. — rather than one consolidated dispo list).
+
+
+## Where the DPD code stands
+
+Full build narrative, including every panel trap and the inverted-preset post-mortem: [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md).
+
+- `src/dpd/preset_spec.py` — the 73 presets as data, asserted at import (6/6/6/6/6/6/6/6/9/6/5/5).
+- `src/dpd/block_map.py` — the panel mapping, the stated gaps, the block budget and its one remaining trim (`Deep - 04 Return Mail`).
+- `src/scripts/dpd_filter_blocks.py` — the 144-block vocabulary dump (`output/dpd_filter_blocks.json`).
+- `src/scripts/dpd_presets_create.py` — the builder, **PROVEN on all 73**: container-scoped `audit_panel`, hit-tested `_click_leaf`, section-scoped `_PICK_INPUT_JS` / `set_tokens` with one retry, the scrolled folder pick, polling `open_panel`, a pre-save panel screenshot per folder (`output/dpd_panel_*.png`), and preset deletion (`--discover-delete | --delete-junk-dry | --delete-junk [--delete-names ...]`, refuses anything not `^ZZ ` or explicitly allowlisted). Resumable; skips by name prefix.
+- `src/scripts/dpd_presets_one_owner.py` — **"Show one property per owner" APPLIED 2026-09-24 on
+  Basem's go** (from the course: click-to-dial must never reach one owner several times a day
+  through their other properties) to the 24 dial-list presets the spec marks `one_owner` (Ready to
+  Call and every Call N stage in the 5 CALL folders, plus `Deep - 02 Obituary/Deceased`); API PATCH
+  with store read-back, every other key byte-identical. **Three facts read out of the app bundle
+  (`app.reisift.io/main.min.js`) that no probe could give:** (1) the `Owner — Properties Owned`
+  block is a THREE-field object `{properties_owned: [min,max], show_properties: one_per_owner|all,
+  highest_criteria}` and "one property per owner" is the COLLAPSE mode (a multi-property owner
+  shows as one row: FTM Ready to Call 315 -> 303), NOT a 1..1 range (which EXCLUDES them: 264);
+  (2) a saved preset stores the block NESTED as `must.ownerPropertiesOwned`, the live query spreads
+  its fields to the top of `must` after `omitEmpty`, and the panel renders ONLY the nested key;
+  (3) `must: {...passThrough, ...}` -- every stored key the panel does not know is sent to the
+  query anyway. So the first write that day (top-level `properties_owned: [1, 1]`, chosen because
+  it moved the count on the query endpoint) was INVISIBLE in the panel yet silently applied with
+  the wrong meaning for ~1 hour; Basem caught it ("I dont see anything here"). Rule: **a key that
+  moves the query count proves the QUERY vocabulary, not the STORE shape; read the bundle's
+  `toPropertiesFilters` before writing any new block into a preset.** The verifier now fails any
+  preset holding the stray top-level key. Stored value is the minimal `{"show_properties":
+  "one_per_owner"}` (the endpoint 400s on an empty range, `["", ""]` or `[null, null]`);
+  `dpd_lane_assignee_report.to_query` spreads the nested block so counts stay honest. Backups
+  `output/dpd_presets_one_owner_backup_20260924T*.json`, `--undo` restores.
+  **Same day, found in the store, NOT changed:** Basem's hand-save on `FTM - 02 Ready to Call`
+  landed a `last_obituary_date: ["24-months", "quarter"]` block (the Last Obituary Date picker in
+  RELATIVE mode) instead of the owner block. Measured as an absolute range it cuts the lane from
+  315 to **33** (only obituary-dated records survive; every foreclosure drops). It also added
+  `Re-Skiptrace` to that one preset's excluded statuses (sensible; not in `DEAD_STATUSES`, so the
+  verifier flags it). Both wait on Basem. **The relative date mode EXISTS** (stores as
+  `["<n>-months", "quarter"|"month"|"today"]`, and `11. Not Interested Qrtrly` already stores
+  `last_updated_date: [{"field": "status", "options": ["72-months", "quarter"]}]`), which
+  disproves the two `block_map.GAPS` entries built on "absolute-only" dates: the mail 30-day
+  spacing and the Reactivation status-age timers are both expressible. Not yet rebuilt.
+  **Owner-grouped assignment, same day, on Basem's "Go":** the collapse works inside ONE preset, and
+  the 09-01 lane split leveled by COUNT, so 32 multi-property owners in the Hottest + FTM call lanes
+  were spread across dialers (one owner on three at once). `src/scripts/dpd_owner_group_assign.py`
+  (plan / `--commit` / `--verify` / `--undo`) put each owner on the dialer already holding most of
+  their rows (tie -> earliest stage; none -> lightest Ready-to-Call load): 48 of 51 moves landed and
+  read back (24 were unassigned rows), 0 splits on verify. The 3 misses are INDEX GHOSTS -- rows the
+  lane query returns whose detail GET and PATCH both 404 (blank address); a lane count can therefore
+  include records that no longer exist. Rule from here: group by owner BEFORE leveling any
+  assignment. Run dir `output/owner_group_assign_20260924T173550/`.
+- `src/scripts/dpd_presets_obit_window.py` — **Last Obituary Date on ALL 73 presets, APPLIED
+  2026-09-25 on Basem's go** (reaffirmed after the measured impact was shown): the panel's
+  "Prior to Date / Last 24 Months / prior to Quarter" block, stored RELATIVE as
+  `must.last_obituary_date = ["24-months", "quarter"]` (the shape his hand-save on FTM - 02 Ready
+  to Call already carried; `OBIT_WINDOW_KEY/VALUE` in `preset_spec`, the verifier fails any preset
+  without it). The app resolves it at load: on 09-25 the picker read **Jun 25, 2024 - Jun 25,
+  2026** = [today - quarter - 24 months, today - quarter] (`resolved_window()`), so the query
+  endpoint cannot count it verbatim (400 "wrong format"); count with the resolved dates.
+  **It is an INCLUDE window, measured before the write: a record with NO obituary date does not
+  load.** Effect (output/obit_window_impact_20260925.json): Hottest - 02 Ready to Call 52 -> 1,
+  FTM - 02 Ready to Call 303 -> 33, Bulk - 02 Ready to Call 54 -> 0, every Strong preset -> 0,
+  FTM - Mail 01 1,519 -> 416, Rehash 01/02 286 -> 166. The 24-month floor bites nothing today
+  (DataSift's obituary flags began 2025-12); the "prior to quarter" edge is the whole effect, and
+  the CRM date IS the obituary date (checked against DP research on 4 records, same to the day).
+  An EXCLUSION form (must_not on the last 90 days, keeps foreclosures: Hottest Ready 52 -> 15,
+  FTM Ready 303 -> 197) is honoured by the query endpoint but was NOT chosen and is unverified in
+  the panel. 72 PATCHed (1 probe + 71), each read back byte-identical apart from the key; verifier
+  still shows only the 2 pre-existing defects (FTM 02 Re-Skiptrace exclusion, Deep 02 5th tag).
+  Backups `output/dpd_presets_obit_window_backup_20260925T105851.json` (probe) and
+  `..._20260925T110015.json` (the 71); `--undo <backup>` restores. **Consequence for the
+  dialers, same day:** Bagoury "ran out" because the FTM lane was already 33 with this block;
+  now every Ready to Call lane is that small by design (Hottest 1, FTM 33, Bulk 0).
+  **EDGE MOVED 2026-09-28: `["360-months", "month"]` on all 73** (Basem: "no obituary date less
+  than 45 days from today"; first written as `24-months`, then "make it 360 months" the same day
+  so the length is no floor at all). The picker CANNOT say 45 days: read out of `main.min.js`, the PRIOR
+  control stores `["<n>-<days|weeks|months>", <anchor>]` with the anchor limited to today /
+  yesterday / week / month / quarter / year, and the window is the n units ENDING at the anchor
+  — `["45-days", "today"]` would be the LAST 45 days, the opposite. `month` (older than ~30 days)
+  was the nearest and Basem chose it over a fixed date re-saved daily. Measured before the write:
+  Hottest Ready 1 -> 31, FTM Ready 27 -> 67, Bulk Ready 0 -> 29, FTM Mail 01 423 -> 831.
+  `resolved_window()` now resolves any anchor (`OBIT_ANCHOR_MONTHS`). Backups
+  `output/dpd_presets_obit_window_backup_20260928T123033.json` + `..._20260928T123142.json`.
+- `src/scripts/dpd_siftmap_filters_api.py` — **SiftMap saved filters have a READ+PATCH API,
+  proven 2026-09-28 (Basem's go).** `GET https://map.reisift.io/filters/?scope=account&page_size=100`
+  (the JWT from `POST /api/token/`; Ty's account-blueprint `export.py` is the origin) returns every
+  saved filter with `id`, `auto_add_enabled`, `tags`, `lists`, `filter_data.filters`, `updated`,
+  `updated_by` -- the whole management-page audit without a browser, and MORE than the page shows
+  (the page never shows a filter's tags or its stored dates). `PATCH /filters/{id}/` with a partial
+  body (`tags`, `filter_data`, `auto_add_enabled`) returns 200 and STORES, leaving every unnamed
+  field untouched (checked field-by-field on read-back, 9 writes). Backup of all filters before each
+  write, `--undo <backup>` restores. Deletion is still the management page
+  (`dpd_siftmap_presets.py --delete-from-file`). Facts that matter: a filter's `tags` are what an
+  auto-add DRIP stamps -- a filter with auto-add ON and `tags: []` adds untagged records that no
+  preset can see (DC P1-04 NOF sat that way 09-06..09-28; 0 leaked, measured); the manual pull stamps
+  its own tags at pull time, so set the filter's tags BEFORE ever enabling auto-add. The obituary
+  filter's `extra_last_obituary_date_min/max` are ABSOLUTE dates; the live drip is id 11496 (named
+  `District Of Columbia, DC`, six counties, tags FTM + Obituaries, list Obituary) and must be
+  re-saved whenever the Records presets' relative window moves (set to 1996-08-28..2026-08-28 on
+  09-28 to match `["360-months", "month"]`). `dpd_siftmap_tag_in_account.py` (in-mode Add Records
+  with tags, owner protection ON) is the tag-held-records path, but `_result_count` returns None on
+  an in-mode page that renders "2 Properties" -- fix the parser before relying on it; with a handful
+  of records, tag by uuid over the API instead.
+- `src/scripts/dpd_presets_entity_exclude.py` — **`Entity Owner` excluded from all 33 CALL presets
+  (Basem 2026-09-28).** Spec: `SUPPRESS_TAGS_CALL_ONLY` rides on the `call` channel only (DEEP
+  lanes keep entities). The store holds every CALL preset's exclusions under `must_not.any_tags`
+  (multi-value exclusion rule); probe + commit + `--undo`; verifier derives the wanted set from the
+  spec. Tags on records: `Trust` (living/family trusts, STAY callable -- the traced numbers are
+  the named person's), `Entity Owner` (LLC/company; banks and mortgage/REO trusts count as
+  companies), `Entity Owner` + `Institution` (church / government / HOA / placeholder). Classifier
+  + writer: `output/dpd_pull_20260928/tag_entities.py` (cohort-scoped; the account at large is not
+  tagged). **Panel trap:** a tag exclusion renders as a RED minus chip inside the "ALL TAGS (AND)"
+  block whose dropdown still says "Include" -- read chip colour, not the dropdown. Measured effect
+  with the obituary window lifted: Hottest Ready to Call 1,076 -> 912.
+- `src/scripts/dpd_presets_verify.py` — **Phase 7 QA for presets.** Reads every stored definition over the internal API and checks counties, suppression, statuses, counters, params and tag-uuid algebra against `preset_spec`; lists extras. Exit 0 only when all 73 are present and defect-free. **Currently exits 0.** Run it after any preset change.
+- `src/scripts/dpd_doctor.py` — `capture_presets` rewritten onto the builder's panel primitives (positional per-folder read, full scroll of `PresetsBelowBody`, no-toggle re-read for a folder that is open by default); writes `preset_items`, `preset_folders`, `preset_tree`. `--verify` diff is trustworthy again.
+- `src/scripts/dpd_playbook_extract.py`, `dpd_siftmap_manifest.py`, `dpd_siftmap_presets.py`, `dpd_qa_report.py` — the county-agnostic DC one-shot pipeline (see [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md)). **Reworked 2026-09-24 for the Work Order export and the no-AI ladder; `dpd_siftmap_manifest.py --plan` is the check/rebuild/delete planner for the saved SiftMap filters** — see "Doors-per-deal data: the Work Order format" above.
+
+**Stated gaps, omitted on purpose rather than approximated** (all in `block_map.GAPS`): the mail cadence's 30-day spacing (date blocks are absolute-only, and a fixed date silently hides work as time passes); the four Reactivation status-age timers (nothing filters on time-in-status); the single-family filter (would drop the 2,892 blank-`structure_type` records, and the buy box is applied at pull time instead); the recently-sold tag (does not exist on this account). Also: the Property Status picker offers 19 of 38 statuses — `DNC` and `Opt-out` are recovered through Params & Others, but `Lost Deal`, `Close Out`, `Buyer`, `Buyer Found` and `Buyer Lost` cannot be selected at all.
+
+## Order of work (from 2026-08-28)
+
+1. ~~Delete the SiftMap saved filter `ZZ DPD SMOKE 153311`~~ **DONE 2026-08-31, and no longer a hand
+   step:** saved filters ARE deletable — the management table at `/siftmap/presets/account` (paginated,
+   trash icon per row, type `DELETE FILTER` to arm the confirm) — via
+   `dpd_siftmap_presets.py --delete-name` (refuses any name not starting `ZZ `). 28 saved filters remain,
+   all verified present after the delete.
+2. ~~Make the daily DC foreclosure feed reach the FTM lane~~ **DONE 2026-08-28 (code only):** `mddc_datasift_upload.BATCH_TAG = "FTM"`. The next MDDC upload — on Basem's go — lands in `05 FTM - CALL` / `06 FTM - MAIL`.
+3. **VA pulls — FORECLOSURE LANE WORKING 2026-08-31; the other two searches parsed the wrong
+   thing by design.** The old text here assumed searches 6 and 8 carry a property address. They
+   do not, and no regex tuning would have found one.
+
+   **Foreclosures (`--popular-search 4`) is the lane that works.** 103 leads in
+   `output/va_foreclosures_final.csv`: 99 with a street, 0 duplicates, 0 wrong-building
+   addresses. Free path, Firecrawl only. Kept for review; NOT uploaded (Basem, 2026-08-31).
+
+   **THE DURABLE LESSON — address validation cannot catch this.** A trustee's sale notice holds
+   THREE real, deliverable, USPS-confirmable addresses: the subject property (in the
+   `TRUSTEE'S SALE` headline), the courthouse (mid-notice, the auction VENUE), and the trustee's
+   law firm (near the end, letterhead). Smarty confirms all three, so `--standardize` cannot tell
+   them apart. `parse_address` was returning the LAW FIRM. Only anchoring on the notice's own
+   semantics works: `TRUSTEE_HEADLINE_RE` / `parse_trustee_headline_address()`, tried first.
+
+   Five defects fixed in `va_trustee_sale_pull.py` (commit c5d4fd5), each measured on live data:
+   - **wrong building** — law-firm address; headline anchor fixes it.
+   - **plural titles missed** — `TRUSTEE'?S\s+SALE` cannot match `SUBSTITUTE TRUSTEES' SALE`
+     (the apostrophe sits between the S and the space). Plural is DOMINANT: 69 of 139 real MDDC
+     notices, 51 ASCII + 18 curly U+2019. Always spell both apostrophes out.
+   - **unit numbers dropped** — `1476 Vineyard Ct Unit# 105XA` became `1476 Vineyard Ct`. On a
+     condo that is a DIFFERENT property. A comma now wins over suffix-splitting.
+   - **25% duplicate output** — foreclosure notices republish weekly by law, so dedup collapses
+     foreclosures dateless on (street, city). 137 -> 103. Scoped to `notice_type ==
+     "foreclosure"` ONLY: keying city-only rows collapsed Estate Claims 26 -> 7, street-bearing
+     ones 26 -> 24 (all carry the courthouse in `street`). **`notice_id` update 2026-09-04:**
+     the View button's onclick DOES carry `Details.aspx?SID&ID` (a real per-notice id), but a
+     Firecrawl capture only sometimes includes it (JS-attached; 31/32 one run, 2/32 another) —
+     and each republication carries a NEW id, so `dedupe()` deliberately checks the foreclosure
+     address collapse BEFORE the id key; id-first keying would reinstate the 25% duplicates.
+   - **auction dates 94% wrong** — matched `recorded on <date>`, the Deed of Trust RECORDING
+     date; 17 of 18 were years in the past. Guarded by deed-context rejection plus "cannot
+     predate publication".
+
+   **`--max-pages` CEILING IS 8. Measured 2026-08-31 against live Firecrawl, two hard limits:**
+   `Number of actions cannot exceed 50` (hit at 16 pages / 57 actions) and `Total wait time
+   (waitFor + wait actions) cannot exceed 60 seconds` (hit at 10 pages / 39 actions — this one
+   binds first). 8 pages = 33 actions = HTTP 200. Anything higher returns a 400 that the script
+   MISDIAGNOSES: it responds by splitting the date window, which cannot reduce an action count,
+   so it splits until it gives up with exit 3 and writes nothing. To go deeper than 8 pages of
+   results, narrow `--days` and merge runs; do not raise `--max-pages`.
+
+   **Cost economics (measured):** the property address resolves from ~120 chars and the loan
+   principal from ~340 — both INSIDE the free 340-char grid snippet. Only the auction date needs
+   ~700 chars, i.e. the paid full-text fetch. `--full-text` is an auction-date ENRICHMENT step,
+   never a prerequisite.
+
+   **Estate Claims (`--popular-search 6`) — needs a property-DISCOVERY step, not an address
+   regex.** These are Notices to Creditors; their legal purpose is telling creditors where to
+   file, so they never state the decedent's real estate. Verified live: the only three addresses
+   are the courthouse (labelled `CIRCUIT COURT CLERK'S MAILING ADDRESS` in the text), the PR's
+   home, and the attorney's firm. What they DO carry is valuable: decedent name, date of death,
+   court file number, and PR name + address + phone (sample: DOD 05/20/2026, FI-2026-0001248, PR
+   out-of-state in WA with a direct phone). Retarget extraction to those, then find the property
+   via **land records, deeds and SDAT** (Basem, 2026-08-31) — the same lookup path the MD lane
+   already uses — or the `probate-property-finder` skill.
+
+   **Tax Deeds (`--popular-search 8`) — deprioritised.** All 26 rows classify as `other` and
+   there is no `tax_deed` rule in `NOTICE_TYPE_RULES`. Basem has never seen a real one come
+   through (2026-08-31), so do not invest here until one does.
+
+   **Still open:** county values carry case and truncation noise (`FAIRFAX`/`Fairfax`, plus
+   `Prin`, `Spotsylvan`, `Spotslyvani`) and a few out-of-footprint rows (`Loudoun`, `Manassas
+   Park city`). Harmless for dedup (which keys on street) but it fragments per-county grouping.
+
+4. **The DC pull (Phase 4) — ONLY on Basem's explicit go.** Described under "What the next (pull) run would do" in [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md). Until it runs, every one of the 73 presets loads empty for DC.
+5. ~~The other 13 jurisdictions~~ **DONE 2026-08-31:** all 13 built and verified via `src/scripts/dpd_siftmap_build_all.py` (sequential per-county driver, halts on first defect, resume-aware) — 152 presets saved, every one reloading to its exact measured count, 72 inexpressible rows routed to FTM, 8 measured-zero rows kept. Fixes that made it survivable: `saved_filter_names` now exhausts "Show more" (was capped at 4 clicks — fatal at 200+ rows), `reload_check` retries an empty popover once (transient mid-session failure seen on Anne Arundel). **Correction 2026-08-31: exhausting "Show more" is not the same as seeing every filter.** `saved_filter_names` reads the SiftMap **Presets popover**, and that popover tops out around 100 rows; the account actually holds **180 saved filters across 18 pages** (measured on the management page). The complete list is under **Configure → `/siftmap/presets/account`** (10 per page, already known to the code as `PRESETS_ACCOUNT_URL`, which is what `--delete-name` drives). Consequence: any presence/skip check built on `saved_filter_names` is working from a partial list — and `dpd_siftmap_presets.py --commit` uses it exactly that way, so it can re-save a name that already exists, which its own comment calls a hard stop. Read the management page, not the popover, when the question is "does this filter exist". QA reports in `output/dpd_qa_report_<fips>.md`. **County split DONE 2026-08-31 (Basem's design: pull all 14, call the core 9, mail everywhere):** the 30 MAIL presets now carry all 15 counties (`COUNTY_SCOPE_MAIL`), added IN PLACE via `dpd_presets_create.py --widen-counties` — load row (JS click on the title, from a FRESH /records navigation per preset), `set_tokens` the 6 new counties, Save (overwrite), then verify the STORE (counties 9→15, every other stored field byte-equal; the panel's exclusion render lies on load but Save does not serialize the lie — proven by the `--widen-smoke` gate). CALL / Deep Prospecting / Reactivation stay at 9. `dpd_presets_verify.py` exits 0: 73/73, 0 defects.
+6. Sign-ups when Basem is ready (DC Recorder of Deeds free registration; DOB eRecords — `CAPTCHA_API_KEY` is now real and working, struck 2026-08-31) — the ordered list is in `output/dpd_dc_ftm_investigation.md`.
+
+**Standing constraints:** create no Lists (reuse what exists; a SiftMap pull applies *tags* in the Add-Records modal, not lists); `.env` browser auth for every WRITE (policy, not a limit: Ty's `account_blueprint` creates presets, folders, sequences, custom fields, task presets, boards and SiftMap `/filters/` over the API on ty+1/ty+2, and filter-preset PATCH is proven here 2026-09-07 — but no CREATE route has been probed on this account, so writes stay browser-driven until one is, one object at a time with a read-back) — internal-API READS are fine and are how `dpd_presets_verify.py` checks the store; Priority 1/2 are stamped at pull time so they arrive with the property; FTM is stamped by the daily Register of Wills / MDDC / VA pulls; never click `Add Records to Account` and never tick the Save Filters PRO auto-add checkbox without an explicit go.
+
+**Decisions taken 2026-08-26 (Basem):** the high-lift slices ride ALONGSIDE the widened T1s (Baltimore `Senior + Vacant` 182/16.5x, Fairfax `Notice of Default` 91/37.3x, Arlington `Free & Clear + Out-of-State + Senior` 123/16.5x as their own smaller higher-priority lists; DC's are skipped as its 76.8x measures 1 record). **AI data is NOT being bought**, so build on the distressor and geography layers only. **Superseded for DC on 2026-08-27** by the per-row design in [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md); still the plan of record for the 13 counties whose per-row manifests have not been built.
+

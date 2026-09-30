@@ -89,18 +89,19 @@ STATUS_GAP_UNRECOVERED = ["Lost Deal", "Close Out", "Buyer", "Buyer Found", "Buy
 # approximated by a control that does not mean the same thing.
 GAPS = {
     "last_mailed_days_min": (
-        "`Last Direct Mailed` offers Fixed / Since / Prior to Date against a CALENDAR -- "
-        "there is no relative mode. A saved preset holding `prior to <today-30>` gets "
-        "MORE restrictive as time passes: six months on it hides every record mailed "
-        "since that fixed date, which is work silently disappearing from a queue. The "
-        "mail-attempts counter already gates each stage, so the date block is omitted and "
-        "the 30-day spacing is a cadence rule the operator holds, not a filter."),
+        "NOW EXPRESSIBLE, NOT YET REBUILT (re-checked 2026-09-30). The old reason -- "
+        "`Last Direct Mailed` has no relative mode -- was wrong: presets store RELATIVE "
+        "dates as `[\"<n>-<days|weeks|months>\", <anchor>]` (anchor today / yesterday / "
+        "week / month / quarter / year), resolved by the app at load (proven on "
+        "`last_obituary_date`, 2026-09-24/25). Still omitted until rebuilt; the mail-"
+        "attempts counter gates each stage meanwhile. Read the PRIOR control's meaning off "
+        "main.min.js first: `[\"30-days\", \"today\"]` is the LAST 30 days, not older."),
     "status_age_days_min": (
-        "No block filters on how long a record has been IN a status. `Last Updated Date` "
-        "is the nearest and means any edit at all, so it would silently reactivate a "
-        "record whose only change was a tag. The four Reactivation timers are built "
-        "without their age gate and are flagged; they return every Not Interested record "
-        "in scope until a status-age block exists."),
+        "NOW EXPRESSIBLE, NOT YET REBUILT (re-checked 2026-09-30). Status age is stored as "
+        "`last_updated_date: [{\"field\": \"status\", \"options\": [...]}]` -- scoped to "
+        "the STATUS field, not any edit -- and is already live on `11. Not Interested "
+        "Qrtrly`. The four Reactivation timers are still built without their age gate and "
+        "return every Not Interested record in scope until rebuilt."),
     "structure": (
         "Omitted deliberately. Filtering `Structure Types = Single Family` would DROP the "
         "2,892 records whose structure_type is permanently blank (condo/apartment units "
@@ -109,9 +110,9 @@ GAPS = {
         "SiftMap tier configs), so every record these folders can see is already single "
         "family by construction."),
     "sold_tag": (
-        "Suppression part 2 wanted a recently-sold TAG. No such tag exists among the 340 "
-        "on this account; `Sold` and `Already Sold` are statuses and are excluded by part "
-        "1. The tag is a Phase 4 item."),
+        "CLOSED 2026-09-30. The `Recently Sold` tag exists and the live Sold Property "
+        "Cleanup sequence turns it into the `Already Sold` status, which part 1 already "
+        "excludes, so no preset needs the tag itself."),
 }
 
 

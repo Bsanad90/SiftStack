@@ -83,7 +83,13 @@ DECEASED_TAGS = [TAG_DECEASED, "Owner Deceased", "Obituaries", "Deceased"]
 DP_EXACT_TAGS = [TAG_ALIVE, TAG_UNVERIFIED, TAG_PRESUMED, "DP Trust Trustee Inferred",
                  "DP No Signer Numbers", "DP Reach Path Only", "DP Owner Is PR"]
 DP_PREFIXES = ("deep prospected", "dp no numbers")
-SKIP_TAG_RE = re.compile(r"^(skip traced\b|skip_traced_|reisift skipped\b)", re.I)
+# Every trace-date spelling the account holds: the per-source tags (Basem, 2026-09-30:
+# REISift / SS / IDI Traced MM/YYYY), DataSift's own `REISift Skipped`, and the legacy
+# `Skip Traced` / `skip_traced_` series.
+SKIP_TAG_RE = re.compile(
+    r"^(reisift traced\b|ss traced\b|idi traced\b|reisift skipped\b|skip traced\b|skip_traced_)",
+    re.I,
+)
 # Small phone-tag families used to prove multi-uuid OR semantics cheaply.
 PROBE_TAG_CANDIDATES = ["Attorney.1", "Attorney.2", "Deceased.2", "Spouse.1", "Son", "Shady"]
 

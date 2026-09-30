@@ -107,16 +107,17 @@ def get_record(record_uuid: str) -> Optional[dict]:
 def _user_directory() -> dict:
     """uuid -> first name for the account's users.
 
-    reisift publishes no documented user endpoint, so the config file is the
-    source of truth and the API probe only fills gaps. A wrong name here signs
-    a stranger's name to a real conversation, so an unresolved uuid must stay
-    unresolved rather than be guessed.
+    The users endpoint is `GET /api/internal/account/user/` (read 2026-09-30:
+    uuid, first_name, last_name, role, is_active). The config file still wins
+    and the API only fills gaps. A wrong name here signs a stranger's name to a
+    real conversation, so an unresolved uuid must stay unresolved rather than be
+    guessed.
     """
     directory = dict(config.senders())
     c = client()
     if not c:
         return directory
-    for path in ("/api/internal/user/", "/api/internal/users/", "/api/internal/account/users/"):
+    for path in ("/api/internal/account/user/",):
         try:
             resp = c._request(path, params={"limit": 200})
         except Exception:  # noqa: BLE001 - probing undocumented routes

@@ -1164,15 +1164,14 @@ async def skip_trace_records(page: Page, list_name: str | None = None, *,
 
         # Step 2: Review step — may have tag input and a "Skip Trace" / confirm button
         # Add the skip-trace date tag (Basem, 2026-09-22: non-negotiable on every path that
-        # loads numbers). Spelled to MATCH DataSift's own auto-tag -- "Skip Traced 09/2026",
-        # the series this account has run on unbroken since 10/2025 -- so the two collapse
-        # onto one tag instead of splitting the fact across two vocabularies. This used to
-        # type `skip_traced_YYYY-MM`, which DataSift never emits; that spelling was ours
-        # alone and left exactly one orphan tag in an account of 446.
+        # loads numbers). One tag per trace SOURCE (Basem, 2026-09-30): this is the DataSift
+        # wizard, so `REISift Traced MM/YYYY` (SmartSkip is `SS Traced`, IDI `IDI Traced`).
+        # DataSift adds its own `REISift Skipped MM/YY` chips by itself; those stay. The old
+        # `Skip Traced MM/YYYY` / `skip_traced_YYYY-MM` spellings are history, not recreated.
         tag_input = page.locator('input[placeholder*="tag"], input[placeholder*="Tag"], input[placeholder*="Add tag"]')
         if await tag_input.count() > 0:
             from datetime import datetime as _dt
-            tag = f"Skip Traced {_dt.now().strftime('%m/%Y')}"
+            tag = f"REISift Traced {_dt.now().strftime('%m/%Y')}"
             await tag_input.first.fill(tag)
             await page.wait_for_timeout(500)
             await tag_input.first.press("Enter")
@@ -2292,16 +2291,16 @@ async def manage_sold_properties(
         "month_details": [],
     }
 
-    # Default to this account's own footprint. Ty's default was his two TN
-    # counties; on this account the 14 doors-per-deal jurisdictions are the
-    # footprint, and they are named rather than inferred so a run with no
-    # --counties is never a surprise. Knox/Blount stay reachable explicitly.
+    # Default to this account's own footprint: the 6 counties in scope since
+    # 2026-09-01 (dpd.jurisdictions.FOOTPRINT), named rather than inferred so a
+    # run with no --counties is never a surprise. The other 8 doors-per-deal
+    # jurisdictions and Knox/Blount stay reachable explicitly.
     if not counties:
-        from dpd.jurisdictions import JURISDICTIONS, county_label
-        counties = [county_label(j) for j in JURISDICTIONS]
+        from dpd.jurisdictions import FOOTPRINT, county_label
+        counties = [county_label(j) for j in FOOTPRINT]
         logger.info(
-            "No --counties given; defaulting to the %d doors-per-deal "
-            "jurisdictions: %s", len(counties), ", ".join(counties),
+            "No --counties given; defaulting to the %d footprint counties: %s",
+            len(counties), ", ".join(counties),
         )
 
     # Build list of (year, month) tuples to process — oldest first

@@ -188,6 +188,14 @@ JURISDICTIONS: list[Jurisdiction] = [
     ),
 ]
 
+# The account's working footprint (narrowed 2026-09-01 from the 14 above to 6): DC,
+# Montgomery, Anne Arundel, Frederick, Fairfax, Arlington. Same fips set as
+# dpd_siftmap_manifest.FOOTPRINT_FIPS. JURISDICTIONS stays the 14 because the
+# research scripts still iterate it; anything that ACTS on the account defaults here.
+FOOTPRINT_FIPS: tuple[str, ...] = ("11001", "24031", "24003", "24021", "51059", "51013")
+FOOTPRINT: list[Jurisdiction] = [j for j in JURISDICTIONS if j.fips in FOOTPRINT_FIPS]
+assert len(FOOTPRINT) == len(FOOTPRINT_FIPS), "footprint fips missing from JURISDICTIONS"
+
 # ---------------------------------------------------------------- Tennessee
 # NOT part of the doors-per-deal footprint, and deliberately NOT in JURISDICTIONS:
 # six scripts iterate that list as "the 14 target jurisdictions" and would report
