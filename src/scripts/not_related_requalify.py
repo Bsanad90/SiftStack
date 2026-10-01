@@ -3,7 +3,7 @@
 That status sits in `preset_spec.DEAD_STATUSES`, so every preset excludes these
 records -- they are dead to all marketing. Basem's triage (2026-09-04):
 
-  1. Entry-tag each record by SOURCE LIST: `Obituary`/`Inheritance` -> Priority 1,
+  1. Entry-tag each record by SOURCE LIST: `Obituary` -> Obituaries (2026-09-30), `Inheritance` -> Priority 1,
      `Register of Wills` / probate lists -> FTM, neither -> Priority 2. A record
      matching both rules gets both tags (62 FTM+P1 records already exist).
   2. Sold check: `last_sold` within 365 days -> a REVIEW CSV first, never an
@@ -111,8 +111,11 @@ REQUALIFY_STATUS = "No Answer"
 # The lane run's paid results, reused for free (same run-cache entry shape).
 LANE_CACHE = ROOT / "output" / "lane_phone_score" / "trestle_cache.json"
 
-ENTRY_TAGS = {"Priority 1", "Priority 2", "FTM", "Tier 2"}
-P1_LIST_MARKERS = ("obituary", "inheritance")
+ENTRY_TAGS = {"Priority 1", "Priority 2", "FTM", "Tier 2", "Obituaries"}
+# 2026-09-30 (Basem): obituary records carry `Obituaries` -- never Priority 1 or FTM -- and
+# ride their own lane (folders 13/14). Inheritance keeps Priority 1.
+OBIT_LIST_MARKERS = ("obituary",)
+P1_LIST_MARKERS = ("inheritance",)
 FTM_LIST_MARKERS = ("register of wills", "probate")
 
 # = datasift_uploader.RECENTLY_SOLD_TAG; defined locally so an API-only script
@@ -136,6 +139,8 @@ def entry_tags_for(lists: list[str], existing_tags: list[str]) -> list[str]:
     """Basem's rule. Returns only the tags MISSING from the record."""
     ls = [(x or "").lower() for x in lists]
     derived = []
+    if any(m in l for l in ls for m in OBIT_LIST_MARKERS):
+        derived.append("Obituaries")
     if any(m in l for l in ls for m in P1_LIST_MARKERS):
         derived.append("Priority 1")
     if any(m in l for l in ls for m in FTM_LIST_MARKERS):

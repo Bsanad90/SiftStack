@@ -60,6 +60,7 @@ OUT = ROOT / "output" / "dpd_lane_assignee_report.json"
 LANES = [
     ("01 HOTTEST - CALL", "Hottest - 02 Ready to Call"),
     ("05 FTM - CALL", "FTM - 02 Ready to Call"),
+    ("13 OBITUARY - CALL", "Obituary - 02 Ready to Call"),  # 2026-09-30, the Obituary lane
 ]
 
 PAGE = 200

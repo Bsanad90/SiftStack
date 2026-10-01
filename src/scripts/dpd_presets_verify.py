@@ -39,7 +39,7 @@ sys.path.insert(0, str(ROOT / "src" / "scripts"))
 
 from datasift_api_upload import Api  # noqa: E402
 from dpd.block_map import STATUS_NOT_SELECTABLE  # noqa: E402
-from dpd.preset_spec import (PRESETS, ONE_OWNER_STORE_KEY, ONE_OWNER_VALUE,  # noqa: E402
+from dpd.preset_spec import (PRESETS, N_PRESETS, ONE_OWNER_STORE_KEY, ONE_OWNER_VALUE,  # noqa: E402
                              ONE_OWNER_STRAY_KEY, OBIT_WINDOW_KEY, OBIT_WINDOW_VALUE)
 from dpd_presets_create import allocate_tags  # noqa: E402  (src/scripts on caller path)
 
@@ -48,7 +48,8 @@ OUT = ROOT / "output" / "dpd_presets_verify.json"
 FOLDERS = ["01 HOTTEST - CALL", "02 HOTTEST - MAIL", "03 STRONG - CALL",
            "04 STRONG - MAIL", "05 FTM - CALL", "06 FTM - MAIL", "07 TIER 2 - CALL",
            "08 TIER 2 - MAIL", "09 BULK - CALL", "10 BULK - MAIL",
-           "11 DEEP PROSPECTING", "12 REACTIVATION"]
+           "11 DEEP PROSPECTING", "12 REACTIVATION", "13 OBITUARY - CALL",
+           "14 OBITUARY - MAIL"]
 
 # Spec boolean -> candidate storage keys, most-likely first. "Vacant Mailing" stores
 # as `owner_vacant` (observed live); the panel label and the storage key do not match,
@@ -150,9 +151,13 @@ def verify_preset(spec: dict, stored: dict, uuid_of: dict, bad: list[str]) -> No
         fail(f"stray top-level {ONE_OWNER_STRAY_KEY}={f[ONE_OWNER_STRAY_KEY]!r}: invisible in "
              "the panel, applied by the query")
 
-    # Last Obituary Date window (2026-09-25): every preset carries the relative block.
-    if f.get(OBIT_WINDOW_KEY) != OBIT_WINDOW_VALUE:
-        fail(f"{OBIT_WINDOW_KEY} is {f.get(OBIT_WINDOW_KEY)!r}, wanted {OBIT_WINDOW_VALUE}")
+    # Last Obituary Date window (2026-09-25): every preset carries the relative block --
+    # except the Hottest / FTM CALL folders (Basem 2026-09-30), which must NOT carry one.
+    if spec["obit_window"]:
+        if f.get(OBIT_WINDOW_KEY) != OBIT_WINDOW_VALUE:
+            fail(f"{OBIT_WINDOW_KEY} is {f.get(OBIT_WINDOW_KEY)!r}, wanted {OBIT_WINDOW_VALUE}")
+    elif OBIT_WINDOW_KEY in f:
+        fail(f"{OBIT_WINDOW_KEY} is {f.get(OBIT_WINDOW_KEY)!r}, wanted ABSENT (call lane without the window)")
 
     # Params booleans the spec sets. A param is satisfied by ANY of its candidate
     # storage keys holding the wanted value; none holding it is a defect.
@@ -254,7 +259,7 @@ def main() -> int:
                        if p["folder"] == fname):
                 extras.append(f"{fname}: {t}")
 
-    print(f"checked {checked}/73 against the server store")
+    print(f"checked {checked}/{N_PRESETS} against the server store")
     print(f"missing: {len(missing)}")
     for m in missing:
         print("  ", m)

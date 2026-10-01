@@ -36,6 +36,11 @@ ENTRY = {
     "TIER2": {"any": ["Tier 2"], "none": ["Priority 1", "Priority 2"]},
     "BULK": {"any": ["Priority 1", "Priority 2", "Tier 2"], "none": ["FTM"]},
     "ALL": {"any": ["Priority 1", "Priority 2", "FTM", "Tier 2"], "none": []},
+    # 2026-09-30 (Basem): obituary records carry NEITHER FTM nor Priority 1 any more; they
+    # ride on `Obituaries` (or `Deceased Owner`, which already exists) in their own lane,
+    # a clone of the FTM folders. An obituary record that is ALSO a probate case keeps FTM
+    # and shows in both lanes. Built by obituary_lane_build.py.
+    "OBITUARY": {"any": ["Obituaries", "Deceased Owner"], "none": []},
 }
 
 # ------------------------------------------------------- universal suppression
@@ -135,6 +140,11 @@ OBIT_WINDOW_VALUE = ["360-months", "month"]
 # Months back from today for each anchor the picker offers (used to resolve the block for
 # counting; the query endpoint rejects the relative form).
 OBIT_ANCHOR_MONTHS = {"today": 0, "yesterday": 0, "week": 0, "month": 1, "quarter": 3, "year": 12}
+# 2026-09-30 (Basem): "remove the obituary date filter from the Hottest and FTM calling lanes,
+# including Needs Skipped and Skipped No Numbers". These two folders carry NO
+# last_obituary_date block; every other preset keeps it. The verifier fails a preset on
+# either side of that line. Written by dpd_presets_obit_window.py (remove mode).
+NO_OBIT_WINDOW_FOLDERS = {"01 HOTTEST - CALL", "05 FTM - CALL"}
 
 _RELATIVE_LEN_RE = _re.compile(r"^(\d+)-(days|weeks|months)$")
 
@@ -288,6 +298,8 @@ _FOLDER_PLAN = [
     ("10 BULK - MAIL", "Bulk", "BULK", "mail", MAIL_STAGES),
     ("11 DEEP PROSPECTING", "Deep", "ALL", "deep", DEEP_STAGES),
     ("12 REACTIVATION", "Rehash", "ALL", "reactivation", REACTIVATION_STAGES),
+    ("13 OBITUARY - CALL", "Obituary", "OBITUARY", "call", CALL_STAGES),
+    ("14 OBITUARY - MAIL", "Obituary", "OBITUARY", "mail", MAIL_STAGES),
 ]
 
 
@@ -336,6 +348,7 @@ def build() -> list[dict]:
                 "tags_none": tags_none,
                 "counties": list(COUNTY_SCOPE_MAIL if channel == "mail" else COUNTY_SCOPE),
                 "suppression": sup,
+                "obit_window": folder not in NO_OBIT_WINDOW_FOLDERS,
                 "note": blocks.get("scope_note"),
             })
     return out
@@ -345,12 +358,13 @@ PRESETS = build()
 
 # A miscount here is a missing stage in somebody's call cadence, so it is asserted at
 # import rather than trusted.
-assert len(PRESETS) == 73, f"expected 73 presets, built {len(PRESETS)}"
+N_PRESETS = 85  # 73 through 2026-09-29; +12 for the Obituary lane on 2026-09-30
+assert len(PRESETS) == N_PRESETS, f"expected {N_PRESETS} presets, built {len(PRESETS)}"
 _BY_FOLDER: dict[str, int] = {}
 for _p in PRESETS:
     _BY_FOLDER[_p["folder"]] = _BY_FOLDER.get(_p["folder"], 0) + 1
-assert list(_BY_FOLDER.values()) == [6, 6, 6, 6, 6, 6, 6, 6, 9, 6, 5, 5], _BY_FOLDER
-assert len({(p["folder"], p["name"]) for p in PRESETS}) == 73, "duplicate preset name"
+assert list(_BY_FOLDER.values()) == [6, 6, 6, 6, 6, 6, 6, 6, 9, 6, 5, 5, 6, 6], _BY_FOLDER
+assert len({(p["folder"], p["name"]) for p in PRESETS}) == N_PRESETS, "duplicate preset name"
 
 
 def main() -> int:

@@ -63,11 +63,13 @@ FOLDERS = [
     ("10 BULK - MAIL", 6, "Priority 1 or Priority 2 or Tier 2"),
     ("11 DEEP PROSPECTING", 5, "all tiers"),
     ("12 REACTIVATION", 5, "all tiers"),
+    ("13 OBITUARY - CALL", 6, "Obituaries or Deceased Owner"),
+    ("14 OBITUARY - MAIL", 6, "Obituaries or Deceased Owner"),
 ]
 
 # 48 + 9 + 6 + 5 + 5 = 73. Asserted rather than trusted, because a miscount here is a
 # missing stage in somebody's call cadence.
-assert sum(n for _, n, _ in FOLDERS) == 73, "the folder table must total 73 presets"
+assert sum(n for _, n, _ in FOLDERS) == 85, "the folder table must total 85 presets"
 
 # The filter blocks the 73 presets need. NOT YET MAPPED to panel controls -- listed here so
 # the next pass knows exactly what to discover, and so nothing gets built on a guess.

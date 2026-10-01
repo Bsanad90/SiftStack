@@ -64,6 +64,14 @@ def has_block(p: dict) -> bool:
     return _must(p).get(OBIT_WINDOW_KEY) == OBIT_WINDOW_VALUE
 
 
+def matches_spec(p: dict) -> bool:
+    """Stored state == what the spec wants: the block present (most presets) or ABSENT
+    (the Hottest / FTM CALL folders, Basem 2026-09-30, `preset_spec.NO_OBIT_WINDOW_FOLDERS`)."""
+    if p.get("_want_block", True):
+        return has_block(p)
+    return OBIT_WINDOW_KEY not in _must(p)
+
+
 def resolved_window(today: date | None = None, value: list[str] | None = None) -> list[str]:
     """Kept for callers; the resolver itself lives in preset_spec.resolve_relative_date."""
     return resolve_relative_date(value, today)
@@ -79,7 +87,10 @@ def approx_count(api: LiveApi, filters: dict) -> str:
 
 def target_filters(p: dict) -> dict:
     new_filters = copy.deepcopy(p.get("filters") or {})
-    new_filters.setdefault("must", {})[OBIT_WINDOW_KEY] = list(OBIT_WINDOW_VALUE)
+    if p.get("_want_block", True):
+        new_filters.setdefault("must", {})[OBIT_WINDOW_KEY] = list(OBIT_WINDOW_VALUE)
+    else:
+        new_filters.setdefault("must", {}).pop(OBIT_WINDOW_KEY, None)
     return new_filters
 
 
@@ -101,7 +112,8 @@ def patch_one(api: WriteApi, p: dict) -> tuple[bool, str]:
     stored = next((x for x in prs if x["uuid"] == p["uuid"]), None)
     if stored is None:
         return False, "preset vanished from the folder listing on read-back"
-    if not has_block(stored):
+    stored["_want_block"] = p.get("_want_block", True)
+    if not matches_spec(stored):
         return False, (f"read-back {OBIT_WINDOW_KEY}={_must(stored).get(OBIT_WINDOW_KEY)!r} "
                        "(200-but-unchanged trap?)")
     a = copy.deepcopy(stored.get("filters") or {})
@@ -141,18 +153,21 @@ def main() -> int:
         m = match_stored(s, stored)
         if m is None:
             missing.append(s["name"])
-        elif has_block(m):
+            continue
+        m["_want_block"] = s.get("obit_window", True)
+        if matches_spec(m):
             have.append(m)
         else:
             todo.append(m)
-    print(f"{len(PRESETS)} presets in the spec; {len(have)} already carry "
-          f"{OBIT_WINDOW_KEY}={OBIT_WINDOW_VALUE}; {len(todo)} to patch; "
-          f"{len(missing)} not found in the store")
+    print(f"{len(PRESETS)} presets in the spec; {len(have)} already match the spec "
+          f"({OBIT_WINDOW_KEY}={OBIT_WINDOW_VALUE}, or absent on the no-window call folders); "
+          f"{len(todo)} to patch; {len(missing)} not found in the store")
     for n in missing:
         print(f"  MISSING: {n}")
     for p in todo:
         other = _must(p).get(OBIT_WINDOW_KEY)
         print(f"  {p['_folder']:22} {p['title']:30} "
+              f"{'REMOVE ' if not p['_want_block'] else 'ADD '}"
               f"{'holds ' + json.dumps(other) + '  ' if other is not None else ''}"
               f"live now: {approx_count(live, p['filters'])}")
     if missing:
