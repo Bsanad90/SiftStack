@@ -65,3 +65,18 @@ python src/sms_agent/cli.py serve                     # receiver
 python src/sms_agent/cli.py work --loop               # worker (separate process)
 ```
 
+
+
+---
+
+## Moved from CLAUDE.md on 2026-10-01 — SMS agent state
+
+Verbatim text as it stood on 2026-10-01 (second split of CLAUDE.md; the first was 2026-08-28). The live current state and the traps index stay in CLAUDE.md; this is the record. Snapshot: `_CLAUDE-snapshot-2026-10-01.md`.
+
+- **SMS agent** — **NOT OURS either.** `siftstack.fly.dev` is Ty's live TN campaign (checked
+  2026-09-18: phase 2, `dry_run` false, 3,339 texts sent). Proof it has never touched this account:
+  the agent tags every record it writes `sys_ai_paused` / `sys_ai_handled` / `sys_escalated`, and
+  this account's 444 tags include **zero** starting `sys_`. Do not treat it as ours and do not try
+  to stop it from this machine. If Basem ever wants SMS it is a fresh deploy on his own host with
+  his own keys, off post-08-28 code. The code and the `SMS_AGENT_PHASE` autonomy ladder are real and
+  usable; only the deployment is someone else's. → [history](docs/history/sms-and-coaching.md)

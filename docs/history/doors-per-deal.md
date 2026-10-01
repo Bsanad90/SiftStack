@@ -637,3 +637,232 @@ Basem: "apply the plan." Run from `output/dpd_siftmap_plan/20260924T115321/` in 
 
 **Decisions taken 2026-08-26 (Basem):** the high-lift slices ride ALONGSIDE the widened T1s (Baltimore `Senior + Vacant` 182/16.5x, Fairfax `Notice of Default` 91/37.3x, Arlington `Free & Clear + Out-of-State + Senior` 123/16.5x as their own smaller higher-priority lists; DC's are skipped as its 76.8x measures 1 record). **AI data is NOT being bought**, so build on the distressor and geography layers only. **Superseded for DC on 2026-08-27** by the per-row design in [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md); still the plan of record for the 13 counties whose per-row manifests have not been built.
 
+
+
+---
+
+## Moved from CLAUDE.md on 2026-10-01 — DPD account state, Local working files, the Work Order format + SiftMap preset planner, Where the DPD code stands
+
+Verbatim text as it stood on 2026-10-01 (second split of CLAUDE.md; the first was 2026-08-28). The live current state and the traps index stay in CLAUDE.md; this is the record. Snapshot: `_CLAUDE-snapshot-2026-10-01.md`.
+
+- **Doors-Per-Deal account build** — 85 Records presets in 14 folders, verified 85/85 (0 defects):
+  the 73 DPD presets plus the **Obituary lane added 2026-09-30** (`13 OBITUARY - CALL` /
+  `14 OBITUARY - MAIL`, 12 presets cloned from their FTM twins with `must.any_tags =
+  [Obituaries, Deceased Owner]` as the entry block; first preset CREATE over the API on this
+  account, `obituary_lane_build.py`). Entry tags: `FTM` (daily pulls), `Priority 1/2` (SiftMap
+  rungs), `Obituaries` (obituary records, never FTM / Priority 1 unless also a probate case;
+  5,047 of 5,048 Obituary-list records retagged 09-30). SiftMap saved filters follow the 2026-09-24 Work Order plan (P1 rungs,
+  6 counties). **Pulled 2026-09-28 on Basem's go:** 7 low-dpd rungs, 1,311 records (DC P1-09 /
+  14 / 15 / 18, Montgomery P1-06, Anne Arundel P1-03, Arlington P1-01); further pulls still need
+  an explicit go. → [history](docs/history/doors-per-deal.md)
+
+## Local working files
+
+`output/` and `logs/` are gitignored scratch. Two notes after the 2026-08-28 cleanup:
+
+- **`output/_archive/live_account_pull.json`** (133MB, the 26,645-record account hydration) moved
+  out of `output/` to keep listings readable. Scripts taking `--cache` must now be given
+  `--cache "output/_archive/live_account_pull.json"` explicitly. **`live_pull.py` especially** —
+  without it, it will not find the file and starts a fresh multi-hour re-pull.
+  `doors_per_deal_dialer_split.py` hardcodes the old path, so move the file back for that script.
+- **`data/dpd_playbook_*_shards.json` were deleted** — write-only cross-check artifacts, and
+  byte-identical per state (the fetcher pulls per state, writes per county). Re-derive with
+  `python src/scripts/dpd_playbook_extract.py --fips <fips> --fetch`. The parsed
+  `data/dpd_playbook_<fips>.json` files, which ARE read, were REBUILT 2026-09-24 from the new
+  Work Order export (see "Doors-per-deal data: the Work Order format" below); the August
+  versions are in `output/_archive/dpd_playbook_json_20260828/`, the August workbooks in
+  `output/market_research/_archive_export_20260827/`, the August SiftMap manifests in
+  `output/_archive/dpd_siftmap_manifest_json_20260831/`.
+
+## Doors-per-deal data: the Work Order format (2026-09-24) and the SiftMap preset planner
+
+**The playbook page changed its export in 2026-09.** `learn.datasift.ai/county-list-playbook`
+now downloads a workbook with sheets Overview / **Work Order** / **Obituary** / First to Market /
+Top ZIPs / Price Bands / Read Me. Priority Ranking, AI Score and Benchmarks are gone.
+`dpd_playbook_extract.py` reads ONLY this layout and refuses the old one (it will not roll back).
+Facts that change how every number is read:
+
+- **The Work Order is a PULL ORDER and its doors/deal are MARGINAL.** Each rung counts only the
+  new deals the rungs above it do not already reach, so a rung's figure prices the NEXT pull,
+  not the list on its own. Never re-sort rungs by dpd (it is not monotonic); the ladder order is
+  the ranking. Each rung's standalone `list_size` and stable `keys` come from the page's free
+  `capture-data/<st>.json` shard (`--fetch`), not from the sheet.
+- **The page publishes TWO ladders per county and exports only one.** `variants.ai` (default
+  on screen, and what Download Excel carries) and `variants.lists` (AI rungs removed, the deals
+  AI would have claimed re-credited to the lists below). This account does not buy AI data, so
+  **`rows_no_ai` is the ranking**; `dpd_siftmap_manifest.build()` reads it and refuses a
+  playbook file without it. `merge_shard` detects which variant the export carried by matching
+  the rung label sequence.
+- **The baseline moved because the deal count did, not the window.** DC: 632 deals / 76.8
+  (Aug export) -> 771 / 62.9 (live page); same Jan-Jun 2026 window, same 48,530 homes. The
+  page's own Overview mixes two sources: deals + baseline dpd from capture-data
+  (`base_supply / deals`), but "SFR supply" from county-data `baseline.list_size`, and the two
+  supplies differ in Calvert / Frederick / Spotsylvania (47,615 vs 49,628). The cross-check
+  compares each figure with the source the page used.
+- **Obituary is now partly MEASURED and reads worse than the model.** Every county's Obituary
+  sheet models 34 dpd (22/34/50); where Obituary is its own rung it measures 67.5 (Montgomery),
+  72.5 (Carroll), 86.2 (Baltimore Co), 107 (Fairfax, negative spread), on 4-7 deals each and as
+  late rungs. Stacked (`High Equity + Obituary + Senior`, Baltimore Co) it runs 27.7. Probate
+  appears in NO county's ladder. Flags began 2025-12, so the number is not settled.
+- **Export by browser, not by hand:** the page's `#xlsxbtn` button; the `#<fips>` hash is read
+  only at load, so navigate to `...playbook#<fips>` fresh per county and wait for the text
+  "single-family homes" (no global to poll). `openpyxl` read-only workbooks must be `close()`d
+  or Windows keeps the file locked.
+
+**The SiftMap preset planner (`dpd_siftmap_manifest.py --plan`, offline).** Compares the
+COMPLETE saved-filter inventory (`dpd_siftmap_presets.py --audit-auto-add` output, from the
+management page — never the ~100-row popover) with manifests built from current data and sorts
+every saved filter into keep / keep-old-label / stale / rename / duplicate / missing / hold /
+decide / out-of-scope / foreign. Writes `output/dpd_siftmap_plan/<stamp>/plan.md`,
+`delete_allowlist.txt` (for the EXISTING gated `--delete-from-file`; no second delete path) and
+`save_list_<fips>.txt` (for `--commit --save-list`). Rules it encodes: presets come from **P1
+rungs only** by default (`DEFAULT_PRIORITIES`; **Basem 2026-09-24: "No need for P2 filters"**,
+so a saved P2 filter is `stale` and lands on the allowlist); counties default to the 6-county
+footprint (`FOOTPRINT_FIPS`; the 34 out-of-footprint filters were deleted on purpose and are
+`out_of_scope`); **a filter with auto-add ON is never deletable** (`hold`), nor is one whose
+auto-add state is unknown, nor `HOLD_NAMES` (Montgomery P1-04, held pull); anything not named
+like a DPD preset is `foreign`. **Identity is the LIST, not the label** (`list_key`: county +
+signal set, or ZIP set) — rank labels move every time the ladder is re-measured, so a
+label-based presence check re-saves an existing list as a duplicate. `--commit` now uses
+`list_key` too, and `bare_name()` because the management page glues each filter's DESCRIPTION
+onto its name (`"DC P1-18 Out-of-StateDoors-per-deal P1 rank 18; ..."`) — the earlier
+exact/prefix check saw every existing preset as absent. `--renames` (opt-in) re-saves same-list
+filters under their current label; never for auto-add or held ones. Offline guard:
+`python tools/manual/test_dpd_playbook_format.py` (42 checks) — run after ANY change to
+`parse_ladder` / `merge_shard` / `build` / `list_key` / `plan`. A rebuilt manifest carries
+`measured_at` over ONLY when every live preset carries a count; otherwise `build_all` would skip
+the measure stage with unmeasured presets. Every write step still needs Basem's go.
+**PLAN APPLIED 2026-09-24 on Basem's go** (`output/dpd_siftmap_plan/20260924T115321/apply_logs/`):
+28/28 stale + P2 filters deleted, 18/18 saved and verified (each reloads to its measured
+count), re-audit 43/43 rows, re-plan clean (keep 26 / keep-old-label 10 / hold 3 / foreign 4).
+Three Fairfax Tax Delinquent stacks (P1-05 / P1-10 / P1-11) are saved but measure **0** in
+SiftMap against workbook sizes 102 / 305 / 212 — empty until that layer carries data. **Trap
+fixed the same day:** `account_filter_names()` deduped titles, so the two same-named
+"District Of Columbia, DC" filters read as 24 of 25 and `--commit` refused (correctly) on the
+first attempt; the reader now counts rows and catches a stalled pagination by an unchanged
+page. Saved-filter TITLES ARE NOT UNIQUE — any reader that dedupes by name under-counts.
+The 3 `hold` filters (Montgomery P1-05 Abs+F&C+OOS, DC P1-04 NOF, DC P1-03 F&C+NOF: auto-add
+ON, no longer ranked) and the 10 old-label renames still wait on Basem.
+
+## Where the DPD code stands
+
+Full build narrative, including every panel trap and the inverted-preset post-mortem: [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md).
+
+- `src/dpd/preset_spec.py` — the 85 presets as data, asserted at import (`N_PRESETS`; 12 DPD folders 6/6/6/6/6/6/6/6/9/6/5/5 + Obituary folders 13/14 at 6/6). `NO_OBIT_WINDOW_FOLDERS` = Hottest CALL + FTM CALL, exposed per preset as `obit_window`.
+- `src/dpd/block_map.py` — the panel mapping, the stated gaps, the block budget and its one remaining trim (`Deep - 04 Return Mail`).
+- `src/scripts/dpd_filter_blocks.py` — the 144-block vocabulary dump (`output/dpd_filter_blocks.json`).
+- `src/scripts/dpd_presets_create.py` — the builder, **PROVEN on all 73**: container-scoped `audit_panel`, hit-tested `_click_leaf`, section-scoped `_PICK_INPUT_JS` / `set_tokens` with one retry, the scrolled folder pick, polling `open_panel`, a pre-save panel screenshot per folder (`output/dpd_panel_*.png`), and preset deletion (`--discover-delete | --delete-junk-dry | --delete-junk [--delete-names ...]`, refuses anything not `^ZZ ` or explicitly allowlisted). Resumable; skips by name prefix.
+- `src/scripts/dpd_presets_one_owner.py` — **"Show one property per owner" APPLIED 2026-09-24 on
+  Basem's go** (from the course: click-to-dial must never reach one owner several times a day
+  through their other properties) to the 24 dial-list presets the spec marks `one_owner` (Ready to
+  Call and every Call N stage in the 5 CALL folders, plus `Deep - 02 Obituary/Deceased`); API PATCH
+  with store read-back, every other key byte-identical. **Three facts read out of the app bundle
+  (`app.reisift.io/main.min.js`) that no probe could give:** (1) the `Owner — Properties Owned`
+  block is a THREE-field object `{properties_owned: [min,max], show_properties: one_per_owner|all,
+  highest_criteria}` and "one property per owner" is the COLLAPSE mode (a multi-property owner
+  shows as one row: FTM Ready to Call 315 -> 303), NOT a 1..1 range (which EXCLUDES them: 264);
+  (2) a saved preset stores the block NESTED as `must.ownerPropertiesOwned`, the live query spreads
+  its fields to the top of `must` after `omitEmpty`, and the panel renders ONLY the nested key;
+  (3) `must: {...passThrough, ...}` -- every stored key the panel does not know is sent to the
+  query anyway. So the first write that day (top-level `properties_owned: [1, 1]`, chosen because
+  it moved the count on the query endpoint) was INVISIBLE in the panel yet silently applied with
+  the wrong meaning for ~1 hour; Basem caught it ("I dont see anything here"). Rule: **a key that
+  moves the query count proves the QUERY vocabulary, not the STORE shape; read the bundle's
+  `toPropertiesFilters` before writing any new block into a preset.** The verifier now fails any
+  preset holding the stray top-level key. Stored value is the minimal `{"show_properties":
+  "one_per_owner"}` (the endpoint 400s on an empty range, `["", ""]` or `[null, null]`);
+  `dpd_lane_assignee_report.to_query` spreads the nested block so counts stay honest. Backups
+  `output/dpd_presets_one_owner_backup_20260924T*.json`, `--undo` restores.
+  **Same day, found in the store, NOT changed:** Basem's hand-save on `FTM - 02 Ready to Call`
+  landed a `last_obituary_date: ["24-months", "quarter"]` block (the Last Obituary Date picker in
+  RELATIVE mode) instead of the owner block. Measured as an absolute range it cuts the lane from
+  315 to **33** (only obituary-dated records survive; every foreclosure drops). It also added
+  `Re-Skiptrace` to that one preset's excluded statuses (sensible; not in `DEAD_STATUSES`, so the
+  verifier flags it). Both wait on Basem. **The relative date mode EXISTS** (stores as
+  `["<n>-months", "quarter"|"month"|"today"]`, and `11. Not Interested Qrtrly` already stores
+  `last_updated_date: [{"field": "status", "options": ["72-months", "quarter"]}]`), which
+  disproves the two `block_map.GAPS` entries built on "absolute-only" dates: the mail 30-day
+  spacing and the Reactivation status-age timers are both expressible. Not yet rebuilt.
+  **Owner-grouped assignment, same day, on Basem's "Go":** the collapse works inside ONE preset, and
+  the 09-01 lane split leveled by COUNT, so 32 multi-property owners in the Hottest + FTM call lanes
+  were spread across dialers (one owner on three at once). `src/scripts/dpd_owner_group_assign.py`
+  (plan / `--commit` / `--verify` / `--undo`) put each owner on the dialer already holding most of
+  their rows (tie -> earliest stage; none -> lightest Ready-to-Call load): 48 of 51 moves landed and
+  read back (24 were unassigned rows), 0 splits on verify. The 3 misses are INDEX GHOSTS -- rows the
+  lane query returns whose detail GET and PATCH both 404 (blank address); a lane count can therefore
+  include records that no longer exist. Rule from here: group by owner BEFORE leveling any
+  assignment. Run dir `output/owner_group_assign_20260924T173550/`.
+- `src/scripts/dpd_presets_obit_window.py` — **Last Obituary Date on ALL presets EXCEPT the Hottest
+  and FTM CALL lanes (OFF there since 2026-09-30; the script adds OR removes per spec,
+  `matches_spec`). First APPLIED to all 73 on 2026-09-25 on Basem's go** (reaffirmed after the measured impact was shown): the panel's
+  "Prior to Date / Last 24 Months / prior to Quarter" block, stored RELATIVE as
+  `must.last_obituary_date = ["24-months", "quarter"]` (the shape his hand-save on FTM - 02 Ready
+  to Call already carried; `OBIT_WINDOW_KEY/VALUE` in `preset_spec`, the verifier fails any preset
+  without it). The app resolves it at load: on 09-25 the picker read **Jun 25, 2024 - Jun 25,
+  2026** = [today - quarter - 24 months, today - quarter] (`resolved_window()`), so the query
+  endpoint cannot count it verbatim (400 "wrong format"); count with the resolved dates.
+  **It is an INCLUDE window, measured before the write: a record with NO obituary date does not
+  load.** Effect (output/obit_window_impact_20260925.json): Hottest - 02 Ready to Call 52 -> 1,
+  FTM - 02 Ready to Call 303 -> 33, Bulk - 02 Ready to Call 54 -> 0, every Strong preset -> 0,
+  FTM - Mail 01 1,519 -> 416, Rehash 01/02 286 -> 166. The 24-month floor bites nothing today
+  (DataSift's obituary flags began 2025-12); the "prior to quarter" edge is the whole effect, and
+  the CRM date IS the obituary date (checked against DP research on 4 records, same to the day).
+  An EXCLUSION form (must_not on the last 90 days, keeps foreclosures: Hottest Ready 52 -> 15,
+  FTM Ready 303 -> 197) is honoured by the query endpoint but was NOT chosen and is unverified in
+  the panel. 72 PATCHed (1 probe + 71), each read back byte-identical apart from the key; verifier
+  still shows only the 2 pre-existing defects (FTM 02 Re-Skiptrace exclusion, Deep 02 5th tag).
+  Backups `output/dpd_presets_obit_window_backup_20260925T105851.json` (probe) and
+  `..._20260925T110015.json` (the 71); `--undo <backup>` restores. **Consequence for the
+  dialers, same day:** Bagoury "ran out" because the FTM lane was already 33 with this block;
+  now every Ready to Call lane is that small by design (Hottest 1, FTM 33, Bulk 0).
+  **EDGE MOVED 2026-09-28: `["360-months", "month"]` on all 73** (Basem: "no obituary date less
+  than 45 days from today"; first written as `24-months`, then "make it 360 months" the same day
+  so the length is no floor at all). The picker CANNOT say 45 days: read out of `main.min.js`, the PRIOR
+  control stores `["<n>-<days|weeks|months>", <anchor>]` with the anchor limited to today /
+  yesterday / week / month / quarter / year, and the window is the n units ENDING at the anchor
+  — `["45-days", "today"]` would be the LAST 45 days, the opposite. `month` (older than ~30 days)
+  was the nearest and Basem chose it over a fixed date re-saved daily. Measured before the write:
+  Hottest Ready 1 -> 31, FTM Ready 27 -> 67, Bulk Ready 0 -> 29, FTM Mail 01 423 -> 831.
+  `resolved_window()` now resolves any anchor (`OBIT_ANCHOR_MONTHS`). Backups
+  `output/dpd_presets_obit_window_backup_20260928T123033.json` + `..._20260928T123142.json`.
+- `src/scripts/dpd_siftmap_filters_api.py` — **SiftMap saved filters have a READ+PATCH API,
+  proven 2026-09-28 (Basem's go).** `GET https://map.reisift.io/filters/?scope=account&page_size=100`
+  (the JWT from `POST /api/token/`; Ty's account-blueprint `export.py` is the origin) returns every
+  saved filter with `id`, `auto_add_enabled`, `tags`, `lists`, `filter_data.filters`, `updated`,
+  `updated_by` -- the whole management-page audit without a browser, and MORE than the page shows
+  (the page never shows a filter's tags or its stored dates). `PATCH /filters/{id}/` with a partial
+  body (`tags`, `filter_data`, `auto_add_enabled`) returns 200 and STORES, leaving every unnamed
+  field untouched (checked field-by-field on read-back, 9 writes). Backup of all filters before each
+  write, `--undo <backup>` restores. Deletion is still the management page
+  (`dpd_siftmap_presets.py --delete-from-file`). Facts that matter: a filter's `tags` are what an
+  auto-add DRIP stamps -- a filter with auto-add ON and `tags: []` adds untagged records that no
+  preset can see (DC P1-04 NOF sat that way 09-06..09-28; 0 leaked, measured); the manual pull stamps
+  its own tags at pull time, so set the filter's tags BEFORE ever enabling auto-add. The obituary
+  filter's `extra_last_obituary_date_min/max` are ABSOLUTE dates; the live drip is id 11496 (named
+  `District Of Columbia, DC`, six counties, tags FTM + Obituaries, list Obituary) and must be
+  re-saved whenever the Records presets' relative window moves (set to 1996-08-28..2026-08-28 on
+  09-28 to match `["360-months", "month"]`). `dpd_siftmap_tag_in_account.py` (in-mode Add Records
+  with tags, owner protection ON) is the tag-held-records path, but `_result_count` returns None on
+  an in-mode page that renders "2 Properties" -- fix the parser before relying on it; with a handful
+  of records, tag by uuid over the API instead.
+- `src/scripts/dpd_presets_entity_exclude.py` — **`Entity Owner` excluded from all 33 CALL presets
+  (Basem 2026-09-28).** Spec: `SUPPRESS_TAGS_CALL_ONLY` rides on the `call` channel only (DEEP
+  lanes keep entities). The store holds every CALL preset's exclusions under `must_not.any_tags`
+  (multi-value exclusion rule); probe + commit + `--undo`; verifier derives the wanted set from the
+  spec. Tags on records: `Trust` (living/family trusts, STAY callable -- the traced numbers are
+  the named person's), `Entity Owner` (LLC/company; banks and mortgage/REO trusts count as
+  companies), `Entity Owner` + `Institution` (church / government / HOA / placeholder). Classifier
+  + writer: `output/dpd_pull_20260928/tag_entities.py` (cohort-scoped; the account at large is not
+  tagged). **Panel trap:** a tag exclusion renders as a RED minus chip inside the "ALL TAGS (AND)"
+  block whose dropdown still says "Include" -- read chip colour, not the dropdown. Measured effect
+  with the obituary window lifted: Hottest Ready to Call 1,076 -> 912.
+- `src/scripts/dpd_presets_verify.py` — **Phase 7 QA for presets.** Reads every stored definition over the internal API and checks counties, suppression, statuses, counters, params and tag-uuid algebra against `preset_spec`; lists extras. Exit 0 only when all 85 are present and defect-free (14 folders; fails a no-window CALL preset that carries the obituary block and any other preset that lacks it). **Currently exits 0.** Run it after any preset change.
+- `src/scripts/dpd_doctor.py` — `capture_presets` rewritten onto the builder's panel primitives (positional per-folder read, full scroll of `PresetsBelowBody`, no-toggle re-read for a folder that is open by default); writes `preset_items`, `preset_folders`, `preset_tree`. `--verify` diff is trustworthy again.
+- `src/scripts/dpd_playbook_extract.py`, `dpd_siftmap_manifest.py`, `dpd_siftmap_presets.py`, `dpd_qa_report.py` — the county-agnostic DC one-shot pipeline (see [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md)). **Reworked 2026-09-24 for the Work Order export and the no-AI ladder; `dpd_siftmap_manifest.py --plan` is the check/rebuild/delete planner for the saved SiftMap filters** — see "Doors-per-deal data: the Work Order format" above.
+
+**Stated gaps (`block_map.GAPS`), re-checked 2026-09-30 against the relative-date finding of 2026-09-24/25:**
+- **Now expressible, not yet rebuilt:** the mail cadence's 30-day spacing and the four Reactivation status-age timers. Presets store RELATIVE dates (`["<n>-<days|weeks|months>", <anchor>]`, anchor today / yesterday / week / month / quarter / year; resolved by the app at load, so counts must use `resolved_window()`), and status age is stored as `last_updated_date: [{"field": "status", "options": [...]}]` (already live on `11. Not Interested Qrtrly`). The old "date blocks are absolute-only" reason is wrong. Read the PRIOR control's meaning off `main.min.js` before building either: `["30-days", "today"]` is the LAST 30 days, not "older than 30 days".
+- **Closed:** the recently-sold tag. `Recently Sold` exists and the Sold Property Cleanup sequence turns it into the `Already Sold` status, which every preset already excludes; no preset needs the tag.
+- **Still a gap:** the single-family filter (it would drop the 2,892 blank-`structure_type` records; the buy box is applied at pull time instead).
+- **Still a gap in the PANEL:** the Property Status picker offers 19 of 38 statuses (`DNC` and `Opt-out` recovered through Params & Others; `Lost Deal`, `Close Out`, `Buyer`, `Buyer Found`, `Buyer Lost` not selectable). Presets are now written over the API, which may accept them; unprobed.
+- `block_map.GAPS` carries the same wording (updated 2026-09-30).

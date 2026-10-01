@@ -163,3 +163,111 @@ Courthouse probate records have decedent name + PR/executor name but NO property
 - `numpy>=1.26.0` — required by OpenCV
 - `dropbox>=12.0.2` — Dropbox SDK (minimum for post-Jan-2026 API compatibility)
 
+
+
+---
+
+## Moved from CLAUDE.md on 2026-10-01 — Upstream scraper architecture, site details, saved searches, domain rules, output; TN FTM state; Apify actor
+
+Verbatim text as it stood on 2026-10-01 (second split of CLAUDE.md; the first was 2026-08-28). The live current state and the traps index stay in CLAUDE.md; this is the record. Snapshot: `_CLAUDE-snapshot-2026-10-01.md`.
+
+## Architecture
+
+**Data flows:**
+- **Web scrape:** `main.py` → `scraper.py` → `captcha_solver.py` → `notice_parser.py` + `foreclosure_filter.py` → enrichment → CSV
+- **PDF import:** `main.py` → `pdf_importer.py` (pypdfium2 → `image_utils.py` OCR) → enrichment → CSV
+- **Photo import:** `main.py` → `photo_importer.py` (OpenCV → `image_utils.py` OCR → `llm_parser.py`) → enrichment → CSV
+- **Dropbox watch:** `dropbox_watcher.py` → `photo_importer.py` → enrichment → CSV (auto-polling loop)
+- **Market Finder:** `extract_market_finder.py` → DataSift Market Finder (Playwright) → paginate all ZIP + neighborhood data → JSON → `generate_knox_report.py` → 7-sheet Excel
+
+- **main.py** — CLI entry point. Parses args (`daily`/`historical`, `--split`, `--counties`, `--types`, `-v`). Filters saved searches by county/type, orchestrates scrape → dedup → export, logs run summary stats.
+- **scraper.py** — Playwright browser automation. Reuses saved session cookies when possible, falls back to fresh login. Selects each saved search from the Smart Search dropdown (triggers ASP.NET postback), paginates results (50/page max), clicks each View button to open notice detail pages. Uses `last_run.json` for daily mode state, `cookies.json` for session persistence.
+- **captcha_solver.py** — Solves reCAPTCHA v2 via **2Captcha API** on every notice detail page. Sends websiteURL + sitekey, gets back a `g-recaptcha-response` token, injects it, clicks "View Notice". Retries up to 3 times. This is the primary bottleneck (~10-30s per notice).
+- **notice_parser.py** — Extracts structured fields from raw notice text using regex. There are NO structured HTML fields on the site — address, owner, dates are all embedded in free-text notice bodies. Defines the `NoticeData` dataclass used throughout.
+- **foreclosure_filter.py** — Filters foreclosure search results to only keep real first-to-market trustee sales. Matches against observed title variations (substitute/successor trustee sales). Non-foreclosure notice types pass through unfiltered.
+- **data_formatter.py** — Deduplicates by address (keeps most recent), then converts `NoticeData` list to Sift upload CSV. Split mode produces `{county}_{type}_{timestamp}.csv` files.
+- **config.py** — Credentials (from `.env`), ASP.NET element selectors, saved search definitions, rate limiting constants, paths, image processing thresholds.
+- **image_utils.py** — Shared OCR utilities used by both `pdf_importer.py` and `photo_importer.py`. Exports `fix_rotation()` (Tesseract OSD) and `ocr_page(image, psm)` with configurable page segmentation mode. Handles Tesseract binary detection.
+- **photo_importer.py** — Courthouse phone photo import. OpenCV preprocessing chain (EXIF transpose → blur check → bilateral filter → perspective correction → Otsu threshold) → Tesseract OCR (PSM 4) → LLM parsing → NoticeData. Supports all 7 notice types.
+- **dropbox_watcher.py** — Cursor-based Dropbox folder polling. Downloads new photos, resolves county + notice_type from folder path (`/Knox/eviction/photo.jpg`), processes through photo_importer, deletes from Dropbox after success. State persisted to `dropbox_state.json` + `photo_state.json`.
+- **report_generator.py** — Generates per-record PDF deep prospecting reports using reportlab. Includes property summary, signing chain with phone tiers, valuation, deceased owner detection. Output to `output/reports/`.
+- **extract_market_finder.py** — Playwright automation to extract ALL ZIP code + neighborhood data from DataSift Market Finder. Handles styled-component dropdowns, pagination (20 rows/page), Beamer popup dismissal. Outputs JSON. See "Market Finder Extraction Patterns" below.
+- **market_analyzer.py** — ZIP code scoring engine. 6-factor weighted composite (Distress 30%, Value 20%, Equity 15%, Tax Delinquency 15%, Competition 10%, DOM 10%). Grades A/B/C/D, budget allocation across top ZIPs. Reads from scraped notice CSVs in `output/`.
+- **drive_uploader.py** — Google Drive upload via service account. `upload_file()` (generic, returns webViewLink) and `upload_csv()` (CSV-specific, returns file ID).
+
+## Site-Specific Details
+
+The site is **ASP.NET WebForms** — all navigation uses `__doPostBack()` with ViewState. Session IDs are embedded in URL paths (`/(S({guid}))/`). Playwright is required because direct HTTP requests would need to manage ViewState/EventValidation manually.
+
+**reCAPTCHA v2 is required on every single notice detail page**, even when logged in. There is no CAPTCHA on login, search, or results pages. The sitekey is hardcoded in `config.py`.
+
+## Saved Searches
+
+8 searches defined in `config.py` as `SAVED_SEARCHES`. Each maps to an exact dropdown option name on the Smart Search dashboard:
+- Knox & Blount × (Foreclosure V2, Tax Sale V2, Tax Delinquent V2, Probate V2)
+
+Filterable via `--counties` and `--types` CLI args (comma-separated, or omit for all).
+
+## Key Domain Rules
+
+- **Foreclosure filtering is critical.** Not all notices from "Foreclosure" saved searches are actual foreclosures. The scraper parses each notice's full text and only includes ones with trustee sale language. See `INCLUDE_PHRASES` / `EXCLUDE_PHRASES` in `foreclosure_filter.py`.
+- **Probate owner_name** should be the Personal Representative/Executor/Administrator — not the deceased.
+- **Owner names** in foreclosure notices typically appear after "executed by" in the deed of trust language.
+- **Rate limiting:** 2-3 second random delays between requests, 3 retries per page.
+- **Address dedup:** Same property can appear in multiple notices; `data_formatter.deduplicate()` keeps the most recent.
+
+## Output
+
+CSV files land in `output/` (gitignored). Logs go to `logs/` with timestamped filenames. Sift columns: `date_added, address, city, state, zip, owner_name, notice_type, county, source_url`.
+
+**Date Semantics (build 1.0.30+):** `date_added` = the date WE added the record (the pipeline run date, stamped in `run_enrichment_pipeline`), so a daily run shows today. The legal notice's publication date lives in its own field/column, `date_published` / "Notice Publish Date" (parsed by `notice_parser` / the scraper results grid). PDF/photo imports set `date_added` explicitly (preserved, not re-stamped); CSV re-import preserves both columns. Downstream that needs the filing date (DOD sanity check, DataSift Probate Open Date, the month tag, dedup tie-break) uses `date_published` (fallback `date_added`).
+
+
+---
+
+- **TN FTM scrape** — **NOT OURS. This is Ty's upstream deployment** (Fly `siftstack-ftm`, daily
+  06:30 America/New_York with `--commit`; backfill 1,226 records over 12 months; the `county` stage
+  skips in the container). **Basem has no Fly account** — no `flyctl`, no `FLY_API_TOKEN` on this
+  machine, and `fly.toml` at the repo root is inherited from upstream (it is configured for Blount
+  County, TN). Nothing on Fly runs for this account and nothing there can be changed from here.
+  THIS account's pulls run locally from `automation/*.ps1` on Basem's PC, Tue–Sat. The rule that
+  does carry over: zero notices is a FAILURE, not a quiet day.
+  → [history](docs/history/tn-ftm-pipeline.md)
+
+## Apify Deployment (upstream TN actor)
+
+**Not deployed for this account.** The actor wraps Ty's TN scraper (`tn_username` / `tn_password` inputs, Knox/Blount saved searches); this account's pulls run locally from `automation/*.ps1`. A footprint actor would need the MDDC / VA / Register of Wills pull scripts as its entry point, not `main.py daily`. Reference only:
+
+When `APIFY_IS_AT_HOME` or `APIFY_TOKEN` is set, `main.py` uses the Actor SDK instead of CLI args.
+
+```bash
+# Install Apify CLI
+npm install -g apify-cli
+
+# Local test (reads input.json, simulates Actor environment)
+apify run --purge
+
+# Deploy to Apify platform
+apify login
+apify push
+
+# On Apify Console: set up daily schedule and configure secrets in Actor input
+```
+
+### Actor Input (configured in Apify Console or `input.json`)
+- `mode`: "daily" or "historical"
+- `counties` / `types`: arrays to filter saved searches (empty = all)
+- `tn_username`, `tn_password`, `captcha_api_key`: secrets (required)
+- `google_drive_folder_id`, `google_service_account_key`: optional Google Drive upload
+
+### Actor Output
+- **Dataset**: structured records pushed via `Actor.push_data()`
+- **Key-value store**: `output.csv` backup
+- **Google Drive** (optional): CSV + summary text file uploaded via service account
+
+### Key Files
+- `.actor/actor.json` — Actor manifest (name, version, Dockerfile path)
+- `.actor/input_schema.json` — Input fields + validation for Apify Console UI
+- `Dockerfile` — Based on `apify/actor-python-playwright:3.12`
+- `src/drive_uploader.py` — Google Drive upload via base64-encoded service account key
+- `input.json` — Local test input (gitignored, contains credentials)

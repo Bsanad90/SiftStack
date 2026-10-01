@@ -286,3 +286,125 @@ Retired from CLAUDE.md as no longer current (Basem, 2026-09-30). Item 3 is the V
 4. **The DC pull (Phase 4) — ONLY on Basem's explicit go.** Described under "What the next (pull) run would do" in [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md). Until it runs, every one of the 73 presets loads empty for DC.
 5. ~~The other 13 jurisdictions~~ **DONE 2026-08-31:** all 13 built and verified via `src/scripts/dpd_siftmap_build_all.py` (sequential per-county driver, halts on first defect, resume-aware) — 152 presets saved, every one reloading to its exact measured count, 72 inexpressible rows routed to FTM, 8 measured-zero rows kept. Fixes that made it survivable: `saved_filter_names` now exhausts "Show more" (was capped at 4 clicks — fatal at 200+ rows), `reload_check` retries an empty popover once (transient mid-session failure seen on Anne Arundel). **Correction 2026-08-31: exhausting "Show more" is not the same as seeing every filter.** `saved_filter_names` reads the SiftMap **Presets popover**, and that popover tops out around 100 rows; the account actually holds **180 saved filters across 18 pages** (measured on the management page). The complete list is under **Configure → `/siftmap/presets/account`** (10 per page, already known to the code as `PRESETS_ACCOUNT_URL`, which is what `--delete-name` drives). Consequence: any presence/skip check built on `saved_filter_names` is working from a partial list — and `dpd_siftmap_presets.py --commit` uses it exactly that way, so it can re-save a name that already exists, which its own comment calls a hard stop. Read the management page, not the popover, when the question is "does this filter exist". QA reports in `output/dpd_qa_report_<fips>.md`. **County split DONE 2026-08-31 (Basem's design: pull all 14, call the core 9, mail everywhere):** the 30 MAIL presets now carry all 15 counties (`COUNTY_SCOPE_MAIL`), added IN PLACE via `dpd_presets_create.py --widen-counties` — load row (JS click on the title, from a FRESH /records navigation per preset), `set_tokens` the 6 new counties, Save (overwrite), then verify the STORE (counties 9→15, every other stored field byte-equal; the panel's exclusion render lies on load but Save does not serialize the lie — proven by the `--widen-smoke` gate). CALL / Deep Prospecting / Reactivation stay at 9. `dpd_presets_verify.py` exits 0: 73/73, 0 defects.
 6. Sign-ups when Basem is ready (DC Recorder of Deeds free registration; DOB eRecords — `CAPTCHA_API_KEY` is now real and working, struck 2026-08-31) — the ordered list is in `output/dpd_dc_ftm_investigation.md`.
+
+
+---
+
+## Moved from CLAUDE.md on 2026-10-01 — MDDC Trustee's Sale, VA Public Notice, cross-day full-text reuse, MD Register of Wills — current state as of 2026-10-01
+
+Verbatim text as it stood on 2026-10-01 (second split of CLAUDE.md; the first was 2026-08-28). The live current state and the traps index stay in CLAUDE.md; this is the record. Snapshot: `_CLAUDE-snapshot-2026-10-01.md`.
+
+- **MDDC Trustee's Sale** — saved search 41 is GONE from the live site; default is now `["43"]`.
+  Always run `--list-searches` first. `BATCH_TAG` now stamps `FTM` (changed 2026-08-28, not yet
+  run; the next upload lands in the FTM lane; the browser pipeline imports the same constant).
+  **`notice_id` question SETTLED 2026-09-03:** the Firecrawl-captured grid HTML carries NO id at
+  all (the View buttons' `Details.aspx?SID&ID` onclick is attached by client-side JS that the
+  Firecrawl capture misses — 0 of 94 rows had one), so id-first dedup never fires on a pull CSV
+  and `mddc_fetch_full_text.py` (Scrapfly, fetch-by-id) has nothing to key on — and its asp=True
+  mechanism does NOT clear the Details.aspx gate anyway (`--test-id` live: `gate_not_cleared`,
+  Cloudflare Turnstile). The working path is `mddc_fetch_full_text_browser.py`: Playwright
+  settles the grid (ids then present on every row, 94/94), navigates each Details.aspx directly
+  (first nav per session bounces back to Search.aspx — retry), solves the Turnstile via 2Captcha
+  (sitekey `0x4AAAAAADs-0gpXV1IADMoy`, same `btnViewNotice` shape as VA), and re-mines
+  auction_date with the VA parser's deed-date guards — the MDDC snippet parser has none and
+  emitted a 2024 "auction date" that was a deed recording date. Dropped rows (off-type/out-of-footprint, incl. the
+  `order_nisi` reclassifications) now land in `<out>_dropped.csv`; review it, don't trust the
+  count. `--hide-read-notices` defaults OFF as of 2026-08-31.
+  **COUNTY CHECKBOXES ARE INERT — measured 2026-09-15.** A search with ONLY "Washington DC" ticked
+  returned 89 rows spanning **18 counties**, Virginia ones included (Loudoun, Culpeper, Stafford,
+  Prince William, Alexandria city). The site returns the whole MD/DC/VA feed whatever is selected;
+  the `county` column is DERIVED afterwards from notice free-text plus ZIP geocode. So narrowing
+  `DEFAULT_COUNTIES` (`be69672`) never narrowed the SEARCH — it only changed which inert boxes get
+  ticked. Footprint filtering is post-hoc and STATE-based, not county-based.
+  **The "pagination did not advance" warning is usually a FALSE ALARM.** The site publishes only
+  ~3-4 trustee notices/day in total, so a 7-day window genuinely ends after ~3 pages and the
+  warning fires whenever the result set is shorter than `--max-pages`. Read the ROW COUNTS instead:
+  a short final page (10, 10, then 8) is end-of-results, not a stall. A 30-day window walked all
+  10 pages cleanly. Do not "fix" this without checking the counts first.
+  **Consequence for DC:** DC runs ~18 notices per 30 days (~4/week), so a 7-day window can contain
+  ZERO DC by chance — it did for the whole of 09-11..09-15, which looked like a broken county
+  filter and was not. `--days 30` surfaced 25 in-footprint leads, 13 of them DC. Prefer a wider
+  window over trusting a quiet week.
+  **DC probate ownership (`dc_probate_pull.py`): ITSPE *is* OTR** ("Integrated Tax System Public
+  Extract", served off DCGIS), so re-querying OTR cannot resolve a MEDIUM owner match — MEDIUM
+  means the NAME match is partial, usually just an extra middle initial or maiden name on our side
+  (`Michael L. Joyner` vs OTR `JOYNER, MICHAEL` is the same person). The next source up is the DC
+  Recorder of Deeds, which is still an unfinished signup. A residence owned by someone whose
+  SURNAME matches the decedent is a lead, not a dead end — an heir already on title.
+  → [history](docs/history/mddc-va-md.md)
+- **VA Public Notice** — works unauthenticated via the Popular Searches widget, **one county per
+  Firecrawl call with adaptive date-window splitting** (multi-county selection cancels its own
+  postbacks; Fairfax + 60 days exceeds Firecrawl's budget). Pagination was broken until 2026-08-28
+  (wrong grid id) — every earlier run was page 1 only. `--max-pages` cannot exceed **8**
+  (Firecrawl caps actions at 50 and total wait at 60s; a higher value 400s and the script
+  misreads it as a budget problem). `--full-text` WORKS as of 2026-08-31 — `CAPTCHA_API_KEY` is
+  real and 2Captcha solves fine; the earlier blocker was Scrapfly QUOTA EXHAUSTION, which was
+  masked as `unknown_page_state` because Scrapfly reports quota errors in `scrape_result["error"]`
+  while returning empty content. Now surfaced, and `scrapfly_preflight()` aborts before the loop
+  so a dead quota no longer bills one 2Captcha solve per row. → [history](docs/history/mddc-va-md.md)
+- **Cross-day full-text reuse (`--prior`, both fulltext legs) — BUILT + validated live 2026-09-21.**
+  `mddc_fetch_full_text_browser.py` and `va_fetch_full_text_browser.py` re-fetched the WHOLE 7-day
+  window every run (87 MDDC Turnstile solves, ~53 VA Scrapfly replays at ~65 s each, the VA leg ran
+  ~60 min) although the sites add ~3-4 notices a day. Notice ids are stable across days (77/77 MDDC
+  ids on 09-21 were in 09-20's file) and a republication carries a NEW id, so `src/scripts/fulltext_prior.py`
+  keys reuse on `notice_id`: `--prior <path>` (repeatable, globs; a previous `_full.csv` or the new
+  `<stem>_details.json` sidecar) or `--prior-auto` (scans the sibling `daily_pulls/YYYY-MM-DD/` dirs,
+  14 days back by default -- needed because the Tue-Sat schedule makes "yesterday" wrong on Tuesdays).
+  Reused text passes the SAME street guard as fetched text and `auction_date` / `loan_principal` are
+  ALWAYS re-parsed from the text, never copied. The sidecar holds EVERY resolved detail, including grid
+  rows that match no CSV row (13 of 53 VA fetches on 09-21 were such rows and were re-fetched daily),
+  and MERGES on write so the VA `--fill-missing` pass cannot shrink it. Republications are now skipped
+  BEFORE the fetch (they used to be fetched and discarded). **Measured live 09-21 against the day's
+  real grid:** MDDC 87 targets -> **4 fetched**, 77 reused, 6 republications skipped, 80/80 rows
+  matched, every id / auction date / loan principal identical to the un-cached run (the only text
+  differences are the site's per-render GUID tokens at the head and tail of each page). Two traps the
+  build encodes: the "first 5 fetches failed -> abort" gate must count FETCHES, not resolved rows
+  (with reuse, `results` fills up and a dead gate would grind through every new id --
+  `FetchBudget`); and the Scrapfly preflight is now lazy, run before the first REAL fetch, so an
+  all-reused day needs no Scrapfly at all. Offline guard `tools/manual/test_fulltext_prior.py` (45
+  checks, incl. the real MDDC loop with a fake browser) -- run after ANY change to the resolve loop.
+  The runner passes `--prior-auto` on all three fulltext invocations.
+- **MD Probates + MD Legal Notices** — `--date` exact-date pulls, PRs split into columns, co-PR and
+  foreign-PR notices parsed (the latter state the MD property), SDAT checked BY STREET ADDRESS with a
+  full-name owner match (HIGH/MEDIUM/LOW; LOW = sold since the deed). **Checkpoint HEALTHY as of
+  2026-09-06:** per-county (`county_cutoffs` schema, never-backwards, `--overlap-days 2`); the
+  contaminated Calvert-only global checkpoint is archived at
+  `output/_archive/md_row_*_LEGACY_calvert_only_20260906.json`. All 3 footprint counties backfilled
+  30 days to 09/04/2026 (450 estates; addresses filled 449/450 — 177 found, 94 HIGH / 83 MEDIUM)
+  and the daily runner's MD-RoW leg now runs checkpoint-driven `--commit` + `--dump-json` (commit =
+  local checkpoint/ledger only; review-before-DataSift unchanged). **Backfill trap:** the Estate
+  Search pagination call tops out around 12 result pages (Firecrawl's 60s total-wait cap — each page
+  adds a 4.5s wait), so a wide `--since/--until` window must be split; `--max-pages` past 12 causes
+  a Firecrawl 400, and the truncation warning's "raise --max-pages" advice cannot work past it.
+  Land Records/SDAT lookups fail transiently in batches (Firecrawl 500s); failed records stay
+  unchecked and any later fill/daily run resumes them.
+  **DEAD FOR FIVE DAYS, FIXED 2026-09-15 (`72af4a5`).** The daily leg wrote NOTHING 09-11..09-15:
+  killed at the runner's 75m per-leg cap every day, and because neither slow pass banked progress
+  the ledger was last written 09-10 — five days of Firecrawl spend for zero output, while the
+  reconciliation queue grew 156 -> 170 instead of draining. Three defects, one shape — an
+  unbounded, unbanked slow pass sitting IN FRONT of the only deliverable: `run_reconciliation_pass`
+  had no cap and no `save_cb`; `fill_addresses` was never given a `limit` on the normal pull path;
+  and `fill_addresses` flushed only every 10 records, which at 5-11 MINUTES per decedent never
+  fires (09-15 resolved 2 of 26 and banked none of them). Fixed: both passes take `limit` +
+  `save_cb`, `fill_addresses` flushes EVERY record, and **the CSV + JSON are written BEFORE the
+  address pass and again after**, so the deliverable no longer depends on how far addresses get —
+  which is what lets the daily address pass run uncapped. New `--reconcile-limit`; `--limit` now
+  applies to the normal pull too.
+  **The ordering matters as much as the cap:** the queue was in ledger insertion order, so a bare
+  limit would re-check the same head forever and never reach the tail. It now sorts
+  least-recently-checked FIRST, and rows with no `record_id` are dropped at build time — they can
+  never be re-checked, so they never get `last_checked` and would sort first forever, eating a slot
+  of every capped run. Offline regression: `tools/manual/test_md_row_pass_budgets.py` (12 checks) —
+  run it after ANY change to either pass. Live proof: exit 0 in 47m43s, 76 rows written.
+  **Measured throughput, use these to size caps:** reconciliation ~6.9s/estate; Land Records
+  5-11 MINUTES/decedent; pull + detail fetches ~13m.
+  **Real address throughput now comes from `automation/md_row_address_fill.ps1`** — the same
+  `--fill-addresses-only` lookup with no 75m ceiling, run several times a day, resuming via the
+  per-record `property_lookup_checked` guard and exiting in seconds when nothing is unchecked.
+  **CONCURRENCY HAZARD:** the pull and the fill job both hold the WHOLE ledger in memory and write
+  it back wholesale, so two at once means the second writer SILENTLY discards the first's work. The
+  fill job refuses to start while a Register of Wills process is alive; anything else that touches
+  the ledger needs the same guard.
+  **Reading the CSV:** `Property Address` can hold the literal string `Not Found (Claude)` — that
+  is NOT an address. The 09-15 pull's 76 rows were 36 real addresses, 21 `Not Found` placeholders
+  and 19 blank; only **15** had a real address AND a PR. → [history](docs/history/mddc-va-md.md)

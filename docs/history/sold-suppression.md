@@ -107,3 +107,25 @@ this is the build record. Note: the sold backlog is now handled by the SiftMap s
   already in the account sold in the last 24 months and are still active (1,214 already mailed,
   651 on the dialer) — now that the tag and sequence exist, stamping `Recently Sold` on those
   by address suppresses them with no browser and no imports.
+
+
+---
+
+## Moved from CLAUDE.md on 2026-10-01 — Sold suppression state as of 2026-10-01
+
+Verbatim text as it stood on 2026-10-01 (second split of CLAUDE.md; the first was 2026-08-28). The live current state and the traps index stay in CLAUDE.md; this is the record. Snapshot: `_CLAUDE-snapshot-2026-10-01.md`.
+
+- **Sold suppression — the SiftMap sold sweep (`manage-sold`) is THE path, for new sales AND
+  any backlog (Basem, 2026-09-30).** The sweep stamps `Recently Sold` + `Sold YYYY-MM`; the live,
+  Active **`Sold Property Cleanup`** sequence (Transactions folder) fires on that tag and sets
+  status `Already Sold`, deletes tasks, clears the assignee; every preset excludes `Already Sold`
+  via `DEAD_STATUSES`, so no preset edit is needed. Run it on the 6 footprint counties with
+  `--sold-account-scope in` (tags records we already hold, imports nothing); a catch-up is the
+  same command with a larger `--months-back`. Dry-run first. Without `in` it IMPORTS every sold
+  property in the county-month, which needs an explicit go. State: the Montgomery dry run passed
+  2026-08-31 (992 matched, fips 24031); **no live sweep has run.** The 2026-09-07 backlog (1,559
+  records) was cleared by `sold_backlog.py --commit-live`; that script is retired for new work.
+  Known gaps: the sequence has 3 of 4 actions (`Remove Property Lists` never landed, add by hand);
+  `dpd_doctor` under-reports sequences and lists; a live status compared to `DEAD_STATUSES` must be
+  normalised (`not_interested` vs "Not Interested"). With no `--counties` it sweeps the 6
+  (`dpd.jurisdictions.FOOTPRINT`, 2026-09-30). → [history](docs/history/sold-suppression.md)
