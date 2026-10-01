@@ -42,6 +42,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "src" / "scripts")]
+from dpd.lane_tags import apply_lane_rule, split_lists  # noqa: E402
 
 _spec = importlib.util.spec_from_file_location("odb", ROOT / "src" / "scripts" / "obituary_dp_batch.py")
 odb = importlib.util.module_from_spec(_spec)
@@ -511,6 +512,9 @@ def cmd_plan_apply(a, commit: bool) -> int:
             for t in old_tags[k]:
                 if t not in BUILD_TAGS and not _MONTH_TAG_RE.match(t) and t not in p["tags"]:
                     p["tags"].append(t)
+            # ...except that an obituary record never carries Priority 1 (Basem 2026-10-01):
+            # the carried-over set goes through the same lane rule as a fresh build.
+            p["tags"] = apply_lane_rule(split_lists(rec.get("lists")), p["tags"])
             rel_lines = []
             for nm, cap in {**(ov.get("co_owner") or {}), **(ov.get("extra_load") or {})}.items():
                 rel = next((x for x in rk["rels"] if (x.get("name") or "").upper() == nm.upper()), None)

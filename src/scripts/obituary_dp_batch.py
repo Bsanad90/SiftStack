@@ -147,6 +147,17 @@ SPOUSE_RELS = {"Husband", "Wife", "Spouse"}
 
 # A phone tag this pipeline wrote. Nothing outside this pattern is ever removed.
 _OURS_RE = re.compile(r"^(Rel\d+\.\d+|Owner\.\d+)$")
+# The Personal Representative's numbers ride `Pr.{m}` (Basem, 2026-09-30: the PR goes in
+# the PR fields, never a REL slot). That is the account's probate vocabulary, SHARED with
+# the vendor RFD imports (`Pr.N` / `PR.N` on ~1,500 records), so the tag alone is not
+# provenance: a Pr-tagged number comes off only with a prior plan proving we wrote it, and
+# the tag-alone fallback (`prior=None`) never touches one.
+_PR_TAG_RE = re.compile(r"^Pr\.\d+$")
+# Every positional tag `build` can emit -- what the QA compares slot-exact.
+_PLAN_TAG_RE = re.compile(r"^(Rel\d+\.\d+|Owner\.\d+|Pr\.\d+)$")
+PR_FIELDS = ("PR First Name", "PR Last Name", "Personal Representative",
+             "Personal Representative Phone")
+PR_PHONE_FIELD = "Personal Representative Phone"
 def _d10(n) -> str:
     """Last 10 digits -- the account stores some numbers as +1XXXXXXXXXX."""
     return "".join(c for c in str(n or "") if c.isdigit())[-10:]
@@ -222,10 +233,19 @@ def _ghost_blanks(live_cf: dict, plan_cf: dict, removed_digits: set, fields: dic
     A slot still holding a number we did NOT remove belongs to another pusher, so its name
     stays -- the 2026-09-10 rule: another plan's REL values are never touched. A label the
     account does not have (`fields`) is never written.
+
+      3. `Personal Representative Phone` not in the plan whose digits are a removed number
+         -> blank (the PR path, 2026-10-01). The PR NAME fields are never blanked: the
+         probate pulls and the vendor imports write them too, and a name is never stale
+         the way a dropped number is.
     """
     out: list[str] = []
     slots: set[str] = set()
     for lbl, val in live_cf.items():
+        if (lbl == PR_PHONE_FIELD and val and lbl not in plan_cf
+                and _d10(str(val)) in removed_digits and fields.get(lbl)):
+            out.append(lbl)
+            continue
         m = _REL_PHONE_RE.match(lbl)
         if (m and val and lbl not in plan_cf and _d10(str(val)) in removed_digits
                 and fields.get(lbl)):
@@ -267,7 +287,10 @@ def _stale_numbers(owner_phones: list, want: set, prior: "set | None") -> tuple[
         num = ph.get("number") or ""
         tags = [t.get("name") if isinstance(t, dict) else str(t) for t in (ph.get("tags") or [])]
         d = _d10(num)
-        if d in want or not any(_OURS_RE.match(t) for t in tags):
+        # Pr.{m} is ours ONLY under a prior plan (see _PR_TAG_RE): the vendor imports use it too.
+        ours = any(_OURS_RE.match(t) for t in tags) or (
+            prior is not None and any(_PR_TAG_RE.match(t) for t in tags))
+        if d in want or not ours:
             continue
         if prior is not None and d not in prior:
             foreign.append(num)
@@ -1714,7 +1737,9 @@ def cmd_score(a) -> int:
     # however the build caps were set. `--max-score-per-rel` bounds it only if a future batch
     # comes back with 20 numbers a head.
     cut = a.max_score_per_rel or None
+    records = jload(run / "records.json", {})
     numbers: list[str] = []
+    n_pr_added = 0
     for key, rk in ranked.items():
         f = research.get(key, {})
         v = f.get("verdict") or ""
@@ -1740,6 +1765,14 @@ def cmd_score(a) -> int:
             pool = sig
         else:
             pool = [r for r in rk["rels"] if not r.get("is_channel")]
+        # The Personal Representative is loaded on EVERY path (PR fields + Pr.N numbers,
+        # Basem 2026-09-30), so their numbers are priced whether or not the intestacy
+        # rank made them a signer -- an unscored number fails _keep_number at build, and
+        # a PR with no callable number is the one person the dialers most need.
+        pr_rel = _pick_pr(rk["rels"], (records.get(key) or {}).get("pr") or "")
+        if pr_rel is not None and pr_rel not in pool:
+            pool = list(pool) + [pr_rel]
+            n_pr_added += 1
         for rel in pool:
             for p in (rel["phones"][:cut] if cut else rel["phones"]):
                 numbers.append(p["number"])
@@ -1750,7 +1783,8 @@ def cmd_score(a) -> int:
     if a.limit:
         uniq = uniq[: a.limit]
     say(f"trestle: {len(set(numbers))} unique numbers referenced, {len(uniq)} to score "
-        f"(~${0.015 * len(uniq):.2f}), {len(cache)} cached")
+        f"(~${0.015 * len(uniq):.2f}), {len(cache)} cached"
+        + (f"; {n_pr_added} non-signer PRs added to the priced pool" if n_pr_added else ""))
     if uniq:
         # phone_validator.call_trestle goes through `requests`. obituary_dp_run.trestle_score
         # uses urllib and Trestle's edge answers the default Python-urllib user agent with
@@ -1850,8 +1884,79 @@ def _flag_prose(fl: str) -> str:
     if fl.startswith("dod_conflict:"):
         return "DOD conflict - " + fl.split(":", 1)[1].strip()
     return fl.replace("_", " ")
+def _pick_pr(rels: list[dict], pr_name: str) -> dict | None:
+    """The relative who IS the Personal Representative named on the filing, or None.
+
+    Basem, 2026-09-30: the PR goes in the PR fields, never a REL slot, and when a relative
+    is also the PR the PR role wins. Three ways a relative is the PR, tried in order, each
+    accepted only when it singles out ONE person: an IDI merge already flagged them
+    (`pr_on_record` / canon_rel "Personal Representative"), a strict first+last match, then
+    the loose nickname match -- Bill Brent IS William Brent, Betsy Haines IS Elizabeth
+    Haines (3 of the 97 Sept PRs found in SmartSkip). Two candidates = ambiguous = nobody,
+    and `build` prints a flag so the caller sees both stayed REL.
+    """
+    if not (pr_name or "").strip():
+        return None
+    flagged = [r for r in rels if r.get("pr_on_record") or r.get("canon_rel") == "Personal Representative"]
+    if flagged:
+        return flagged[0] if len(flagged) == 1 else None
+    for matcher in (names_match, names_match_loose):
+        hits = [r for r in rels if matcher(r.get("name") or "", pr_name)]
+        if hits:
+            return hits[0] if len(hits) == 1 else None
+    return None
+
+
+def _split_pr_name(pr_name: str) -> tuple[str, str]:
+    """'James K Heins' -> ('James K', 'Heins'); 'Anthony LaScola' -> ('Anthony', 'Lascola').
+
+    Title case with periods stripped, the way the account stores PR First/Last (vendor
+    imports + rel_pr_name_repair.title_name: 'Jennifer M' / 'Mckee'). A single-letter
+    middle rides with the first name (that is where the live records carry it); a suffix
+    stays with the surname. No period anywhere: a period in a name is what flips a
+    DataSift owner block to Incomplete (CLAUDE.md, lane cleanup)."""
+    toks = [t for t in (pr_name or "").replace(".", " ").split() if t]
+
+    def tc(w: str) -> str:
+        if w.lower() in ("ii", "iii", "iv"):
+            return w.upper()
+        part = "-".join(x[:1].upper() + x[1:].lower() for x in w.split("-"))
+        part = re.sub(r"^(Mc)(\w)", lambda m: m.group(1) + m.group(2).upper(), part)
+        return re.sub(r"^(O')(\w)", lambda m: m.group(1) + m.group(2).upper(), part)
+
+    if not toks:
+        return "", ""
+    if len(toks) == 1:
+        return tc(toks[0]), ""
+    first = [toks[0]]
+    rest = toks[1:]
+    while len(rest) > 1 and len(rest[0]) == 1:
+        first.append(rest.pop(0))
+    return " ".join(tc(t) for t in first), " ".join(tc(t) for t in rest)
+
+
+def _trace_month(run: Path) -> str:
+    """MM/YYYY of the SmartSkip TRACE, read off the paid order's id.
+
+    A bulkSkipId is a Mongo ObjectId: its first 8 hex chars are the creation time
+    (6abd6a32... -> 2026-09-30, 6abc220d... -> 2026-09-29, 6a9735af... -> 2026-09-01, all
+    three checked against the known order dates). The trace tag must say the month the
+    trace HAPPENED, never the month of a rebuild (Basem, 2026-09-22): the Sept Drive batch
+    was traced 09-29 and is rebuilt in October. Empty string when no order id is on file."""
+    orders = jload(run / "smartskip_orders.json", []) or []
+    paid = [o for o in orders if o.get("paid")] or orders
+    for o in reversed(paid):
+        oid = str(o.get("bulkSkipId") or "")
+        if re.fullmatch(r"[0-9a-f]{24}", oid):
+            return time.strftime("%m/%Y", time.gmtime(int(oid[:8], 16)))
+    return ""
+
+
+_MONTH_TAG_RE = re.compile(r"^(0[1-9]|1[0-2])/20\d\d$")
+
+
 def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int,
-          not_loaded: list[str] | None = None) -> str:
+          not_loaded: list[str] | None = None, pr_status: str = "") -> str:
     """The note a caller actually reads: one section per line, one relative per line.
 
     The previous version joined every section with "  ||  " and every relative with " | ",
@@ -1905,7 +2010,7 @@ def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int,
     if f.get("executor_named"):
         tail.append(f"EXECUTOR NAMED IN OBITUARY: {f['executor_named']}")
     if rec.get("pr"):
-        tail.append(f"PR ON RECORD: {rec['pr']}")
+        tail.append(f"PR ON RECORD: {rec['pr']}{pr_status}")
     if f.get("obituary_url"):
         tail.append(f"OBITUARY: {f['obituary_url']}")
     if rec.get("is_trust"):
@@ -1948,6 +2053,23 @@ def cmd_build(a) -> int:
     ranked = jload(run / "ranked_records.json", {})
     research = {f["record"]: f for f in (jload(run / "stage_c_research.json", {}) or {}).get("findings", [])}
     cache = jload(run / "trestle_cache.json", {})
+
+    # Month tags. `Deep Prospected` carries the DP month (today unless --month-tag says
+    # otherwise); `SS Traced` carries the month the TRACE happened, read off the SmartSkip
+    # order id (see _trace_month) -- a rebuild in October of a batch traced in September
+    # must not re-date the trace. --trace-month overrides the derived value.
+    month = getattr(a, "month_tag", None) or MONTH_TAG
+    derived = _trace_month(run)
+    trace_month = getattr(a, "trace_month", None) or derived or month
+    for lbl, val in (("--month-tag", month), ("--trace-month", trace_month)):
+        if not _MONTH_TAG_RE.match(val):
+            say(f"ERROR: {lbl} must be MM/YYYY, got {val!r}")
+            return 2
+    tag_dp, tag_traced = f"Deep Prospected {month}", f"SS Traced {trace_month}"
+    tag_no_numbers = f"DP No Numbers {month}"
+    say(f"tags: {tag_dp!r} / {tag_traced!r}"
+        + (f" (trace month {derived} from the SmartSkip order id)" if derived else
+           " (no SmartSkip order id on file; trace month = DP month)"))
 
     plan: dict[str, dict] = {}
     max_rel = 0
@@ -2049,9 +2171,30 @@ def cmd_build(a) -> int:
         # name a few lines down. Computing signers_dark over the undropped list made it
         # read False -- the decedent "had numbers" -- so the real family was then skipped
         # as non-signers and the record shipped with nothing. Caught by the build diff.
+        # ── the Personal Representative (Basem, 2026-09-30: PR fields, never a REL slot;
+        # a relative who is also the PR is loaded as the PR). Picked BEFORE the signer
+        # maths so a reachable PR counts as a reachable signer, and before the drop set is
+        # applied so a PR who shares the decedent's name (a Jr./Sr. pair) is never dropped
+        # as dead: the filing names a living person.
+        pr_name = (rec.get("pr") or "").strip()
+        pr_rel = _pick_pr(rk["rels"], pr_name)
+        pr_flags: list[str] = []
+        if pr_rel is not None and (pr_rel.get("name") or "").lower() in drop:
+            drop.discard((pr_rel.get("name") or "").lower())
+            f["decedent_dropped"] = [x for x in f["decedent_dropped"]
+                                     if not x.lower().startswith((pr_rel.get("name") or "").lower())]
+            pr_flags.append("PR shares the decedent's name (Jr./Sr.?) - kept as PR, verify on the call")
+        if pr_name and pr_rel is None and any(
+                names_match(r.get("name") or "", pr_name) or names_match_loose(r.get("name") or "", pr_name)
+                for r in rk["rels"]):
+            pr_flags.append("two relatives match the PR's name - neither loaded as PR, both stay REL")
+        if pr_flags:
+            f["flags"] = list(f.get("flags") or []) + pr_flags
         _sig = [r for r in rk["rels"] if r.get("is_dm") and (r["name"] or "").lower() not in drop]
-        signers_dark = not any(_keep_number(cache.get(p["number"], {}))[0]
-                               for r in _sig for p in r["phones"])
+        pr_reachable = pr_rel is not None and any(_keep_number(cache.get(p["number"], {}))[0]
+                                                  for p in pr_rel["phones"])
+        signers_dark = not pr_reachable and not any(_keep_number(cache.get(p["number"], {}))[0]
+                                                    for r in _sig for p in r["phones"])
         # The same guard on the owner-alive branch, and it is not hypothetical: on the
         # 453-record Aug-27 cohort 11 records are "spouse died; owner alive" where the
         # OWNER has no callable number of their own. Stripping relatives there leaves a
@@ -2081,9 +2224,33 @@ def cmd_build(a) -> int:
             if kept:
                 contacts.append({"kind": "owner", "n": 0, "name": "owner", "kept": kept})
 
+        # PR fields on every record that names one -- the name alone when no number
+        # exists, because the dialers read PR First/Last whether or not there is a
+        # number. The PR's numbers are claimed before any relative's, so a line the PR
+        # shares with a sibling is the PR's. One number goes in `Personal Representative
+        # Phone`; every kept number rides the owner's list as Pr.1, Pr.2, ...
+        pr_kept: list = []
+        if pr_name:
+            pf, pl = _split_pr_name(pr_name)
+            cfields["PR First Name"], cfields["PR Last Name"] = pf, pl
+            cfields["Personal Representative"] = f"{pf} {pl}".strip()
+        if pr_rel is not None:
+            for p in pr_rel["phones"]:
+                t = cache.get(p["number"], {})
+                if _keep_number(t)[0] and p["number"] not in seen_numbers:
+                    seen_numbers.add(p["number"])
+                    pr_kept.append((p, t))
+            pr_kept.sort(key=_tier_sort_key)
+            if pr_kept:
+                cfields[PR_PHONE_FIELD] = pr_kept[0][0]["number"]
+                contacts.append({"kind": "pr", "n": -1, "name": pr_rel["name"], "kept": pr_kept,
+                                 "is_dm": True, "rel": pr_rel})
+
         # rk["rels"] already arrives signers -> blood -> in-law channels, so walking it in
         # order fills the REL fields signers-first.
         for rel in rk["rels"]:
+            if rel is pr_rel:
+                continue      # loaded as the PR above, never as a REL
             if (rel["name"] or "").lower() in drop:
                 continue
             # The owner is ALIVE and signs alone. A relative on such a record holds no
@@ -2137,7 +2304,8 @@ def cmd_build(a) -> int:
         phones, phones_capped = [], []
 
         def _mk(c, p, t, m):
-            tag = f"Owner.{m}" if c["kind"] == "owner" else f"Rel{c['n']}.{m}"
+            tag = (f"Owner.{m}" if c["kind"] == "owner" else
+                   f"Pr.{m}" if c["kind"] == "pr" else f"Rel{c['n']}.{m}")
             # MERGE the relationship word onto the number (Ty's tag) beside our positional
             # one (Basem, 2026-09-16). The account has NO REL{n}: Relationship field, so a
             # dialer used to see "Rel3.2" and had to decode it against REL3 -- which is the
@@ -2185,11 +2353,22 @@ def cmd_build(a) -> int:
                              f"{', ' + str(rel['age']) if rel.get('age') else ''}"
                              f"{role}"
                              f"{' - ' + ' / '.join(tiers) if tiers else ' - no number'}")
+        if pr_rel is not None:
+            tiers = loaded_by_n.get(-1, [])
+            kin = pr_rel.get("canon_rel") or "Relative"
+            kin_txt = f" ({_rel_label(pr_rel, obit_words)})" if kin not in ("Relative", "Personal Representative") else ""
+            rel_lines.insert(0, f"PR - {pr_rel['name']} - Personal Representative{kin_txt}"
+                             f"{', ' + str(pr_rel['age']) if pr_rel.get('age') else ''} - SIGNER - "
+                             + (" / ".join(tiers) if tiers else "no number"))
         if owner_alive and loaded_by_n.get(0):
             rel_lines.insert(0, ("OWNER (presumed alive) - " if presumed else "OWNER (alive) - ")
                              + " / ".join(loaded_by_n[0]))
+        pr_status = ("" if not pr_name else
+                     f" - in the PR fields, {len(pr_kept)} numbers tagged Pr.N" if pr_kept else
+                     " - in the PR fields; found in SmartSkip/IDI with no callable number" if pr_rel is not None else
+                     " - name in the PR fields; no number found (not in SmartSkip/IDI)")
 
-        tags = [TAG_DP, TAG_SKIPTRACED]
+        tags = [tag_dp, tag_traced]
         if verdict == "owner did die":
             tags.append(TAG_DECEASED)
         elif f.get("decedent_from_crm"):
@@ -2215,8 +2394,16 @@ def cmd_build(a) -> int:
         for extra in getattr(a, "extra_tag", None) or []:
             if extra not in tags:
                 tags.append(extra)
+        # Basem 2026-10-01: an obituary record gets `Obituaries` and never `Priority 1`
+        # (FTM only when it is also a probate case) -- whatever --extra-tag said. The rule
+        # lives in dpd.lane_tags so every pusher refuses the same way.
+        from dpd.lane_tags import apply_lane_rule, split_lists
+        ruled = apply_lane_rule(split_lists(rec.get("lists")), tags)
+        if ruled != tags:
+            say(f"  {key}: lane rule {sorted(set(tags) - set(ruled))} -> {sorted(set(ruled) - set(tags))}")
+        tags = ruled
         if not phones:
-            tags.append(TAG_NO_NUMBERS)
+            tags.append(tag_no_numbers)
             no_numbers.append({**rec, "verdict": verdict, "relatives": len(rk["rels"])})
         group = ("deceased" if verdict == "owner did die" else
                  "presumed_alive" if presumed else
@@ -2231,7 +2418,7 @@ def cmd_build(a) -> int:
             not_loaded.append(
                 f"{len(phones_capped)} more numbers are in the REL fields but not on the "
                 f"dial list (the dial list is capped at {dial_cap}): "
-                f"REL{', REL'.join(str(x) for x in rels_cut)}")
+                + ", ".join("PR" if x == -1 else "OWNER" if x == 0 else f"REL{x}" for x in rels_cut))
         if overflow:
             not_loaded.append("Over the REL cap: " + "; ".join(overflow))
         inlaws_out = list(dict.fromkeys(chan_over + [
@@ -2258,8 +2445,12 @@ def cmd_build(a) -> int:
             "mail_state": rec["mail_state"], "mail_zip": rec["mail_zip"],
             "verdict": verdict, "group": group, "tags": tags,
             "decedent_dropped": f.get("decedent_dropped") or [],
+            # The PR as loaded: name on the filing, the SmartSkip/IDI contact it matched
+            # (empty = name-only fields), and the numbers that ride Pr.1..N.
+            "pr": {"name": pr_name, "contact": (pr_rel or {}).get("name") or "",
+                   "phones": [p["number"] for p, _t in pr_kept]} if pr_name else None,
             "custom_fields": cfields, "phones": phones,
-            "note": _note(rec, rk, f, rel_lines, len(phones), not_loaded),
+            "note": _note(rec, rk, f, rel_lines, len(phones), not_loaded, pr_status=pr_status),
         }
         max_rel = max(max_rel, slot)
         max_phones = max(max_phones, len(phones))
@@ -2272,8 +2463,9 @@ def cmd_build(a) -> int:
 
     # Reload CSVs, one per uniform tag group (the wizard applies one tag set per file).
     phone_cols = [f"Phone {i}" for i in range(1, max_phones + 1)]
+    pr_cols = [c for c in PR_FIELDS if any(c in p["custom_fields"] for p in plan.values())]
     rel_cols = [f"REL{i}: Full Name" for i in range(1, max_rel + 1)]
-    header = RELOAD_BASE + phone_cols + rel_cols + ["Notes"]
+    header = RELOAD_BASE + phone_cols + pr_cols + rel_cols + ["Notes"]
     for group in ("deceased", "owner_alive", "presumed_alive", "unverified"):
         rows = []
         for p in plan.values():
@@ -2302,13 +2494,17 @@ def cmd_build(a) -> int:
         ws = wb.active
         ws.title = "Records"
         ws.append(["Address", "City", "County", "Owner", "Business", "Verdict", "DOD", "DOD source",
-                   "Decedent (obit)", "Relatives", "Phones", "Rel slots", "Tags", "Obituary", "Flags", "Note"])
+                   "Decedent (obit)", "PR (filing)", "PR contact", "PR phones", "Relatives", "Phones",
+                   "Rel slots", "Tags", "Obituary", "Flags", "Note"])
         for key, p in plan.items():
             f = research.get(key, {})
+            pr = p.get("pr") or {}
             ws.append([p["street"], p["city"], records[key]["county"],
                        f"{p['owner_first']} {p['owner_last']}".strip(), p["business_name"], p["verdict"],
                        f.get("dod", ""), f.get("dod_source", ""), f.get("decedent_name", ""),
-                       len(ranked[key]["rels"]), len(p["phones"]), len(p["custom_fields"]),
+                       pr.get("name", ""), pr.get("contact", ""), len(pr.get("phones") or []),
+                       len(ranked[key]["rels"]), len(p["phones"]),
+                       sum(1 for k in p["custom_fields"] if _REL_NAME_RE.match(k)),
                        ", ".join(p["tags"]), f.get("obituary_url", ""), ", ".join(f.get("flags") or []),
                        p["note"]])
         ws2 = wb.create_sheet("Dial Sheet")
@@ -2498,10 +2694,107 @@ def cmd_schema(a) -> int:
     return 0 if not still else 4
 # ───────────────────────── push ─────────────────────────
 
-def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool, prior: "set | None" = None) -> dict:
+CREATE_PATH = "/api/internal/property/"
+LIST_ROW = "Register of Wills Probates"
+
+
+def _create_body(p: dict) -> dict | None:
+    """The create body for a plan record: ADDRESS + OWNER only, nothing else.
+
+    Mirrors probe_property_create.owner_for_create / datasift_api_upload.build_property
+    (proven live 2026-09-23): a person carries first_name (+ last_name when present), an
+    entity carries `company` with the person keys OMITTED -- the API rejects a blank
+    first_name and omitting a key is not sending "". Periods are stripped from the person
+    keys (`Tracey M.` flips the record to Incomplete; `Tracey M` is clean, measured). No
+    mailing on file (the DP input traces the decedent at the property) -> the property
+    address is the mailing, as the probe did. Tags / lists / fields / note are attached
+    afterwards by the per-record routes: the create body's `lists` shape is disputed
+    upstream (an array "returns 201 and changes nothing"). None = no usable owner.
+    """
+    addr = {"street": (p.get("street") or "").strip(), "city": (p.get("city") or "").strip(),
+            "state": (p.get("state") or "").strip(), "postal_code": (p.get("zip") or "").strip()}
+    if not addr["street"] or not addr["postal_code"]:
+        return None
+    mail = {"street": (p.get("mail_street") or "").strip(), "city": (p.get("mail_city") or "").strip(),
+            "state": (p.get("mail_state") or "").strip(), "postal_code": (p.get("mail_zip") or "").strip()}
+    if not mail["street"]:
+        mail = dict(addr)
+    owner: dict = {"address": mail}
+    first = " ".join((p.get("owner_first") or "").replace(".", " ").split())
+    last = " ".join((p.get("owner_last") or "").replace(".", " ").split())
+    company = (p.get("business_name") or "").strip()
+    if first:
+        owner["first_name"] = first
+        if last:
+            owner["last_name"] = last
+    elif company:
+        owner["company"] = company
+    else:
+        return None
+    return {"address": addr, "owner": owner}
+
+
+def _lists_for_create(rec: dict | None) -> list[str]:
+    """The lists a CREATED record gets: the source row's own lists, plus the standing rule
+    (Basem 2026-09-07) that `Probate` always pairs with `Register of Wills Probates` --
+    except Virginia (2026-09-10: VA probate runs through the Circuit Court, no RoW).
+    Existing list names only; this pipeline creates no lists."""
+    lists = [x.strip() for x in ((rec or {}).get("lists") or "").split(",") if x.strip()]
+    if "Probate" in lists and LIST_ROW not in lists and ((rec or {}).get("state") or "").upper() != "VA":
+        lists.append(LIST_ROW)
+    return lists
+
+
+def _created_uuid(status, body) -> tuple[str, str]:
+    """(uuid, how) from a create response. 201 -> the new uuid, 'created'. 400 'already
+    exists' -> the EXISTING uuid DataSift names, 'exists': the route normalises the address
+    (`Drive` == `Dr`, ZIP+4 == ZIP5) where `search` matches the stored string exactly, so
+    this 400 is the only reliable existence test and it writes nothing. Anything else ->
+    ('', reason)."""
+    obj = body if isinstance(body, dict) else {}
+    if status in (200, 201) and (obj.get("uuid") or "").strip():
+        return str(obj["uuid"]).strip(), "created"
+    txt = json.dumps(body, ensure_ascii=False) if not isinstance(body, str) else body
+    if status == 400 and "already exist" in txt.lower():
+        prop = obj.get("property")
+        got = (prop[0] if isinstance(prop, list) and prop else (prop or "")) or ""
+        if got:
+            return str(got), "exists"
+        return "", "duplicate 400 without a uuid"
+    return "", f"create {status}: {txt[:200]}"
+
+
+def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool, prior: "set | None" = None,
+                  create: bool = False, lists: "list[str] | None" = None) -> dict:
     log = {"key": p["key"], "street": p["street"], "route": "api", "at": datetime.now().isoformat(timespec="seconds"),
            "commit": commit, "steps": {}}
     uuid, rec, why = _resolve_uuid(api, p)
+    if not uuid and create and why.startswith("0 exact hits"):
+        # Not on the account by exact-street search. With --create the record is made
+        # (address + owner only, per-record routes for the rest). A 400 "already exists"
+        # means the search missed a spelling variant: attach to the uuid it names instead.
+        body = _create_body(p)
+        if not body:
+            log["error"] = "create: no usable owner/address in the plan"
+            return log
+        log["steps"]["create"] = {"body": body, "lists": list(lists or [])}
+        if not commit:
+            log["would_create"] = True
+            log["would_write"] = {"phones": len(p["phones"]), "custom_fields": p["custom_fields"],
+                                  "tags": p["tags"], "note_chars": len(p["note"]), "lists": list(lists or [])}
+            return log
+        st_c, resp_c = api.write("POST", CREATE_PATH, body)
+        uuid, how = _created_uuid(st_c, resp_c)
+        log["steps"]["create"].update({"status": st_c, "how": how, "uuid": uuid})
+        if not uuid:
+            log["error"] = how
+            log["http_status"] = st_c
+            return log
+        log["created"] = how == "created"
+        if lists:
+            # Merge-only PATCH, proven live on the 8,070-record Probate restore (2026-09-16).
+            st_l, resp_l = api.write("PATCH", f"/api/internal/property/{uuid}/", {"lists": list(lists)})
+            log["steps"]["lists"] = {"status": st_l, "sent": list(lists), "resp": str(resp_l)[:160]}
     if not uuid:
         log["error"] = why
         return log
@@ -2669,6 +2962,11 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool, prior: "se
         "custom_fields_missing": [k for k in p["custom_fields"] if not got_cf.get(k)],
         "tags_missing": [t for t in p["tags"] if t not in
                          [x.get("name") if isinstance(x, dict) else str(x) for x in (after.get("tags") or [])]],
+        # Only populated on a --create push: the lists attached to a record this push made.
+        "lists_missing": ([l for l in (lists or []) if l not in
+                           [x.get("title") or x.get("name") if isinstance(x, dict) else str(x)
+                            for x in (after.get("lists") or [])]]
+                          if log["steps"].get("create") else []),
         "notes_present": bool(after.get("notes")),
         "message_pinned": None,   # filled below from the message board
         # Whether the field preserves newlines is the thing the probe exists to answer,
@@ -2685,6 +2983,7 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool, prior: "se
         (x.get("message") or "" for x in msgs if x.get("pinned")), "")[:2500]
     rb = log["readback"]
     log["ok"] = (not rb["phones_missing"] and not rb["custom_fields_missing"] and not rb["tags_missing"]
+                 and not rb["lists_missing"]
                  and rb["owner_after"] == log["owner_before"] and rb["message_pinned"])
     return log
 def _wizard_push(run: Path, group: str, tags: list[str], commit: bool, headed: bool, one_row_key: str | None) -> dict:
@@ -2773,14 +3072,26 @@ def cmd_push(a) -> int:
         if missing:
             say(f"STOP: custom fields missing on the account: {missing}. Run `schema --commit` first.")
             return 2
+        create = bool(getattr(a, "create", False))
+        records_src = jload(run / "records.json", {}) if create else {}
+        created_path = run / "created_records.jsonl"
+        if create:
+            say("--create: records the exact-street search cannot find will be CREATED (address + owner, "
+                f"then lists/tags/fields/note); every created uuid is appended to {created_path.name}. "
+                "A created record cannot be deleted over this API, only in the UI.")
         ok = fail = 0
         with open(log_path, "a", encoding="utf-8") as lf:
             for i, k in enumerate(keys, 1):
                 prior = (None if prior_plan is None else
                          {_d10(ph["number"]) for ph in ((prior_plan.get(k) or {}).get("phones") or [])})
-                entry = _push_one_api(api, plan[k], fields, a.commit, prior=prior)
+                entry = _push_one_api(api, plan[k], fields, a.commit, prior=prior, create=create,
+                                      lists=_lists_for_create(records_src.get(k)) if create else None)
                 lf.write(json.dumps(entry, ensure_ascii=False) + "\n")
                 lf.flush()
+                if entry.get("created"):
+                    with open(created_path, "a", encoding="utf-8") as cf:
+                        cf.write(json.dumps({"key": k, "uuid": entry.get("uuid"), "street": plan[k]["street"],
+                                             "zip": plan[k]["zip"], "at": entry["at"]}) + "\n")
                 if entry.get("error"):
                     fail += 1
                     say(f"  [{i}/{len(keys)}] {plan[k]['street']}: ERROR {entry['error']}")
@@ -2802,7 +3113,9 @@ def cmd_push(a) -> int:
                            f"REL {len(rb.get('custom_fields_landed', {}))}/{len(plan[k]['custom_fields'])}, "
                            f"tags missing {rb.get('tags_missing')}, owner {rb.get('owner_after')}"
                            + (" OK" if entry.get("ok") else " CHECK") if a.commit
-                           else f"dry run: would write {entry.get('would_write')}"))
+                           else ("dry run: would CREATE " + json.dumps((entry['steps'].get('create') or {}).get('body'))
+                                 + f" then write {entry.get('would_write')}" if entry.get("would_create")
+                                 else f"dry run: would write {entry.get('would_write')}")))
         say(f"done: {ok} ok, {fail} failed. Log: {log_path}")
         if a.probe and a.commit and keys:
             stored = (entry.get("readback") or {}).get("note_stored") or ""
@@ -2929,6 +3242,11 @@ def main() -> int:
     s.add_argument("--extra-tag", action="append", default=[], metavar="TAG",
                    help="property tag applied to EVERY record in the batch, repeatable "
                         "(e.g. --extra-tag 'Priority 1')")
+    s.add_argument("--month-tag", metavar="MM/YYYY",
+                   help="month on the `Deep Prospected` / `DP No Numbers` tags (default: this month)")
+    s.add_argument("--trace-month", metavar="MM/YYYY",
+                   help="month on the `SS Traced` tag (default: read off the paid SmartSkip order id, "
+                        "else --month-tag)")
     s.set_defaults(fn=cmd_build)
 
     s = sub.add_parser("schema")
@@ -2958,6 +3276,10 @@ def main() -> int:
     s.add_argument("--keys-file", metavar="JSON",
                    help="ORDERED JSON list of plan keys: push exactly these, in this order "
                         "(e.g. keys_never_dialed.json from dp_strip_order.py)")
+    s.add_argument("--create", action="store_true",
+                   help="CREATE records the exact-street search cannot find (POST /api/internal/property/, "
+                        "address + owner, then lists/tags/fields/note by the per-record routes). Without "
+                        "--commit it only shows the create body. Created uuids -> created_records.jsonl")
     s.set_defaults(fn=cmd_push)
 
     a = ap.parse_args()

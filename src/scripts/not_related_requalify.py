@@ -111,12 +111,12 @@ REQUALIFY_STATUS = "No Answer"
 # The lane run's paid results, reused for free (same run-cache entry shape).
 LANE_CACHE = ROOT / "output" / "lane_phone_score" / "trestle_cache.json"
 
-ENTRY_TAGS = {"Priority 1", "Priority 2", "FTM", "Tier 2", "Obituaries"}
 # 2026-09-30 (Basem): obituary records carry `Obituaries` -- never Priority 1 or FTM -- and
-# ride their own lane (folders 13/14). Inheritance keeps Priority 1.
-OBIT_LIST_MARKERS = ("obituary",)
-P1_LIST_MARKERS = ("inheritance",)
-FTM_LIST_MARKERS = ("register of wills", "probate")
+# ride their own lane (folders 13/14). Inheritance keeps Priority 1. The rule itself lives
+# in dpd.lane_tags (shared with the DP pushers since 2026-10-01); these names are kept for
+# the callers that import them.
+from dpd.lane_tags import (ENTRY_TAGS, OBIT_LIST_MARKERS, P1_LIST_MARKERS,  # noqa: E402
+                           PROBATE_MARKERS as FTM_LIST_MARKERS, derive_entry_tags)
 
 # = datasift_uploader.RECENTLY_SOLD_TAG; defined locally so an API-only script
 # does not import the Playwright module for one constant.
@@ -136,18 +136,11 @@ def bad_phone_status(s) -> bool:
 
 
 def entry_tags_for(lists: list[str], existing_tags: list[str]) -> list[str]:
-    """Basem's rule. Returns only the tags MISSING from the record."""
-    ls = [(x or "").lower() for x in lists]
-    derived = []
-    if any(m in l for l in ls for m in OBIT_LIST_MARKERS):
-        derived.append("Obituaries")
-    if any(m in l for l in ls for m in P1_LIST_MARKERS):
-        derived.append("Priority 1")
-    if any(m in l for l in ls for m in FTM_LIST_MARKERS):
-        derived.append("FTM")
-    if not derived and not (set(existing_tags) & ENTRY_TAGS):
-        derived.append("Priority 2")
-    return [t for t in derived if t not in existing_tags]
+    """Basem's rule (dpd.lane_tags.derive_entry_tags). Returns only the tags MISSING from
+    the record. An Obituary-list record derives `Obituaries` alone (Inheritance beside it
+    adds NO Priority 1; FTM only when a probate list is also present)."""
+    return [t for t in derive_entry_tags(list(lists), list(existing_tags))
+            if t not in existing_tags]
 
 
 def load_lane_cache() -> dict:
