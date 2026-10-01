@@ -1,8 +1,15 @@
-"""Split the two ready-to-call lanes evenly across the 5 dialers.
+"""Split the ready-to-call lanes evenly across the 5 dialers.
 
-Hands out the records in `Hottest - 02 Ready to Call` and `FTM - 02 Ready to
-Call` that currently have NO assignee, so each of the 5 dialers ends up level.
-Existing assignments are never touched (Basem, 2026-09-01).
+Hands out the records in `Hottest - 02 Ready to Call`, `FTM - 02 Ready to Call`
+and (since 2026-10-01) `Obituary - 02 Ready to Call` that currently have NO
+assignee, so each of the 5 dialers ends up level. Existing assignments are never
+touched (Basem, 2026-09-01).
+
+OWNER FIRST, THEN LEVEL (Basem, 2026-09-24: "group by owner BEFORE leveling any
+assignment"). A blank record whose OWNER already has a row on a dialer in any of
+the pooled lanes goes to that dialer, whatever the dialer's count -- the course's
+rule is that one owner is never dialed by two people. Only the records with no
+such anchor are leveled. The plan CSV says which rule placed each record.
 
 BALANCED PER LANE, NOT ON THE TOTAL. FTM is its own weekly blitz, so equal
 totals with a lopsided FTM would not actually be fair. Hottest divides
@@ -78,6 +85,14 @@ NAME_MAP = ROOT / "output" / "dpd_assignee_name_map.json"
 
 HOTTEST = "Hottest - 02 Ready to Call"
 FTM = "FTM - 02 Ready to Call"
+OBITUARY = "Obituary - 02 Ready to Call"
+
+# (lane key, folder, preset). Keys are what the state file, plan and targets
+# are indexed by; the Obituary lane joined 2026-10-01 (folders 13/14).
+LANE_DEFS = [("hottest", "01 HOTTEST - CALL", HOTTEST),
+             ("ftm", "05 FTM - CALL", FTM),
+             ("obituary", "13 OBITUARY - CALL", OBITUARY)]
+KEYS = [k for k, _, _ in LANE_DEFS]
 
 # The 5 dialers (Basem, 2026-09-01) -- the same roster as
 # doors_per_deal_dialer_split.DIALER_TARGETS. Moe Galal (admin) and Ahmed
@@ -86,15 +101,11 @@ FTM = "FTM - 02 Ready to Call"
 DIALERS = ["Mostafa Hisham", "Ahmed Galal", "Mohammed Bagoury", "Pal John",
            "Mariam Mohamed"]
 
-# The shape this split was computed against. A drift means someone has been
-# dialing and the targets need recomputing -- stop rather than split a stale
-# picture. Recomputed 2026-09-08 from dpd_lane_assignee_report (hottest 730 =
-# 723 assigned + 7 blank; ftm 455 = 328 assigned + 127 blank; overlap 32).
-# `assigned` is DISTINCT assigned records across both lanes. The first
-# 2026-09-08 read said hottest 730 / assigned 1019; by the plan run the lane
-# had moved to 727 / 1016 (records shift as dialers work) -- pinned to the
-# cached read in dpd_lane_rebalance_state.json that the plan/commit runs use.
-EXPECT = {"hottest": 727, "ftm": 455, "overlap": 32, "assigned": 1016}
+# A cached read (--reuse-state) is only split if the lanes still look like it:
+# the lanes MOVE as dialers work (2026-09-08: Hottest 730 -> 727 in 40 min), and
+# a stale picture mis-sizes the targets. Replaces the hand-pinned EXPECT dict,
+# which had to be re-typed before every run.
+MAX_DRIFT_FRACTION = 0.02
 
 MAX_CONSECUTIVE_ERRORS = 8
 
@@ -128,28 +139,27 @@ def read_assignee(api: LiveApi, uuid: str):
 
 # ------------------------------------------------------------- phase 1: read
 
-def read_lanes(api: LiveApi) -> dict:
-    lanes = {l["preset"]: l for l in resolve_lanes(api)}
-    for want in (HOTTEST, FTM):
-        if want not in lanes:
-            raise RuntimeError(f"preset {want!r} not resolved")
+def lane_queries(api: LiveApi) -> dict[str, dict]:
+    lanes = {l["preset"]: l for l in resolve_lanes(api, [(f, p) for _, f, p in LANE_DEFS])}
+    return {key: to_query(lanes[preset]["filters"]) for key, _, preset in LANE_DEFS}
 
-    sets, queries = {}, {}
-    for key, preset in (("hottest", HOTTEST), ("ftm", FTM)):
-        q = to_query(lanes[preset]["filters"])
-        queries[key] = q
-        n = count(api, q)
+
+def read_lanes(api: LiveApi) -> dict:
+    queries = lane_queries(api)
+    sets: dict[str, set[str]] = {}
+    for key, _, preset in LANE_DEFS:
+        n = count(api, queries[key])
         say(f"  {preset}: {n}")
-        sets[key] = set(list_uuids(api, q, n))
+        sets[key] = set(list_uuids(api, queries[key], n))
         if len(sets[key]) != n:
             say(f"    NOTE paged {len(sets[key])} uuids against a count of {n}")
 
-    both = sets["hottest"] & sets["ftm"]
-    distinct = sets["hottest"] | sets["ftm"]
-    say(f"  overlap (both lanes): {len(both)}")
-    say(f"  distinct records:     {len(distinct)}")
+    distinct = set().union(*sets.values())
+    multi = sum(1 for u in distinct if sum(u in sets[k] for k in KEYS) > 1)
+    say(f"  in more than one lane: {multi}")
+    say(f"  distinct records:      {len(distinct)}")
 
-    say(f"\n  hydrating {len(distinct)} records for assignee + county...")
+    say(f"\n  hydrating {len(distinct)} records for assignee + county + owner...")
     recs: dict[str, dict] = {}
     t0 = time.time()
     for i, u in enumerate(sorted(distinct), 1):
@@ -158,56 +168,59 @@ def read_lanes(api: LiveApi) -> dict:
             recs[u] = {"uuid": u, "error": f"HTTP {st}"}
             continue
         addr = (body or {}).get("address") or {}
+        owner = (body or {}).get("owner") or {}
         recs[u] = {"uuid": u,
                    "assigned_to": (body or {}).get("assigned_to"),
+                   "owner_uuid": owner.get("uuid") if isinstance(owner, dict) else None,
                    "street": addr.get("street") or "",
                    "city": addr.get("city") or "",
                    "county": addr.get("county") or "(blank)",
-                   "in_hottest": u in sets["hottest"],
-                   "in_ftm": u in sets["ftm"]}
+                   "lanes": [k for k in KEYS if u in sets[k]]}
         if i % 200 == 0 or i == len(distinct):
             say(f"    {i}/{len(distinct)}  elapsed={(time.time()-t0)/60:.1f}m")
     return {"queries": queries,
             "sets": {k: sorted(v) for k, v in sets.items()},
-            "records": recs, "overlap": len(both)}
+            "records": recs, "multi_lane": multi}
 
 
-def guard_shape(data: dict) -> None:
-    recs = data["records"]
-    got = {"hottest": len(data["sets"]["hottest"]),
-           "ftm": len(data["sets"]["ftm"]),
-           "overlap": data["overlap"],
-           "assigned": sum(1 for r in recs.values() if r.get("assigned_to"))}
-    drift = {k: {"got": got[k], "expected": EXPECT[k]}
-             for k in EXPECT if got[k] != EXPECT[k]}
+def in_lane(r: dict, key: str) -> bool:
+    return key in (r.get("lanes") or [])
+
+
+def guard_shape(api: LiveApi, data: dict) -> None:
+    """A cached read is split only while the live lanes still look like it."""
+    drift = {}
+    for key, _, preset in LANE_DEFS:
+        cached = len(data["sets"][key])
+        live = count(api, data["queries"][key])
+        if abs(live - cached) > max(3, int(cached * MAX_DRIFT_FRACTION)):
+            drift[key] = {"cached": cached, "live": live}
     if drift:
         raise RuntimeError(
-            "the lanes no longer match the shape this split was computed "
-            f"against: {drift}. Re-read and recompute the targets rather than "
+            "the lanes no longer match the cached read this split was computed "
+            f"against: {drift}. Re-read (drop --reuse-state) rather than "
             "splitting a stale picture.")
-    say(f"\n  shape guard OK: {got}")
+    say(f"\n  shape guard OK: {dict((k, len(data['sets'][k])) for k in KEYS)}")
 
 
 def existing_counts(data: dict, name_of: dict[str, str]) -> dict:
-    out = {"hottest": Counter(), "ftm": Counter()}
+    out = {k: Counter() for k in KEYS}
     for r in data["records"].values():
         who = r.get("assigned_to")
         if not who:
             continue
         nm = name_of.get(who, f"UNMAPPED {who[:8]}")
-        if r.get("in_hottest"):
-            out["hottest"][nm] += 1
-        if r.get("in_ftm"):
-            out["ftm"][nm] += 1
+        for k in r.get("lanes") or []:
+            out[k][nm] += 1
     return out
 
 
 # --------------------------------------------------------- phase 1b: allocate
 
 def targets(data: dict, existing: dict) -> dict:
-    """Per-lane target per dialer. Hottest divides flat; FTM has 1 remainder."""
+    """Per-lane target per dialer: total / 5, the remainder to the smallest books."""
     out = {}
-    for key in ("hottest", "ftm"):
+    for key in KEYS:
         total = len(data["sets"][key])
         base, rem = divmod(total, len(DIALERS))
         out[key] = {d: base for d in DIALERS}
@@ -235,21 +248,47 @@ def interleave_by_county(recs: list[dict]) -> list[dict]:
     return out
 
 
-def allocate(data: dict, existing: dict, tgt: dict) -> tuple[dict, list[str]]:
-    """uuid -> dialer name.
+def owner_anchors(data: dict, name_of: dict[str, str]) -> dict[str, str]:
+    """owner uuid -> the DIALER already holding most of that owner's rows in the
+    pooled lanes (tie -> alphabetical). Admin holders never anchor."""
+    held: dict[str, Counter] = defaultdict(Counter)
+    for r in data["records"].values():
+        who = r.get("assigned_to")
+        nm = name_of.get(who or "", "")
+        if r.get("owner_uuid") and nm in DIALERS:
+            held[r["owner_uuid"]][nm] += 1
+    return {o: min(c, key=lambda d: (-c[d], d)) for o, c in held.items()}
 
-    Dual-lane records are spent FIRST: each fills a slot in both lanes, so
-    placing them before the single-lane records is what keeps both lanes
-    solvable. Spending single-lane records first could exhaust one lane's
-    deficits and leave a dual record with nowhere to go.
+
+def allocate(data: dict, existing: dict, tgt: dict,
+             anchors: dict[str, str] | None = None) -> tuple[dict, dict, list[str]]:
+    """uuid -> dialer name, plus uuid -> rule ("owner" | "level").
+
+    Owner-anchored records go first, to their owner's dialer, whatever the
+    count. Then multi-lane records: each fills a slot in every lane it is in,
+    so placing them before the single-lane records keeps every lane solvable.
     """
+    anchors = anchors or {}
     recs = [r for r in data["records"].values() if not r.get("error")]
     unassigned = [r for r in recs if not r.get("assigned_to")]
 
-    deficit = {k: {d: tgt[k][d] - existing[k].get(d, 0) for d in DIALERS}
-               for k in ("hottest", "ftm")}
+    deficit = {k: {d: tgt[k][d] - existing[k].get(d, 0) for d in DIALERS} for k in KEYS}
+    plan: dict[str, str] = {}
+    rule: dict[str, str] = {}
     notes: list[str] = []
-    for k in ("hottest", "ftm"):
+
+    anchored = [r for r in unassigned if anchors.get(r.get("owner_uuid"))]
+    for rec in anchored:
+        d = anchors[rec["owner_uuid"]]
+        plan[rec["uuid"]] = d
+        rule[rec["uuid"]] = "owner"
+        for k in rec["lanes"]:
+            deficit[k][d] -= 1
+    if anchored:
+        notes.append(f"{len(anchored)} records placed with their owner's dialer "
+                     f"before leveling: {dict(Counter(plan[r['uuid']] for r in anchored))}")
+
+    for k in KEYS:
         over = {d: v for d, v in deficit[k].items() if v < 0}
         if over:
             notes.append(f"{k}: already over target for {over} -- they keep "
@@ -257,14 +296,12 @@ def allocate(data: dict, existing: dict, tgt: dict) -> tuple[dict, list[str]]:
             for d in over:
                 deficit[k][d] = 0
 
-    dual = interleave_by_county([r for r in unassigned
-                                 if r["in_hottest"] and r["in_ftm"]])
-    h_only = interleave_by_county([r for r in unassigned
-                                   if r["in_hottest"] and not r["in_ftm"]])
-    f_only = interleave_by_county([r for r in unassigned
-                                   if r["in_ftm"] and not r["in_hottest"]])
-
-    plan: dict[str, str] = {}
+    rest = [r for r in unassigned if r["uuid"] not in plan]
+    # Most lanes first; within a lane-count, county-interleaved.
+    groups: dict[tuple[str, ...], list[dict]] = defaultdict(list)
+    for r in rest:
+        groups[tuple(r["lanes"])].append(r)
+    order = sorted(groups, key=lambda ks: (-len(ks), ks))
 
     def take(rec: dict, keys: tuple[str, ...]) -> bool:
         # Largest total remaining deficit wins, among dialers with room in
@@ -276,43 +313,46 @@ def allocate(data: dict, existing: dict, tgt: dict) -> tuple[dict, list[str]]:
         for k in keys:
             deficit[k][d] -= 1
         plan[rec["uuid"]] = d
+        rule[rec["uuid"]] = "level"
         return True
 
     unplaced = Counter()
-    for rec in dual:
-        if not take(rec, ("hottest", "ftm")):
-            unplaced["dual"] += 1
-    for rec in h_only:
-        if not take(rec, ("hottest",)):
-            unplaced["hottest"] += 1
-    for rec in f_only:
-        if not take(rec, ("ftm",)):
-            unplaced["ftm"] += 1
+    for keys in order:
+        for rec in interleave_by_county(groups[keys]):
+            if not take(rec, keys):
+                unplaced["+".join(keys)] += 1
     if unplaced:
         notes.append(f"unplaced records (no dialer with room): {dict(unplaced)}")
 
     leftover = {k: {d: v for d, v in deficit[k].items() if v} for k in deficit}
     if any(leftover.values()):
         notes.append(f"unfilled target slots remain: {leftover}")
-    return plan, notes
+    return plan, rule, notes
 
 
-def report_plan(data: dict, plan: dict, existing: dict) -> None:
+def report_plan(data: dict, plan: dict, existing: dict, rule: dict | None = None) -> None:
+    rule = rule or {}
     say("")
-    say(f"{'dialer':<20}{'H has':>7}{'H gets':>8}{'H ends':>8}"
-        f"{'F has':>8}{'F gets':>8}{'F ends':>8}{'final':>8}")
+    hdr = f"{'dialer':<20}"
+    for k in KEYS:
+        c = k[0].upper()
+        hdr += f"{c + ' has':>8}{c + ' gets':>8}{c + ' ends':>8}"
+    say(hdr + f"{'final':>8}")
+    slots = Counter()
     for d in DIALERS:
-        gh = sum(1 for u, x in plan.items() if x == d and data["records"][u]["in_hottest"])
-        gf = sum(1 for u, x in plan.items() if x == d and data["records"][u]["in_ftm"])
-        eh, ef = existing["hottest"].get(d, 0), existing["ftm"].get(d, 0)
-        say(f"{d:<20}{eh:>7}{gh:>8}{eh+gh:>8}{ef:>8}{gf:>8}{ef+gf:>8}"
-            f"{eh+gh+ef+gf:>8}")
-    th = sum(1 for u in plan if data["records"][u]["in_hottest"])
-    tf = sum(1 for u in plan if data["records"][u]["in_ftm"])
-    say(f"{'TOTAL handed out':<20}{'':>7}{th:>8}{'':>8}{'':>8}{tf:>8}")
+        line, final = f"{d:<20}", 0
+        for k in KEYS:
+            g = sum(1 for u, x in plan.items() if x == d and in_lane(data["records"][u], k))
+            e = existing[k].get(d, 0)
+            line += f"{e:>8}{g:>8}{e+g:>8}"
+            final += e + g
+            slots[k] += g
+        say(line + f"{final:>8}")
+    say(f"{'TOTAL handed out':<20}" + "".join(f"{'':>8}{slots[k]:>8}{'':>8}" for k in KEYS))
     say(f"\n  {len(plan)} distinct records to assign "
-        f"({th} Hottest slots + {tf} FTM slots, "
-        f"{th + tf - len(plan)} records filling both)")
+        f"({', '.join(f'{slots[k]} {k}' for k in KEYS)} slots; "
+        f"{sum(slots.values()) - len(plan)} records fill more than one lane); "
+        f"by rule: {dict(Counter(rule.values()))}")
 
     per = Counter((d, data["records"][u]["county"]) for u, d in plan.items())
     say("\n  county spread (proof no dialer got one county's worth):")
@@ -322,14 +362,16 @@ def report_plan(data: dict, plan: dict, existing: dict) -> None:
             + "".join(str(per.get((d, c), 0)).rjust(9) for d in DIALERS))
 
 
-def write_plan_csv(data: dict, plan: dict) -> None:
+def write_plan_csv(data: dict, plan: dict, rule: dict | None = None) -> None:
+    rule = rule or {}
     rows = []
     for u, d in plan.items():
         r = data["records"][u]
         rows.append({"uuid": u, "street": r["street"], "city": r["city"],
                      "county": r["county"],
-                     "lanes": ("both" if r["in_hottest"] and r["in_ftm"]
-                               else "hottest" if r["in_hottest"] else "ftm"),
+                     "lanes": "+".join(r["lanes"]),
+                     "owner_uuid": r.get("owner_uuid") or "",
+                     "rule": rule.get(u, ""),
                      "current_assignee": r.get("assigned_to") or "",
                      "proposed_assignee": d})
     rows.sort(key=lambda x: (x["proposed_assignee"], x["county"], x["street"]))
@@ -465,10 +507,10 @@ def undo(api: LiveApi, path: Path) -> int:
 # ------------------------------------------------------------ phase 4: verify
 
 def verify(api: LiveApi, name_of: dict[str, str]) -> int:
-    lanes = {l["preset"]: to_query(l["filters"]) for l in resolve_lanes(api)}
+    queries = lane_queries(api)
     bad = []
-    for key, preset in (("hottest", HOTTEST), ("ftm", FTM)):
-        q = lanes[preset]
+    for key, _, preset in LANE_DEFS:
+        q = queries[key]
         total = count(api, q)
         say(f"\n{preset}  (total {total})")
         seen = 0
@@ -489,10 +531,11 @@ def verify(api: LiveApi, name_of: dict[str, str]) -> int:
         # minute or two, and two passes over a settling index can disagree
         # with each other (observed live 2026-09-01 -- the display said 207s
         # while a re-count said 206).
+        # A fill-only run cannot level a lane whose existing books were
+        # already uneven (nobody's book moves), so a wide spread is a NOTE.
         vals = [per[nm] for nm in DIALERS]
         if max(vals) - min(vals) > 1:
-            bad.append(f"{preset}: spread {min(vals)}..{max(vals)} is wider "
-                       "than the 1-record remainder allows")
+            say(f"  NOTE: spread {min(vals)}..{max(vals)} (fill-only runs leave existing books)")
     say("")
     for b in bad:
         say(f"  DEFECT: {b}")
@@ -531,22 +574,25 @@ def main() -> int:
         say(f"\nReusing cached read from {OUT_STATE}")
         data = json.loads(OUT_STATE.read_text(encoding="utf-8"))
     else:
-        say("\nPhase 1: reading both lanes...")
+        say(f"\nPhase 1: reading {len(LANE_DEFS)} lanes...")
         data = read_lanes(api)
         OUT_STATE.parent.mkdir(parents=True, exist_ok=True)
         OUT_STATE.write_text(json.dumps(data), encoding="utf-8")
         say(f"  cached read -> {OUT_STATE}")
 
-    guard_shape(data)
+    if args.reuse_state:
+        guard_shape(api, data)
     existing = existing_counts(data, name_of)
-    say(f"  existing in-lane assignments: "
-        f"hottest={dict(existing['hottest'])} ftm={dict(existing['ftm'])}")
+    for k in KEYS:
+        say(f"  existing {k:9} {dict(existing[k])}")
     tgt = targets(data, existing)
-    say(f"  targets: hottest={tgt['hottest']} ftm={tgt['ftm']}")
+    for k in KEYS:
+        say(f"  target   {k:9} {tgt[k]}")
 
-    plan, notes = allocate(data, existing, tgt)
-    report_plan(data, plan, existing)
-    write_plan_csv(data, plan)
+    anchors = owner_anchors(data, name_of)
+    plan, rule, notes = allocate(data, existing, tgt, anchors)
+    report_plan(data, plan, existing, rule)
+    write_plan_csv(data, plan, rule)
     for n in notes:
         say(f"  NOTE: {n}")
 
