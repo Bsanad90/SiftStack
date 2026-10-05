@@ -825,6 +825,15 @@ Full build narrative, including every panel trap and the inverted-preset post-mo
   Hottest Ready 1 -> 31, FTM Ready 27 -> 67, Bulk Ready 0 -> 29, FTM Mail 01 423 -> 831.
   `resolved_window()` now resolves any anchor (`OBIT_ANCHOR_MONTHS`). Backups
   `output/dpd_presets_obit_window_backup_20260928T123033.json` + `..._20260928T123142.json`.
+- **2026-10-05, Basem: "Turn on auto add for all dpd siftmap presets."** 17 current P1 rung filters
+  switched over the map API, tags FIRST (`Priority 1` + `" + ".join(signals)`, the `(proxy)` suffix
+  is name-only) then `auto_add_enabled`, each PATCH read back field-by-field (0 mismatches). Result:
+  30 DPD P1 rungs ON + 11496 (Obituary) + 11798 (Recently Sold) = 32 of 42. Scope read as "every
+  current P1 rung" (planner keep + keep_old_label + hold): the 5 `T2 Top ZIPs` filters stayed OFF
+  (ZIP + single-family only, no distress signal, so an untargeted drip), as did Fairfax P2-01 (no P2),
+  stale Montgomery P1-05 and the foreign filters. Montgomery P1-04 (Basem's 09-25 off, ~1,709 held)
+  went back ON under "all" and was flagged. 13 of the stack tags did not yet exist in DataSift; the
+  drip creating them is unproven. Backup `output/dpd_siftmap_filters_backup_20261005T113019.json`.
 - `src/scripts/dpd_siftmap_filters_api.py` — **SiftMap saved filters have a READ+PATCH API,
   proven 2026-09-28 (Basem's go).** `GET https://map.reisift.io/filters/?scope=account&page_size=100`
   (the JWT from `POST /api/token/`; Ty's account-blueprint `export.py` is the origin) returns every

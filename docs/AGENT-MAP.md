@@ -2,7 +2,7 @@
 
 *Every agent, what triggers it, what it touches, where a human still signs off, and the specific trap each one exists to avoid*
 
-76 agents across 9 divisions. Generated from [`docs/agents.json`](agents.json) by `tools/agent_map.py`. Build 1.0.47, 2026-08-20.
+77 agents across 9 divisions. Generated from [`docs/agents.json`](agents.json) by `tools/agent_map.py`. Build 1.0.47, 2026-08-20.
 
 Do not hand-edit this file. Edit `docs/agents.json` and re-run the generator.
 
@@ -431,7 +431,7 @@ RETIRED 2026-08-14. Captured a full-page screenshot of each notice as proof of s
 
 *Who actually owns it and who can legally sign*
 
-10 agents.
+11 agents.
 
 #### Enrichment Pipeline (division lead)
 
@@ -637,6 +637,32 @@ Scores every number and sorts the call list into dial tiers.
 **Touches.** Trestle IQ
 
 > **The trap this exists to avoid.** On a shared household line the owner rule wins: the number carries source and tier only, never a relationship tag, or the dial sheet labels the owner's own landline 'Husband'.
+
+#### DNC Checker
+
+`src/dnc_client.py, src/scripts/dnc_scrub.py, .claude/agents/sift-dnc-checker.md` &middot; phase 2 &middot; gated
+
+PARKED (Basem, 2026-10-05): Kixie will scrub DNC on the dial side and Smarter Contact on the text side, so this checker may never be needed. Built and inert, not wired into any routine. Checks every dial-sheet number against the Do Not Call lists before anyone dials it.
+
+**Trigger.** After phone scoring, before a dial sheet or lane is worked.
+
+**Does.**
+
+- Harvests free signals: DataSift DNC phone statuses and Tracerfy dnc flags
+- Cache-only scrub reports each number as dnc, clean, stale (over 31 days) or unchecked
+- Paid vendor scrub of stale and unchecked numbers on the operator's go
+- Scorers turn any DNC hit into the DNC tag, which is never dialled
+
+**Human checkpoint.**
+
+- Every paid vendor scrub
+- Writing DNC phone statuses to DataSift (dnc_status_push.py)
+
+**Outputs.** dnc_review.csv per run dir, output/dnc_cache.json
+
+**Touches.** DNC scrub vendor (not chosen yet)
+
+> **The trap this exists to avoid.** Unchecked is not clean. A number no vendor has answered for in 31 days must not be dialled as if it were clean, and a hit never expires.
 
 #### Probate Property Finder
 
@@ -1463,25 +1489,21 @@ Builds the 26 TCA sequence templates via drag and drop.
 
 Tags sold properties so they drop out of active marketing.
 
-**Trigger.** manage-sold --dry-run, then manage-sold (default --months-back 1, monthly)
+**Trigger.** manage-sold --months-back 12
 
 **Does.**
 
-- Resolves each county through `dpd.jurisdictions`, then filters SiftMap by county FIPS in the URL rather than driving the calendar UI
-- One sweep per county per month, first to last day, so each record is tagged with the month it actually sold
-- Select Max, then Add Records to Account: every sold property in the window is imported, which is also what builds the sold-comp and cash-buyer dataset
-- Stamps `Recently Sold` plus `Sold YYYY-MM`; the Sold Property Cleanup sequence maps that tag onto status `Already Sold`, which every preset already excludes
-- Checkpoints each (fips, month) pair so an interrupted run resumes instead of restarting
+- Searches by city, not county
+- Adds records with tags
+- Sold Property Cleanup sequence fires on the tag
 
-**Human checkpoint.** A `--dry-run` pass first, to confirm the counties resolved. The live run imports records, so it needs an explicit go.
+**Human checkpoint.** None. Runs unattended.
 
-**Outputs.** Imported and tagged sold records; a checkpoint at `output/manage_sold_state.json`
+**Outputs.** Tagged sold records
 
-**Touches.** Playwright, SiftMap, `dpd.jurisdictions`, `dpd.siftmap`
+**Touches.** Playwright, SiftMap
 
-> **The trap this exists to avoid.** The county lookup used to be a private two-entry dict resolved with `.get(county, "47093")`. Every jurisdiction outside Knox and Blount missed it and silently queried **Knox County, Tennessee**, tagged the results as the county that was asked for, and reported success. A wrong default is worse than a crash: `resolve()` now raises on an unknown county, because guessing one means importing the wrong place.
-
-> **Superseded note.** This entry previously said the tagger "searches by city, not county" and warned that only 3 to 5 sidebar-visible properties are added per run. Both described an earlier version; the URL filter plus Select Max fixed the second, and the first was never true of the FIPS-based code.
+> **The trap this exists to avoid.** Known limitation, stated out loud: SiftMap filters set values visually but do not trigger a React re-query, so only the 3 to 5 sidebar-visible properties get added per run.
 
 ### Market Intelligence
 

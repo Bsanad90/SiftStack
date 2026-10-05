@@ -30,6 +30,8 @@ tools/manual/test_e2e_record.py
 # Output (generated data)
 output/
 logs/
+# raw Work Order shards cached by dpd_playbook_extract.py (the parsed playbooks are tracked)
+data/dpd_playbook_*_shards.json
 
 # Python
 __pycache__/

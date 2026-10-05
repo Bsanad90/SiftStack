@@ -716,6 +716,33 @@
      "gotcha": "On a shared household line the owner rule wins: the number carries source and tier only, never a relationship tag, or the dial sheet labels the owner's own landline 'Husband'."
     },
     {
+     "id": "dnc",
+     "name": "DNC Checker",
+     "role": "PARKED (Basem, 2026-10-05): Kixie will scrub DNC on the dial side and Smarter Contact on the text side, so this checker may never be needed. Built and inert, not wired into any routine. Checks every dial-sheet number against the Do Not Call lists before anyone dials it.",
+     "trigger": "After phone scoring, before a dial sheet or lane is worked.",
+     "steps": [
+      "Harvests free signals: DataSift DNC phone statuses and Tracerfy dnc flags",
+      "Cache-only scrub reports each number as dnc, clean, stale (over 31 days) or unchecked",
+      "Paid vendor scrub of stale and unchecked numbers on the operator's go",
+      "Scorers turn any DNC hit into the DNC tag, which is never dialled"
+     ],
+     "human": [
+      "Every paid vendor scrub",
+      "Writing DNC phone statuses to DataSift (dnc_status_push.py)"
+     ],
+     "outputs": [
+      "dnc_review.csv per run dir",
+      "output/dnc_cache.json"
+     ],
+     "tools": [
+      "DNC scrub vendor (not chosen yet)"
+     ],
+     "phase": 2,
+     "status": "gated",
+     "source": "src/dnc_client.py, src/scripts/dnc_scrub.py, .claude/agents/sift-dnc-checker.md",
+     "gotcha": "Unchecked is not clean. A number no vendor has answered for in 31 days must not be dialled as if it were clean, and a hit never expires."
+    },
+    {
      "id": "probfind",
      "name": "Probate Property Finder",
      "role": "Finds the property when the court record has names but no address.",

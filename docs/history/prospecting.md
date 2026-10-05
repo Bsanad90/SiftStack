@@ -624,3 +624,38 @@ status/value/dialer back, removed the dead relatives' and stale-tagged numbers, 
 REL2-5, deleted the pointer note; (5) `push --force` on the key re-landed the v5 note and PR/REL1 fields (the pusher
 resolves by address when the logged uuid 404s). Final: ONE record, 88630b5a, owner William Schenkel, prospecting,
 Ahmed Galal, 9 phones (Pr.1-7 Paula, Rel1.1-2 David), 6 lists, 15 tags, pinned v5 note, QA clean.
+
+## DNC check — scrub cache, scorer override, read-only agent (2026-10-05)
+
+Before this, nothing checked dial-sheet numbers against a Do Not Call list. The only automated gate
+was Trestle's litigator add-on. Tracerfy returns a per-phone `dnc` flag, and the main pipeline threw
+it away. DataSift's DNC phone statuses (`DNC` / `CORRECT_DNC` / `WRONG_DNC`) were written only by
+the SMS opt-out flow, and the record-level `dnc` / `opt_out` booleans count 0 on this account.
+
+Basem chose a commercial scrub API, plus a read-only checker agent with a separate writer that runs
+on a go. Built:
+- `src/dnc_client.py` — per-number cache (`output/dnc_cache.json`), one entry per source (vendor /
+  tracerfy / datasift). The rules:
+  - A hit never expires and no source clears it.
+  - Secondary sources only add hits.
+  - Clean = a vendor answer no older than 31 days (the FTC refresh window); an older one is stale.
+  - `scrub_remote` raises on a missing adapter or a partial answer, and never returns "clean"
+    for numbers it did not get back (the `llm_client` lesson).
+  - The vendor adapter (`_ADAPTER`) is empty until a vendor is picked (`docs/api/dnc_vendors.md`).
+- `phone_validator.evaluate_phone(..., number=)` returns `DNC` / keep=False after the litigator
+  check. `dpd_lane_phone_score.resolve_number_tag` and the `resolve_tag` functions in
+  `reskiptrace_fix.py` and `not_related_requalify.py` pass through `dnc_client.override_tag`.
+  `DNC` is in `SCORE_TAGS`, ranks 8 (uncallable), and Litigator Risk keeps its own tag.
+- `src/scripts/dnc_scrub.py` — cache-only by default. It harvests DataSift DNC statuses from the
+  sheet and any `"dnc": true` phone in `--harvest` JSON, and writes `dnc_review.csv`. Exit codes:
+  0 all checked, 2 some stale/unchecked, 1 error or zero numbers. `--spend [--limit N]` is paid.
+- `src/scripts/dnc_status_push.py` — the writer: dry run by default, `--probe` then `--commit`.
+  It sends the full owner phone list once per owner, changes only the DNC numbers'
+  status (CORRECT→CORRECT_DNC, WRONG→WRONG_DNC, else DNC), and reads back status and tags. Rows
+  keyed `street|zip` (DP dial sheets) are skipped as "no uuid".
+- Agent `.claude/agents/sift-dnc-checker.md`. `sift-ops-manager`'s post-batch routine runs it
+  cache-only next to the QA audit.
+- Guard: `tools/manual/test_dnc_scrub.py` (44 checks).
+
+The first cache-only run, on `output/dp_v5_0210_20261002` (2026-10-05), read 33 rows: 31 numbers,
+all unchecked, exit 2, nothing spent.

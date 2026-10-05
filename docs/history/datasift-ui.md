@@ -161,3 +161,34 @@ python src/extract_market_finder.py --state "Virginia" --county "Fairfax,Arlingt
 
 # Output: JSON file in output/market_finder_{state}_{county}_{timestamp}.json
 ```
+
+### The wizard writes no board note (dialer board audit, 2026-10-05)
+
+Bagoury (dialer manager) reported "a lot of properties with no note pinned on the message board
+- I don't know if I'm calling the owner or the PR." `src/scripts/dialer_board_audit.py`
+(read-only: assignee query + the 02-05 dial presets of every CALL folder, then detail +
+custom fields + board per record) measured his book on 2026-10-05:
+
+- 5,851 assigned records, 836 in a dial preset (Hottest 205, FTM 201, Obituary 430).
+- **409 of the 836 had no pinned note**: 298 with no message at all, 111 with a message
+  nobody pinned (92 of those are the hand-typed estate-number notes, `118609` / `W128117` /
+  `2026-ADM-001020`, by the admin login).
+- Hottest 196/205 pinned (`[DPD Pull ...]`), FTM 81/201, Obituary 150/430.
+- Pinned families: `[DPD Pull]` 191, `DEEP PROSPECTING` 177, `[Verified Import]` 57 — i.e.
+  only the API pushers ever pin a note. Every record that came through the upload wizard
+  (vendor Inheritance / Obituary lists, purchased Register of Wills county lists,
+  `Probate With PR_*`, `MD Probates`) has none, and the wizard's own skip trace tags the
+  phones with nothing (`REISift Skipped` numbers carry no `Owner.N` / `Pr.N` / `RelN.M`).
+- What the owner block is, from record data: decedent 452 (273 unpinned), PR 122 (97
+  unpinned; PR fields = owner name), living owner 220, UNCLEAR 42 (37 unpinned, 35 FTM —
+  probate-list records with no PR fields and no deceased marker).
+- 79 dial-preset records have no contact name anywhere (58 Obituary with a dead owner and
+  no REL/PR; 18 Hottest entity owners). `owner.deceased` was false on all 836.
+- The 09-26 Register of Wills day shows the two paths side by side: the API verified import
+  wrote `PR: <name> (record owner = PR)` + PR fields on 23 records; the wizard upload of the
+  purchased county list the same day wrote nothing on 15.
+
+Fix proposed (not run): a pinned `WHO TO CALL` header built from record data on every
+unpinned dial record, pinned on the way in after every wizard upload, UNCLEAR rows back as a
+worklist, no-name rows out of the dial presets into DP / principal research. Report:
+`output/dialer_board_audit/REPORT_bagoury_20261005.md`.

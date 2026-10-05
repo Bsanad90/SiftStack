@@ -44,6 +44,7 @@ python src/scripts/dc_probate_pull.py                             # DC probate
 python src/scripts/dpd_presets_verify.py          # 85 presets, 14 folders; exit 0 = clean
 python src/scripts/dpd_lane_assignee_report.py    # lane counts per dialer
 python src/scripts/obituary_dp_qa.py --run-dir <dir>   # DP batch audit; --repair re-posts gaps
+python src/scripts/dnc_scrub.py --run-dir <dir>        # DNC check, cache-only; --spend = paid, on go
 
 # SiftMap sold sweep -- THE path for sold suppression. ALWAYS dry-run first. No --counties = the 6.
 # Without --sold-account-scope in, a live run IMPORTS every sold property in each county-month.
@@ -62,6 +63,7 @@ python tools/manual/test_namesake_audit.py        # recommend + age/place regexe
 python tools/manual/test_property_create_probe.py # classify / owner_for_create (30)
 python tools/manual/test_permit_portal_pull.py    # permit feed parsers (50+)
 python tools/manual/test_manage_sold_url.py       # county -> SiftMap URL (no browser)
+python tools/manual/test_dnc_scrub.py            # DNC cache rules / scorer override / scrub + push plan + SC import (48)
 
 # Upstream TN scraper (Knox/Blount) -- not this account's feed
 python src/main.py daily [--split] [--counties Knox] [--types foreclosure,probate] [-v]
@@ -147,7 +149,8 @@ One line of state each; the reasoning and every number is in the linked file.
   `["360-months", "month"]` on every preset EXCEPT the Hottest + FTM CALL lanes; `Entity Owner`
   excluded from all CALL presets; one-property-per-owner on the 24 dial lists. SiftMap saved
   filters follow the 09-24 Work Order plan (P1 rungs, 6 counties; 7 rungs pulled 09-28, 1,311
-  records); drip 11496 tags `Obituaries` only. Open: 3 `hold` filters, 10 old-label renames,
+  records); **auto-add ON for all 30 current P1 rungs since 2026-10-05** (T2 ZIP, P2, stale OFF);
+  drip 11496 tags `Obituaries` only. Open: 10 old-label renames,
   Obituary lane assignment across the 5 dialers. → [doors-per-deal](docs/history/doors-per-deal.md)
 - **DP batches** — FTM (25) and Obituary (618/619) batches live and QA-clean; signers-only
   re-push of 1,391 records done 09-17; 23 namesake false-positives repaired 09-18; 82 ghost REL
@@ -263,6 +266,7 @@ day it is found; its story goes to the history file.**
 - **Phone choice must sort by TIER in `cmd_build`, never at rank time** (538 Dial First numbers were parked), and `cmd_score` must price EVERY number on a kept contact — an unscored number fails `_keep_number`. Two-pass allocation: every contact its best number, owner first. → prospecting
 - **The plan files are the source of truth;** another session's `push --force` reverted 9 live REL writes within minutes. Patch `push_plan.json` first and check `Get-CimInstance Win32_Process` for a running pusher before any per-record account fix. → prospecting
 - **Confirm a one-source name before writing it** (10 of 52 resolver names did not survive Trestle reverse). Trestle reverse holders are under `owners[]`, not `belongs_to`. Trestle Reverse Phone runs ONLY on an explicit per-batch go. → prospecting
+- **Unchecked is not clean (DNC).** `dnc_client`: a DNC hit never expires and no source clears it; Tracerfy's `dnc` flag, a DataSift `*DNC` status and Smarter Contact's blocked export only ADD (its Carrier Blocked / Undeliverable rows are NOT DNC); "clean" = the paid vendor said so within 31 days, anything older is stale. A vendor error raises, never returns clean. `dial_ok` in `dnc_review.csv` is the only green light. → prospecting
 - **A plan that drops EVERY relative must still run the REL blanking step** (it was gated on `custom_fields`), and a shared-line ghost survives the number rule: after ANY owner-alive re-push run `obituary_dp_qa.py --repair --clear-extra-rel --extra-source <replaced plan>`. → prospecting
 - **`cmd_research` DROPS the LLM's `age_at_death` and `city`;** no DP file holds them. The free source is the search hit title + snippet in `trail[0].hits[]`. → prospecting
 - **PR goes to the PR fields, never a REL slot; in-laws never in REL slots** (`--channel-cap 0`); DP never changes an existing note, it adds its own. → memory
@@ -282,6 +286,7 @@ day it is found; its story goes to the history file.**
 ### Wizard, UI automation, imports
 - **DataSift inserted an Enrichment step into the wizard** and every later locator ran one step off. Count steps on the live wizard before trusting the script. → datasift-ui
 - **The wizard CANNOT update fields on existing records;** use the API. Its Add Tags box used to OVERRIDE the CSV's own Tags column (now `custom_tag`). → datasift-ui
+- **The wizard writes NO board note and no PR fields,** so every vendor list it uploads leaves the owner block unlabelled (decedent? PR?). 409 of Bagoury's 836 dial-preset records had no pinned note on 2026-10-05; only the API pushers (DP, verified import, SiftMap pull) pin one. Audit: `dialer_board_audit.py`. → datasift-ui
 - **`datasift_api_upload.FIELD_MAP` is Ty's TN schema:** `Notice Type`, `County`, `Decedent Name` do not exist here; `field_pairs` skips them silently unless the caller prints `warn`. The decedent belongs in the board note. → datasift-api
 - **Beamer iframes (`#npsIframeContainer`, `#beamerPushModal`) block ALL pointer events** — remove from DOM. Dismiss the tag dropdown by clicking the heading, NOT Escape (clears the tags). Market Finder's ZIP/Neighborhood toggle flips AWAY if already on the wanted view. → datasift-ui
 - **Market Finder has no ZIP split for DC;** a 0 there is missing data, not a zero market. → memory
@@ -353,6 +358,21 @@ adjustments bed $5,000, bath $7,500, $85/sqft, age $500/yr; HML 12% + 2 points, 
   IDI …`, `skip_traced_…`) are history: never create more, never retag without a go. Anything
   that CHECKS for a trace must accept every prefix (`skip_dp_census.SKIP_TAG_RE`). Trestle is
   scoring, not a trace. A Tracerfy-only trace has no tag yet: ask.
+- **ALWAYS LITIGATOR SCRUB (Basem, 2026-10-05). Non-negotiable, never waits for a go.** Every
+  Trestle call carries `add_ons=litigator_checks` (hard-wired in `phone_validator.call_trestle`
+  and every other call site; `--no-litigator` / `--litigator` are no-ops) and a number with
+  `phone.is_litigator_risk == true` is dropped before it reaches a record. A Trestle cache entry
+  with `litigator: None` means UNCHECKED, not clean: re-score it. The add-on's per-call cost is
+  pre-approved. Trestle covers litigator risk; DNC / opt-out are DataSift's own fields.
+- **DNC CHECK — PARKED (Basem, 2026-10-05, same day).** Kixie (the next dialer, per Moe's action
+  items) scrubs DNC on calls and Smarter Contact scrubs it on texts, so the checker below may never
+  be needed: do not run it, wire it into a routine, pick a vendor or spend on it. As built:
+  `dnc_scrub.py` (agent `sift-dnc-checker`, cache-only) on
+  every dial sheet; scorers turn a hit into the `DNC` tag (never dialled; Litigator Risk keeps its
+  own tag). **Numbers go out through Smarter Contact (2026-10-05), which scrubs DNC / opt-out /
+  litigator at send time;** feed its blocked-numbers export back with `--sc-blocked` so DataSift and
+  sheets dialled outside it see the hits. The paid vendor scrub (`--spend`) and the DataSift status
+  write (`dnc_status_push.py`) run only on an explicit go. `docs/api/dnc_vendors.md`.
 - **Footprint:** the 6 counties, everywhere (pulls, presets, SiftMap filters, sold sweep).
 - **Lane tags:** probate / daily pulls = `FTM`; SiftMap rungs = `Priority 1/2`; obituary records =
   `Obituaries` ONLY (an obituary record that is also a probate case keeps FTM).
