@@ -375,3 +375,252 @@ Four traps, the first two fixed in code:
    (nothing same-family to edit). Re-resolve by address on a 404 before calling it a deletion.
 Still open from the audit: the 5 LIKELY_FALSE pushed as `DP Death Unverified` (plan_group
 `unverified`; `load_rows` filters on `deceased`), REVIEW 141, the paid tiers, the upstream fixes.
+
+## DP research quality audit + anchored research (2026-10-01, Basem: "how much can the dialer depend on the note?")
+
+**Trigger.** The one record pushed live to prove the CREATE path (1391 Pennsylvania Ave SE #433,
+uuid 74742f8e) was wrong on every line a dialer reads: "DECEDENT: David Smith - DOD unknown (no
+source)", the intestacy template as the SIGNERS line, five relatives with no kinship. The vendor's
+raw weekly probate CSV (`Marketing Lists/2026/09/0930/probate_2026-09-30_07-40-33 Raw.csv`) for that
+row carried `Date of Death` 08-13-2026, `Case Number` 2026-ADM-001053, `Middle Name` Beardsley, the
+PR's full name + Brooklyn address and the attorney. `dp_input_export.csv` keeps none of those columns.
+
+**Measured on the Sept 646 (`output/dp_drive_sept_missing_20260929`) before any fix, offline:**
+- WHO TO CALL "SIGNER" lines 1,496: 1,138 rested on a SmartSkip relationship label alone, 304 carried
+  an obituary word, 54 were the PR. 581 signer people / 1,564 numbers sat on 232 UNRESOLVED records,
+  179 of which still printed "spouse and children (all children must sign)".
+- 117 "owner did die" records whose obituary named NO survivors still printed SIGNER lines from labels;
+  100 records loaded an "Unknown <Surname>" as a signer; 16 listed two or more spouses (111 re-rooted).
+- The obituary judge is fine WHEN the person is right: 18 of 22 obituary DODs matched the vendor's, 0
+  contradicted. But it is unanchored: `_search_obit` ran one query, name + city + state, `_try_person`
+  judged at most 3 pages, nothing from the filing reached the search or the prompt. Namesakes: 1403
+  Horizon Ct, Herndon matched a Gaffney SC obituary (then the re-root turned two "Parent" rels into
+  "Spouse" and the note said "surviving spouse takes"); 5 cached matches were dated 2019-2024 against
+  2026 filings (7016 Channel Village Ct, 3901 Connecticut Ave NW, 15105 McKnew Rd, 405 Pearl St,
+  7501 Langport Ct); 74 died verdicts had neither city nor state in the hit and no corroboration.
+- Unresolved 272: 78 after zero pages judged (70 with zero search hits), 35 after one page.
+
+**What was in hand and never used.** Vendor weekly raw CSVs (DOD, case, middle name, PR + address,
+attorney) -- on Drive back to 2026-01 (`title contains 'Raw' and title contains 'probate'`), only
+0930/0805 were on disk; 0902/0909/0916/0923 and the Aug weeks downloaded to
+`output/vendor_lists/files/Marketing Lists/2026/_raw_from_drive/`. Sheet26 rows carry the RoW estate
+number; the RoW ledger (`output/md_row_ledger.json`, county|estate) already held 79 of those 171 with
+a DOD; the Estate Search form takes `#txtEstateNo` + county and its GRID carries the DOD, filing date
+and name as filed -- one Firecrawl scrape per estate, no detail page. Monthly inheritance (338) and
+monthly probate (131) files carry no DOD anywhere. The DC docket (`dc_case_pr_lookup.py`, headed +
+2Captcha) was not run: the raw file already gives DOD + PR for the DC weeklies.
+
+**Built (`obituary_dp_batch.py`, guard `tools/manual/test_dp_research_anchors.py`):**
+- `anchors` subcommand -> `rec["anchors"]` {dod, dod_source, case_number, court, file_date,
+  estate_number, decedent_full, decedent_middle, decedent_as_filed, pr_full, pr_mailing, pr_others,
+  attorney, notice_date, source}; `--estate-search` fills the DOD by estate number (cache
+  `row_estate_lookup.json`; the ledger is never written -- two writers of that file lose work).
+- `research`: `_anchor_queries` ("First Middle Last" obituary first, DOD year on the base query; DC
+  no longer searches "Washington Washington DC"); `_anchor_facts` puts the filing facts + up to 8
+  SmartSkip relative names into the prompt and asks for `anchor_hits` / `location_match`;
+  `_verify_anchors` IN CODE rejects: obituary DOD vs filing DOD > 45 days; strong anchor (DOD /
+  middle / PR) on file with no hit and no location match; out-of-footprint URL slug
+  (`_url_outside_footprint`, dignitymemorial `brooksville-fl` style) with no hit. No obituary but a
+  filing DOD = verdict "owner did die" with `confidence: court record`, evidence names the case,
+  flag "no obituary found; death from the court record only" -- never the spouse search (which called
+  617 Underwood St NW's owner alive), never "unresolved". `--keys-file` + the subset merge (a
+  `--key`/`--limit` run used to shrink stage_c_research.json to the subset).
+- `build`: SIGNERS basis says "death UNVERIFIED - ... SmartSkip labels, not confirmed heirs" on
+  unresolved records, "...names no survivors - relationships below are SmartSkip labels, unverified"
+  on died-without-survivors, "N of M signers below are label-only" otherwise; REL lines print
+  `SIGNER (obituary)` / `SIGNER (label only)`; flags `two_spouses`, `unknown_name_signer`,
+  `label_only_signers`, `obituary_outside_footprint`; the note gains `CASE: ... - <court>, filed ...`,
+  the PR's full name + mailing, `ATTORNEY ON FILING`; the court DOD is used when the obituary has none;
+  `dial_sheet.csv` gains `kinship_source` (obituary / filing (PR) / smartskip label).
+
+**Re-research set:** Sept 401 keys (272 unresolved + 3 "spouse died" with a filing DOD + 5 DOD
+conflicts + uncorroborated / out-of-state died verdicts with anchors or no city in the hit), run as
+3 shards; 0930 all 21. Firecrawl balance before: 56,027 credits.
+
+**Result (same day, both plans rebuilt, nothing pushed):** Sept 646 -- died 348 -> 444 (74 court-record-only), unresolved
+272 -> 184 (all without any vendor DOD: monthly inheritance / monthly probate), 10 old matches rejected, 99 matches
+anchor-confirmed, 187 CASE lines; signer lines now obituary 343 / PR 57 / label-only 1,071 said as such; numbers on
+unresolved records 1,564 -> 1,065. 0930 21 -- 21/21 died (10 court-only), 0 unresolved. Found on the way: a one-letter
+middle initial in the quoted query returns junk and the page budget was spent in query order (`_rank_hits` fixes the
+order; initials are not searched); `research --key` used to shrink stage_c_research.json to the subset (merged now);
+the LLM "returned nothing" on ~2% of records under 3 parallel shards and again on 5700 Overly Dr alone (left unresolved).
+The DC docket was not consulted (the raw file carries DOD + PR + attorney for the DC weeklies). Fixing the re-root (two
+"Parent" rels -> two "Spouse" signers, 14 records flagged `two_spouses`) is still open, see [[project-dp-reroot-research-gap]].
+
+
+## 2026-10-01 — 1391 Pennsylvania Ave SE #433: the court's party list beats the research (DP v5 by hand)
+
+Basem asked for a v5 on the batch's live probe record. The anchored research had run two queries, found no
+obituary (none exists under any name variant) and printed "heirs NOT identified". The same morning's DC probate
+portal pull (`output/daily_pulls/2026-10-01/dc_probates_portal.json`, case 2026-ADM-001053) already held the PR
+and five **Legatees** with addresses (so a will is on file), and the ITSPE check in that pull recorded the
+co-owner **SMITH, HELEN H** beside SMITH, DAVID B (bought 2019-08-06, $811k). Neither is read by
+`obituary_dp_batch.py anchors`/`research`.
+
+What that changed: (1) Sarah Smith Devary (Belton MO), whom the batch had set aside as a SmartSkip *namesake's*
+child (`excluded_smartskip_namesake` — SmartSkip's subject row carried no first name and age 80, i.e. the
+co-owner, not a stranger), is a court-listed legatee; (2) Helen H Smith is absent from the probate parties
+although on title; the Recorder of Deeds index shows her co-signing the 2019-10-23 sale of sq 1038 lot 68,
+nothing later, and no deed on sq 1045 lot 2155 under either exact name — so whether the estate can sell at
+all turns on whether she is living and how the 2019 deed vests (image $4, on a go); (3) the pusher adds the
+verdict tag but never removes `DP Death Unverified`, so a re-push leaves both on the record.
+
+Files: `output/dp_1391_pennsylvania_20261001/REPORT.md` (family tree, who-must-sign, every scored number),
+`rod_party.py` (index by party; the URL-built `results?parties=` form answered "No results" for every term and
+is not trusted), the patched note in `output/dp_drive_0930_new/push_plan.json`
+(backup `push_plan_pre_1391_court_heirs_20261001.json`). Live note still the old one; re-push on a go.
+Fix to build: `anchors` joins the DC probate ledger (`heirs[]`, `personal_reps[]`, `property_itspe_co_owner`)
+and the research treats a court legatee list as the heir set when no obituary matches.
+
+
+## 2026-10-02 — the v5 method as a batch: title / court parties / deed index, DC pilot (53 records)
+
+Basem: "run them with multiple agents". Three builders ran in parallel, each writing one sidecar under
+`output/dp_drive_sept_missing_20260929/rerun_v5/`, and `obituary_dp_batch.py` learned to read them:
+
+- **`src/scripts/dp_title.py`** -> `title.json`. DC tax roll through `dc_probate_pull.itspe_query` (unit-first,
+  then bare street at limit 400 — the old limit of 50 hid condo units — then a quadrant-filtered fallback and a
+  surname-within-building query for unit-less condos). Per owner string: exact / probable (roll spelling
+  `STACIL`~`STANCIL`, glued initial `MTAVSS`) / PR / co-owner; `TRUSTEE` stripped and `trust_vesting` set;
+  `$0` with a date = family or trust deed; `owner_of_record_is_decedent` False = "DECEDENT NOT ON TITLE".
+  MD `title_for_md` sits behind `--allow-firecrawl` (never run); VA writes `source: none`.
+- **`src/scripts/dp_court_parties.py`** -> `court.json` (+ guard `tools/manual/test_dp_court_parties.py`, 51).
+  Joins the daily `dc_probates_portal.json` files AND, with `--ledger`, `output/dc_probate_ledger.json`
+  (273 cases — the handoff had it as "1 estate", see the trap). Join order: `anchors.case_number`, then
+  normalised address + zip5, then decedent name gated on zip (`name_only`, review). `will_on_file` = any party
+  connection `Legatee`; `Beneficiary` (41 rows) is tallied in `connections`, not counted as a will.
+- **`src/scripts/dc_rod_lookup.py`** -> `deed.json`. The Recorder of Deeds party index lifted from the 1391 run's
+  `rod_url.py`: index free, images $4 and forbidden in the run; grantor + grantee 1990-2026, common names capped
+  to 30 years; a second pass searches the tax-roll owner names where they differ from the vendor name
+  (130 Randolph was searched as Whitmon-Clark; title says Mary L Clark).
+- **`obituary_dp_batch.py`**: `v5merge` folds the sidecars into `records.json[key]["title"|"court"|"deed"]`
+  (backup `records_pre_v5merge_<date>.json`); `build --keys-file --plan-out` rebuilds a subset into its own
+  folder so the live `push_plan.json` is never touched; the note gains `CASE` (from the court join when the
+  anchors carry none, or "no case on file"), `TITLE`, `DEED` (last CONVEYANCE, not the last release),
+  `COURT PARTIES` (PR + every heir with address, matched to the SmartSkip/IDI REL or "no number on file");
+  every REL line prints `SIGNER (court|title|obituary|label only)` and `dial_sheet.csv` `kinship_source`
+  follows; the SIGNERS line leads with the fact that decides the deal (PR signs for the estate / co-owner on
+  title not in the probate / DECEDENT NOT ON TITLE / title held in TRUST) and the intestacy template follows
+  as "then ..."; a court decedent who matches the owner proves the death (DOD from the court, verdict
+  `owner did die`, `Deceased Owner`); a court party is never dropped as the decedent's namesake; SmartSkip
+  signers on no record are listed as such. `_matches_decedent` now requires the shared given name to be the
+  RELATIVE's first name (Kavita Arjan Aswani is not Arjan Aswani). Guard: `tools/manual/test_dp_title_court.py`.
+  A no-sidecar rebuild of the 53 keys reproduced the live plan exactly apart from the date header and three
+  notes the raised `NOTE_MAX` no longer trims.
+
+**DC pilot (53 non-grounded Sept records; `rerun_v5/pilot_dc/PILOT_DC_REPORT.md` + `before_after.csv`):**
+title on 53/53 (45 decedent confirmed, 4 probable by spelling, 4 DECEDENT NOT ON TITLE — 1638 Fort Davis Pl SE
+transferred 2026-09-15 for $0, 3715 30th Pl NE 2023, 1001 L St NW resolved by surname to #201, 1616 Varnum
+POWDEN M E vs Drusilla); 30 co-owners on title who are not the decedent (mostly spouses; whether they are
+living decides every one of those deals); 9 trusts (successor trustee signs); court case on 5 (48 are Monthly
+inheritance rows with no case, as predicted); 2605 24th St NE went from "death UNVERIFIED" to a court-proved
+death with a PR and six heirs — and its nine SmartSkip "signers" (Brown / Coachman / Seamon) are on no record
+while the court's heirs are surnamed Quick (714 Rittenhouse's owner is Polly Quick-Brown: the same decedent
+with two properties, or a namesake family at 2605 — hand look). 0930 batch: court 8/8 DC, title 8/8 (co-owner
+Ruby M Morgan on 1201 Kalmia Rd NW beside PR Darren Morgan; Helen Smith on 1391). Deed index: hits on 51 of 53
+(0 hits: 5724 8th St NW, 1616 Varnum — pre-1990 paper), 25 with a red-flag instrument on the parcel: 5 transfer-on-death
+deeds recorded by the owner (the house passes to the TOD beneficiary outside probate — 1738 Lyman, 7435 9th, 1266
+Delafield, 1104 Chaplin, plus 1638 Fort Davis's chain), 6 owners who are GRANTOR on their last conveyance, 5 with 2026
+paper, 1 conveyance after the DOD (1638 Fort Davis), 1 active foreclosure (5201 Wisconsin #102: substitute trustee
+2026-05-05, NewRez lis pendens 2026-05-26). The four ROD traps (dead URL path, unordered 50-row pages, TRUST = deed of
+trust, SSL suffix form) are in CLAUDE.md Pulls. Notes: longest 3,896 chars, none at the 3,900 cap.
+Nothing pushed, nothing spent, code uncommitted; MD (Firecrawl) and VA (no fetcher) wait on Basem.
+
+## MD pass of the v5 method — the combined Firecrawl run (2026-10-02)
+
+Basem asked whether the two open MD Firecrawl asks (SDAT title + MDLANDREC deed index on the 334 MD Sept
+records; Register of Wills Estate Search by decedent NAME on the 167 MD no-case rows) could run together.
+They could: one cohort, three sites, one Firecrawl account with 52,639 credits expiring 2026-10-04 and a
+measured cost of ONE credit per action-scrape (concurrency 50). Basem: "go ahead". Run dir
+`output/dp_drive_sept_missing_20260929/rerun_v5/`, handoff `HANDOFF_MD_PASS.md`, memory
+`project_dp_md_pass_20261002.md`. Nothing pushed; live `push_plan.json` untouched.
+
+**What was built.** `md_estate_name_search.py` (Estate Search by name, `#txtLN` / `#txtFN` /
+`#cboPartyType` Decedent — verified on a 1-credit probe; the handoff's guessed `#txtLastName` was wrong),
+`md_deed_lookup.py` (MDLANDREC party search as `both`, radio `#body_rdlParty_0`, dc_rod_lookup-shaped
+instruments, on-parcel by Book/page against the SDAT Deed Reference), SDAT `parse_sdat_transfers` +
+`deed_reference`, `dp_title.title_for_md` fixed, `dp_court_parties --extra-store`, MD note lines in the
+batch, guard `test_md_v5_legs.py`, `tools/manual/pilot_report.py` generalised.
+
+**Traps found.**
+- *The SDAT grid click never worked.* `document.querySelectorAll('table tr')` returns an OUTER layout row
+  whose innerText matches the street and the owner, and whose first `<a>` is the header's SORT link —
+  `a.click()` posted the grid back sorted. 38 of the first 185 MD lookups read "no parcel"; every one was
+  a multi-row grid (unit addresses, `Dr` vs `Rd`). The row's own link is `a.lnkdetails` with
+  `href="javascript:WebForm_DoPostBackWithOptions(..., performValidation=true ...)"` — a plain click runs
+  the validators and does nothing; `__doPostBack(<its event target>, '')` navigates, and the detail page
+  needs ~7 s, not 3.5. Fixed: leaf rows only, `a.lnkdetails`, `__doPostBack`, 7 s wait. 403 Vale Dr went
+  from "no parcel" to COLBURN WILLIAM D + STEPHANIE B, bought 1987 arms-length.
+- *A condo grid is one row per UNIT* (`66 FRANKLIN ST UNIT: 307`, 79 rows). The first street match is a
+  neighbour: 66 Franklin St #307 read ADKINS (unit 104), 10401 Grosvenor #919 read an LLC (unit 1018).
+  `street_unit()` + a unit regex anchored on `UNIT|APT|STE|#` with the grid's own separators tolerated;
+  32 unit keys re-run — 19 land on the right unit, 13 are honest misses.
+- *MDLANDREC MFA under concurrency.* 4 Firecrawl workers logging in at once → 1 in 4 searches hit the
+  emailed access-code step, then EVERY login did; after a pause a single sequential login was clean
+  (17 s per search). The deed leg runs with one worker (~1–2 min per record, 2 terms each).
+- *Estate Search by name returns namesakes decades back.* 12 single-candidate hits with no research DOD:
+  8 were estates from 1980–2016 on records that sit on the 2026 inheritance list — a namesake or the prior
+  generation. Rule: a name-only hit joins only when the grid DOD is within `MAX_DOD_GAP_YEARS` (3) or ±45
+  days of the research DOD; everything else stays in `hits` as review (`--rechoose` re-applies the rule
+  without a scrape). 40 chosen → 32 after the rule; 21 review; 113 no estate (58 with a 2025/26 DOD = no
+  probate opened yet — the note now says so instead of "no case on file").
+- *`title_for_md` read `owner_name` / `mailing` / `premises`* — keys `parse_sdat_result` never wrote
+  (`owner_names`, `mailing_address`, `premises_address`); the MD path had never been exercised and would
+  have stored every title with an empty owner list.
+- *Nicknames on the roll*: Steve Wilmot vs WILMOT STEPHEN C, Donald Zink vs ZINK DON L TRUSTEE were
+  classified "not the decedent"; `_NICKNAME_MAP` forms now count as PROBABLE (confirm on the deed),
+  `dp_title --reclassify` re-runs the classification on stored entries.
+- *`court_entry_mdva` dropped the anchors' `estate_number`* (it read `case_number` only), so every MD court
+  entry had `case_no: None`; `_v5_has_case` still stays False for MD (no party list).
+
+**Numbers (interim, deed leg running):** 305 of 334 parcels read; 215 decedent on title, 21 probable,
+69 NOT on title, 196 with a co-owner who is not the decedent, 59 in trust, 108 household subjects;
+199 of 334 with an estate number (170 anchors + 29 by name); 795 Firecrawl credits. Plan rebuilt into
+`rerun_v5/pilot_md/` with tags / REL names / phones identical to the live plan; notes max 3,424 chars.
+
+## DP V5 0210 batch - the address is the residence, not the estate's property (2026-10-02)
+
+Basem tagged 12 records `DP V5 0210` and asked for the v5 method on them (run dir `output/dp_v5_0210_20261002/`,
+REPORT.md there). All 12 sat at status Deep Prospecting with zero phones. The v5 pass (title, DC portal party
+lists, Recorder of Deeds index, obituaries, SmartSkip, Tracerfy, Trestle) showed what the earlier batches could
+not see:
+
+- **6 of the 9 DC records carried a case number that was not the owner's.** The DC probate pulls write the
+  decedent's RESIDENCE as the property and the PR in the owner slot. 301 Tingey St SE is the Foundry Lofts rental
+  (every parcel is SEFC 160 LLC); 635 Edgewood St NE #422 is DC Housing Authority; 3719 Grant Pl NE was sold by
+  the Kelly family in 2003, a year after the decedent died, and the 2026 case probates a 2002 death; 1015 50th Pl NE
+  carries the sister's South Carolina foreign estate (2026-FEP-000054), not the owner's; 4529 Douglas St NE
+  carries the estate of the owner's granddaughter-generation heir - the OWNER's own 2023 death (2024-ADM-001109,
+  closed) surfaced only through a portal NAME search ("Matthews, Frank"); 5180 Hanna Pl SE is a typo for 5120.
+- **The vendor matched a Register of Wills estate to a parcel on the surname alone.** W125319 (Montgomery, FP) is
+  Ralph Minor Lee, the New York puppeteer who died in Manhattan 2023-05-12, PR his widow Casey Compton at Westbeth;
+  7113 Panorama Dr is owned by "LEE RALPH L & J M", principal residence - a different family. Not a lead.
+- **The co-owner can be the PR.** 1727 P St NW #B: Megan E O'Donnell died 2025-01-08; the DataSift owner Pia Tamm
+  is the surviving co-owner AND the court-appointed foreign PR - one signer. The record's PR field held the decedent.
+- **Title can already have moved to the heir.** 5120 Hanna: Hilda Mae Hicks died 2026-04-20; a 2026-07-01 deed put
+  the heir Pierre Fletcher (the DataSift owner) on title alone, with no PR on the party list.
+- **The Tyler portal's Parties service answers HTTP 500 headless** (both CaseSummariesSlim and Parties); the same
+  calls succeed in a headed browser. `court_lookup_dc.py --headed --cases {...}` and `court_name_search_dc.py`
+  in the run dir are the by-case and by-name drivers (the name search returns every case type; filter ADM/FEP).
+- SmartSkip namesake trap again: the co-owner "Bernetta Francis" at 4529 Douglas resolved to a 53-year-old
+  Francis in Suitland; the real 79-year-old co-owner came back as that subject's PARENT at the court's address.
+- Spend: SmartSkip $1.65, Tracerfy $0.08, Trestle $0.65, Firecrawl 9 credits. 8 records pushed and read back,
+  4 got a pinned NOT A TARGET note; the pre-v5 tags (DP / VA DP / MD DP / Deep Prospecting 2.0) came off the one
+  record that carried them. Open for Basem: the Hanna address fix, the 4 lane removals, the three Schenkel
+  duplicates (c09ccc58 / 88630b5a / aeb502c7), deed images where vesting decides.
+
+### Merging duplicates by address (Schenkel, 2026-10-02)
+
+Basem: "Make all addresses read the same - that's how those would merge." Three records for 10101 Ridge Manor Ter
+#2000B (c09ccc58 June Inheritance / v5 record, 88630b5a June RoW with Paula as 'owner', aeb502c7 July IDI 'Willam').
+Procedure that worked, with read-back after every step: (1) back up all three (detail, custom fields, board, logs ->
+`rerun_v5/schenkel_backup_pre_merge_20261002.json`); (2) fold lists, tags, estimate value, the NO ANSWER disposition
+and Paula's extra scored lines onto the v5 record; (3) `PATCH property/<dup>/ {"address": {...exact survivor
+street...}}` -- DataSift collapsed the pair within seconds, and BOTH times the record that received the patch survived
+and the other uuid 404'd (the opposite of what the 4803 S Polling House note implied). Lists and tags carried over;
+the board note, PR/REL custom fields, status, assignee and estimate_value did not; phones pooled only after the owner
+block was patched to the same name + mailing (the orphan-entity absorption). (4) `schenkel_restore.py <uuid>` put
+status/value/dialer back, removed the dead relatives' and stale-tagged numbers, re-upserted the clean set, blanked
+REL2-5, deleted the pointer note; (5) `push --force` on the key re-landed the v5 note and PR/REL1 fields (the pusher
+resolves by address when the logged uuid 404s). Final: ONE record, 88630b5a, owner William Schenkel, prospecting,
+Ahmed Galal, 9 phones (Pr.1-7 Paula, Rel1.1-2 David), 6 lists, 15 tags, pinned v5 note, QA clean.

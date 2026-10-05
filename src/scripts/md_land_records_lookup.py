@@ -237,8 +237,15 @@ def _assert_logged_in(html: str) -> None:
 
 # ── Land Records grantee search ─────────────────────────────────────────
 
+# Land Records party radio list (#body_rdlParty_N). _2 = Grantee is verified live
+# (2026-09-04); _0 / _1 are the form's other two buttons (Both / Grantor) and are
+# verified by md_deed_lookup's --probe, which reads the "Grantor:" / "Grantee:" prefix
+# the results grid prints on every party cell.
+LANDREC_PARTY_RADIO = {"both": "#body_rdlParty_0", "grantor": "#body_rdlParty_1", "grantee": "#body_rdlParty_2"}
+
+
 def search_grantee(county: str, last_name: str, first_name: str = "",
-                    match_mode: str = "Begins", middle_name: str = "") -> list[dict]:
+                    match_mode: str = "Begins", middle_name: str = "", party: str = "grantee") -> list[dict]:
     """Search Land Records for `last_name` (+ optional first_name and
     middle_name) AS GRANTEE in `county`, sorted newest-first (Date
     Descending) so the most recent -- most likely current -- acquisition
@@ -279,7 +286,7 @@ def search_grantee(county: str, last_name: str, first_name: str = "",
             {"type": "write", "text": middle_name},
         ]
     actions += [
-        {"type": "executeJavascript", "script": _check_radio_js("#body_rdlParty_2")},  # Grantee
+        {"type": "executeJavascript", "script": _check_radio_js(LANDREC_PARTY_RADIO[party])},  # Grantee by default
         {
             "type": "executeJavascript",
             "script": _set_select_js("#body_SortByID", "2"),  # Date Descending
@@ -720,7 +727,7 @@ def split_street_for_sdat(street: str) -> tuple[str, str]:
 
 def _click_matching_result_row_js(street_number: str, street_name: str,
                                   owner_tokens: list[str] | None = None,
-                                  require_owner: bool = False) -> str:
+                                  require_owner: bool = False, unit: str = "") -> str:
     """If the street search landed on a multi-match grid (several parcels
     on the same number/name, e.g. condo units), click the best row. The
     grid shows each parcel's OWNER, so when `owner_tokens` (decedent name
@@ -734,31 +741,74 @@ def _click_matching_result_row_js(street_number: str, street_name: str,
     already a single parcel's detail (it has 'Owner Name' on it)."""
     num = street_number.replace("'", "")
     name = street_name.replace("'", "").upper()
+    unit_tok = re.sub(r"[^A-Z0-9]", "", (unit or "").upper())
+    # '231B' -> a JS regex that tolerates the grid's own separators ('23-1B', '23 1B') and is
+    # anchored on a unit word, so the digits of an account number never satisfy it
+    # the grid prints 'UNIT: 307' (colon, confirmed 2026-10-02 on 66 Franklin St: 79 rows)
+    unit_re = ("(UNIT|APT|STE|NO|#)[^A-Z0-9]*" + "[^A-Z0-9]?".join(unit_tok) + "(?![A-Z0-9])") if unit_tok else ""
     toks = [re.sub(r"[^A-Z0-9]", "", t.upper()) for t in (owner_tokens or [])]
     toks = [t for t in toks if len(t) > 1]
     toks_js = "[" + ",".join(f"'{t}'" for t in toks) + "]"
+    # The grid's row link is an ASP.NET LinkButton whose href runs
+    # WebForm_DoPostBackWithOptions(..., performValidation=true, ...): a plain a.click()
+    # went through the page validators and silently did nothing on every multi-row grid
+    # (38 of 185 MD lookups "no parcel", 2026-10-02; the raw page is in
+    # output/.../md_probe/sdat_grid_403vale_raw.html). Post back the row's own event
+    # target directly through __doPostBack instead, and fall back to click().
     return f"""
         (function() {{
             if ((document.body.innerText || '').indexOf('Owner Name') >= 0) return;
+            function go(a) {{
+                var h = a.getAttribute('href') || '';
+                // no regex with quotes or backslashes: the script travels through JSON and the
+                // scraper's own string handling, and both mangled an escaped quote (2026-10-02).
+                var m = null;
+                var k = h.indexOf('PostBackOptions(');
+                if (k >= 0) {{ m = h.slice(k + 16).split(',')[0].replace(/[^A-Za-z0-9_$]/g, ''); }}
+                if (m && typeof __doPostBack === 'function') {{ __doPostBack(m, ''); return; }}
+                a.click();
+            }}
             var toks = {toks_js};
             var rows = document.querySelectorAll('table tr');
             var streetHit = null;
             for (var i = 0; i < rows.length; i++) {{
                 var t = (rows[i].innerText || '').toUpperCase();
-                if (t.indexOf('{num}') >= 0 && t.indexOf('{name}') >= 0) {{
-                    var a = rows[i].querySelector('a');
+                if (t.indexOf('{num}') >= 0 && t.indexOf('{name}') >= 0
+                        && ('{unit_tok}' === '' || new RegExp('{unit_re}').test(t))) {{
+                    // a condo grid lists one row per UNIT: without the unit in the row text the
+                    // first street match is a neighbour (66 Franklin St Unit 307 -> ADKINS, 2026-10-02)
+                    // an OUTER layout row wraps the whole grid: its innerText matches everything and
+                    // its first <a> is the header's SORT link, whose postback re-rendered the grid
+                    // (every multi-row lookup failed this way until 2026-10-02). Leaf rows only,
+                    // and the row's own details link.
+                    if (rows[i].querySelector('table')) continue;
+                    var a = rows[i].querySelector('a.lnkdetails') || rows[i].querySelector('a[href]');
                     if (!a) continue;
                     if (!streetHit) streetHit = a;
                     if (toks.length) {{
                         var hits = 0;
                         for (var j = 0; j < toks.length; j++) if (t.indexOf(toks[j]) >= 0) hits++;
-                        if (hits >= Math.min(2, toks.length)) {{ a.click(); return; }}
+                        if (hits >= Math.min(2, toks.length)) {{ go(a); return; }}
                     }}
                 }}
             }}
-            if (streetHit && !{str(bool(require_owner)).lower()}) streetHit.click();
+            if (streetHit && !{str(bool(require_owner)).lower()}) go(streetHit);
         }})();
     """
+
+
+def street_unit(street: str) -> str:
+    """'66 Franklin St Unit 307' -> '307'; '4601 N Park Ave Apt 208H' -> '208H'; '8101 Connecticut
+    Ave Unit S709' -> 'S709'; '14805 Pennfield Cir 312' -> '312' (a bare trailing token after the
+    suffix); '10608D Bethel Rd' -> '' (the letter belongs to the house number)."""
+    s_ = (street or "").strip()
+    m = re.search(r"\b(?:UNIT|APT|APARTMENT|STE|SUITE|#)\s*#?\s*([A-Z0-9-]+)\s*$", s_, re.I)
+    if m:
+        return m.group(1).upper()
+    toks = s_.split()
+    if len(toks) >= 4 and re.fullmatch(r"[A-Z]?\d+[A-Z]?", toks[-1], re.I) and toks[-2].rstrip(".").upper() in STREET_SUFFIXES:
+        return toks[-1].upper()
+    return ""
 
 
 def lookup_sdat_by_address(county: str, street: str, owner_name: str = "") -> dict | None:
@@ -787,6 +837,7 @@ def lookup_sdat_by_address(county: str, street: str, owner_name: str = "") -> di
         return None
     owner_tokens = [t for t in re.split(r"[\s,/]+", (owner_name or "").upper())
                     if t and t.rstrip(".") not in _NAME_NOISE]
+    unit = street_unit(street)
 
     def _run(street_name: str, require_owner: bool) -> dict | None:
         actions = [
@@ -802,8 +853,10 @@ def lookup_sdat_by_address(county: str, street: str, owner_name: str = "") -> di
             {"type": "click", "selector": NEXT_SEL},
             {"type": "wait", "milliseconds": 4000},
             {"type": "executeJavascript", "script": _click_matching_result_row_js(
-                number, street_name, owner_tokens, require_owner=require_owner)},
-            {"type": "wait", "milliseconds": 3500},
+                number, street_name, owner_tokens, require_owner=require_owner, unit=unit)},
+            # the row postback + detail render takes longer than 3.5 s (measured 2026-10-02:
+            # 3.5 s scraped the grid again, 7 s landed on the detail page)
+            {"type": "wait", "milliseconds": 7000},
             {"type": "scrape"},
         ]
         html = firecrawl_scrape_retry(SDAT_URL, actions, timeout=120)
@@ -897,6 +950,7 @@ def parse_sdat_result(html: str) -> dict | None:
     use_pr = grab(r"Principal Residence:\s*\n([A-Z ]+)\n(?:YES|NO)")
     principal_residence = grab(r"Principal Residence:\s*\n[A-Z ]+\n(YES|NO)")
 
+    deed_ref = grab(r"Deed Reference:\s*\n(/?\s*\d+\s*/\s*\d+)")
     return {
         "owner_names": [n.strip() for n in owner_block.split("\n") if n.strip()],
         "premises_address": " ".join(premises.split()),
@@ -907,7 +961,50 @@ def parse_sdat_result(html: str) -> dict | None:
         "account": account,
         "use": use_pr.strip(),
         "principal_residence": principal_residence,
+        "deed_reference": " ".join(deed_ref.split()),
+        "transfers": parse_sdat_transfers(text),
     }
+
+
+_SDAT_TRANSFER_LABELS = ("Seller:", "Date:", "Price:", "Type:", "Deed1:", "Deed2:")
+
+
+def parse_sdat_transfers(text: str) -> list[dict]:
+    """The detail page's 'Transfer Information' block: up to three transfers, each a
+    Seller / Date / Price / Type / Deed1 / Deed2 label run. A blank value is a label
+    followed directly by the next label (confirmed live 2026-10-02: 'Seller: | Date: |
+    04/20/1972 | Price: | $0 | Type: | NON-ARMS LENGTH OTHER | Deed1: | /02483/ 00123').
+    Returns only transfers that carry a date or a deed reference."""
+    i = text.find("Transfer Information")
+    if i < 0:
+        return []
+    j = text.find("Exemption Information", i)
+    block = text[i + len("Transfer Information"):j if j > 0 else None]
+    lines = [ln.strip() for ln in block.split("\n") if ln.strip()]
+    out: list[dict] = []
+    cur: dict | None = None
+    label = None
+    for ln in lines:
+        if ln in _SDAT_TRANSFER_LABELS:
+            if ln == "Seller:":
+                cur = {"seller": "", "date": "", "price": "", "type": "", "deed1": "", "deed2": ""}
+                out.append(cur)
+            label = ln.rstrip(":").lower()
+            continue
+        if cur is not None and label:
+            cur[label] = (cur[label] + " " + ln).strip() if cur[label] else ln
+    return [t for t in out if t["date"] or t["deed1"]]
+
+
+def deed_ref_key(ref: str) -> tuple[str, str] | None:
+    """'/02483/ 00123' (SDAT), 'Book 2483, pp. 123-124' or 'Book 7696, p. 29' (Land Records)
+    -> ('2483', '123'): book and FIRST page, digits only, no zero padding."""
+    s = (ref or "").upper()
+    m = re.search(r"BOOK\s*(\d+)\s*,?\s*PP?\.?\s*(\d+)", s) or re.search(r"/?\s*(\d+)\s*/\s*(\d+)", s)
+    if not m:
+        return None
+    book, page = m.group(1).lstrip("0"), m.group(2).lstrip("0")
+    return (book or "0", page or "0")
 
 
 # Reuse the street-suffix split from md_register_of_wills_pull rather than

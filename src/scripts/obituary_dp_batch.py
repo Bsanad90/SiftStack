@@ -497,7 +497,12 @@ def _matches_decedent(decedent: str, name: str) -> bool:
     dt, nt = name_tokens(decedent), name_tokens(name)
     if len(dt) < 2 or len(nt) < 2 or dt[-1] != nt[-1]:
         return False
-    return bool({t for t in dt[:-1] if len(t) > 1} & {t for t in nt[:-1] if len(t) > 1})
+    # The shared token must be the RELATIVE's first name. "Lynn Wayne Hill" vs "WAYNE
+    # HILL" matches (Wayne is what he goes by); "Arjan Aswani" vs "Kavita Arjan Aswani"
+    # does NOT -- Kavita is the living spouse carrying her husband's name as a middle
+    # name, and the old symmetric check silenced her (2026-10-01 handoff).
+    given_dec = {t for t in dt[:-1] if len(t) > 1}
+    return len(nt[0]) > 1 and nt[0] in given_dec
 
 
 def _cross_check(f: dict, rels: list[dict]) -> dict:
@@ -801,6 +806,259 @@ def cmd_prep(a) -> int:
         say(f"   {t['business_name']!r:55} -> {t['first']} {t['last']}  [{t['confidence']}]")
     assert len(records) + counts["dup_address"] == len(rows)
     return 0
+# ───────────────────────── anchors ─────────────────────────
+
+VENDOR_ROOT = ROOT / "output" / "vendor_lists" / "files" / "Marketing Lists"
+ROW_LEDGER = ROOT / "output" / "md_row_ledger.json"
+SHEET26_DEFAULT = Path.home() / "Downloads" / "Probate Extraction 2 - Sheet26.csv"
+
+
+def _iso_date(s: str) -> str:
+    """'08-13-2026' / '8/13/2026' / '2026-08-13' -> '2026-08-13'; '' when unparseable."""
+    s = (s or "").strip()
+    m = re.match(r"^(\d{1,2})[-/](\d{1,2})[-/](\d{4})", s)
+    if m:
+        return f"{m.group(3)}-{int(m.group(1)):02d}-{int(m.group(2)):02d}"
+    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})", s)
+    return m.group(0) if m else ""
+
+
+def _court_for(state: str, county: str) -> str:
+    if state == "DC":
+        return "DC Superior Court, Probate Division"
+    if state == "MD":
+        return f"{county} Register of Wills" if county else "Register of Wills"
+    if state == "VA":
+        return f"{county} Circuit Court" if county else "Circuit Court"
+    return "probate court"
+
+
+def _join_name(*parts) -> str:
+    return " ".join(p.strip() for p in parts if p and str(p).strip() and str(p).strip() != "None")
+
+
+def cmd_anchors(a) -> int:
+    """Attach the search anchors the vendor files ALREADY HOLD to every record.
+
+    1391 Pennsylvania Ave SE #433 (Basem, 2026-10-01): the note said "DOD unknown (no
+    source)" while the vendor's raw weekly probate CSV for that row carried the date of
+    death (08-13-2026), the case number (2026-ADM-001053), the decedent's middle name
+    (Beardsley), the PR's full name and address, and the attorney. The DP input dropped
+    all of it, the research searched "David Smith" obituary Washington, judged three
+    namesakes and gave up. Across the Sept batch 76% of the SIGNER lines rested on a
+    SmartSkip label alone. This step writes rec["anchors"] from three sources, none of
+    which costs anything:
+      - the vendor raw probate CSVs (`*Raw*.csv` under --vendor-root): DOD, case number,
+        middle name, PR full name + mailing, attorney;
+      - the Register of Wills extraction sheet (--sheet26): estate number, full decedent
+        name, PR name(s) + mailing, notice date;
+      - the MD RoW ledger (--row-ledger), by county|estate number: DOD, decedent name as
+        filed, PRs, attorney, filing date.
+    `research` then searches with the anchors and the judge must confirm one; `build`
+    prints them (CASE line, PR mailing, attorney) and uses the court DOD when no obituary
+    gives one. Idempotent: re-running overwrites rec["anchors"].
+    """
+    import glob as _glob
+    run = Path(a.run_dir)
+    records = jload(run / "records.json", {})
+    export = Path(a.export) if a.export else run / "dp_input_export.csv"
+    drive_src: dict[str, str] = {}
+    if export.exists():
+        for r in csv.DictReader(open(export, newline="", encoding="utf-8-sig")):
+            k = sift_key(r.get("Property address", ""), r.get("Property zip5") or r.get("Property zip", ""))
+            drive_src[k] = (r.get("Drive source") or "").strip()
+
+    # (a) vendor raw CSVs
+    raw: dict[str, dict] = {}
+    n_raw_files = 0
+    for fn in sorted(_glob.glob(str(Path(a.vendor_root) / "**" / "*Raw*.csv"), recursive=True)):
+        try:
+            rows = list(csv.DictReader(open(fn, newline="", encoding="utf-8-sig", errors="replace")))
+        except OSError:
+            continue
+        if not rows or "Date of Death" not in rows[0] or "Property Address" not in rows[0]:
+            continue
+        n_raw_files += 1
+        for r in rows:
+            k = sift_key(r.get("Property Address", ""), r.get("Property Zip", ""))
+            if not k or k in raw:
+                continue        # first file wins (oldest week); the data does not change
+            pr_full = _join_name(r.get("PR First Name"), r.get("PR Middle Name"), r.get("PR Last Name"))
+            att = _join_name(r.get("Attorney First Name"), r.get("Attorney Middle Name"), r.get("Attorney Last Name"))
+            raw[k] = {
+                "dod": _iso_date(r.get("Date of Death", "")),
+                "dod_source": "vendor_probate_file" if _iso_date(r.get("Date of Death", "")) else "",
+                "case_number": (r.get("Case Number") or "").strip(),
+                "file_date": _iso_date(r.get("File Date", "")),
+                "decedent_full": _join_name(r.get("First Name (Deceased)"), r.get("Middle Name"),
+                                            r.get("Last Name"), r.get("Suffix")),
+                "decedent_middle": (r.get("Middle Name") or "").strip(),
+                "pr_full": pr_full,
+                "pr_mailing": _join_name(r.get("PR Address"), (r.get("PR City") or "") + ",",
+                                         r.get("PR State"), r.get("PR Zip")).replace(" ,", ","),
+                "attorney": _join_name(att, r.get("Attorney Ph Number"), r.get("Attorney Email ID")),
+                "source": f"vendor raw {Path(fn).name}",
+            }
+
+    # (b) Sheet26 (Register of Wills extraction sheet)
+    sheet: dict[str, dict] = {}
+    by_estate: dict[str, dict] = {}
+    s26 = Path(a.sheet26) if a.sheet26 else SHEET26_DEFAULT
+    if s26.exists():
+        for r in csv.DictReader(open(s26, newline="", encoding="utf-8-sig", errors="replace")):
+            k = sift_key((r.get("Property Address") or "").strip(), r.get("Property Zipcode", ""))
+            est = (r.get("Estate #") or "").strip()
+            prs = [_join_name(r.get("PR First Name"), r.get("PR Last Name"))]
+            for i in (2, 3):
+                nm = _join_name(r.get(f"PR {i} First Name"), r.get(f"PR {i} Last Name"))
+                if nm:
+                    prs.append(nm)
+            d = {
+                "estate_number": est,
+                "county": (r.get("County") or "").replace(" County", "").strip(),
+                "decedent_full": _join_name(r.get("Deceased First Name"), r.get("Deceased Last Name")),
+                "pr_full": prs[0], "pr_others": prs[1:],
+                "pr_mailing": _join_name(r.get("Owner Address (PR)"), (r.get("Owner City") or "") + ",",
+                                         r.get("Owner State"), r.get("Owner Zipcode")).replace(" ,", ","),
+                "attorney": (r.get("Attorney") or "").strip(),
+                "notice_date": _iso_date(r.get("Published on", "")),
+                "source": "Sheet26",
+            }
+            if k:
+                sheet.setdefault(k, d)
+            if est:
+                by_estate.setdefault(est, d)
+
+    # (c) the RoW ledger, by county|estate number
+    ledger = (jload(Path(a.row_ledger), {}) or {}).get("estates", {}) if Path(a.row_ledger).exists() else {}
+    ledger_by_est: dict[str, dict] = {}
+    for ck, v in ledger.items():
+        en = ck.split("|", 1)[1] if "|" in ck else ck
+        ledger_by_est.setdefault(en, v)
+
+    counts = Counter()
+    for key, rec in records.items():
+        an: dict = {}
+        if key in raw:
+            an.update(raw[key]); counts["vendor_raw"] += 1
+        est = ""
+        if key in sheet:
+            d = sheet[key]
+            for kk, vv in d.items():
+                if vv and not an.get(kk):
+                    an[kk] = vv
+            est = d.get("estate_number") or ""
+            counts["sheet26"] += 1
+        if not est:
+            m = re.search(r"Sheet26 estate (\S+)", drive_src.get(key, ""))
+            if m:
+                est = m.group(1)
+                if est in by_estate:
+                    for kk, vv in by_estate[est].items():
+                        if vv and not an.get(kk):
+                            an[kk] = vv
+                    counts["sheet26_by_estate"] += 1
+        if est:
+            an["estate_number"] = est
+            lv = ledger_by_est.get(est)
+            if lv:
+                counts["row_ledger"] += 1
+                dod = _iso_date(lv.get("date_of_death", ""))
+                if dod and not an.get("dod"):
+                    an["dod"], an["dod_source"] = dod, "register_of_wills"
+                if lv.get("decedent_name") and not an.get("decedent_as_filed"):
+                    an["decedent_as_filed"] = lv["decedent_name"]
+                if not an.get("file_date"):
+                    an["file_date"] = _iso_date(lv.get("date_of_filing") or lv.get("filing_date") or "")
+                prs = lv.get("personal_reps") or []
+                if prs and not an.get("pr_full"):
+                    an["pr_full"] = prs[0].get("name", "")
+                    an["pr_mailing"] = _join_name(prs[0].get("street"), (prs[0].get("city") or "") + ",",
+                                                  prs[0].get("state"), prs[0].get("zip")).replace(" ,", ",")
+                if lv.get("attorney") and not an.get("attorney"):
+                    an["attorney"] = (lv["attorney"] or {}).get("name", "")
+                an["row_record_id"] = lv.get("record_id", "")
+                an["source"] = (an.get("source", "") + " + RoW ledger").strip(" +")
+        if an:
+            an.setdefault("court", _court_for(rec.get("state", ""), rec.get("county", "")))
+            # the middle name as a search anchor, from the fullest name on file
+            full = an.get("decedent_full") or ""
+            toks = [t for t in re.sub(r"[.,]", "", full).split() if t]
+            if len(toks) >= 3 and not an.get("decedent_middle"):
+                an["decedent_middle"] = " ".join(toks[1:-1])
+            rec["anchors"] = an
+            counts["anchored"] += 1
+            if an.get("dod"):
+                counts["with_dod"] += 1
+        else:
+            rec.pop("anchors", None)
+    if getattr(a, "estate_search", False):
+        counts["estate_search"] = _estate_search_fill(run, records, a.estate_limit)
+    jdump(run / "records.json", records)
+    say(f"anchors: {len(records)} records, raw files={n_raw_files}, {dict(counts)}")
+    return 0
+def _estate_search_fill(run: Path, records: dict, limit: int = 0) -> int:
+    """Register of Wills Estate Search BY ESTATE NUMBER (#txtEstateNo + county) for every
+    anchored record that has an estate number and no DOD yet. The results grid itself
+    carries the date of death, the filing date and the name as filed, so it is ONE
+    Firecrawl scrape per estate and no detail page. Cached in row_estate_lookup.json;
+    the RoW ledger is never written (two writers of that file lose work, see CLAUDE.md).
+    """
+    import md_register_of_wills_pull as row  # noqa: E402
+    cache_p = run / "row_estate_lookup.json"
+    cache = jload(cache_p, {}) or {}
+    todo = [(k, r) for k, r in records.items()
+            if (r.get("anchors") or {}).get("estate_number") and not (r.get("anchors") or {}).get("dod")]
+    if limit:
+        todo = todo[:limit]
+    say(f"estate search: {len(todo)} estates without a DOD ({sum(1 for k, _ in todo if k in cache)} cached)")
+    filled = 0
+    for i, (key, rec) in enumerate(todo, 1):
+        an = rec["anchors"]
+        est = an["estate_number"]
+        county = an.get("county") or rec.get("county") or ""
+        hit = cache.get(key)
+        if hit is None:
+            cid = row.COUNTY_ID.get(county)
+            if not cid:
+                say(f"  [{i}/{len(todo)}] {rec['street']}: county {county!r} not in COUNTY_ID, skipped")
+                continue
+            actions = [
+                {"type": "wait", "milliseconds": 2000},
+                {"type": "executeJavascript",
+                 "script": row._set_value_js("#cboCountyId", cid) + row._set_value_js("#txtEstateNo", est)},
+                {"type": "wait", "milliseconds": 1500},
+                {"type": "click", "selector": "#cmdSearch"},
+                {"type": "wait", "milliseconds": 5000},
+                {"type": "scrape"},
+            ]
+            try:
+                html = row.firecrawl_scrape_retry(row.ESTATE_SEARCH_URL, actions, timeout=90)[-1]
+            except Exception as e:  # noqa: BLE001
+                say(f"  [{i}/{len(todo)}] {rec['street']}: estate {est} fetch failed: {str(e)[:120]}")
+                continue
+            rows = [g for g in row.parse_estate_search_grid(html, county)
+                    if g.get("estate_number", "").upper() == est.upper()]
+            hit = rows[0] if rows else {}
+            cache[key] = hit
+            jdump(cache_p, cache)
+        if not hit:
+            say(f"  [{i}/{len(todo)}] {rec['street']}: estate {est} ({county}) -> no grid row")
+            continue
+        dod = _iso_date(hit.get("date_of_death", ""))
+        if dod:
+            an["dod"], an["dod_source"] = dod, "register_of_wills"
+            filled += 1
+        if hit.get("name_raw") and not an.get("decedent_as_filed"):
+            first, last = row.split_last_first_name(hit["name_raw"])
+            an["decedent_as_filed"] = f"{first} {last}".strip()
+        if not an.get("file_date"):
+            an["file_date"] = _iso_date(hit.get("filing_date", ""))
+        an["row_record_id"] = hit.get("record_id", "")
+        an["estate_status"] = hit.get("status", "")
+        an["source"] = (an.get("source", "") + " + RoW estate search").strip(" +")
+        say(f"  [{i}/{len(todo)}] {rec['street']}: estate {est} -> DOD {dod or '?'} {hit.get('name_raw', '')}")
+    return filled
 # ───────────────────────── trace ─────────────────────────
 
 def _smartskip(run: Path):
@@ -1217,19 +1475,94 @@ def _firecrawl_search(query: str, limit: int = 8) -> list[dict]:
     return [{"href": it.get("url", ""), "title": it.get("title", ""), "body": it.get("description", "")}
             for it in items if isinstance(it, dict)]
 _ddgs_dead_until = 0.0
-def _search_obit(name: str, city: str, state: str) -> list[dict]:
+def _anchor_queries(name: str, city: str, state: str, anchors: dict | None) -> list[str]:
+    """The search strings, most specific first. With no anchors this is the one query the
+    pipeline always ran: '"First Last" obituary City State'. With a middle name on the
+    filing the full name is searched first ("David Beardsley Smith" finds one person;
+    "David Smith" Washington found three namesakes, 2026-10-01). A DOD year narrows the
+    base query."""
+    sname = STATE_NAMES.get(state, state)
+    an = anchors or {}
+    out = []
+    full = re.sub(r"\s+", " ", (an.get("decedent_full") or "").replace(".", "")).strip()
+    toks = full.split()
+    # A one-letter middle INITIAL adds nothing to a quoted query and made '"William A
+    # Drews" obituary' return an ancestry listing and two strangers (5418 Ridge Rd,
+    # 2026-10-01); only a real middle/maiden name ("Beardsley", "Zlotowitz") is searched.
+    if len(toks) >= 3 and full.lower() != name.lower() and all(len(t) >= 2 for t in toks[1:-1]):
+        out.append(f'"{full}" obituary')
+    yr = (an.get("dod") or "")[:4]
+    place = sname if (city or "").lower() in sname.lower() else f"{city} {sname}"   # "Washington Washington DC"
+    out.append(f'"{name}" obituary {place}'.strip() + (f" {yr}" if yr else ""))
+    return out
+def _search_obit(name: str, city: str, state: str, anchors: dict | None = None) -> list[dict]:
     """Obituary web search: DDGS (free) with retries, Firecrawl search when DDGS is throttled.
 
     DDGS answered the first handful of pilot searches and then returned "No results found."
     for every query -- a rate limit that reads exactly like a person with no obituary. A
     search failure is therefore reported as {"error": ...} (never as an empty list) so the
     caller can refuse to cache the verdict.
+
+    With anchors (cmd_anchors) up to two queries run and their hits are merged, the
+    anchored query's hits first.
     """
+    from obituary_enricher import _is_obituary_url  # noqa: E402
+    merged: list[dict] = []
+    seen: set[str] = set()
+    last_err = None
+    for query in _anchor_queries(name, city, state, anchors):
+        results = _search_once(query)
+        if results and results[0].get("error"):
+            last_err = results[0]
+            continue
+        for r in results:
+            url = r.get("href", "")
+            title, body = (r.get("title") or ""), (r.get("body") or "")
+            low = (title + " " + body).lower()
+            if url in seen:
+                continue
+            if _is_obituary_url(url) or any(w in low for w in ("obituar", "passed away", "death notice", "funeral")):
+                seen.add(url)
+                merged.append({"url": url, "title": title, "snippet": body, "query": query})
+    if not merged and last_err:
+        return [last_err]
+    return _rank_hits(merged, name, city, state, anchors)[:8]
+def _rank_hits(hits: list[dict], name: str, city: str, state: str, anchors: dict | None) -> list[dict]:
+    """Order the merged hits by how much of the OWNER they carry, so the page budget
+    (max_fetch, 3) is spent on the likeliest obituary. The first pass judged pages in
+    query order and the anchored query's junk exhausted the budget before the base
+    query's correct hit (dignitymemorial marriottsville-md/william-drews, 5418 Ridge Rd).
+    Score: first + last name in title/url, the property city or state, the filing DOD
+    year; genealogy / search listings (ancestry, myheritage, findagrave search, legacy
+    search) go last. Stable, so equal scores keep query order."""
+    from obituary_enricher import _is_listing_url  # noqa: E402
+    toks = [t for t in re.sub(r"[^a-z ]", "", (name or "").lower()).split() if len(t) > 1]
+    first, last = (toks[0], toks[-1]) if len(toks) >= 2 else ("", toks[0] if toks else "")
+    sname = STATE_NAMES.get(state, state).lower()
+    yr = ((anchors or {}).get("dod") or "")[:4]
+    def score(h):
+        t = ((h.get("title") or "") + " " + (h.get("snippet") or "")).lower()
+        u = (h.get("url") or "").lower()
+        sc = 0
+        if last and (last in t or last in u):
+            sc += 2
+        if first and (first in t or first in u):
+            sc += 2
+        if city and city.lower() in t:
+            sc += 1
+        elif sname and (sname in t or f"-{state.lower()}/" in u):
+            sc += 1
+        if yr and yr in t:
+            sc += 1
+        if _is_listing_url(u) or any(x in u for x in ("ancestry.com", "myheritage", "/search", "familysearch")):
+            sc -= 10
+        if _url_outside_footprint(u) or _title_outside_footprint(h.get("title") or ""):
+            sc -= 3
+        return -sc
+    return sorted(hits, key=score)
+def _search_once(query: str) -> list[dict]:
     global _ddgs_dead_until
     from ddgs import DDGS  # noqa: E402
-    from obituary_enricher import _is_obituary_url  # noqa: E402
-    sname = STATE_NAMES.get(state, state)
-    query = f'"{name}" obituary {city} {sname}'.strip()
     results, err = None, ""
     if time.time() >= _ddgs_dead_until:
         for attempt, backend in enumerate(("google,duckduckgo,brave", "duckduckgo,bing", "brave,google")):
@@ -1250,16 +1583,103 @@ def _search_obit(name: str, city: str, state: str) -> list[dict]:
         results = fc
         if not results:
             return [{"error": f"ddgs: {err} | firecrawl: 0 results", "query": query}]
-    out = []
-    for r in results:
-        url = r.get("href", "")
-        title, body = (r.get("title") or ""), (r.get("body") or "")
-        low = (title + " " + body).lower()
-        if _is_obituary_url(url) or any(w in low for w in ("obituar", "passed away", "death notice", "funeral")):
-            out.append({"url": url, "title": title, "snippet": body})
     time.sleep(1.5)
-    return out[:6]
-def _llm_match(text: str, owner_name: str, city: str, address: str, state: str) -> dict | None:
+    return results
+_FOOTPRINT_SLUGS = ("-va/", "-md/", "-dc/", "washingtonpost", "baltimoresun", "fredericknewspost",
+                    "capitalgazette", "washingtontimes")
+_OUT_OF_STATE_RE = re.compile(
+    r"-(al|ak|az|ar|ca|co|ct|de|fl|ga|hi|id|il|in|ia|ks|ky|la|me|ma|mi|mn|ms|mo|mt|ne|nv|nh|nj|nm|ny|nc|nd|"
+    r"oh|ok|or|pa|ri|sc|sd|tn|tx|ut|vt|wa|wv|wi|wy)/")
+def _url_outside_footprint(url: str) -> bool:
+    """dignitymemorial / echovita / legacy-newspaper slugs carry the place: 'brooksville-fl',
+    'gaffneyledger'. An obituary published outside MD/DC/VA is a namesake until an anchor
+    says otherwise (1403 Horizon Ct, Herndon matched a Gaffney SC obituary, 2026-10-01)."""
+    u = (url or "").lower()
+    if any(x in u for x in _FOOTPRINT_SLUGS):
+        return False
+    return bool(_OUT_OF_STATE_RE.search(u))
+_TITLE_PLACE_RE = re.compile(r"-\s*([A-Za-z .']+),\s*([A-Z]{2})\s*-")
+def _title_outside_footprint(title: str) -> bool:
+    """legacy.com titles carry the place: 'Kenneth Gordon Obituary (1948 - 2026) - Gaffney,
+    SC - Gaffney Ledger'. A newspaper slug says nothing (gaffneyledger is not '-sc/'), the
+    title does. 1403 Horizon Ct, Herndon survived the URL rule on exactly this page."""
+    m = _TITLE_PLACE_RE.search(title or "")
+    return bool(m) and m.group(2) not in ("MD", "VA", "DC")
+ANCHOR_PROMPT = """
+
+KNOWN FACTS from the court filing / vendor record for this owner. Use them to confirm or \
+reject the match; they are the only reliable way to tell a namesake apart:
+{facts}
+
+Add these keys to the JSON:
+- "anchor_hits": array of the fact labels above that the obituary TEXT ITSELF confirms \
+(for example ["dod", "middle_name", "pr", "relative:Rhea Smith"]). Confirm a date only \
+when the obituary's date of death is within a few days of the filing's. Confirm "pr" or \
+a "relative:" only when that person is named in the text. Empty array if none.
+- "location_match": true only if the obituary places the person in or near {city}, {state}.
+
+A short common name (two tokens) with NO anchor hit and location_match false is NOT a \
+match, whatever the name similarity. Set "match" false in that case."""
+def _anchor_facts(anchors: dict | None, rels: list[dict] | None) -> tuple[str, bool]:
+    an = anchors or {}
+    lines = []
+    if an.get("decedent_full"):
+        lines.append(f"- full_name: the filing names the decedent as {an['decedent_full']}")
+    if an.get("decedent_middle"):
+        lines.append(f"- middle_name: {an['decedent_middle']}")
+    if an.get("dod"):
+        lines.append(f"- dod: date of death on the filing {an['dod']}")
+    if an.get("pr_full"):
+        lines.append(f"- pr: personal representative {an['pr_full']}"
+                     + (f" ({an['pr_mailing']})" if an.get("pr_mailing") else ""))
+    for nm in (an.get("pr_others") or [])[:2]:
+        lines.append(f"- pr: co-personal representative {nm}")
+    names = []
+    for r in rels or []:
+        nm = (r.get("name") or "").strip()
+        if nm and (r.get("first") or "").lower() not in ("", "unknown") and nm not in names:
+            names.append(nm)
+    for nm in names[:8]:
+        lines.append(f"- relative:{nm.title()}: on the skip-trace file as a relative (label unverified)")
+    return "\n".join(lines), bool(an.get("dod") or an.get("decedent_middle") or an.get("pr_full"))
+ANCHOR_DOD_TOLERANCE_DAYS = 45
+def _verify_anchors(parsed: dict, anchors: dict | None, url: str, strong: bool, title: str = "") -> str:
+    """Anchor verification IN CODE, after the judge said match=true. Returns the rejection
+    reason, or "" when the match stands (and then sets parsed["anchor_hits"] /
+    parsed["outside_footprint"]).
+
+    The judge's say-so is not enough: it answered "high" on a Gaffney SC obituary for a
+    Herndon owner (1403 Horizon Ct) and on five obituaries dated 2019-2024 against 2026
+    filings (7016 Channel Village Ct, 15105 McKnew Rd, 405 Pearl St, ...). Rules:
+      - a filing DOD the obituary contradicts by more than ANCHOR_DOD_TOLERANCE_DAYS is a
+        different person;
+      - with a strong anchor on file (DOD, middle name or PR) the text must confirm at
+        least one anchor or place the person in the footprint;
+      - an obituary published outside MD/DC/VA needs an anchor hit.
+    """
+    an = anchors or {}
+    hits = [str(h) for h in (parsed.get("anchor_hits") or []) if h]
+    p_dod = (parsed.get("date_of_death") or "")[:10]
+    if an.get("dod") and p_dod:
+        try:
+            gap = abs((date.fromisoformat(p_dod) - date.fromisoformat(an["dod"][:10])).days)
+        except ValueError:
+            gap = None
+        if gap is not None and gap > ANCHOR_DOD_TOLERANCE_DAYS:
+            return f"obituary DOD {p_dod} vs filing DOD {an['dod']} ({gap} days apart)"
+        if gap is not None and "dod" not in hits:
+            hits.append("dod")
+    outside = _url_outside_footprint(url) or _title_outside_footprint(title)
+    if strong and not hits and not parsed.get("location_match"):
+        return "no anchor confirmed (filing DOD / middle name / PR / relatives) and no location match"
+    if outside and not hits:
+        return "obituary published outside MD/DC/VA and no anchor confirmed"
+    parsed["anchor_hits"] = hits
+    parsed["outside_footprint"] = outside
+    return ""
+def _llm_match(text: str, owner_name: str, city: str, address: str, state: str,
+               anchors: dict | None = None, rels: list[dict] | None = None,
+               url: str = "", title: str = "") -> dict | None:
     import config as cfg  # noqa: E402
     import llm_client  # noqa: E402
     from obituary_enricher import (OBITUARY_PROMPT, SYSTEM_PROMPT, MAX_OBITUARY_TEXT,  # noqa: E402
@@ -1270,6 +1690,9 @@ def _llm_match(text: str, owner_name: str, city: str, address: str, state: str) 
     prompt = OBITUARY_PROMPT.replace("Tennessee", sname).format(
         owner_name=owner_name, city=city or "unknown", address=address or "unknown",
         obituary_text=text[:MAX_OBITUARY_TEXT])
+    facts, strong = _anchor_facts(anchors, rels)
+    if facts:
+        prompt += ANCHOR_PROMPT.format(facts=facts, city=city or "the property city", state=sname)
     try:
         parsed = llm_client.chat_json(prompt, system=SYSTEM_PROMPT, max_tokens=MAX_TOKENS,
                                       api_key=cfg.ANTHROPIC_API_KEY, model=_obituary_model())
@@ -1286,17 +1709,25 @@ def _llm_match(text: str, owner_name: str, city: str, address: str, state: str) 
                          "- see the llm_client log line above"}
     if not parsed.get("match") or not parsed.get("full_name"):
         return None
+    rejected = _verify_anchors(parsed, anchors, url, strong, title)
+    if rejected:
+        return {"rejected": rejected}
     deceased = parsed.get("full_name") or owner_name
     parsed["survivors"] = _validate_survivors_against_text(parsed.get("survivors", []), text, deceased)
     if parsed.get("preceded_in_death"):
         parsed["preceded_in_death"] = _validate_survivors_against_text(
             parsed.get("preceded_in_death", []), text, deceased)
     return parsed
-def _try_person(name: str, rec: dict, max_fetch: int) -> tuple[dict | None, list]:
-    """Search + fetch + LLM for one candidate decedent. Returns (parsed, trail)."""
+def _try_person(name: str, rec: dict, max_fetch: int, anchors: dict | None = None,
+                rels: list[dict] | None = None) -> tuple[dict | None, list]:
+    """Search + fetch + LLM for one candidate decedent. Returns (parsed, trail).
+
+    `anchors` (rec["anchors"], from cmd_anchors) drive the search strings and the judge's
+    verification; `rels` are the SmartSkip relatives offered to the judge as names to
+    confirm. Both None = the pre-2026-10-01 behaviour."""
     from obituary_enricher import _fetch_page_text  # noqa: E402
-    hits = _search_obit(name, rec["city"], rec["state"])
-    trail = [{"name": name, "hits": hits}]
+    hits = _search_obit(name, rec["city"], rec["state"], anchors)
+    trail = [{"name": name, "hits": hits, "queries": _anchor_queries(name, rec["city"], rec["state"], anchors)}]
     if hits and hits[0].get("error"):
         return None, trail
     tried = 0
@@ -1316,9 +1747,15 @@ def _try_person(name: str, rec: dict, max_fetch: int) -> tuple[dict | None, list
             trail.append({"url": url, "chars": len(text or ""), "match": False, "error": None, "skipped": "empty"})
             continue
         tried += 1
-        parsed = _llm_match(text, name, rec["city"], rec["street"], rec["state"])
-        trail.append({"url": url, "chars": len(text or ""), "match": bool(parsed and not parsed.get("error")),
-                      "error": (parsed or {}).get("error")})
+        parsed = _llm_match(text, name, rec["city"], rec["street"], rec["state"], anchors, rels, url,
+                            h.get("title") or "")
+        trail.append({"url": url, "chars": len(text or ""),
+                      "match": bool(parsed and not parsed.get("error") and not parsed.get("rejected")),
+                      "error": (parsed or {}).get("error"),
+                      "rejected": (parsed or {}).get("rejected"),
+                      "anchor_hits": (parsed or {}).get("anchor_hits")})
+        if parsed and parsed.get("rejected"):
+            parsed = None
         if parsed and not parsed.get("error"):
             parsed["obituary_url"] = url
             return parsed, trail
@@ -1362,6 +1799,13 @@ def cmd_research(a) -> int:
     keys = [k for k in ranked if k in records]
     if a.key:
         keys = [k for k in keys if k == a.key]
+    if getattr(a, "keys_file", None):
+        kf = Path(a.keys_file)
+        want = (json.loads(kf.read_text(encoding="utf-8")) if kf.suffix == ".json"
+                else [ln.strip() for ln in kf.read_text(encoding="utf-8").splitlines() if ln.strip()])
+        want = set(want)
+        keys = [k for k in keys if k in want]
+        say(f"research: --keys-file {kf.name}: {len(keys)} of {len(want)} keys found in this run")
     if a.limit:
         keys = keys[: a.limit]
     say(f"research: {len(keys)} records (cache: {sum(1 for k in keys if (cache_dir / (k.replace('|', '_') + '.json')).exists())} cached)")
@@ -1402,6 +1846,10 @@ def cmd_research(a) -> int:
         else:
             owner_name = f"{rec['ss_first']} {rec['ss_last']}".strip()
             f = {"record": key, "owner_name": owner_name, "searched": []}
+            anchors = rec.get("anchors") or {}
+            if anchors:
+                f["anchors_used"] = {k: anchors[k] for k in ("dod", "case_number", "estate_number",
+                                                             "decedent_full", "pr_full") if anchors.get(k)}
             # The CRM already knows who died on a probate/RoW record. When it names someone
             # who is NOT the owner, that is authoritative -- it came off the court filing --
             # and searching the owner for an obituary can only manufacture a false death:
@@ -1412,7 +1860,7 @@ def cmd_research(a) -> int:
             crm_decedent = f"{rec.get('decedent_first') or ''} {rec.get('decedent_last') or ''}".strip()
             if crm_decedent and not names_match(crm_decedent, owner_name):
                 f["decedent_from_crm"] = crm_decedent
-                p0, trail0 = _try_person(crm_decedent, rec, a.max_fetch)
+                p0, trail0 = _try_person(crm_decedent, rec, a.max_fetch, anchors, rk["rels"])
                 f["searched"].append({"who": "crm decedent", "name": crm_decedent, "trail": trail0})
                 # "owner alive" is the substring cmd_build keys on to load the OWNER'S own
                 # numbers -- correct here: a living PR is exactly who the dialer must reach.
@@ -1441,8 +1889,10 @@ def cmd_research(a) -> int:
                                      f"{owner_name}; no obituary found, verdict rests on the "
                                      f"CRM/court record")
                 parsed = None          # skip the owner-obituary branch entirely
+                if not f.get("dod") and anchors.get("dod"):
+                    f["dod"], f["dod_source"] = anchors["dod"], anchors.get("dod_source") or "court_record"
             else:
-                parsed, trail = _try_person(owner_name, rec, a.max_fetch)
+                parsed, trail = _try_person(owner_name, rec, a.max_fetch, anchors, rk["rels"])
                 f["searched"].append({"who": "owner", "trail": trail})
             if f.get("decedent_from_crm"):
                 pass                   # verdict already settled above
@@ -1451,12 +1901,36 @@ def cmd_research(a) -> int:
                 f["decedent_name"] = parsed.get("full_name")
                 f["dod"] = parsed.get("date_of_death") or ""
                 f["dod_source"] = "obituary" if f["dod"] else ""
+                if not f["dod"] and anchors.get("dod"):
+                    f["dod"], f["dod_source"] = anchors["dod"], anchors.get("dod_source") or "court_record"
                 f["obituary_url"] = parsed.get("obituary_url")
                 f["confidence"] = parsed.get("confidence")
+                f["anchor_hits"] = parsed.get("anchor_hits") or []
                 f["survivors"] = parsed.get("survivors") or []
                 f["preceded"] = parsed.get("preceded_in_death") or []
                 f["executor_named"] = parsed.get("executor_named") or ""
-                f["evidence"] = f"obituary names {parsed.get('full_name')} ({parsed.get('obituary_url')})"
+                f["evidence"] = (f"obituary names {parsed.get('full_name')} ({parsed.get('obituary_url')})"
+                                 + (f"; anchors confirmed: {', '.join(f['anchor_hits'])}" if f["anchor_hits"] else ""))
+                if parsed.get("outside_footprint"):
+                    f.setdefault("extra_flags", []).append("obituary_outside_footprint")
+            elif anchors.get("dod"):
+                # The court record says the OWNER died (the probate row names them as the
+                # decedent and carries a date of death). No obituary matched -- that is a
+                # gap in the heir graph, not doubt about the death, and it must never fall
+                # through to the spouse search (which would call the owner alive) or to
+                # "unresolved" (which printed the intestacy template over SmartSkip labels).
+                f["verdict"] = "owner did die"
+                f["decedent_name"] = anchors.get("decedent_full") or owner_name
+                f["dod"] = anchors["dod"]
+                f["dod_source"] = anchors.get("dod_source") or "court_record"
+                f["confidence"] = "court record"
+                f["survivors"], f["preceded"] = [], []
+                f["executor_named"] = ""
+                f["evidence"] = (f"death on the court/vendor record (DOD {anchors['dod']}"
+                                 + (f", case {anchors['case_number']}" if anchors.get("case_number") else "")
+                                 + (f", estate {anchors['estate_number']}" if anchors.get("estate_number") else "")
+                                 + "); no obituary matched - heirs NOT identified by research")
+                f.setdefault("extra_flags", []).append("no obituary found; death from the court record only")
             else:
                 # Spouse-obituary trap: the obituary SiftMap saw may be the spouse's.
                 # In-laws capped out of the REL slots are still candidates here: the trap
@@ -1550,6 +2024,7 @@ def cmd_research(a) -> int:
             if f.get("decedent_name") and f["verdict"] == "owner did die" \
                     and not names_match(f["decedent_name"], f["owner_name"]):
                 flags.append("decedent name differs from owner name - check")
+            flags += f.pop("extra_flags", [])
             f["flags"] = flags
             f["researched_at"] = datetime.now().isoformat(timespec="seconds")
             # A verdict that rests on an LLM/fetch ERROR is not a finding: do not cache it,
@@ -1580,8 +2055,15 @@ def cmd_research(a) -> int:
             f"{'  DOD ' + f['dod'] if f.get('dod') else ''}"
             f"{'  ' + (f.get('obituary_url') or '') if f.get('obituary_url') else ''}")
 
+    # A subset run (--key / --limit / --keys-file) must not shrink the file to the subset:
+    # build reads stage_c_research.json for EVERY record. Keep the untouched findings.
+    done = {f["record"] for f in findings}
+    prior = (jload(run / "stage_c_research.json", {}) or {}).get("findings", [])
+    kept = [f for f in prior if f.get("record") not in done and f.get("record") in ranked]
+    if kept:
+        say(f"stage_c_research.json: {len(findings)} researched now + {len(kept)} kept from the previous file")
     jdump(run / "stage_c_research.json", {"generated_at": datetime.now().isoformat(timespec="seconds"),
-                                          "findings": findings})
+                                          "findings": findings + kept})
     say(f"verdicts: {dict(verdicts)}")
     return 0
 # ───────────────────────── augment ─────────────────────────
@@ -1817,6 +2299,10 @@ def cmd_score(a) -> int:
                 keep, why = _keep_number(t)
                 rows.append({"key": key, "input_name": rk["input_name"], "rel_n": rel["n"],
                              "name": rel["name"], "relationship": rel["canon_rel"], "age": rel["age"],
+                             "kinship_source": ("obituary" if rel["name"] in (f.get("confirmed_rels") or [])
+                                                else "filing (PR)" if rel.get("pr_on_record")
+                                                or rel.get("canon_rel") == "Personal Representative"
+                                                else "smartskip label"),
                              "is_signer": rel["is_dm"], "number": p["number"],
                              "ss_type": p.get("type"), "line_type": t.get("line_type"),
                              "activity_score": t.get("activity_score"), "tier": t.get("tier"),
@@ -1846,9 +2332,15 @@ FLAG_PROSE = {
                                       "obituary research skipped",
     "trust - trustee inferred": "title in a trust, trustee inferred from the title",
     "decedent name differs from owner name - check": "decedent name differs from the owner name, check",
+    "obituary_outside_footprint": "obituary published OUTSIDE MD/DC/VA - namesake risk, verify",
+    "two_spouses": "two or more relatives labelled Spouse - a re-root artefact, verify who the spouse is",
+    "unknown_name_signer": "a signer with no first name on file is loaded - identify before calling",
+    "label_only_signers": "signer relationships are SmartSkip labels, not confirmed by an obituary or court record",
 }
-# _push_one_api truncates the note at 2000 (the add-notes cap); stay just under it.
-NOTE_MAX = 1990
+# _push_one_api posts note[:4000] on the message route (the 2000 cap belonged to the dead
+# add-notes route). 1391 Pennsylvania's 2,515-char note was stored and read back in full
+# on 2026-10-01. Stay under 4000 with room for the "NOT LOADED" trimming below.
+NOTE_MAX = 3900
 # Measured live 2026-09-01 on 1815 Drew St: 39 phones sent, 200 + "added" for all of them,
 # 30 stored. The limit is the account's, not ours.
 OWNER_PHONE_CAP = 30
@@ -1874,6 +2366,9 @@ def _tier_sort_key(pt: tuple) -> tuple:
 DOD_SRC_PROSE = {
     "obituary": "obituary",
     "siftmap_last_obituary_date": "SiftMap obituary date, not the obituary",
+    "vendor_probate_file": "probate filing on the vendor file",
+    "register_of_wills": "Register of Wills estate record",
+    "court_record": "court record",
     "": "no source",
 }
 def _flag_prose(fl: str) -> str:
@@ -1951,12 +2446,568 @@ def _trace_month(run: Path) -> str:
             return time.strftime("%m/%Y", time.gmtime(int(oid[:8], 16)))
     return ""
 
+# ───────────────────────── v5 method: title / court parties / deed index ─────────────────────────
+# Basem, 2026-10-01: a batch record must carry what the single-record v5 session carried
+# on 1391 Pennsylvania #433 -- owner of record (tax roll), the deed party index, the court
+# party list, every SmartSkip / IDI name reconciled against them, and a who-must-sign line
+# that names the open question. The three sidecars are produced by dp_title.py,
+# dp_court_parties.py and dc_rod_lookup.py (rerun_v5/{title,court,deed}.json) and merged
+# into records.json[key]["title" | "court" | "deed"] by `v5merge`. Everything below only
+# READS them; a record with no sidecar renders exactly as before.
+
+_V5_SIGNER_LABEL = {"court": " - SIGNER (court)", "title": " - SIGNER (title)",
+                    "obituary": " - SIGNER (obituary)", "label": " - SIGNER (label only)"}
+_V5_KINSHIP = {"court": "court", "title": "title", "obituary": "obituary", "label": "smartskip label"}
+
+
+def _natural_name(n: str) -> str:
+    """'Berk, Ben A' / 'SMITH, HELEN H' -> 'Ben A Berk' / 'HELEN H SMITH'."""
+    n = (n or "").strip()
+    if "," in n:
+        parts = [x.strip() for x in n.split(",") if x.strip()]
+        # "Morgan, Jr, Donald G" / "Morgan, Donald G, Jr": the suffix segment goes last.
+        suffix = [x for x in parts[1:] if x.lower().strip(".") in ORDINALS]
+        rest = [x for x in parts[1:] if x not in suffix]
+        n = " ".join(rest + [parts[0]] + suffix)
+    return re.sub(r"\s+", " ", n).strip()
+
+
+def _v5_party_names(court: dict) -> list[str]:
+    out = []
+    for p in (court or {}).get("pr") or []:
+        out.append(_natural_name(p.get("name") if isinstance(p, dict) else str(p)))
+    for h in (court or {}).get("heirs") or []:
+        out.append(_natural_name(h.get("name") if isinstance(h, dict) else str(h)))
+    return [x for x in out if x]
+
+
+def _v5_has_case(court: dict) -> bool:
+    # "anchors" (MD / VA: a PR name from the vendor file, no party list) is NOT a court
+    # party list -- no COURT PARTIES block, no who-must-sign prefix from it.
+    return bool((court or {}).get("case_no")) and (court or {}).get("join_basis") in ("case_number", "address", "name_only")
+
+
+def _v5_on_court_record(name: str, court: dict) -> bool:
+    if not name or not _v5_has_case(court):
+        return False
+    return any(names_match(name, c) or names_match_loose(name, c) for c in _v5_party_names(court))
+
+
+_TRUSTEE_WORDS = {"TRUSTEE", "TRUSTEES", "TR", "TRS", "ETAL", "AL", "ET"}
+
+
+def _v5_strip_trustee(o: str) -> str:
+    """'ESSIE M COBB TRUSTEE' -> 'ESSIE M COBB'; 'NORMAN M LINSKY TR' -> 'NORMAN M LINSKY'."""
+    toks = _natural_name(o).split()
+    while toks and toks[-1].upper().strip(".,") in _TRUSTEE_WORDS:
+        toks.pop()
+    return " ".join(toks)
+
+
+def _v5_title_owner_names(title: dict) -> list[str]:
+    return [_v5_strip_trustee(o) for o in ((title or {}).get("owners") or []) if o and _v5_strip_trustee(o)]
+
+
+def _v5_rel_basis(rel: dict, court: dict, title: dict, confirmed_set: set, decedent: str) -> str:
+    """court > title > obituary > label. A title owner who matches the decedent is the
+    decedent, not a 'title' basis for a relative."""
+    nm = rel.get("name") or ""
+    if _v5_on_court_record(nm, court):
+        return "court"
+    for o in _v5_title_owner_names(title):
+        if (names_match(nm, o) or names_match_loose(nm, o)) and not (decedent and _matches_decedent(decedent, o)):
+            return "title"
+    if nm in confirmed_set:
+        return "obituary"
+    return "label"
+
+
+def _v5_addr(p: dict) -> str:
+    parts = [p.get("street") or "", " ".join(x for x in (p.get("city") or "", p.get("state") or "") if x),
+             p.get("zip") or ""]
+    s = ", ".join(x for x in parts[:2] if x)
+    return (s + (" " + parts[2] if parts[2] else "")).strip() or "address not on the record"
+
+
+def _v5_decedent_names(rec: dict, f: dict) -> list[str]:
+    an = rec.get("anchors") or {}
+    cands = [f.get("decedent_name") or "", an.get("decedent_full") or "",
+             f"{rec.get('owner_first') or ''} {rec.get('owner_last') or ''}",
+             f"{rec.get('decedent_first') or ''} {rec.get('decedent_last') or ''}",
+             f"{rec.get('ss_first') or ''} {rec.get('ss_last') or ''}"]
+    return [re.sub(r"\s+", " ", c).strip() for c in cands if c and c.strip()]
+
+
+def _v5_co_owners(rec: dict, f: dict, title: dict, court: dict) -> list[str]:
+    """Owners of record who are neither the decedent, nor the PR, nor a court party.
+    1391 Pennsylvania: HELEN H SMITH on title, not in the probate -- she decides the deal."""
+    if not (title or {}).get("owners"):
+        return []
+    an = rec.get("anchors") or {}
+    known = _v5_decedent_names(rec, f) + _v5_party_names(court)
+    for pr in (an.get("pr_full"), rec.get("pr")):
+        if pr:
+            known.append(pr)
+    # dp_title's own classification (exact / probable spelling match) counts as known too.
+    for k in (title.get("decedent_on_title") or []) + (title.get("decedent_probable") or []):
+        known.append(_v5_strip_trustee(k))
+    out = []
+    for o in _v5_title_owner_names(title):
+        if any(names_match(o, k) or names_match_loose(o, k) or _matches_decedent(k, o) for k in known):
+            continue
+        out.append(o)
+    return out
+
+
+def _v5_title_line(rec: dict, title: dict, co_owners: list[str], has_case: bool = False) -> str:
+    st = (rec.get("state") or "").upper()
+    if not title:
+        return ""
+    if title.get("source") == "itspe" and title.get("owners"):
+        ssl = f", SSL {title['ssl']}" if title.get("ssl") else ""
+        price = title.get("sale_price")
+        try:
+            price_txt = f" for ${int(float(price)):,}" if price not in (None, "", 0, "0") else ""
+        except (TypeError, ValueError):
+            price_txt = f" for {price}" if price else ""
+        sale = (f"bought {title['sale_date']}{price_txt}" if title.get("sale_date") and price_txt
+                else f"last transfer {title['sale_date']} ($0 - family / trust deed)" if title.get("sale_date")
+                else "no sale date on the roll")
+        owners_txt = " + ".join(_natural_name(o) for o in title.get("owners") or [])
+        line = f"TITLE (DC tax roll{ssl}): {owners_txt} - {sale}"
+        mail = (title.get("owner_mailing") or "").strip()
+        if mail and norm_addr(mail)[:12] != norm_addr(rec.get("street") or "")[:12]:
+            line += f"; mailing {mail}"
+        if title.get("trust_vesting"):
+            line += "; held AS TRUSTEE - the successor trustee signs, trust instrument unread"
+        if title.get("decedent_probable") and not title.get("decedent_on_title"):
+            line += f"; decedent matched by roll spelling ({', '.join(title['decedent_probable'])}) - confirm on the deed"
+        m = re.search(r"holds \d+ parcels in the building: [^;]+", title.get("match_note") or "")
+        if m:
+            line += "; " + m.group(0)
+        if title.get("owner_of_record_is_decedent") is False:
+            line += (". DECEDENT NOT ON TITLE" + (f" (last transfer {title['sale_date']})" if title.get("sale_date") else "")
+                     + " - the owners above hold it; the estate may own nothing here")
+        elif co_owners:
+            who = " and ".join(co_owners)
+            if has_case:
+                line += (f". {who} {'is' if len(co_owners) == 1 else 'are'} NOT a party to the "
+                         "probate and not the decedent - living / deceased / divorced UNKNOWN")
+            else:
+                line += (f". {who} {'is' if len(co_owners) == 1 else 'are'} also on title and not "
+                         "the decedent - living / deceased UNKNOWN; if living with survivorship, "
+                         + ("they own" if len(co_owners) > 1 else "that person owns") + " the property outright")
+        return line
+    if title.get("source") == "sdat" and title.get("owners"):
+        # MD: SDAT Real Property (dp_title.title_for_md, 2026-10-02). Account = district-account;
+        # the roll's Transfer Information gives the last recorded transfer (date / price / type).
+        acct = f", acct {title['ssl']}" if title.get("ssl") else ""
+        price = title.get("sale_price")
+        kind = (title.get("sale_type") or "").strip()
+        if title.get("sale_date") and price not in (None, "", 0, "0"):
+            try:
+                sale = f"last transfer {title['sale_date']} for ${int(float(price)):,}"
+            except (TypeError, ValueError):
+                sale = f"last transfer {title['sale_date']} for {price}"
+        elif title.get("sale_date"):
+            sale = f"last transfer {title['sale_date']} ($0 - {kind.lower() if kind else 'family / trust deed'})"
+            kind = ""
+        else:
+            sale = "no transfer date on the roll"
+        if kind and "ARMS LENGTH" in kind.upper() and "NON" not in kind.upper():
+            sale += ", arms-length sale"
+        elif kind:
+            sale += f", {kind.lower()}"
+        owners_txt = " + ".join(_natural_name(o) for o in title.get("owners") or [])
+        line = f"TITLE (MD SDAT roll{acct}): {owners_txt} - {sale}"
+        mail = (title.get("owner_mailing") or "").strip()
+        if mail and norm_addr(mail)[:12] != norm_addr(rec.get("street") or "")[:12]:
+            line += f"; mailing {mail}"
+        if title.get("principal_residence") == "NO":
+            line += "; NOT the owner's principal residence per the roll"
+        if title.get("trust_vesting"):
+            line += "; held AS TRUSTEE - the successor trustee signs, trust instrument unread"
+        if title.get("decedent_probable") and not title.get("decedent_on_title"):
+            line += f"; decedent matched by roll spelling ({', '.join(title['decedent_probable'])}) - confirm on the deed"
+        if title.get("owner_of_record_is_decedent") is False:
+            line += (". DECEDENT NOT ON TITLE" + (f" (last transfer {title['sale_date']})" if title.get("sale_date") else "")
+                     + " - the owners above hold it; the estate may own nothing here")
+        elif co_owners:
+            who = " and ".join(co_owners)
+            if has_case:
+                line += (f". {who} {'is' if len(co_owners) == 1 else 'are'} NOT a party to the "
+                         "probate and not the decedent - living / deceased / divorced UNKNOWN")
+            else:
+                line += (f". {who} {'is' if len(co_owners) == 1 else 'are'} also on title and not "
+                         "the decedent - living / deceased UNKNOWN; if living with survivorship, "
+                         + ("they own" if len(co_owners) > 1 else "that person owns") + " the property outright")
+        return line
+    if title.get("source") == "itspe" or (st == "DC" and title.get("source") == "none"):
+        return "TITLE: no tax-roll match for this address (ITSPE) - VERIFY the owner of record by hand"
+    if st == "MD" and title.get("source") in ("sdat", "none") and title.get("match_note", "").startswith("SDAT"):
+        return "TITLE: no SDAT parcel for this street address - VERIFY the owner of record by hand"
+    if st == "MD" and title.get("match_note", "").startswith("lookup raised"):
+        return "TITLE: SDAT lookup FAILED (scrape error) - VERIFY the owner of record by hand"
+    if st == "MD":
+        return "TITLE: not checked (SDAT lookup needs a Firecrawl go)"
+    if st == "VA":
+        return "TITLE: not checked (no VA fetcher)"
+    return ""
+
+
+# dc_rod_lookup flags every instrument by type. Routine financing (deed of trust, release,
+# condo declaration, POA) tells a dialer nothing; these do.
+# "trust" in the DC index is DEED OF TRUST paper (a mortgage), never a trust transfer (trap, 2026-10-02).
+_DEED_NOISE_FLAGS = {"deed", "mortgage", "release", "condo / declaration", "power of attorney",
+                     "common name - capped", "no index hit", "trust", "affidavit", "special warranty",
+                     "correction", "lien"}
+_CONVEYANCE_TYPES = re.compile(r"\b(deed|quit ?claim|transfer on death|distribution|executor|personal rep|pr deed)\b", re.I)
+
+
+def _v5_is_conveyance(ins: dict) -> bool:
+    if ins.get("is_conveyance") is not None:
+        return bool(ins["is_conveyance"])
+    fl = set(ins.get("flags") or [])
+    if fl & {"deed", "transfer on death deed", "quitclaim", "pr deed", "executor's deed", "deed of distribution"}:
+        return True
+    dt = (ins.get("doc_type") or "").upper()
+    return bool(_CONVEYANCE_TYPES.search(dt)) and dt not in ("TRUST", "DEED OF TRUST")
+
+
+def _v5_last_conveyance(deed: dict) -> dict | None:
+    """dc_rod_lookup's own ON-PARCEL pick when it made one; else the latest conveyance among
+    the instruments that are on the parcel (an off-parcel namesake deed never counts:
+    2311 15th St NW's 2026 Cox -> Ferguson deed is another square)."""
+    if (deed or {}).get("last_conveyance"):
+        return deed["last_conveyance"]
+    conv = [i for i in (deed or {}).get("instruments") or []
+            if _v5_is_conveyance(i) and i.get("on_parcel") is not False]
+    conv.sort(key=lambda i: _iso_date(i.get("recorded_date") or "") or "")
+    return conv[-1] if conv else None
+
+
+def _v5_deed_flags(deed: dict) -> list[str]:
+    return [x for x in dict.fromkeys((deed or {}).get("flags") or []) if x not in _DEED_NOISE_FLAGS]
+
+
+def _v5_deed_line(rec: dict, deed: dict) -> str:
+    st = (rec.get("state") or "").upper()
+    if not deed:
+        return ""
+    md = deed.get("source") == "mdlandrec"
+    index_name = "MDLANDREC index" if md else "Recorder of Deeds index"
+    span = "" if md else " since 1990"
+    inst = deed.get("instruments") or []
+    if inst:
+        conv = _v5_last_conveyance(deed)
+        last = deed.get("last_instrument") or inst[0]
+        fl = _v5_deed_flags(deed)
+        if conv:
+            legal = f" ({conv['legal']})" if conv.get("legal") else ""
+            if md and not (conv.get("grantor") and conv.get("grantee")):
+                party = (f"grantee {conv['grantee']}" if conv.get("grantee") else f"grantor {conv.get('grantor') or '?'}")
+                head = (f"DEED ({index_name}): last conveyance {conv.get('recorded_date') or '?'} "
+                        f"{conv.get('doc_type') or '?'}, {party} ({conv.get('doc_number') or '?'}){legal}")
+            else:
+                head = (f"DEED ({index_name}): last conveyance {conv.get('recorded_date') or '?'} "
+                        f"{conv.get('doc_type') or '?'} {conv.get('grantor') or '?'} -> {conv.get('grantee') or '?'}{legal}")
+            if last.get("doc_number") != conv.get("doc_number") and _iso_date(last.get("recorded_date") or "") > _iso_date(conv.get("recorded_date") or ""):
+                head += f"; later {last.get('doc_type') or '?'} {last.get('recorded_date')}"
+        else:
+            head = (f"DEED ({index_name}): no conveyance on this parcel under the searched names{span}; "
+                    f"last instrument {last.get('recorded_date') or '?'} {last.get('doc_type') or '?'}")
+        n_on = deed.get("n_on_parcel")
+        count = (f"{n_on} on this parcel of {len(inst)} under the names" if n_on is not None
+                 else f"{len(inst)} instruments{span}" + (" (parcel unconfirmed - no SDAT reference)" if md else ""))
+        return (head + f"; {count}" + (f"; {', '.join(fl)}" if fl else "")
+                + f"; vesting {deed.get('vesting') or 'unread - image $4'}")
+    if deed.get("searches"):
+        terms = ", ".join(dict.fromkeys(s.get("term") or "" for s in deed["searches"] if s.get("term")))
+        capped = any(s.get("capped") for s in deed["searches"])
+        if any(s.get("error") for s in deed["searches"]) and not any(not s.get("error") for s in deed["searches"]):
+            return f"DEED: {index_name} search FAILED (scrape / login error) - index unread"
+        return (f"DEED: no {index_name} hit under {terms}" + ("" if md else " (1990-2026)")
+                + ("; common name - search capped" if capped else "") + "; vesting unread")
+    if st == "MD":
+        return "DEED: not checked (MDLANDREC grantee search needs a go)"
+    if st == "VA":
+        return "DEED: not checked (no VA fetcher)"
+    return ""
+
+
+def _v5_set_aside_rels(rk: dict) -> list[dict]:
+    """The SmartSkip family rank set aside as a namesake's (1391: SARAH DEVARY, who the court
+    then named as a legatee). Their numbers are still on the record."""
+    ex = (rk or {}).get("excluded_smartskip_namesake") or {}
+    return list(ex.get("rels") or [])
+
+
+def _v5_court_overruled(court: dict, rk: dict) -> list[str]:
+    """Court parties who sit in the namesake set-aside: the set-aside was wrong."""
+    out = []
+    for nm in _v5_party_names(court) if _v5_has_case(court) else []:
+        for r in _v5_set_aside_rels(rk):
+            if names_match(r.get("name") or "", nm) or names_match_loose(r.get("name") or "", nm):
+                out.append(r.get("name") or nm)
+    return list(dict.fromkeys(out))
+
+
+def _v5_court_lines(court: dict, rk: dict, basis_by_name: dict, loaded_by_n: dict,
+                    pr_rel: dict | None, cache: dict) -> list[str]:
+    if not _v5_has_case(court):
+        return []
+    rels = (rk or {}).get("rels") or []
+    set_aside = _v5_set_aside_rels(rk)
+    will = court.get("will_on_file")
+    head = (f"COURT PARTIES ({court.get('case_no')}"
+            + (f", filed {court['filing_date']}" if court.get("filing_date") else "")
+            + (f", {court['status']}" if court.get("status") else "")
+            + ("; a WILL is on file - heirs are Legatees" if will else
+               "; heirs listed, no will indicated" if will is False else "") + ")")
+    lines = [head]
+
+    def _match(nm: str) -> str:
+        for r in rels:
+            if names_match(r.get("name") or "", nm) or names_match_loose(r.get("name") or "", nm):
+                if pr_rel is not None and r is pr_rel:
+                    return " - in the PR fields" + (" (" + " / ".join(loaded_by_n.get(-1, [])) + ")" if loaded_by_n.get(-1) else ", no callable number")
+                tiers = loaded_by_n.get(r.get("n"))
+                best = ""
+                if not tiers:
+                    tt = sorted((cache.get(p["number"], {}).get("tier") or "unscored" for p in r.get("phones") or []),
+                                key=lambda t: TIER_RANK.get(t, 8))
+                    best = f"; best number on file {tt[0]}" if tt else ""
+                return (f" - SmartSkip/IDI REL{r.get('n')}" + (" (" + " / ".join(tiers) + ")" if tiers else f", not loaded{best}"))
+        for r in set_aside:
+            if names_match(r.get("name") or "", nm) or names_match_loose(r.get("name") or "", nm):
+                tt = sorted((cache.get(p["number"], {}).get("tier") or "unscored" for p in r.get("phones") or []),
+                            key=lambda t: TIER_RANK.get(t, 8))
+                return (" - SmartSkip had them (set aside as a namesake's family; the court says otherwise)"
+                        + (f"; best number on file {tt[0]}" if tt else "; no number"))
+        return " - no number on file"
+
+    for p in court.get("pr") or []:
+        nm = _natural_name(p.get("name"))
+        lines.append(f"PR - {nm} ({p.get('connection') or 'Applicant'}) - {_v5_addr(p)}{_match(nm)}")
+    for h in court.get("heirs") or []:
+        nm = _natural_name(h.get("name"))
+        lines.append(f"{nm} - {h.get('connection') or 'Heir'} - {_v5_addr(h)}{_match(nm)}")
+    return lines
+
+
+def _v5_note_parts(rec: dict, rk: dict, f: dict, court: dict, title: dict, deed: dict,
+                   basis_by_name: dict, loaded_by_n: dict, pr_rel: dict | None, pr_name: str,
+                   owner_alive: bool, presumed: bool, cache: dict) -> dict:
+    """Everything the note needs from the three sidecars, plus flags / NOT LOADED / MUST VERIFY."""
+    out = {"title_line": "", "deed_line": "", "case_line": "", "court_lines": [],
+           "signer_prefix": "", "flags": [], "not_loaded": [], "must_verify": []}
+    if presumed:
+        return out
+    co = _v5_co_owners(rec, f, title, court)
+    has_case = _v5_has_case(court)
+    not_on_title = bool(title.get("owners")) and title.get("owner_of_record_is_decedent") is False
+    trust = bool(title.get("trust_vesting"))
+    out["title_line"] = _v5_title_line(rec, title, co, has_case)
+    out["deed_line"] = _v5_deed_line(rec, deed)
+    st_rec = (rec.get("state") or "").upper()
+    ns = (court or {}).get("name_search") or {}
+    if court and not court.get("case_no"):
+        if ns.get("terms") and ns.get("hits"):
+            out["case_line"] = (f"CASE: {ns['hits']} Register of Wills estate(s) under {' / '.join(ns['terms'])} "
+                                f"in {rec.get('county') or 'the county'} - none matched this decedent "
+                                f"({ns.get('basis') or 'review'}); REVIEW before calling it no case")
+        elif ns.get("terms"):
+            out["case_line"] = (f"CASE: no {rec.get('county') or ''} Register of Wills estate under "
+                                f"{' / '.join(ns['terms'])} as of {ns.get('searched_at') or TODAY} - no probate opened "
+                                "(trust / TOD / small estate / not yet filed): heirs or trustee route only")
+        else:
+            out["case_line"] = "CASE: no case on file"
+    elif st_rec in ("MD", "VA") and court.get("case_no") and court.get("join_basis") == "name_search":
+        # MD: an estate number found by decedent-NAME search (2026-10-02), no party list. An
+        # anchors-based estate prints its CASE line from the anchors in _note, not here.
+        out["case_line"] = (f"CASE: estate {court['case_no']} - {court.get('court') or (rec.get('county') or '') + ' Register of Wills'}"
+                            + (f", filed {court['filing_date']}" if court.get("filing_date") else "")
+                            + (f", {court['status']}" if court.get("status") else "")
+                            + (f", DOD {court['dod']}" if court.get("dod") else "")
+                            + (" (found by decedent-name search - PR not online; RoW notice names the PR)"
+                               if court.get("join_basis") == "name_search" else ""))
+        if court.get("join_basis") == "name_search":
+            out["flags"].append("case found by decedent-NAME search on the Register of Wills - verify it is this decedent before relying on the DOD")
+    elif has_case:
+        # Printed by _note only when the vendor anchors carry no case of their own.
+        out["case_line"] = (f"CASE: {court['case_no']} - DC Superior Court, Probate Division"
+                            + (f", filed {court['filing_date']}" if court.get("filing_date") else "")
+                            + (f", {court['status']}" if court.get("status") else "")
+                            + ("; a WILL is on file (heirs are Legatees)" if court.get("will_on_file") else ""))
+    if has_case and court.get("join_basis") == "name_only":
+        out["flags"].append("court case matched on the decedent's NAME only - verify it is this property")
+    out["court_lines"] = _v5_court_lines(court, rk, basis_by_name, loaded_by_n, pr_rel, cache)
+    overruled = _v5_court_overruled(court, rk)
+    if overruled:
+        out["flags"].append("SmartSkip namesake set-aside OVERRULED by the court record ("
+                            + "; ".join(overruled) + ") - re-rank to load their numbers")
+
+    # who must sign
+    if has_case and not owner_alive:
+        prs = [_natural_name(p.get("name")) for p in court.get("pr") or []] or [x for x in ((rec.get("anchors") or {}).get("pr_full"), pr_name) if x][:1]
+        will = court.get("will_on_file")
+        out["signer_prefix"] = (f"PR {' / '.join(prs) if prs else '(not yet named)'} signs for the estate"
+                                + (" (will on file - the heirs are legatees)" if will else
+                                   " (no will indicated - intestate shares)" if will is False else ""))
+    def _join(clause: str) -> str:
+        return (out["signer_prefix"] + "; " + clause) if out["signer_prefix"] else clause[0].upper() + clause[1:]
+
+    if not_on_title:
+        out["signer_prefix"] = _join(
+            f"DECEDENT NOT ON TITLE - {' and '.join(co) if co else 'the owners of record'} hold the property"
+            + (f" since {title['sale_date']}" if title.get("sale_date") else "")
+            + "; the estate may own nothing here - they sign, if anyone")
+        out["flags"].append("decedent NOT on title" + (f" - transfer {title['sale_date']}" if title.get("sale_date") else ""))
+    elif co:
+        who = " and ".join(co)
+        if has_case:
+            out["signer_prefix"] = _join(f"co-owner {who} on title is NOT a party to the probate - living / deceased / "
+                                         "divorced UNKNOWN - decides the deal")
+        else:
+            out["signer_prefix"] = _join(f"co-owner {who} on title (not the decedent) - living / deceased UNKNOWN; "
+                                         "if living with survivorship they own outright and sign alone - decides the deal")
+        for c in co:
+            out["flags"].append(f"co-owner {c} on title" + (", not in the probate" if has_case else ""))
+    if trust and not not_on_title:
+        out["signer_prefix"] = _join("title is held in TRUST - the successor trustee signs, not the heirs; trust instrument unread")
+        out["flags"].append("title held in trust - successor trustee signs")
+    # A transfer-on-death deed recorded by the owner moves the house to its beneficiary at
+    # death, outside probate (5 of the 53 DC pilot records, 2026-10-02). The beneficiary
+    # signs, not the heirs -- unless a later revocation is on the index.
+    conv0 = _v5_last_conveyance(deed) or {}
+    dt0 = (conv0.get("doc_type") or "").upper()
+    if "TRANSFER ON DEATH" in dt0 and "REVOC" not in dt0 and not not_on_title:
+        out["signer_prefix"] = _join(
+            f"a TRANSFER ON DEATH deed is on record ({conv0.get('grantor') or '?'} -> {conv0.get('grantee') or '?'}, "
+            f"{conv0.get('recorded_date') or '?'}) - the property passes to the TOD beneficiary outside probate; "
+            "the beneficiary signs, not the heirs")
+        out["flags"].append(f"TOD deed to {conv0.get('grantee') or '?'} - passes outside probate")
+    # Foreclosure paper on the parcel in the last two years: time-critical.
+    fc = [i for i in (deed or {}).get("instruments") or []
+          if i.get("on_parcel") is not False and _iso_date(i.get("recorded_date") or "")[:4] >= "2025"
+          and re.search(r"LIS PENDENS|FORECLOS|SUBSTITUTE TRUSTEE|TRUSTEES DEED|NOTICE OF (DEFAULT|SALE)", (i.get("doc_type") or "").upper())]
+    if fc:
+        fc.sort(key=lambda i: _iso_date(i.get("recorded_date") or ""))
+        out["flags"].append(f"FORECLOSURE activity on the parcel - {fc[-1].get('doc_type')} {fc[-1].get('recorded_date')} - time-critical")
+
+    # deed flags: the meaningful ones only, and a conveyance recorded after the DOD.
+    for fl in _v5_deed_flags(deed):
+        out["flags"].append(f"deed: {fl}")
+    conv = _v5_last_conveyance(deed) or {}
+    dod = f.get("dod") or court.get("dod") or ""
+    try:
+        if conv.get("recorded_date") and dod and _iso_date(conv["recorded_date"]) > _iso_date(dod) > "":
+            out["flags"].append(f"conveyance recorded {conv['recorded_date']} is AFTER the DOD - possible sale/transfer after death")
+    except (TypeError, ValueError):
+        pass
+
+    # on no record
+    if has_case:
+        nobody = [r["name"] for r in rk.get("rels") or [] if r.get("is_dm") and basis_by_name.get(r["name"]) == "label"
+                  and (r.get("name") or "").lower() not in {x.lower() for x in (f.get("drop_names") or [])}]
+        if nobody:
+            out["not_loaded"].append("On NO record (not court, not title, not obituary) - SmartSkip label only: "
+                                     + "; ".join(dict.fromkeys(nobody)))
+            out["flags"].append("signer(s) on no record")
+    # The SmartSkip subject row carries no first name on EVERY record of this cohort, so
+    # the line is printed only when it says something: a co-owner it probably is, or an
+    # occupant a generation younger than the decedent with lines of their own.
+    hs = (title or {}).get("household_subject")
+    try:
+        hs_age = int(hs.get("age")) if hs and hs.get("age") not in (None, "") else None
+    except (TypeError, ValueError):
+        hs_age = None
+    if hs and hs.get("lines") and not hs.get("deceased_flag") and (co or (hs_age is not None and hs_age <= 65)):
+        nums = []
+        for ln in hs.get("lines") or []:
+            num = ln.get("number") if isinstance(ln, dict) else str(ln)
+            t = cache.get(re.sub(r"\D", "", num or ""), {}).get("tier")
+            nums.append(f"{num}" + (f" ({t})" if t else ""))
+        out["not_loaded"].append(f"Household line at the address (SmartSkip subject with no first name, age {hs.get('age') or '?'}"
+                                 + (f", likely {co[0]}" if co else " - candidate co-owner / occupant") + "): "
+                                 + (", ".join(nums) if nums else "no number") + " - not loaded")
+
+    # must verify
+    mv = []
+    if not_on_title:
+        mv.append("who holds title now and under what deed (decedent is OFF title)")
+    elif title.get("owner_of_record_is_decedent") is True:
+        mv.append("no transfer since the tax-roll read")
+    elif title.get("owners"):
+        mv.append("decedent on title (roll spelling) - read the deed")
+    else:
+        mv.append("decedent is the owner of record")
+    if trust:
+        mv.append("successor trustee named in the trust instrument")
+    if "TRANSFER ON DEATH" in dt0 and "REVOC" not in dt0 and not not_on_title:
+        mv.append(f"TOD deed not revoked; beneficiary {conv0.get('grantee') or '?'} living")
+    for c in co:
+        mv.append(f"{c} living or deceased")
+    if deed and deed.get("instruments"):
+        mv.append("deed vesting (MDLANDREC image, free, one scrape on a go)" if deed.get("source") == "mdlandrec"
+                  else "deed vesting (Recorder of Deeds image, $4)")
+    else:
+        mv.append("deed vesting")
+    if has_case:
+        mv.append("PR letters issued")
+    elif (rec.get("state") or "").upper() == "DC" and court:
+        mv.append(f"DC probate portal by decedent name (no case on file as of {TODAY})")
+    else:
+        mv.append("PR appointment (Register of Wills / Circuit Court)")
+    out["must_verify"] = mv
+    return out
+
+
+def _load_keys_file(path: str | None) -> set | None:
+    if not path:
+        return None
+    p = Path(path)
+    if p.suffix.lower() == ".json":
+        data = json.loads(p.read_text(encoding="utf-8"))
+        return set(data if isinstance(data, list) else data.keys())
+    rows = list(csv.DictReader(open(p, encoding="utf-8-sig")))
+    return {r["key"] for r in rows if r.get("key")}
+
+
+def cmd_v5merge(a) -> int:
+    """Merge rerun_v5/{title,court,deed}.json into records.json[key][...] with a backup."""
+    run = Path(a.run_dir)
+    side = Path(a.sidecar_dir) if a.sidecar_dir else run / "rerun_v5"
+    records = jload(run / "records.json", {})
+    if not records:
+        say("ERROR: records.json missing or empty")
+        return 2
+    bak = run / f"records_pre_v5merge_{date.today().strftime('%Y%m%d')}.json"
+    if not bak.exists():
+        jdump(bak, records)
+        say(f"backup -> {bak.name}")
+    stats = Counter()
+    for name in ("title", "court", "deed"):
+        data = jload(side / f"{name}.json", None)
+        if data is None:
+            say(f"  {name}.json: absent, skipped")
+            continue
+        for key, val in data.items():
+            if key.startswith("_") or key not in records:
+                stats[f"{name}_unknown_key"] += 0 if key.startswith("_") else 1
+                continue
+            records[key][name] = val
+            stats[name] += 1
+    jdump(run / "records.json", records)
+    say(f"merged: {dict(stats)}")
+    return 0
+
 
 _MONTH_TAG_RE = re.compile(r"^(0[1-9]|1[0-2])/20\d\d$")
 
 
 def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int,
-          not_loaded: list[str] | None = None, pr_status: str = "") -> str:
+          not_loaded: list[str] | None = None, pr_status: str = "", v5: dict | None = None) -> str:
     """The note a caller actually reads: one section per line, one relative per line.
 
     The previous version joined every section with "  ||  " and every relative with " | ",
@@ -1976,8 +3027,25 @@ def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int,
         out = [f"DEEP PROSPECTING {TODAY} (SmartSkip + obituary + Trestle)", ""]
         who = f.get("decedent_name") or f"{rec['ss_first']} {rec['ss_last']}"
         src = f.get("dod_source") or ""
-        out.append(f"DECEDENT: {who} - DOD {f.get('dod') or 'unknown'} "
-                   f"({DOD_SRC_PROSE.get(src, src)})")
+        src_prose = DOD_SRC_PROSE.get(src, src)
+        if f.get("obituary_url") and src and src != "obituary":
+            src_prose += "; the obituary carries no date"
+        out.append(f"DECEDENT: {who} - DOD {f.get('dod') or 'unknown'} ({src_prose})")
+        an = rec.get("anchors") or {}
+        if an.get("case_number") or an.get("estate_number"):
+            out.append(f"CASE: {an.get('case_number') or 'estate ' + an['estate_number']}"
+                       f" - {an.get('court') or 'probate court'}"
+                       + (f", filed {an['file_date']}" if an.get("file_date") else ""))
+    # v5 method (2026-10-01): CASE from the court join when the anchors carry none, then
+    # TITLE and DEED -- what the dialer must know before anyone's relationship matters.
+    v5 = v5 or {}
+    if not presumed:
+        an_c = rec.get("anchors") or {}
+        if v5.get("case_line") and not (an_c.get("case_number") or an_c.get("estate_number")):
+            out.append(v5["case_line"])
+        for ln in (v5.get("title_line"), v5.get("deed_line")):
+            if ln:
+                out.append(ln)
     # Cached pilot findings read "relative (relative) died" -- the label was interpolated
     # into a sentence that already carried it.
     verdict = (f.get("verdict") or "not researched").replace("relative (relative) died",
@@ -1985,6 +3053,8 @@ def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int,
     out.append(f"VERDICT: {verdict}")
     if rk.get("signer_basis"):
         out.append(f"SIGNERS: {rk['signer_basis']}")
+    if v5.get("court_lines") and not presumed:
+        out += [""] + list(v5["court_lines"])
 
     if rel_lines:
         out += ["", "WHO TO CALL"] + list(rel_lines)
@@ -2010,7 +3080,13 @@ def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int,
     if f.get("executor_named"):
         tail.append(f"EXECUTOR NAMED IN OBITUARY: {f['executor_named']}")
     if rec.get("pr"):
-        tail.append(f"PR ON RECORD: {rec['pr']}{pr_status}")
+        an = rec.get("anchors") or {}
+        pr_txt = an.get("pr_full") if an.get("pr_full") and len(an["pr_full"]) > len(rec["pr"]) else rec["pr"]
+        if an.get("pr_mailing"):
+            pr_txt += f", {an['pr_mailing']}"
+        tail.append(f"PR ON RECORD: {pr_txt}{pr_status}")
+        if an.get("attorney"):
+            tail.append(f"ATTORNEY ON FILING: {an['attorney']}")
     if f.get("obituary_url"):
         tail.append(f"OBITUARY: {f['obituary_url']}")
     if rec.get("is_trust"):
@@ -2023,6 +3099,8 @@ def _note(rec: dict, rk: dict, f: dict, rel_lines: list[str], n_phones: int,
     if presumed:
         tail.append("MUST VERIFY: owner is alive and still the owner of record; "
                     "deed vesting")
+    elif v5.get("must_verify"):
+        tail.append("MUST VERIFY: " + "; ".join(dict.fromkeys(v5["must_verify"])))
     else:
         tail.append("MUST VERIFY: decedent is the owner of record; deed vesting; "
                     "PR appointment (Register of Wills / Circuit Court)")
@@ -2076,7 +3154,19 @@ def cmd_build(a) -> int:
     max_phones = 0
     tag_rows = []
     no_numbers = []
+    # --keys-file / --plan-out: a pilot rebuild of a subset that never touches the live
+    # push_plan.json (the plan files are the source of truth; a stray rebuild reverted
+    # live writes once). Every artifact goes beside the plan file.
+    only = _load_keys_file(getattr(a, "keys_file", None))
+    plan_path = Path(a.plan_out) if getattr(a, "plan_out", None) else run / "push_plan.json"
+    out_dir = plan_path.parent
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if only is not None:
+        say(f"subset: {len(only)} keys from --keys-file, plan -> {plan_path}")
+    basis_by_key: dict[str, dict[str, str]] = {}
     for key, rk in ranked.items():
+        if only is not None and key not in only:
+            continue
         rec = records[key]
         f = research.get(key, {"verdict": "not researched", "flags": ["not researched"]})
         verdict = f.get("verdict") or "not researched"
@@ -2112,6 +3202,29 @@ def cmd_build(a) -> int:
         # dropped here is printed in the note so the caller can see who was excluded.
         f = dict(f)
         f["decedent_dropped"] = []
+        an_b = rec.get("anchors") or {}
+        if not f.get("dod") and an_b.get("dod") and not owner_alive:
+            f["dod"], f["dod_source"] = an_b["dod"], an_b.get("dod_source") or "court_record"
+        # v5: the court party join. A case at this address (or by case number) whose
+        # decedent IS the owner proves the death whatever the obituary search found --
+        # 17 Sept "died" verdicts had no DOD, and the "death UNVERIFIED" records with a
+        # case on file were unverified only because research never read the court.
+        court_v5 = rec.get("court") or {}
+        if _v5_has_case(court_v5) and not owner_alive:
+            cdec = _natural_name(court_v5.get("decedent_name") or "")
+            if cdec and any(names_match(cdec, nm) or names_match_loose(cdec, nm)
+                            for nm in _v5_decedent_names(rec, f)):
+                if not f.get("dod") and court_v5.get("dod"):
+                    f["dod"], f["dod_source"] = _iso_date(court_v5["dod"]) or court_v5["dod"], "court_record"
+                if not f.get("decedent_name"):
+                    f["decedent_name"] = cdec
+                if verdict != "owner did die":
+                    verdict = "owner did die"
+                    f["verdict"] = verdict
+                    f["flags"] = list(f.get("flags") or []) + ["death_from_court_record"]
+            elif cdec:
+                f["flags"] = list(f.get("flags") or []) + [
+                    f"court case {court_v5.get('case_no')} at this address names {cdec}, not the owner - verify"]
         dec = f.get("decedent_name") or ""
         if dec:
             subj_age = (rk.get("subject") or {}).get("age")
@@ -2127,6 +3240,8 @@ def cmd_build(a) -> int:
                 nm = rel.get("name") or ""
                 if nm.lower() in drop or not _matches_decedent(dec, nm):
                     continue
+                if _v5_on_court_record(nm, court_v5):
+                    continue     # the court names this person as PR / heir: alive, never the decedent
                 try:
                     gap = abs(int(subj_age) - int(rel.get("age")))
                 except (TypeError, ValueError):
@@ -2157,7 +3272,7 @@ def cmd_build(a) -> int:
                                   "obituary (relationship shown), VERIFY before mailing")
 
         cfields, rel_lines, overflow, chan_over = {}, [], [], []
-        nonsigners, alive_held = [], []
+        nonsigners, alive_held, signers_dark_named = [], [], []
         slot = 0
         seen_numbers: set[str] = set()
         # SIGNERS ONLY (Basem, 2026-09-16). rank_record already picked the intestacy
@@ -2191,6 +3306,54 @@ def cmd_build(a) -> int:
         if pr_flags:
             f["flags"] = list(f.get("flags") or []) + pr_flags
         _sig = [r for r in rk["rels"] if r.get("is_dm") and (r["name"] or "").lower() not in drop]
+        if not _sig and not owner_alive:
+            # The SIGNERS line is the intestacy TEMPLATE ("spouse and children (all children
+            # must sign)"). With nobody identified as a child or spouse it reads as a finding
+            # it is not -- 1391 Pennsylvania Ave SE #433 (2026-10-01, Basem): five vendor
+            # relatives with no kinship, a namesake SmartSkip tree set aside, and the note
+            # still announced "all children must sign" over a dial list holding the PR alone.
+            # Say what is true instead: the heirs were NOT identified.
+            n_named = sum(1 for r in rk["rels"]
+                          if r is not pr_rel and (r["name"] or "").lower() not in drop and r.get("name"))
+            rk = dict(rk)
+            rk["signer_basis"] = ("heirs NOT identified - no kinship data on the relatives"
+                                  + (f" ({n_named} named below, relationship unknown)" if n_named else "")
+                                  + ("; the PR is the only confirmed contact" if pr_rel is not None
+                                     else "; no PR on record"))
+        # ── what the SIGNER lines actually rest on (Basem, 2026-10-01: "how much can the
+        # dialer depend on the note?"). Measured on the Sept 646 before this: 1,138 of
+        # 1,496 SIGNER lines were a SmartSkip relationship label alone, and 179 UNRESOLVED
+        # records still printed "spouse and children (all children must sign)". The
+        # template is the intestacy ORDER; it is not evidence that anyone below holds that
+        # relationship. Say so, in the SIGNERS line and on each REL line.
+        confirmed_set = set(cc["confirmed"]) if verdict == "owner did die" else set()
+        label_only = [r for r in _sig if r is not pr_rel and r["name"] not in confirmed_set]
+        death_unverified = not owner_alive and verdict != "owner did die"
+        if _sig:
+            rk = dict(rk)
+            old_basis = rk.get("signer_basis") or ""
+            if death_unverified:
+                rk["signer_basis"] = ("death UNVERIFIED - no obituary or court record found; the relatives "
+                                      "below are SmartSkip labels, not confirmed heirs"
+                                      + (f" (intestacy order if the owner did die: {old_basis})" if old_basis else ""))
+                f["flags"] = list(f.get("flags") or []) + ["label_only_signers"]
+            elif label_only and not f.get("survivors"):
+                rk["signer_basis"] = (old_basis + "; the obituary/court record names no survivors - the "
+                                      "relationships below are SmartSkip labels, unverified")
+                f["flags"] = list(f.get("flags") or []) + ["label_only_signers"]
+            elif label_only:
+                rk["signer_basis"] = (old_basis + f"; {len(label_only)} of {len(_sig)} signers below are "
+                                      "label-only (not named in the obituary)")
+        if not owner_alive and any((r.get("first") or "").lower() in ("", "unknown") for r in _sig):
+            f["flags"] = list(f.get("flags") or []) + ["unknown_name_signer"]
+        # v5: what each relative's relationship rests on -- court record, title, obituary,
+        # or a SmartSkip label alone. Printed on the REL line and in dial_sheet.csv.
+        title_v5, deed_v5 = rec.get("title") or {}, rec.get("deed") or {}
+        basis_by_name = {r["name"]: _v5_rel_basis(r, court_v5, title_v5, confirmed_set, dec)
+                         for r in rk["rels"] if r.get("name")}
+        basis_by_key[key] = basis_by_name
+        if _v5_has_case(court_v5) and _sig and all(basis_by_name.get(r["name"]) in ("court", "title", "obituary") for r in _sig):
+            f["flags"] = [x for x in (f.get("flags") or []) if x != "label_only_signers"]
         pr_reachable = pr_rel is not None and any(_keep_number(cache.get(p["number"], {}))[0]
                                                   for p in pr_rel["phones"])
         signers_dark = not pr_reachable and not any(_keep_number(cache.get(p["number"], {}))[0]
@@ -2284,6 +3447,14 @@ def cmd_build(a) -> int:
             # rather than whichever three SmartSkip happened to list first.
             kept.sort(key=_tier_sort_key)
             if not kept and not a.include_phoneless:
+                # A SIGNER with no callable number used to vanish from the note (2026-10-01:
+                # 10106 Cedar Ln's son David Snyder, 2626 Gilbert Rd's sister Joan Maybury,
+                # 5418 Ridge Rd's two children on Drop-tier lines). The caller must know a
+                # signer exists even when there is nobody to dial yet.
+                if rel.get("is_dm"):
+                    signers_dark_named.append(
+                        f"{rel['name']} ({_rel_label(rel, obit_words)}"
+                        f"{', ' + str(rel['age']) if rel.get('age') else ''})")
                 continue
             slot += 1
             n = slot
@@ -2347,12 +3518,16 @@ def cmd_build(a) -> int:
             # header two lines above. Caught on 1608 28th St SE, where six relatives of a
             # living owner were each labelled SIGNER.
             role = (" - REACH ONLY (cannot sign; owner is alive)" if owner_alive
-                    else " - SIGNER" if rel.get("is_dm")
+                    else _V5_SIGNER_LABEL[basis_by_name.get(rel["name"], "label")] if rel.get("is_dm")
                     else " - CHANNEL" if rel.get("is_channel") else "")
             rel_lines.append(f"REL{n} - {rel['name']} - {_rel_label(rel, obit_words)}"
                              f"{', ' + str(rel['age']) if rel.get('age') else ''}"
                              f"{role}"
                              f"{' - ' + ' / '.join(tiers) if tiers else ' - no number'}")
+        loaded_spouses = [c for c in contacts if c["kind"] == "rel"
+                          and c["rel"].get("canon_rel") in SPOUSE_RELS]
+        if len(loaded_spouses) >= 2 and not owner_alive:
+            f["flags"] = list(f.get("flags") or []) + ["two_spouses"]
         if pr_rel is not None:
             tiers = loaded_by_n.get(-1, [])
             kin = pr_rel.get("canon_rel") or "Relative"
@@ -2432,11 +3607,28 @@ def cmd_build(a) -> int:
             not_loaded.insert(0, "OWNER IS ALIVE and is the only person who can sell, but has "
                                  "no number on file. The family below is a REACH PATH to the "
                                  "owner -- ask for the owner by name. None of them can sign.")
+        if signers_dark_named:
+            not_loaded.insert(0, "SIGNERS with NO callable number (must still sign; find a number): "
+                              + "; ".join(signers_dark_named))
         if nonsigners:
             not_loaded.append("Not signers under intestacy, named only: " + "; ".join(nonsigners))
         held = [f"{c['name']} ({c.get('canon_rel') or '?'})" for c in (rk.get("blood_held") or [])]
         if held:
             not_loaded.append("Further relatives on file, not loaded: " + "; ".join(held))
+        # v5: TITLE / DEED / COURT PARTIES lines, the who-must-sign prefix, flags.
+        v5 = _v5_note_parts(rec, rk, f, court_v5, title_v5, deed_v5, basis_by_name, loaded_by_n,
+                            pr_rel, pr_name, owner_alive, presumed, cache)
+        not_loaded += v5["not_loaded"]
+        if v5["signer_prefix"] and not owner_alive:
+            rk = dict(rk)
+            old = rk.get("signer_basis") or ""
+            # The court / title facts lead; the intestacy template (or "death UNVERIFIED",
+            # now contradicted by a case on file) follows as the fallback order.
+            if _v5_has_case(court_v5) and old.startswith("death UNVERIFIED"):
+                old = old.split("(intestacy order if the owner did die: ", 1)[-1].rstrip(")") if "(intestacy order" in old else ""
+            rk["signer_basis"] = v5["signer_prefix"] + (f"; then {old}" if old else "")
+        if v5["flags"]:
+            f["flags"] = list(f.get("flags") or []) + v5["flags"]
         plan[key] = {
             "key": key, "street": rec["street"], "city": rec["city"], "state": rec["state"], "zip": rec["zip"],
             "owner_first": rec["owner_first"], "owner_last": rec["owner_last"],
@@ -2450,7 +3642,7 @@ def cmd_build(a) -> int:
             "pr": {"name": pr_name, "contact": (pr_rel or {}).get("name") or "",
                    "phones": [p["number"] for p, _t in pr_kept]} if pr_name else None,
             "custom_fields": cfields, "phones": phones,
-            "note": _note(rec, rk, f, rel_lines, len(phones), not_loaded, pr_status=pr_status),
+            "note": _note(rec, rk, f, rel_lines, len(phones), not_loaded, pr_status=pr_status, v5=v5),
         }
         max_rel = max(max_rel, slot)
         max_phones = max(max_phones, len(phones))
@@ -2458,8 +3650,25 @@ def cmd_build(a) -> int:
             for t in p["tags"]:
                 tag_rows.append({"Phone Number": p["number"], "Phone Tag": t})
 
-    jdump(run / "push_plan.json", {"generated_at": datetime.now().isoformat(timespec="seconds"),
-                                   "max_rel_slots": max_rel, "max_phones": max_phones, "records": plan})
+    jdump(plan_path, {"generated_at": datetime.now().isoformat(timespec="seconds"),
+                      "max_rel_slots": max_rel, "max_phones": max_phones, "records": plan})
+
+    # dial_sheet.csv: kinship_source now says court / title / obituary / smartskip label
+    # (score wrote obituary / filing (PR) / smartskip label). Rows of other keys are kept.
+    ds_in = run / "dial_sheet.csv"
+    if ds_in.exists():
+        dial_rows = list(csv.DictReader(open(ds_in, encoding="utf-8-sig")))
+        changed = 0
+        for r in dial_rows:
+            b = basis_by_key.get(r.get("key") or "", {}).get(r.get("name") or "")
+            if b and r.get("kinship_source") != "filing (PR)" and r.get("kinship_source") != _V5_KINSHIP[b]:
+                r["kinship_source"] = _V5_KINSHIP[b]
+                changed += 1
+        if only is not None:
+            dial_rows = [r for r in dial_rows if r.get("key") in only]
+        if dial_rows:
+            write_csv(out_dir / "dial_sheet.csv", dial_rows, list(dial_rows[0].keys()))
+            say(f"dial_sheet.csv: {len(dial_rows)} rows, kinship_source changed on {changed}")
 
     # Reload CSVs, one per uniform tag group (the wizard applies one tag set per file).
     phone_cols = [f"Phone {i}" for i in range(1, max_phones + 1)]
@@ -2481,11 +3690,11 @@ def cmd_build(a) -> int:
                 row[f"Phone {i}"] = ph["number"]
             row.update(p["custom_fields"])
             rows.append(row)
-        write_csv(run / f"reload_{group}.csv", rows, header)
+        write_csv(out_dir / f"reload_{group}.csv", rows, header)
         say(f"reload_{group}.csv: {len(rows)} rows")
 
-    write_csv(run / "phone_tags.csv", tag_rows, ["Phone Number", "Phone Tag"])
-    write_csv(run / "no_numbers.csv", no_numbers, list(no_numbers[0].keys()) if no_numbers else ["key"])
+    write_csv(out_dir / "phone_tags.csv", tag_rows, ["Phone Number", "Phone Tag"])
+    write_csv(out_dir / "no_numbers.csv", no_numbers, list(no_numbers[0].keys()) if no_numbers else ["key"])
 
     # Review workbook.
     try:
@@ -2508,20 +3717,20 @@ def cmd_build(a) -> int:
                        ", ".join(p["tags"]), f.get("obituary_url", ""), ", ".join(f.get("flags") or []),
                        p["note"]])
         ws2 = wb.create_sheet("Dial Sheet")
-        dial = list(csv.DictReader(open(run / "dial_sheet.csv", encoding="utf-8-sig"))) \
-            if (run / "dial_sheet.csv").exists() else []
+        dial = list(csv.DictReader(open(out_dir / "dial_sheet.csv", encoding="utf-8-sig"))) \
+            if (out_dir / "dial_sheet.csv").exists() else []
         if dial:
             ws2.append(list(dial[0].keys()))
             for r in dial:
                 ws2.append(list(r.values()))
-        for title, path in (("No Numbers", run / "no_numbers.csv"), ("Unusable", run / "unusable.csv")):
+        for title, path in (("No Numbers", out_dir / "no_numbers.csv"), ("Unusable", run / "unusable.csv")):
             w = wb.create_sheet(title)
             rows = list(csv.DictReader(open(path, encoding="utf-8-sig"))) if path.exists() else []
             if rows:
                 w.append(list(rows[0].keys()))
                 for r in rows:
                     w.append(list(r.values()))
-        wb.save(run / "review.xlsx")
+        wb.save(out_dir / "review.xlsx")
     except PermissionError:
         say("review.xlsx is open in Excel; skipped the workbook (CSV artifacts are written)")
 
@@ -2751,7 +3960,15 @@ def _created_uuid(status, body) -> tuple[str, str]:
     (`Drive` == `Dr`, ZIP+4 == ZIP5) where `search` matches the stored string exactly, so
     this 400 is the only reliable existence test and it writes nothing. Anything else ->
     ('', reason)."""
+    # WriteApi.write hands a non-2xx body back as a STRING (measured on the live 400,
+    # 2026-10-01: '{"non_field_errors": [...], "property": ["74742f8e-..."]}' arrived as
+    # str and the uuid went unread). Parse it before looking for the uuid.
     obj = body if isinstance(body, dict) else {}
+    if isinstance(body, str) and body.strip().startswith("{"):
+        try:
+            obj = json.loads(body)
+        except json.JSONDecodeError:
+            obj = {}
     if status in (200, 201) and (obj.get("uuid") or "").strip():
         return str(obj["uuid"]).strip(), "created"
     txt = json.dumps(body, ensure_ascii=False) if not isinstance(body, str) else body
@@ -3170,6 +4387,16 @@ def main() -> int:
     s.add_argument("--pilot", type=int, default=0)
     s.set_defaults(fn=cmd_prep)
 
+    s = sub.add_parser("anchors", help="attach vendor-file / RoW anchors (DOD, case, middle name, PR) to records.json")
+    s.add_argument("--export", help="dp input export (default <run>/dp_input_export.csv) for the Drive source")
+    s.add_argument("--vendor-root", default=str(VENDOR_ROOT))
+    s.add_argument("--sheet26", help=f"Register of Wills extraction CSV (default {SHEET26_DEFAULT})")
+    s.add_argument("--row-ledger", default=str(ROW_LEDGER))
+    s.add_argument("--estate-search", action="store_true",
+                   help="Register of Wills Estate Search by estate number for anchored records with no DOD (1 Firecrawl scrape each)")
+    s.add_argument("--estate-limit", type=int, default=0)
+    s.set_defaults(fn=cmd_anchors)
+
     s = sub.add_parser("trace")
     s.add_argument("--csv", default="smartskip_input.csv")
     s.add_argument("--pay", action="store_true", help="bill the saved card after calculate")
@@ -3210,6 +4437,8 @@ def main() -> int:
     s.add_argument("--max-spouse", type=int, default=2)
     s.add_argument("--max-consecutive-errors", type=int, default=8,
                    help="abort if this many records in a row fail on a backend error")
+    s.add_argument("--keys-file", metavar="FILE",
+                   help="only these keys (JSON list or one key per line); with --force re-researches them")
     s.add_argument("--presume-alive-without-signal", action="store_true",
                    help="FTM-style cohorts: only research records carrying a deceased "
                         "signal (Probate/Obituary list, deceased-ish tag, obituary date, "
@@ -3247,7 +4476,14 @@ def main() -> int:
     s.add_argument("--trace-month", metavar="MM/YYYY",
                    help="month on the `SS Traced` tag (default: read off the paid SmartSkip order id, "
                         "else --month-tag)")
+    s.add_argument("--keys-file", help="CSV (key column) or JSON list: rebuild ONLY these keys")
+    s.add_argument("--plan-out", help="write the plan (and every artifact) here instead of push_plan.json; "
+                                      "use with --keys-file for a pilot that leaves the live plan alone")
     s.set_defaults(fn=cmd_build)
+
+    s = sub.add_parser("v5merge", help="merge rerun_v5/{title,court,deed}.json into records.json (backup first)")
+    s.add_argument("--sidecar-dir", help="default <run-dir>/rerun_v5")
+    s.set_defaults(fn=cmd_v5merge)
 
     s = sub.add_parser("schema")
     s.add_argument("--commit", action="store_true")

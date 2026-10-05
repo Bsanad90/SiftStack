@@ -75,7 +75,9 @@ def _cf_diff(plan_cf: dict, got_cf: dict) -> tuple[list[str], list[str], list[st
 
 
 def _planned_tag(x: dict) -> str | None:
-    return next((t for t in (x.get("tags") or []) if odb._OURS_RE.match(t)), None)
+    # _PLAN_TAG_RE, not _OURS_RE: the PR's numbers ride Pr.{m} (2026-10-01) and must be
+    # checked slot-exact like the Rel/Owner ones. (_OURS_RE stays the REMOVAL vocabulary.)
+    return next((t for t in (x.get("tags") or []) if odb._PLAN_TAG_RE.match(t)), None)
 
 
 def _tagnames(tags) -> set[str]:
