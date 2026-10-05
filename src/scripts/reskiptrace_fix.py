@@ -70,6 +70,7 @@ from not_related_requalify import (  # noqa: E402
     bad_phone_status,
     entry_tags_for,
 )
+import dnc_client  # noqa: E402
 from phone_validator import (  # noqa: E402
     COST_PER_PHONE,
     DEFAULT_TIERS,
@@ -239,6 +240,12 @@ def load_free_caches() -> dict:
 
 
 def resolve_tag(n: str, plan_numbers: dict, run_cache: dict,
+                free: dict, seeds: dict) -> str:
+    """The scored tag, then the DNC rule (dnc_client.override_tag)."""
+    return dnc_client.override_tag(n, _resolve_tag_scored(n, plan_numbers, run_cache, free, seeds))
+
+
+def _resolve_tag_scored(n: str, plan_numbers: dict, run_cache: dict,
                 free: dict, seeds: dict) -> str:
     e = plan_numbers.get(n) or {}
     if e.get("class") == "account_tag":

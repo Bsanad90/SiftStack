@@ -82,6 +82,7 @@ from dpd_lane_phone_score import (  # noqa: E402
     score_tag_of,
     tag_names,
 )
+import dnc_client  # noqa: E402
 from phone_validator import (  # noqa: E402
     COST_PER_PHONE,
     DEFAULT_TIERS,
@@ -151,6 +152,12 @@ def load_lane_cache() -> dict:
 
 
 def resolve_tag(n: str, plan_numbers: dict, run_cache: dict,
+                lane_cache: dict, seeds: dict) -> str:
+    """The scored tag, then the DNC rule (dnc_client.override_tag)."""
+    return dnc_client.override_tag(n, _resolve_tag_scored(n, plan_numbers, run_cache, lane_cache, seeds))
+
+
+def _resolve_tag_scored(n: str, plan_numbers: dict, run_cache: dict,
                 lane_cache: dict, seeds: dict) -> str:
     e = plan_numbers.get(n) or {}
     if e.get("class") == "account_tag":
@@ -409,7 +416,7 @@ def cmd_score(a) -> int:
     say(f"to score: {len(todo)} of {len(plan['to_pay'])} planned "
         f"({len(plan['to_pay']) - len(todo)} already cached since the pull)")
     say(f"cost: ${len(todo) * COST_PER_PHONE:.2f} at ${COST_PER_PHONE:.3f}/number"
-        f"{' + litigator add-on' if not a.no_litigator else ''}")
+        " + litigator add-on")
     if not todo:
         say("nothing to pay for -- all covered by tags/caches")
         return 0
@@ -423,7 +430,7 @@ def cmd_score(a) -> int:
             continue
         results, errors = process_phones([(n, n) for n in chunk], key,
                                          tiers=DEFAULT_TIERS,
-                                         add_litigator=not a.no_litigator)
+                                         add_litigator=True)
         for r in results:
             n = clean_phone(r["phone_number"])
             cache[n] = {"score": r.get("activity_score"), "line_type": r.get("line_type"),
@@ -853,7 +860,8 @@ def main() -> int:
 
     s = sub.add_parser("score", help="pay Trestle for the unscored numbers")
     s.add_argument("--pay", action="store_true", help="Gate 1: actually spend")
-    s.add_argument("--no-litigator", action="store_true")
+    s.add_argument("--no-litigator", action="store_true",
+                   help="REFUSED: litigator scrub is mandatory (Basem, 2026-10-05); the flag is ignored")
     s.add_argument("--limit", type=int, default=0, help="score at most N numbers")
 
     w = sub.add_parser("push", help="write entry tags + tier tags + status clears")

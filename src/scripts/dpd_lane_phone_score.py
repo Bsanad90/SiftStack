@@ -58,6 +58,7 @@ from dotenv import dotenv_values  # noqa: E402
 
 from dpd_lane_assignee_report import count, list_uuids, resolve_lanes, to_query  # noqa: E402
 from live_pull import LiveApi as _LiveApi  # noqa: E402
+import dnc_client  # noqa: E402
 from phone_validator import (  # noqa: E402
     COST_PER_PHONE,
     DEFAULT_TIERS,
@@ -89,14 +90,14 @@ SEED_CSVS = [
 
 DIAL_TIERS = ["Dial First", "Dial Second", "Dial Third", "Dial Fourth"]
 # Any of these on a phone means it has already been scored: never pay again.
-SCORE_TAGS = set(DIAL_TIERS) | {"Drop", "Litigator Risk", "Invalid"}
+SCORE_TAGS = set(DIAL_TIERS) | {"Drop", "Litigator Risk", "Invalid", "DNC"}
 SKIP_PREFIX = "Skip - "
 MAIL_ONLY = "Mail Only"
 
 # Dial order. Unknown (scored-but-unscorable or score errored) sits above Drop:
 # a known-bad number ranks below one we merely could not price.
 RANK = {"Dial First": 0, "Dial Second": 1, "Dial Third": 2, "Dial Fourth": 3,
-        "Unknown": 4, "Drop": 5, "Invalid": 7, "Litigator Risk": 8}
+        "Unknown": 4, "Drop": 5, "Invalid": 7, "DNC": 8, "Litigator Risk": 8}
 SKIP_RANK = 6
 CALLABLE_MAX_RANK = 4   # rank <= this keeps the record OFF the Mail Only list
 OWNER_PHONE_CAP = 30
@@ -158,7 +159,7 @@ def score_tag_of(tags: list[str]) -> str:
         if t in tags:
             return t
     for t in tags:
-        if t in ("Litigator Risk", "Invalid") or t.startswith(SKIP_PREFIX):
+        if t in ("Litigator Risk", "DNC", "Invalid") or t.startswith(SKIP_PREFIX):
             return t
     return ""
 
@@ -406,7 +407,7 @@ def cmd_score(a) -> int:
     say(f"to score: {len(todo)} of {len(plan['to_pay'])} planned "
         f"({len(plan['to_pay']) - len(todo)} already cached since the pull)")
     say(f"cost: ${len(todo) * COST_PER_PHONE:.2f} at ${COST_PER_PHONE:.3f}/number"
-        f"{' + litigator add-on' if not a.no_litigator else ''}")
+        " + litigator add-on")
     if not todo:
         say("nothing to pay for -- all covered by tags/caches")
         return 0
@@ -420,7 +421,7 @@ def cmd_score(a) -> int:
             continue
         results, errors = process_phones([(n, n) for n in chunk], key,
                                          tiers=DEFAULT_TIERS,
-                                         add_litigator=not a.no_litigator)
+                                         add_litigator=True)
         for r in results:
             n = clean_phone(r["phone_number"])
             entry = {"score": r.get("activity_score"), "line_type": r.get("line_type"),
@@ -455,6 +456,11 @@ def cmd_score(a) -> int:
 # ───────────────────────── push ─────────────────────────
 
 def resolve_number_tag(n: str, plan_numbers: dict, cache: dict, seeds: dict) -> str:
+    """The scored tag, then the DNC rule (dnc_client.override_tag)."""
+    return dnc_client.override_tag(n, _resolve_number_tag_scored(n, plan_numbers, cache, seeds))
+
+
+def _resolve_number_tag_scored(n: str, plan_numbers: dict, cache: dict, seeds: dict) -> str:
     e = plan_numbers.get(n) or {}
     if e.get("class") == "account_tag":
         return e["tag"]
@@ -743,7 +749,8 @@ def main() -> int:
 
     s = sub.add_parser("score", help="pay Trestle for the unscored numbers")
     s.add_argument("--pay", action="store_true", help="Gate 1: actually spend")
-    s.add_argument("--no-litigator", action="store_true")
+    s.add_argument("--no-litigator", action="store_true",
+                   help="REFUSED: litigator scrub is mandatory (Basem, 2026-10-05); the flag is ignored")
     s.add_argument("--limit", type=int, default=0, help="score at most N numbers")
 
     w = sub.add_parser("push", help="write tier tags + order + Mail Only")

@@ -2198,6 +2198,8 @@ def _keep_number(t: dict) -> tuple[bool, str]:
         return False, f"skip line type {t.get('line_type')}"
     if t.get("litigator"):
         return False, "litigator risk"
+    if t.get("litigator") is None:
+        return False, "litigator unchecked"
     if t.get("tier") == "Drop":
         return False, "drop tier"
     return True, ""
@@ -2261,7 +2263,10 @@ def cmd_score(a) -> int:
         if owner_alive:
             for p in (rk["subject"]["phones"][:cut] if cut else rk["subject"]["phones"]):
                 numbers.append(p["number"])
-    uniq = sorted({n for n in numbers if n and n not in cache or (n in cache and cache[n].get("error"))})
+    # A cache entry with litigator None was scored WITHOUT the add-on (before 2026-10-05):
+    # it is UNCHECKED, not clean, and is re-scored. Litigator scrub is mandatory (Basem).
+    uniq = sorted({n for n in numbers if n and (n not in cache or cache[n].get("error")
+                                                or cache[n].get("litigator") is None)})
     if a.limit:
         uniq = uniq[: a.limit]
     say(f"trestle: {len(set(numbers))} unique numbers referenced, {len(uniq)} to score "
@@ -2274,12 +2279,12 @@ def cmd_score(a) -> int:
         # that way before this was traced to the transport, not the credential.
         import phone_validator as pv  # noqa: E402
         for i, n in enumerate(uniq, 1):
-            d = pv.call_trestle(n, api_key, add_litigator=a.litigator)
+            d = pv.call_trestle(n, api_key)  # litigator add-on always on
             if not isinstance(d, dict) or d.get("error") and not d.get("phone_number"):
                 cache[n] = {"error": str((d or {}).get("error") or d)[:120]}
             else:
                 score = d.get("activity_score")
-                lit = ((d.get("add_ons") or {}).get("litigator_checks") or {}).get("phone.is_litigator_risk")                     if a.litigator else None
+                lit = ((d.get("add_ons") or {}).get("litigator_checks") or {}).get("phone.is_litigator_risk")
                 cache[n] = {"activity_score": score, "tier": dpr.tier_for(score),
                             "line_type": d.get("line_type"), "is_valid": d.get("is_valid"),
                             "carrier": d.get("carrier") or "", "litigator": lit}
@@ -4450,7 +4455,8 @@ def main() -> int:
     s.set_defaults(fn=cmd_augment)
 
     s = sub.add_parser("score")
-    s.add_argument("--litigator", action="store_true")
+    s.add_argument("--litigator", action="store_true",
+                   help="no-op: the litigator add-on ALWAYS rides (Basem, 2026-10-05)")
     s.add_argument("--limit", type=int, default=0)
     s.add_argument("--max-score-per-rel", type=int, default=0,
                    help="0 = price every number on a kept contact (the default)")

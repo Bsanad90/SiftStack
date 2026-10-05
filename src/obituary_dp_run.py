@@ -297,8 +297,13 @@ def tracerfy_parse_records(records):
 
 # ── Stage E: Trestle scoring, DM numbers only ─────────────────────────
 
-def trestle_score(numbers, api_key, litigator=False):
-    """Score each unique DM number. Returns {number: {...}} and a cost line."""
+def trestle_score(numbers, api_key, litigator=True):
+    """Score each unique DM number. Returns {number: {...}} and a cost line.
+
+    Litigator scrub is MANDATORY (Basem, 2026-10-05): the add-on always rides;
+    litigator=False is ignored.
+    """
+    litigator = True
     out = {}
     if not api_key:
         return out, {"scored": 0, "reason": "no api key"}
@@ -320,8 +325,8 @@ def trestle_score(numbers, api_key, litigator=False):
             "activity_score": score, "tier": tier_for(score),
             "line_type": d.get("line_type"), "is_valid": d.get("is_valid"),
             "carrier": (d.get("carrier") or ""),
-            "litigator": ((d.get("litigator_checks") or {}).get("is_litigator")
-                          if litigator else None),
+            "litigator": ((d.get("add_ons") or {}).get("litigator_checks") or {}).get(
+                "phone.is_litigator_risk"),
         }
         time.sleep(0.12)
     return out, {"scored": len(numbers), "cost": round(0.015 * len(numbers), 2)}
@@ -431,7 +436,8 @@ def main():
     ap.add_argument("--rank-only", action="store_true", help="stage B only, spend nothing")
     ap.add_argument("--tracerfy", action="store_true", help="stage D gap-fill, $0.02 per DM traced")
     ap.add_argument("--trestle", action="store_true", help="stage E scoring, $0.015 per number")
-    ap.add_argument("--litigator", action="store_true", help="add Trestle litigator checks")
+    ap.add_argument("--litigator", action="store_true",
+                    help="no-op: the litigator add-on ALWAYS rides (Basem, 2026-10-05)")
     args = ap.parse_args()
 
     from parse_smartskip import parse  # the verified Stage 0 normalizer
@@ -467,7 +473,7 @@ def main():
         if args.trestle:
             nums = sorted({p["number"] for d in all_dms for p in (d.get("phones") or [])})
             trestle, meta = trestle_score(nums, os.environ.get("TRESTLE_API_KEY", ""),
-                                          litigator=args.litigator)
+                                          litigator=True)
             costs["trestle"] = meta
             print(f"  trestle scoring    : {meta}")
 

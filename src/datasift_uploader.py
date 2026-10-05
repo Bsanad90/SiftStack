@@ -2030,7 +2030,7 @@ async def run_phone_validation_workflow(
     headless: bool = False,
     api_key: str | None = None,
     tiers: dict | None = None,
-    add_litigator: bool = False,
+    add_litigator: bool = True,
     batch_size: int = 10,
 ) -> dict:
     """Full phone validation workflow: export → validate → upload tags.

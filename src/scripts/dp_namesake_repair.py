@@ -265,7 +265,9 @@ def score_numbers(cache: dict, numbers: list[str], commit: bool) -> int:
             score = d.get("activity_score")
             cache[n] = {"activity_score": score, "tier": dpr.tier_for(score),
                         "line_type": d.get("line_type"), "is_valid": d.get("is_valid"),
-                        "carrier": d.get("carrier") or "", "litigator": None}
+                        "carrier": d.get("carrier") or "",
+                        "litigator": ((d.get("add_ons") or {}).get("litigator_checks") or {}).get(
+                            "phone.is_litigator_risk")}
         time.sleep(0.12)
     return len(numbers)
 

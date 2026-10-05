@@ -120,7 +120,8 @@ def main():
     ap.add_argument("--tag", required=True, help="exact property tag title")
     ap.add_argument("--out", default=None, help="output dir (default output/phone_validation/<slug>)")
     ap.add_argument("--dry-run", action="store_true", help="count phones and price the run, spend nothing")
-    ap.add_argument("--no-litigator", action="store_true", help="skip the litigator add-on")
+    ap.add_argument("--no-litigator", action="store_true",
+                    help="REFUSED: litigator scrub is mandatory (Basem, 2026-10-05); the flag is ignored")
     args = ap.parse_args()
 
     outdir = Path(args.out) if args.out else ROOT / "output" / "phone_validation" / slug(args.tag)
@@ -165,7 +166,7 @@ def main():
 
     results, errors = process_phones(
         [(n, n) for n in uniq], key,
-        tiers=DEFAULT_TIERS, add_litigator=not args.no_litigator,
+        tiers=DEFAULT_TIERS, add_litigator=True,
     )
     by_num = {r["phone_number"]: r for r in results}
 

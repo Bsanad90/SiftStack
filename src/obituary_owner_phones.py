@@ -81,7 +81,9 @@ def collect(qualified, top_n, raw_by_uuid):
 
 
 def call_trestle(number, api_key, timeout=25):
-    url = TRESTLE_ENDPOINT + "?" + urllib.parse.urlencode({"phone": number})
+    # litigator scrub is mandatory (Basem, 2026-10-05)
+    url = TRESTLE_ENDPOINT + "?" + urllib.parse.urlencode(
+        {"phone": number, "add_ons": "litigator_checks"})
     req = urllib.request.Request(url, headers={"x-api-key": api_key,
                                                "Accept": "application/json"})
     try:

@@ -37,6 +37,8 @@ from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime
+
+import dnc_client
 from pathlib import Path
 
 import openpyxl
@@ -92,14 +94,15 @@ def clean_phone(raw: str) -> str:
 # ── Trestle API Caller ────────────────────────────────────────────────────
 
 
-def call_trestle(phone: str, api_key: str, add_litigator: bool = False) -> dict:
+def call_trestle(phone: str, api_key: str, add_litigator: bool = True) -> dict:
     """Call Trestle phone_intel API for a single phone number.
+
+    LITIGATOR SCRUB IS MANDATORY (Basem, 2026-10-05): every Trestle call carries the
+    litigator_checks add-on. The parameter is kept for callers; False is IGNORED.
 
     Returns the parsed JSON response or an error dict.
     """
-    params = {"phone": phone}
-    if add_litigator:
-        params["add_ons"] = "litigator_checks"
+    params = {"phone": phone, "add_ons": "litigator_checks"}
 
     headers = {
         "x-api-key": api_key,
@@ -161,7 +164,8 @@ def assign_tier(score: int | None, tiers: dict) -> str:
 # should ever reach a dial tier at all, and what to tag it when it shouldn't.
 
 
-def evaluate_phone(data: dict, tiers: dict, litigator_checked: bool = False) -> dict:
+def evaluate_phone(data: dict, tiers: dict, litigator_checked: bool = False,
+                   number: str | None = None) -> dict:
     """Qualify one Trestle phone_intel response.
 
     Returns {"tag": str, "code": str, "keep": bool}. "keep" is False for
@@ -173,6 +177,11 @@ def evaluate_phone(data: dict, tiers: dict, litigator_checked: bool = False) -> 
         litigator_checks = (data.get("add_ons") or {}).get("litigator_checks") or {}
         if litigator_checks.get("phone.is_litigator_risk") is True:
             return {"tag": "Litigator Risk", "code": "LITIGATOR", "keep": False}
+
+    # DNC hit from the scrub cache (vendor, Tracerfy or a DataSift DNC status).
+    # A hit never expires; see dnc_client.
+    if number and dnc_client.is_dnc(number):
+        return {"tag": dnc_client.DNC_TAG, "code": "DNC", "keep": False}
 
     if data.get("is_valid") is not True:
         return {"tag": "Invalid", "code": "INVALID", "keep": False}
@@ -492,11 +501,13 @@ def process_phones(
     phones: list[tuple[str, str]],
     api_key: str,
     tiers: dict | None = None,
-    add_litigator: bool = False,
+    add_litigator: bool = True,
     batch_size: int = 10,
     delay: float = 0.1,
 ) -> tuple[list[dict], list[dict]]:
     """Process all phone numbers through Trestle API.
+
+    Litigator scrub is mandatory (Basem, 2026-10-05): add_litigator=False is ignored.
 
     Args:
         phones: List of (raw, cleaned) phone tuples.
@@ -552,10 +563,10 @@ def process_phones(
 
                 score = data.get("activity_score")
                 line_type = data.get("line_type")
-                decision = evaluate_phone(data, tiers, litigator_checked=add_litigator)
+                decision = evaluate_phone(data, tiers, litigator_checked=True, number=phone)
 
                 litigator_risk = None
-                if add_litigator and data.get("add_ons", {}).get("litigator_checks"):
+                if (data.get("add_ons") or {}).get("litigator_checks"):
                     litigator_risk = data["add_ons"]["litigator_checks"].get(
                         "phone.is_litigator_risk", None
                     )
@@ -624,7 +635,7 @@ def score_record_phones(
     notices: list,
     api_key: str | None = None,
     tiers: dict | None = None,
-    add_litigator: bool = False,
+    add_litigator: bool = True,
     batch_size: int = 10,
     delay: float = 0.1,
 ) -> dict[str, dict]:

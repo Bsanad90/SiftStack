@@ -1040,7 +1040,7 @@ def _run_phone_validate(args) -> None:
         upload_tags=not getattr(args, "no_upload", False),
         api_key=config.TRESTLE_API_KEY or None,
         tiers=tiers,
-        add_litigator=getattr(args, "add_litigator", False),
+        add_litigator=True,  # mandatory (Basem, 2026-10-05)
         batch_size=getattr(args, "batch_size", 10),
     ))
 
@@ -1472,7 +1472,7 @@ def cli_main() -> None:
     parser.add_argument(
         "--add-litigator",
         action="store_true",
-        help="Include litigator risk check in phone validation (phone-validate mode)",
+        help="no-op: the litigator risk check ALWAYS runs (Basem, 2026-10-05)",
     )
 
     # Manage sold arguments
