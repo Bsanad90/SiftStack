@@ -408,3 +408,66 @@ Verbatim text as it stood on 2026-10-01 (second split of CLAUDE.md; the first wa
   **Reading the CSV:** `Property Address` can hold the literal string `Not Found (Claude)` — that
   is NOT an address. The 09-15 pull's 76 rows were 36 real addresses, 21 `Not Found` placeholders
   and 19 blank; only **15** had a real address AND a PR. → [history](docs/history/mddc-va-md.md)
+
+## 2026-10-06 — ZIP geocoder poisoned its own cache; Montgomery ratification notices typed `other`
+
+**What the morning review found.** Tuesday's pull (the weekend gap) ran all legs exit 0: MDDC 97 rows
+(51 in footprint, 48 with an auction date, 51 with full text), VA 30 footprint rows, MD RoW 89 estates
+(checkpoint to 10/05), DC DWLR 33. The DC portal walk died on the WAF (2Captcha applied three tokens,
+the challenge stayed, the 4-minute headed wait expired); a headed re-run at 12:25 cleared it on the
+second solve and walked 2026-ADM-001092..001095 (4 hits, checkpoint → 001096). Same pattern as 09-16:
+a WAF death is a bad day, not a dead pipeline. Note for the launcher: `Start-Process powershell
+-ArgumentList '-File',<path>` with a path containing a space silently runs nothing; quote the whole
+argument string.
+
+**Trap 1 — the ZIP→county cache stores a failure.** `resolve_county_by_zip` in both
+`mddc_trustee_sale_pull.py` and `va_trustee_sale_pull.py` did `if zip5 in cache: return cache[zip5]`
+and, after any failure, `cache[zip5] = ""`. On 2026-10-06 the FCC Census Area API
+(`geo.fcc.gov/api/census/area`) answered HTTP 400 for every point (`{"status":"error", ... "file":"auth.c",
+"routine":"ClientAuthentication"}` — a Postgres auth failure on their side), so four ZIPs the cache had
+never seen (20816 Bethesda, 21704 Frederick, 22043 Falls Church, 20191 Reston) were written back as
+`""`. Effects the same morning: 5912 Carlton Ln and 6105 Bartonsville Rd sat in the MDDC CSV with a
+blank county (a county-filtered push would skip them), and 6510 Overbrook St + 2367 Paddock Ln were
+dropped from the VA footprint file as `out_of_footprint (no county)` even though the full-text leg had
+already fetched both notices (Fairfax County land records, auctions Nov 17 and Nov 9). The 79 other
+rows "resolved by ZIP geocode" in the log all came from the cache, so the log line proves nothing about
+the API being alive. Fix: a blank is never cached (`if cache.get(zip5)`), the lookup moved to
+`_geocode_zip_county`, and the Census Bureau geocoder
+(`geocoding.geo.census.gov/geocoder/geographies/coordinates`, layer `Counties`) is the fallback when
+the FCC returns no result. Verified live through both scripts with a scratch cache: all four resolve
+(Montgomery / Frederick / Fairfax / Fairfax) and a bogus ZIP returns `""` without being cached. The
+four cache entries were repaired by hand; today's rows were patched in place (`*.bak-20261006-county.*`
+beside each file), the VA filter re-run offline (32 kept, 4 Alexandria city drops), and the two Fairfax
+rows appended to `va_foreclosures_footprint_full.csv` from the details JSON — no spend.
+
+**Trap 2 — Montgomery ratification notices.** `ORDER_NISI_RE` matched "ORDER NISI", "ratified and
+confirmed", "will be ratified" and the Charles-style "ORDERED this … by the Circuit Court for …
+that the sale". Montgomery's clerk writes "Notice is hereby given this 25th day of September, 2026,
+by the Circuit Court of Montgomery County, Maryland, that the sale of the property … will be RATIFIED
+AND CONFIRMED", and the grid snippet truncates at "Notice is hereby gi…", so 8601 Manchester Rd #516
+(defendant "AYLA A. O'CONNOR (DECEASED)", sold at foreclosure for $85,000) and 18325 Queen Elizabeth Dr
+(sold for $380,000) sat in `_dropped.csv` every day 10-01..10-06 as type `other` — the drop was right,
+the label made them look like missed leads worth a probate look. Decision (Basem delegated it,
+2026-10-06): a ratification notice is post-sale; the deceased owner's heirs have nothing left to sell.
+Not a lead, no DP. The regex now carries the "Notice is hereby given … by the Circuit Court (of|for) …
+that the sale" shape so the full-text classification reads `order_nisi` (snippet-only rows still read
+`other` because the snippet ends before the distinguishing words — same drop either way).
+
+**Also seen, not fixed.** The DC DWLR reconciliation (dry run, nothing persisted) rewrote
+2026-ADM-000944's PR city/state to "WOODBRIDGE VIRGIN" / "IA" and replaced 2026-ADM-000953's applicant
+Evelyn Patrick Ellis with "Deirdre J. Payne"; check both before the next `--commit` of that ledger.
+
+**Portal "not found in ITSPE" rows, hand-checked the same day (Basem: "check OTR? check deeds?").** ITSPE is
+OTR, so the same address query cannot un-miss itself; what works is (a) the tax roll by owner NAME and by a
+loosened address, then (b) the free Recorder of Deeds index by decedent name (`dc_rod_lookup.py` with a
+two-key `records.json` in the scratchpad, 45 s for both), then (c) ITSPE by each SQ/LOT the index names.
+2026-ADM-001092 Falls: the portal's residence "1327 Hamlin Street NW" is really NE (ZIP 20017 is Brookland);
+`itspe_rows_for_address` found the NE parcel on its loose query and then discarded it on the quadrant, so a
+wrong quadrant in a court record defeats the address path. The parcel belongs to Stephen E + Iver C Ricks
+(Stephen holds her 2019 POA); her own three parcels were sold (3577 Texas Ave SE 2019, 2226 Ridge Pl SE 1992)
+or condo-foreclosed (3937 Pennsylvania Ave SE #202, 2021). 2026-ADM-001093 Joiner: #905 at 1330 Massachusetts
+Ave NW is one of 141 units Thomas Circle Property LLC bought in bulk in 02/2026 — a tenant; his five former
+parcels were all conveyed by 2013 and one (2201 L St NW #209) is the PR's own home. Neither estate holds DC
+real estate: not leads. Verdicts written into `dc_probates_portal.csv` and the ledger (`HAND` confidence),
+deed index saved under `dc_portal_hand_checks/`.
+

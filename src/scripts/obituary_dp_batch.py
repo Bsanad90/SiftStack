@@ -3577,8 +3577,15 @@ def cmd_build(a) -> int:
         # Basem 2026-10-01: an obituary record gets `Obituaries` and never `Priority 1`
         # (FTM only when it is also a probate case) -- whatever --extra-tag said. The rule
         # lives in dpd.lane_tags so every pusher refuses the same way.
+        # The rule must see the tags the record ALREADY carries (prep keeps the CRM's own
+        # Tags column): judged on the plan's additions alone, a `Priority 1` SiftMap record
+        # reads as "no entry tag at all" and is handed `Priority 2` (smartskip_1005,
+        # 2026-10-05: 9 of 11 P1 rung records). Existing tags are the CRM's, not ours to
+        # re-send -- only what the rule adds or keeps of OUR additions goes in the plan.
         from dpd.lane_tags import apply_lane_rule, split_lists
-        ruled = apply_lane_rule(split_lists(rec.get("lists")), tags)
+        existing = split_lists(rec.get("tags"))
+        ruled_all = apply_lane_rule(split_lists(rec.get("lists")), existing + tags)
+        ruled = [t for t in ruled_all if t in tags or t not in existing]
         if ruled != tags:
             say(f"  {key}: lane rule {sorted(set(tags) - set(ruled))} -> {sorted(set(ruled) - set(tags))}")
         tags = ruled

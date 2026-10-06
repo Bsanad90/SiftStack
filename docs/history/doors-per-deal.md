@@ -825,6 +825,21 @@ Full build narrative, including every panel trap and the inverted-preset post-mo
   Hottest Ready 1 -> 31, FTM Ready 27 -> 67, Bulk Ready 0 -> 29, FTM Mail 01 423 -> 831.
   `resolved_window()` now resolves any anchor (`OBIT_ANCHOR_MONTHS`). Backups
   `output/dpd_presets_obit_window_backup_20260928T123033.json` + `..._20260928T123142.json`.
+- **2026-10-05, Basem: "recheck on sift map filters - cause i am sure you can add those either as distressors."**
+  He was right. The SiftMap page bundle (`SiftMapPage…js`) carries `DISTRESSOR_LABELS` with 31 keys and the
+  constants bundle names the payload fields: `distressors_method` ("" / "stacked" / "custom"),
+  `distressors_include` (COMMA STRING; a list 400s "Not a valid string"), `distressors_include_min_match`,
+  `distressors_exclude`. `is_heirs_property` and `is_tired_landlord` are hidden in the UI behind the
+  `isNewDistressorsUser` flag but the API honours them. So HOA Lien, Other Lien (Mechanic's / Utility),
+  Low Income, Bad Credit, Bankruptcy, Estate Sale and Heirs ARE filterable; the 08-26 hunt
+  (`dpd_siftmap_distressor_list.json`) read the panel labels before the custom select had rendered its
+  options and `dpd_siftmap_manifest.UNFILTERABLE` has been wrong since. 29 P1 rungs across the six counties
+  were never saved. Measured read-only via `POST map.reisift.io/properties/search/`
+  (`output/dpd_siftmap_distressor_rungs_measure_20261005.json`): counts track the Work Order list sizes;
+  +2,616 distinct not-in-account parcels, exact initial pull 17,544 -> 20,160. Also learned the same day:
+  `result_index` on that endpoint is an OFFSET and `size` goes to at least 2,000; the default order is
+  unstable so size-250 pages overlap almost entirely. Nothing built, nothing pulled; the manifest needs a
+  DISTRESSOR map and `build_url` support for the three params before the 29 filters can be saved.
 - **2026-10-05, Basem: "Turn on auto add for all dpd siftmap presets."** 17 current P1 rung filters
   switched over the map API, tags FIRST (`Priority 1` + `" + ".join(signals)`, the `(proxy)` suffix
   is name-only) then `auto_add_enabled`, each PATCH read back field-by-field (0 mismatches). Result:

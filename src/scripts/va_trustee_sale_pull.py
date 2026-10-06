@@ -515,25 +515,60 @@ def resolve_county_by_zip(zip5: str, cache: dict) -> str:
     if not zip5:
         return ""
     zip5 = zip5[:5]
-    if zip5 in cache:
+    # A cached BLANK is a cached failure, not a cached answer: the FCC Census
+    # Area API died (HTTP 400, a Postgres auth error on their side) on
+    # 2026-10-06, four ZIPs were written back as "" and every later run reused
+    # the blank, so four footprint rows read "no county" (two dropped out of
+    # the VA file). Only a non-empty county is worth caching.
+    if cache.get(zip5):
         return cache[zip5]
-    county = ""
+    county = _geocode_zip_county(zip5)
+    if county:
+        cache[zip5] = county
+    return county
+
+
+def _geocode_zip_county(zip5: str) -> str:
+    """zippopotam.us ZIP -> lat/lon, then the point -> county through the FCC
+    Census Area API, falling back to the Census Bureau's own geocoder when the
+    FCC answers anything but a result (it 400'd for every ZIP on 2026-10-06).
+    Both are government/postal data, so this is a geocode, not a guess. Returns
+    "" when neither resolves; the caller does not cache that."""
     try:
         r = requests.get(f"https://api.zippopotam.us/us/{zip5}", timeout=10)
-        if r.status_code == 200:
-            place = r.json()["places"][0]
-            lat, lon = place["latitude"], place["longitude"]
-            r2 = requests.get("https://geo.fcc.gov/api/census/area",
-                               params={"lat": lat, "lon": lon, "format": "json"}, timeout=10)
-            if r2.status_code == 200:
-                results = r2.json().get("results") or []
-                if results:
-                    name = results[0]["county_name"]
-                    county = name[:-len(" County")] if name.endswith(" County") else name
-    except requests.exceptions.RequestException:
-        county = ""
-    cache[zip5] = county
-    return county
+        if r.status_code != 200:
+            return ""
+        place = r.json()["places"][0]
+        lat, lon = place["latitude"], place["longitude"]
+    except (requests.exceptions.RequestException, KeyError, IndexError, ValueError):
+        return ""
+    name = ""
+    try:
+        r2 = requests.get("https://geo.fcc.gov/api/census/area",
+                          params={"lat": lat, "lon": lon, "format": "json"}, timeout=10)
+        if r2.status_code == 200:
+            results = r2.json().get("results") or []
+            if results:
+                name = results[0].get("county_name") or ""
+    except (requests.exceptions.RequestException, ValueError):
+        name = ""
+    if not name:
+        try:
+            r3 = requests.get(
+                "https://geocoding.geo.census.gov/geocoder/geographies/coordinates",
+                params={"x": lon, "y": lat, "benchmark": "Public_AR_Current",
+                        "vintage": "Current_Current", "layers": "Counties", "format": "json"},
+                timeout=15)
+            if r3.status_code == 200:
+                counties = (r3.json().get("result") or {}).get("geographies", {}).get("Counties") or []
+                if counties:
+                    name = counties[0].get("NAME") or ""
+        except (requests.exceptions.RequestException, ValueError):
+            name = ""
+    # Both APIs return "District of Columbia" as its own county_name for DC --
+    # strip the trailing " County" MD/VA carry so the column matches the
+    # free-text-parsed style elsewhere.
+    return name[:-len(" County")] if name.endswith(" County") else name
 
 
 def _normalize_state(raw: str) -> str:

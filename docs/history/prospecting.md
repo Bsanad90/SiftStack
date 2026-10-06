@@ -659,3 +659,41 @@ on a go. Built:
 
 The first cache-only run, on `output/dp_v5_0210_20261002` (2026-10-05), read 33 rows: 31 numbers,
 all unchecked, exit 2, nothing spent.
+
+## Smart Skip 10.5 — SmartSkip on 11 phoneless auto-add records + Trestle on the 2026-10-03 cohort (2026-10-05)
+
+Basem skip traced the 2026-10-03 SiftMap auto-add (filter 12059, "DC P1-03 High Equity + Notice of
+Default", 239 records: 221 new, 18 updated) on DataSift on 2026-10-05: 225 records came back tagged
+`REISift Skipped 10/26`, 209 of them with phones, 16 with none. He tagged 11 of the 16 `Smart Skip 10.5`
+and asked for SmartSkip + Trestle on those and Trestle on everything that was skip traced. Run dir
+`output/smartskip_1005/`.
+
+- **Trestle cohort** (`trestle_score_push.py`, a clone of the DPD-pull engine): 214 records pulled (the 11
+  excluded), 653 unique numbers, none cached anywhere, all 653 paid (~$9.79, 0 errors): Dial First 316 /
+  Second 23 / Third 31 / Fourth 203 / Drop 77 / **Litigator Risk 3** (removed from 2 owners with
+  `remove-phones/`, never loaded). Push per record: tier-tagged, tier-ordered phones, `REISift Traced
+  10/2026` stamp (the first use of the wizard-path trace tag), `Mail Only` ×4, pinned
+  `[DPD Auto-Add 2026-10-03]` rung note. 29 of the 214 are status `Already Sold` (the live
+  `Sold Property Cleanup` sequence had already run on them) — scored anyway, every preset excludes them.
+  The engine treats a cached verdict with `litigator: None` as UNCHECKED and re-scores it.
+- **SmartSkip 11** through the DP batch (`output/smartskip_1005/dp`, export CSV synthesised from the live
+  detail reads — no wizard export needed): order `6ac3d9428ca669d0cdc032d5`, 11 entities, $1.65, delivered in
+  32 s; 10 of 11 returned at least one phone, 19 relatives / 51 phones; Trestle 56 numbers (~$0.84).
+  `research --presume-alive-without-signal`: 8 presumed alive, 3 unresolved (5530 Bass Pl SE — owner Tonya
+  Redd IS the PR per the custom fields; 705 Hemlock St NW — RoW list, SmartSkip returned nothing, `DP No
+  Numbers 10/2026`; 2913 University Ter NW — see below). Push 11/11 ok, QA 11/11 clean first pass.
+  Two trust titles parsed to a person at low confidence (Floyd R Davis Trustee → Floyd Davis, Potter Penneys
+  Revocable Trust → Potter Penneys); both returned numbers, both tagged `DP Trust Trustee Inferred`.
+- **Research miss to know about:** the strict query `"Hormoz Hekmat" obituary Washington DC` returned zero
+  hits and the record went out `DP Death Unverified`, yet an unquoted `"Hormoz Hekmat" Washington DC` search
+  returns "In Memoriam: Hormoz Hekmat - KAYHAN LIFE" on the first page (the record is `Zombie` + Vacant).
+  The research trail stops at the first zero-hit query; a fallback without the word "obituary" is the fix.
+- **Trap (fixed):** `cmd_build` ran `apply_lane_rule(lists, tags)` on the plan's ADDITIONS only, so
+  `derive_entry_tags` saw "no entry tag at all" on records that live-carry `Priority 1` and added
+  `Priority 2` to 9 of 11; the two Register-of-Wills-list records correctly derived `FTM`. Now the rule sees
+  prep's Tags column (`existing + tags`) and the plan keeps only what it adds. Caught in the dry run; nothing
+  wrong reached the account.
+- Not done: assignment (224 of the 225 are unassigned; the standing rule says split across the 5 dialers
+  after a trace, but routing P1 auto-add records into a call lane is still the open decision from
+  2026-09-08), and the 5 other phoneless records Basem did not tag (600 Tuckerman St NW, 3181 Porter St NW,
+  1524 Allison St NW, 4620 B St SE, and the LLC at 5631 Macarthur Blvd NW).
