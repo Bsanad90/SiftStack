@@ -114,10 +114,13 @@ def parse(md: str) -> dict:
         if not re.match(r"^\d+\.", l):
             continue
         l = re.sub(r"^\d+\.\s*", "", l).strip()
-        said = grab(r'They said:\s*"(.+?)"\s*(?:\(.*?\))?\s*Use instead', l)
-        use = grab(r'Use instead:\s*"(.+?)"', l)
-        why = l.split('Use instead:', 1)[-1]
-        why = re.sub(r'^\s*"[^"]*"\s*', "", why).strip()
+        # The rubric template is: They said: "quote". Use instead: "line". why
+        # Tolerate the period after the closing quote and a parenthetical
+        # (which may itself hold quotes) between the two.
+        said = grab(r'They said:\s*"(.+?)"[.\s]*(?:\([^)]*\)[.\s]*)?Use instead', l)
+        use = grab(r'Use instead[^:]*:\s*"(.+?)"', l)
+        why = l.split('Use instead', 1)[-1].split(':', 1)[-1]
+        why = re.sub(r'^\s*"[^"]*"(?:\s*(?:then|and)\s*"[^"]*")*[.\s]*', "", why).strip()
         imps.append((said, use, why))
     d["improvements"] = imps
     return d
