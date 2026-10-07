@@ -18,6 +18,7 @@ Subcommands (all read-only, everything lands in output/team_kpi/<from>_<to>/):
   whatsapp   parse the chat export              -> messages.json (+ lead candidates)
   report     join everything (+ leads.json)     -> kpi.json + tables.md
   daily      one day from both APIs (no leads)  -> output/team_kpi/daily/<date>.txt (8 PM pop-up)
+  weekly     7 days ending --date (or --from/--to) -> output/team_kpi/weekly/<from>_<to>.txt
 
 Period: --month 2026-09, or --from 2026-09-01 --to 2026-09-30 (default: last full month).
 People, rates and name mapping: team_kpi_config.json at the repo root (gitignored; the
@@ -45,6 +46,8 @@ import re
 import sys
 import zipfile
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "team_kpi_config.json"
@@ -621,41 +624,121 @@ def render(r: dict) -> str:
     return "\n".join(out) + "\n"
 
 
-def cmd_daily(a, cfg):
-    """One day, both APIs, no leads -> a short text report (the 8 PM pop-up).
+CACHE = OUT_BASE / "cache" / "smrtphone"
+WINDOW_DAYS = 28
 
-    Never raises: a source that fails is named in the report with its fix, so the pop-up
-    always appears."""
+
+def smrtphone_window(f: D.date, t: D.date, cfg, today: D.date) -> list[dict]:
+    """SmrtPhone rows for [f, t] with a per-day cache: a finished day (before today) is
+    fetched once and kept; only missing days (and today) are walked from the API."""
+    CACHE.mkdir(parents=True, exist_ok=True)
+    days = [f + D.timedelta(days=i) for i in range((t - f).days + 1)]
+    missing = [d for d in days if d >= today or not (CACHE / f"{d}.json").exists()]
+    fresh = {}
+    if missing:
+        rows, _ = smrtphone_api_rows(min(missing), t, cfg)
+        for r in rows:
+            fresh.setdefault(r["date"], []).append(r)
+        for d in missing:
+            if d < today:
+                (CACHE / f"{d}.json").write_text(json.dumps(fresh.get(str(d), [])), encoding="utf-8")
+    out = []
+    for d in days:
+        if str(d) in fresh or d in missing:
+            out += fresh.get(str(d), [])
+        else:
+            out += json.loads((CACHE / f"{d}.json").read_text(encoding="utf-8"))
+    return out
+
+
+def _run_span(kind: str, f: D.date, t: D.date, cfg) -> int:
+    """daily / weekly: both APIs -> kpi.json, a text summary and the HTML dashboard.
+    Never raises: a source that fails is named in the report with its fix."""
     import contextlib
     from zoneinfo import ZoneInfo
-    day = D.date.fromisoformat(a.date) if a.date else D.datetime.now(ZoneInfo("America/New_York")).date()
-    ns = argparse.Namespace(month=None, day_from=str(day), day_to=str(day), csv=None, zip=None, source="api")
+    import team_kpi_dash as dash
+    today = D.datetime.now(ZoneInfo("America/New_York")).date()
+    ns = argparse.Namespace(month=None, day_from=str(f), day_to=str(t), csv=None, zip=None, source="api")
     errors, log = [], io.StringIO()
-    od = out_dir(day, day)
-    for name, fn, fix in (("Hubstaff", cmd_hubstaff, "token dead? new one at developer.hubstaff.com -> .env, delete hubstaff_state.json"),
-                          ("SmrtPhone", cmd_smrtphone, "run: python skills/cold-call-coach/scripts/smrtphone_login.py")):
-        try:
-            with contextlib.redirect_stdout(log):
-                fn(ns, cfg)
-        except SystemExit:
-            msg = log.getvalue().strip().splitlines()
-            errors.append(f"{name} FAILED: {(msg[-2] if len(msg) > 1 else 'see log')[:160]} -> {fix}")
-        except Exception as e:  # noqa: BLE001
-            errors.append(f"{name} FAILED: {str(e)[:160]} -> {fix}")
-    for stale in ("leads.json",):
-        (od / stale).unlink(missing_ok=True)
+    od = out_dir(f, t)
+    (od / "leads.json").unlink(missing_ok=True)
+    try:
+        with contextlib.redirect_stdout(log):
+            cmd_hubstaff(ns, cfg)
+    except BaseException as e:  # noqa: BLE001 - SystemExit from die() included
+        msg = log.getvalue().strip().splitlines()
+        errors.append(f"Hubstaff failed: {(str(e) if not isinstance(e, SystemExit) else (msg[-2] if len(msg) > 1 else 'see log'))[:160]}"
+                      " -> token dead? make a new one at developer.hubstaff.com, replace the .env line, delete hubstaff_state.json")
+    wrows, prows = [], []
+    try:
+        wf = min(f, t - D.timedelta(days=WINDOW_DAYS - 1))
+        wrows = smrtphone_window(wf, t, cfg, today)
+        prows = [r for r in wrows if str(f) <= r["date"] <= str(t)]
+        with contextlib.redirect_stdout(log):
+            _write_smrtphone(f, t, prows, "SmrtPhone API (cached per day)", {"source": "api"})
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"SmrtPhone failed: {str(e)[:160]} -> run: python skills/cold-call-coach/scripts/smrtphone_login.py")
     k = None
-    if (od / "hubstaff.json").exists() and (od / "smrtphone.json").exists() and not errors:
+    if not errors:
         with contextlib.redirect_stdout(log):
             cmd_report(ns, cfg)
         k = json.loads((od / "kpi.json").read_text(encoding="utf-8"))
-    text = render_daily(day, k, errors, cfg)
-    dd = OUT_BASE / "daily"
+    if kind == "daily":
+        text = render_daily(t, k, errors, cfg)
+        title, sub, stem = f"Team KPI - {t:%A %b %d}", f"As of {D.datetime.now():%H:%M} ET", str(t)
+    else:
+        head = f"Team KPI week  {f:%a %b %d} - {t:%a %b %d}"
+        text = "\n".join([head, ""] + errors) + "\n" if errors else render_weekly(head, k, prows, cfg)
+        title, sub, stem = f"Team KPI - week of {f:%b %d}", f"{f:%a %b %d} to {t:%a %b %d}", f"{f}_{t}"
+    dmf = OUT_BASE / "data_manager" / f"{f}_{t}" / "kpi.json"
+    dm = json.loads(dmf.read_text(encoding="utf-8")) if dmf.exists() else None
+    page = dash.render(kind, title, sub, k, prows, wrows, cfg, errors, HUMAN, RPC, dm)
+    dd = OUT_BASE / kind
     dd.mkdir(parents=True, exist_ok=True)
-    (dd / f"{day}.txt").write_text(text, encoding="utf-8")
-    (dd / f"{day}.log").write_text(log.getvalue(), encoding="utf-8")
+    (dd / f"{stem}.txt").write_text(text, encoding="utf-8")
+    (dd / f"{stem}.html").write_text(page, encoding="utf-8")
+    (dd / f"{stem}.log").write_text(log.getvalue(), encoding="utf-8")
+    write_index()
     print(text)
+    print(f"HTML: {dd / f'{stem}.html'}")
     return 0
+
+
+def write_index() -> Path:
+    """output/team_kpi/index.html: every daily and weekly dashboard, newest first."""
+    import team_kpi_dash as dash
+
+    def links(kind):
+        files = sorted((OUT_BASE / kind).glob("*.html"), reverse=True)
+        out = []
+        for p in files:
+            label = p.stem
+            try:
+                if kind == "daily":
+                    label = f"{D.date.fromisoformat(p.stem):%a %b %d, %Y}"
+                else:
+                    a_, b_ = p.stem.split("_")
+                    label = f"{D.date.fromisoformat(a_):%b %d} - {D.date.fromisoformat(b_):%b %d, %Y}"
+            except ValueError:
+                pass
+            out.append(f'<li><a href="{kind}/{p.name}">{dash.esc(label)}</a></li>')
+        return "".join(out) or "<li>none yet</li>"
+
+    page = ("<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
+            f"<title>Team KPI reports</title><style>{dash.CSS} ul{{margin:6px 0 0;padding-left:18px;columns:2}} li{{margin:4px 0}}"
+            " a{color:var(--accent)}</style></head><body><main><h1>Team KPI reports</h1>"
+            f"<p class=sub>Updated {D.datetime.now():%Y-%m-%d %H:%M}. Daily at 8 PM, weekly on Sunday.</p>"
+            f'<div class="grid2"><section class="card"><h2>Weekly</h2><ul>{links("weekly")}</ul></section>'
+            f'<section class="card"><h2>Daily</h2><ul>{links("daily")}</ul></section></div></main></body></html>')
+    out = OUT_BASE / "index.html"
+    out.write_text(page, encoding="utf-8")
+    return out
+
+
+def cmd_daily(a, cfg):
+    from zoneinfo import ZoneInfo
+    day = D.date.fromisoformat(a.date) if a.date else D.datetime.now(ZoneInfo("America/New_York")).date()
+    return _run_span("daily", day, day, cfg)
 
 
 def render_daily(day: D.date, k: dict | None, errors: list[str], cfg: dict) -> str:
@@ -699,10 +782,73 @@ def render_daily(day: D.date, k: dict | None, errors: list[str], cfg: dict) -> s
     return "\n".join(out) + "\n"
 
 
+def cmd_weekly(a, cfg):
+    """A date range (default: the 7 days ending today, ET)."""
+    from zoneinfo import ZoneInfo
+    if a.day_from and a.day_to:
+        f, t = D.date.fromisoformat(a.day_from), D.date.fromisoformat(a.day_to)
+    else:
+        t = D.date.fromisoformat(a.date) if a.date else D.datetime.now(ZoneInfo("America/New_York")).date()
+        f = t - D.timedelta(days=6)
+    return _run_span("weekly", f, t, cfg)
+
+
+def render_weekly(head: str, k: dict, sp: list[dict], cfg: dict) -> str:
+    P = k["people"]
+    short = {n: p.get("short") or n.split()[0] for n, p in cfg["people"].items()}
+    callers = {n: p for n, p in P.items() if p["role"] != "data_manager"}
+    ct = k["groups"].get("calling_team", {})
+    dials = sum(p["dials"] for p in callers.values())
+    out = [head,
+           f"${k['total_invoice']:,.0f} on {k['total_hours']:.1f} h (callers ${ct.get('invoice', 0):,.0f}) | "
+           f"{dials:,} dials, {ct.get('conversations', 0)} conv, {ct.get('rpc', 0)} RPC, "
+           f"{_m(ct.get('cost_per_rpc'), money=True)}/RPC", "",
+           f"{'':9}{'Days':>5}{'Hrs':>6}{'Dials':>6}{'/h':>4}{'Conv':>5}{'RPC':>4}{'$/RPC':>7}{'VM':>5}{'NoD':>5}{'1st':>6}{'Slack':>6}"]
+    flags = []
+    for n, p in callers.items():
+        if not p["hours"] and not p["dials"]:
+            out.append(f"{short[n]:<9}  off all week")
+            continue
+        vm = f"{p['vm_left_rate'] * 100:.0f}%" if p["vm_left_rate"] is not None else "-"
+        nd = f"{p['no_dispo_rate'] * 100:.0f}%" if p["no_dispo_rate"] is not None else "-"
+        cpr = f"${p['cost_per_rpc']:.0f}" if p["cost_per_rpc"] else "-"
+        out.append(f"{short[n]:<9}{p['days']:>5}{p['hours']:>6.1f}{p['dials']:>6}{(p['dials_per_paid_hour'] or 0):>4.0f}"
+                   f"{p['conversations']:>5}{p['rpc']:>4}{cpr:>7}{vm:>5}{nd:>5}{p['median_first_dial'] or '-':>6}"
+                   f"{(p['slack_hours'] or 0):>6.1f}")
+        if p["paid_days_no_dials"]:
+            flags.append(f"{short[n]} {p['paid_days_no_dials']} paid day(s) with 0 dials")
+        if (p["slack_hours"] or 0) >= 8:
+            flags.append(f"{short[n]} ~{p['slack_hours']:.0f} h off-dialer")
+        if p["vm_left_rate"] is not None and p["dials"] >= 100 and p["vm_left_rate"] < 0.25:
+            flags.append(f"{short[n]} VM {p['vm_left_rate'] * 100:.0f}%")
+        if (p["no_dispo_rate"] or 0) > 0.08 and p["dials"] >= 100:
+            flags.append(f"{short[n]} no-dispo {p['no_dispo_rate'] * 100:.0f}%")
+    dm = [f"{short[n]} {p['hours']:.1f} h" for n, p in P.items() if p["role"] == "data_manager" and p["hours"]]
+    if dm:
+        out.append(f"Data mgrs: {', '.join(dm)}")
+    # team by day: paid hours, dials, conversations, RPC
+    by = C.defaultdict(lambda: [0.0, 0, 0, 0])
+    for n in callers:
+        for r in k["daily"].get(n, []):
+            by[r["date"]][0] += r["paid"]
+    for r in sp:
+        if r["person"] in callers and r["direction"] == "Outbound":
+            b = by[r["date"]]
+            b[1] += 1
+            b[2] += r["status"] in HUMAN
+            b[3] += r["status"] in RPC
+    out += ["", f"{'By day':<11}{'Hrs':>6}{'Dials':>6}{'Conv':>5}{'RPC':>4}"]
+    for d in sorted(by):
+        h, dl, cv, rp = by[d]
+        out.append(f"{D.date.fromisoformat(d):%a %m-%d}  {h:>6.1f}{dl:>6}{cv:>5}{rp:>4}")
+    out += ["", "Flags: " + ("; ".join(flags) if flags else "none")]
+    return "\n".join(out) + "\n"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("cmd", choices=["find", "smrtphone", "hubstaff", "whatsapp", "report", "daily"])
-    ap.add_argument("--date", help="daily: YYYY-MM-DD (default today, America/New_York)")
+    ap.add_argument("cmd", choices=["find", "smrtphone", "hubstaff", "whatsapp", "report", "daily", "weekly"])
+    ap.add_argument("--date", help="daily / weekly: YYYY-MM-DD (default today, America/New_York)")
     ap.add_argument("--month", help="YYYY-MM")
     ap.add_argument("--from", dest="day_from")
     ap.add_argument("--to", dest="day_to")
@@ -714,7 +860,8 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     cfg = load_config()
     return {"find": cmd_find, "smrtphone": cmd_smrtphone, "hubstaff": cmd_hubstaff,
-            "whatsapp": cmd_whatsapp, "report": cmd_report, "daily": cmd_daily}[a.cmd](a, cfg)
+            "whatsapp": cmd_whatsapp, "report": cmd_report, "daily": cmd_daily,
+            "weekly": cmd_weekly}[a.cmd](a, cfg)
 
 
 if __name__ == "__main__":

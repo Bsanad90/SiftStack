@@ -1,50 +1,48 @@
 <#
-Runs the daily team KPI (Hubstaff + SmrtPhone APIs, read-only) and shows the result in a
-pop-up. Scheduled as "SiftStack Team KPI Daily", every day at 20:00.
+Runs the team KPI (Hubstaff + SmrtPhone APIs, read-only) and opens the dashboard in the
+default browser. Scheduled tasks:
+  "SiftStack Team KPI Daily"   every day 20:00   -Mode daily
+  "SiftStack Team KPI Weekly"  Sunday    20:05   -Mode weekly  (the 7 days ending that day)
 
-  powershell.exe -NoProfile -WindowStyle Hidden -File team_kpi_daily.ps1 [-Date 2026-10-06]
+  powershell.exe -NoProfile -WindowStyle Hidden -File team_kpi_daily.ps1 [-Mode weekly] [-Date 2026-10-06]
 
-The report is also saved to output/team_kpi/daily/<date>.txt (log beside it).
+Output: output/team_kpi/<daily|weekly>/<stem>.html (+ .txt, .log). If no page was written,
+a text pop-up shows whatever the script printed.
 #>
-param([string]$Date = "")
+param([ValidateSet("daily", "weekly")][string]$Mode = "daily", [string]$Date = "")
 
 $Repo   = "C:\Users\pc\Desktop\Galal Development\Sift Stack"
 $Python = "C:\Users\pc\AppData\Local\Programs\Python\Python314\python.exe"
 $env:PYTHONIOENCODING = "utf-8"
 
 Set-Location $Repo
-$pyArgs = @("src\scripts\team_kpi.py", "daily")
-if ($Date) { $pyArgs += @("--date", $Date) }
-$text = & $Python @pyArgs 2>&1 | Out-String
-if (-not $text.Trim()) { $text = "Team KPI daily produced no output - check output\team_kpi\daily\*.log" }
+# Mohamed Hisham's sheet KPI first (it also takes the daily snapshot the progress line needs)
+$end = if ($Date) { [datetime]::Parse($Date) } else { Get-Date }
+$start = if ($Mode -eq "weekly") { $end.AddDays(-6) } else { $end }
+$dmArgs = @("src\scripts\data_manager_kpi.py", "--from", $start.ToString("yyyy-MM-dd"), "--to", $end.ToString("yyyy-MM-dd"))
+if ($Mode -eq "weekly") { $dmArgs += "--account" }
+& $Python @dmArgs *> "$Repo\output\team_kpi\data_manager\last_run.log"
 
+$pyArgs = @("src\scripts\team_kpi.py", $Mode)
+if ($Date) { $pyArgs += @("--date", $Date) }
+$out = & $Python @pyArgs 2>&1 | Out-String
+
+$html = ($out -split "`r?`n" | Where-Object { $_ -like "HTML: *" } | Select-Object -Last 1)
+if ($html) {
+    $path = $html.Substring(6).Trim()
+    if (Test-Path $path) { Start-Process $path; exit 0 }
+}
+
+# fallback: show the raw output so a failure is never silent
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
-
 $form = New-Object System.Windows.Forms.Form
-$form.Text = "SiftStack - Team KPI"
-$form.StartPosition = "CenterScreen"
-$form.Width = 620
-$form.Height = 380
-$form.Topmost = $true
-$form.MinimizeBox = $false
-$form.MaximizeBox = $false
-
+$form.Text = "SiftStack - Team KPI ($Mode) did not finish"
+$form.StartPosition = "CenterScreen"; $form.Width = 680; $form.Height = 420; $form.Topmost = $true
 $box = New-Object System.Windows.Forms.TextBox
-$box.Multiline = $true
-$box.ReadOnly = $true
-$box.ScrollBars = "Vertical"
-$box.Dock = "Fill"
+$box.Multiline = $true; $box.ReadOnly = $true; $box.ScrollBars = "Vertical"; $box.Dock = "Fill"
 $box.Font = New-Object System.Drawing.Font("Consolas", 10)
-$box.Text = $text -replace "`r?`n", "`r`n"
-
-$ok = New-Object System.Windows.Forms.Button
-$ok.Text = "OK"
-$ok.Dock = "Bottom"
-$ok.Height = 32
-$ok.DialogResult = [System.Windows.Forms.DialogResult]::OK
-
+if (-not $out.Trim()) { $out = "No output - see output\team_kpi\$Mode\*.log" }
+$box.Text = $out -replace "`r?`n", "`r`n"
 $form.Controls.Add($box)
-$form.Controls.Add($ok)
-$form.AcceptButton = $ok
 [void]$form.ShowDialog()

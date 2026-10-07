@@ -71,7 +71,10 @@ python tools/manual/test_dnc_scrub.py            # DNC cache rules / scorer over
 # Rates/names: team_kpi_config.json (gitignored)
 python src/scripts/team_kpi.py find --month 2026-09     # which exports cover the month
 python src/scripts/team_kpi.py report --month 2026-09   # after the 3 extractors -> output/team_kpi/
-python src/scripts/team_kpi.py daily                    # today, both APIs; task "SiftStack Team KPI Daily" 20:00 pop-up
+python src/scripts/team_kpi.py daily                    # today -> HTML dashboard; task "SiftStack Team KPI Daily" 20:00
+python src/scripts/team_kpi.py weekly                   # last 7 days; task "SiftStack Team KPI Weekly" Sun 20:05
+python src/scripts/data_manager_kpi.py --month 2026-09 --account   # Mohamed Hisham, Probate Extraction 2 (never Sheet26)
+# all reports: output/team_kpi/index.html (desktop shortcut "Team KPI Reports")
 
 # Upstream TN scraper (Knox/Blount) -- not this account's feed
 python src/main.py daily [--split] [--counties Knox] [--types foreclosure,probate] [-v]

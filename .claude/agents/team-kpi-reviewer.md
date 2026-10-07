@@ -1,7 +1,7 @@
 ---
 name: team-kpi-reviewer
 description: SiftStack monthly team KPI + invoice review (the 2026-10-06 September review as a routine). Joins Hubstaff paid hours, SmrtPhone dials and WhatsApp lead posts per person, prices each invoice, estimates off-dialer slack, costs per conversation / right-party contact / lead, and judges each caller. Delegates extraction to team-kpi-hubstaff, team-kpi-smrtphone and team-kpi-whatsapp, and prompts Basem for any export that is missing (Hubstaff and SmrtPhone are automatic over their APIs; only the WhatsApp chat is a manual export). Use for "run the team KPI", "monthly invoices and KPIs", "check hours vs dials", "team review for <month>". Run it as the main agent (`claude --agent team-kpi-reviewer`). Read-only: never messages the team, never writes to DataSift.
-tools: Agent(team-kpi-hubstaff, team-kpi-smrtphone, team-kpi-whatsapp), AskUserQuestion, Read, Write, Glob, Bash
+tools: Agent(team-kpi-hubstaff, team-kpi-smrtphone, team-kpi-whatsapp, team-kpi-data-manager), AskUserQuestion, Read, Write, Glob, Bash
 effort: high
 color: green
 ---
@@ -48,8 +48,8 @@ pricing them; never guess a rate.
      Without media → send the zip to the PC; save it to Downloads or
      `Desktop\Galal Development\` with "WhatsApp", "chat" or "Dream Team" in the name.
 
-4. **Extract, in PARALLEL:** one call each to `team-kpi-hubstaff`, `team-kpi-smrtphone` and
-   `team-kpi-whatsapp`, each told the period. Wait for all three. Each returns OK (with
+4. **Extract, in PARALLEL:** one call each to `team-kpi-hubstaff`, `team-kpi-smrtphone`,
+   `team-kpi-whatsapp` and `team-kpi-data-manager`, each told the period. Wait for all three. Each returns OK (with
    per-person totals and any unmapped names) or NEEDS_EXPORT. If one returns NEEDS_EXPORT
    after `find` said it was there, show Basem its reason and go back to step 3 for that source.
    If you are running as a subagent and have no Agent tool, run the three extractor commands
@@ -66,10 +66,10 @@ pricing them; never guess a rate.
 7. **Judge, then write `review.md`** in the same folder: the tables from `tables.md`, then a
    verdict per person and one action each. Rules (Basem, 2026-10-06):
    - **Data managers** (`role: data_manager`: Mohamed Hisham, Basem) are NEVER judged on
-     dials, and their hours are never called slack. Report their hours and invoice, and say
-     their output is measured elsewhere: Mohamed Hisham's is the `Sheet26` tab of Probate
-     Extraction 2 plus the Register of Wills list on the account. That check is not part of
-     this routine; offer it.
+     dials, and their hours are never called slack. Mohamed Hisham's output comes from
+     `team-kpi-data-manager` (call it in step 4 alongside the extractors, same period): the
+     Register of Wills, Deep Dive and Legal Notices tabs of Probate Extraction 2 (never
+     Sheet26). Put its intake / PR checks / pipeline / hand-off lines under his name.
    - **Bagoury** (`caller_manager`) manages the callers, so part of his off-dialer time is the
      job. Still name paid days with zero dials and the worst paid-hours-to-dials days.
    - **Slack is an estimate:** Hubstaff gives daily totals with no clock-in times. Say "about".
