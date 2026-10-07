@@ -111,6 +111,7 @@ deed_*.pdf
 # Cold-call coaching roster: real staff names plus the phone-alias -> identity map.
 # The coach skills read it from the project root; only scripts/roster.example.json ships.
 roster.json
+team_kpi_config.json
 
 # Local scratch (screenshots, crops, temp dirs)
 .tmp_*

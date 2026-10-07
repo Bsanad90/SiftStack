@@ -65,6 +65,14 @@ python tools/manual/test_permit_portal_pull.py    # permit feed parsers (50+)
 python tools/manual/test_manage_sold_url.py       # county -> SiftMap URL (no browser)
 python tools/manual/test_dnc_scrub.py            # DNC cache rules / scorer override / scrub + push plan + SC import (48)
 
+# Monthly team KPI + invoices (agent team-kpi-reviewer). Hubstaff = API (token ROTATES; live one in
+# hubstaff_state.json, never delete it); SmrtPhone = v2 API over smrtphone_state.json; only the
+# WhatsApp chat zip is a MANUAL export.
+# Rates/names: team_kpi_config.json (gitignored)
+python src/scripts/team_kpi.py find --month 2026-09     # which exports cover the month
+python src/scripts/team_kpi.py report --month 2026-09   # after the 3 extractors -> output/team_kpi/
+python src/scripts/team_kpi.py daily                    # today, both APIs; task "SiftStack Team KPI Daily" 20:00 pop-up
+
 # Upstream TN scraper (Knox/Blount) -- not this account's feed
 python src/main.py daily [--split] [--counties Knox] [--types foreclosure,probate] [-v]
 ```
@@ -297,6 +305,10 @@ day it is found; its story goes to the history file.**
 - **Market Finder has no ZIP split for DC;** a 0 there is missing data, not a zero market. → memory
 - **Upstream's city search and `.get(county, "47093")` silently queried Knoxville for every MD/DC/VA county** — retired; counties resolve by FIPS through `dpd.jurisdictions` and RAISE. → sold-suppression
 - **`output/_archive/live_account_pull.json` must be passed explicitly as `--cache`;** `live_pull.py` otherwise starts a multi-hour re-pull. → doors-per-deal
+
+### Team KPI sources
+- **SmrtPhone `/api/v1/logs/segments` stops at 10,000 rows for ANY query and silently ignores every date parameter tried** (an unfiltered walk reaches ~3 weeks back on a 191k-segment account). `user_id` IS honoured: walk one caller at a time, newest first, to the period start (`src/smrtphone_segments.py`). → docs/api/smrtphone.md
+- **A Hubstaff personal access token ROTATES on every exchange;** the `.env` seed dies on first use and the live token is in `hubstaff_state.json`. Cloudflare 403s (error 1010) Python's default User-Agent before the token is even read. → src/hubstaff_client.py
 
 ## DataSift API — the contract in brief
 

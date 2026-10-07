@@ -60,6 +60,28 @@ wrong numbers are not calls, and grading them drags every average down.
 
 **Logs purge after 30 days.** If you want a coaching history, pull and store.
 
+### The v2 interaction log (segments) - verified 2026-10-07
+
+The newer Logs -> Interaction logs screen (and its CSV export) reads from a JSON API on the
+same cookie session, and it kept history back to 2025-10-30:
+
+```
+GET /api/v1/logs/segments?user_id=<id>&pageSize=100&page=<n>    newest first; order=asc flips it
+GET /api/v1/logs/segments/<id>                                   one segment, adds user_name
+GET /api/v1/vcon/segments?size=100&from=<offset>                 same data, offset paging
+```
+
+- `pageSize` caps at 100 and every query stops at **10,000 rows** (page 100 / offset 10,000).
+- Honoured filters (the total moves): `user_id`, `segment_type` (`outbound_call`,
+  `inbound_call`, `sms_message`), `call_direction`, `disposition_code`, `q`, `order=asc`.
+  Every date parameter tried (`from_date`, `start_date`, `interaction_at[gte]`, `dateRange`, ...)
+  is silently ignored. So a month is pulled one caller at a time, newest first.
+- `interaction_at` is UTC; the CSV export prints America/New_York. `disposition_code` holds the
+  same labels as the export. September 2026 pulled this way matched the CSV export on every
+  outbound row (date, time, number, duration, disposition).
+- No users endpoint (`/api/v1/users` 404s): user ids come from the segments, names from the
+  single-segment read. Client: `src/smrtphone_segments.py`.
+
 ## Finding the endpoints yourself
 
 `/phoneNumbers` and `/callerIds` return the SPA shell to an API key. The route
