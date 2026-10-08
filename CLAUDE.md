@@ -40,6 +40,23 @@ python src/scripts/md_register_of_wills_pull.py --commit --dump-json   # checkpo
 python src/scripts/dc_probate_pull.py                             # DC probate
 # full-text legs pass --prior-auto (cross-day reuse); the runner already does
 
+# Team Drive (admin@galaldev.com, "SiftStack Daily Pulls/<date>/"): the 6 AM runner ends with --ready
+# (CSVs + summary + row_needs_address.csv, READY.txt LAST); token in drive_sync_state.json
+python src/scripts/daily_pull_drive_sync.py --date 2026-10-08 [--ready] [--dry-run]
+# RoW agent re-review ON THIS PC: the 6 AM runner's last step fires task "SiftStack RoW After
+# Pull" (row_after_pull.ps1 = md_row_address_fill.ps1 THEN row_agent_review.ps1): export ->
+# `claude -p --agent row-address-reviewer` (row-address-researcher x 10 estates, parallel,
+# dontAsk; Land Records/SDAT ONLY via landrec_agent_search.py = one login at a time + daily cap
+# ROW_AGENT_LANDREC_CAP, default 300; stops under 20k Firecrawl credits) -> merge --commit (single writer, never overwrites an address) -> SDAT grade
+# -> finish: still-not-found estates APPENDED to Probate Extraction 2 "Register of Wills" (32-col
+# format, "Not Found (Claude)", existing rows never edited, read back; log output/row_review/
+# pe2_appended.json) + row_manual_review_<day>.csv to Drive + popup. Mohammad works it with
+# `claude --agent row-manual-review` (docs/setup/row-address-review.md); his REVIEWED rename ->
+# `watch` popup. Skip trace / DP / upload / spend after that = Basem's go only.
+python src/scripts/row_address_review.py merge <review.csv> [--commit]
+python src/scripts/row_review_pipeline.py finish --day 2026-10-08 [--commit]   # dry run by default
+python src/scripts/row_review_pipeline.py watch
+
 # Preset / lane QA (read-only)
 python src/scripts/dpd_presets_verify.py          # 85 presets, 14 folders; exit 0 = clean
 python src/scripts/dpd_lane_assignee_report.py    # lane counts per dialer
@@ -75,7 +92,9 @@ python src/scripts/team_kpi.py daily                    # today -> HTML dashboar
 python src/scripts/team_kpi.py weekly                   # last 7 days; task "SiftStack Team KPI Weekly" Sun 20:05
 python src/scripts/team_kpi.py monthly --month 2026-09 [--screens]   # a month; --screens = paid screenshot check (~$8 a month's first run)
 python src/scripts/data_manager_kpi.py --month 2026-09 --account   # Mohamed Hisham, Probate Extraction 2 (never Sheet26)
-# all reports: output/team_kpi/index.html (desktop shortcut "Team KPI Reports")
+# all reports: output/team_kpi/index.html (desktop shortcut "Team KPI Reports"); every run also writes
+# output/team_kpi/team/ (no pay, no data-manager hours, no private sections) = the shared link
+# https://claude.ai/artifact/EgLz6qg82sLHaHamrKdj8M (org-shared; republish that folder, never the top one)
 
 # Upstream TN scraper (Knox/Blount, `src/main.py daily`) -- NEVER RUN on this account (see Footprint)
 ```
@@ -278,7 +297,7 @@ day it is found; its story goes to the history file.**
 - **Socrata refuses ANY function syntax in `$where`** (`upper(` = 403). `aca-prod.accela.com/FREDERICK` is Frederick, COLORADO. DC `PERMIT_APPLICANT` is the EXPEDITER, not the contractor; `ZIPCODE` is null on every row. → permits
 
 - **The SDAT results grid's first `<a>` in a layout row is the header SORT link;** `a.click()` posted the grid back sorted and every multi-row street search read "no parcel" (38 of 185 MD lookups). Leaf rows only, the row's `a.lnkdetails`, post back through `__doPostBack`, wait 7 s. A condo grid lists one row per unit (`UNIT: 307`); without the unit guard the first row is a neighbour's unit. → prospecting
-- **MDLANDREC demands the emailed access code when several Firecrawl sessions log in at once** (4 workers: 1 in 4 searches dead, then every login); one login at a time stays clean. → prospecting
+- **MDLANDREC demands the emailed access code when several Firecrawl sessions log in at once** (4 workers: 1 in 4 searches dead, then every login); one login at a time stays clean. Parallel agents reach it ONLY through `landrec_agent_search.py` (machine-wide lock + daily cap). → prospecting
 - **Estate Search by decedent NAME returns namesakes decades back** (8 of 12 single-name hits were 1980-2016 estates on 2026 inheritance rows); a name-only hit joins only within 3 years or ±45 days of a research DOD, the rest is review. Fields `#txtLN` / `#txtFN` / `#cboPartyType`, not `#txtLastName`. → prospecting
 - **`title_for_md` read keys the SDAT parser never wrote** (`owner_name`, `mailing`) and would have stored every MD title with an empty owner list; the parser's keys are `owner_names` / `mailing_address` / `premises_address`. → prospecting
 

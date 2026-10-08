@@ -1128,6 +1128,11 @@ def fill_addresses(ledger: dict, counties: list[str],
         rec["property_needs_sdat_owner"] = False
         touched.add(key)
         processed += 1
+        # Two origins share this check: the notice stated the street, or the agent
+        # re-review found it (row_address_review.py merge). An agent street with no
+        # SDAT parcel is a guess, not a notice typo, so it grades LOW, not MEDIUM.
+        agent = (rec.get("property_lookup_source") or "").startswith("agent_review")
+        origin = "agent-found" if agent else "notice-stated"
         if sdat:
             first_tok = (rec.get("decedent_first_name", "") or "").split()[:1]
             last = rec.get("decedent_last_name", "")
@@ -1139,16 +1144,18 @@ def fill_addresses(ledger: dict, counties: list[str],
             levels = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
             level = max((landrec.name_match_level(full_name, last, first_tok[0] if first_tok else "", n)
                          for n in sdat.get("owner_names") or []), key=lambda lv: levels[lv], default="LOW")
-            # The notice itself is the source here, so a LOW owner match is
-            # a flag (sold since? heir already on title?), not a rejection.
+            # The notice (or the agent) is the source here, so a LOW owner match
+            # is a flag (sold since? heir already on title?), not a rejection.
             rec["property_lookup_confidence"] = level
             rec["property_lookup_reason"] = "" if level != "LOW" else "SDAT owner does not match the decedent"
-            print(f"    {key}: notice-stated {rec['property_street']} -> SDAT owner {rec['property_sdat_owner']} "
+            print(f"    {key}: {origin} {rec['property_street']} -> SDAT owner {rec['property_sdat_owner']} "
                   f"({rec['property_lookup_confidence']})")
         else:
-            rec["property_lookup_confidence"] = "MEDIUM"
-            rec["property_lookup_reason"] = "SDAT found no parcel at the notice-stated street (typo in the notice?)"
-            print(f"    {key}: notice-stated {rec['property_street']} -- SDAT found no parcel")
+            rec["property_lookup_confidence"] = "LOW" if agent else "MEDIUM"
+            rec["property_lookup_reason"] = (
+                "SDAT found no parcel at the agent-found street (wrong street or county?)" if agent
+                else "SDAT found no parcel at the notice-stated street (typo in the notice?)")
+            print(f"    {key}: {origin} {rec['property_street']} -- SDAT found no parcel")
         _maybe_save()
         time.sleep(1.0)
 
