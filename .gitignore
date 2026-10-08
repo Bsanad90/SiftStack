@@ -177,3 +177,6 @@ deals/*
 # Skip-trace and list exports. Real owners, real phone numbers.
 vacant_top100*.csv
 *_top100*.csv
+
+# Personal Claude Code instructions (per user, never shared)
+CLAUDE.local.md
