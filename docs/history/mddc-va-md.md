@@ -471,3 +471,15 @@ parcels were all conveyed by 2013 and one (2201 L St NW #209) is the PR's own ho
 real estate: not leads. Verdicts written into `dc_probates_portal.csv` and the ledger (`HAND` confidence),
 deed index saved under `dc_portal_hand_checks/`.
 
+
+### 2026-10-08: the MDDC "footprint filter" only checked the state
+`filter_footprint` predates the 6-county narrowing and drops only rows outside MD/DC/DE/VA;
+the site's county checkboxes are inert, and 78 of the day's rows got their county from the ZIP
+geocode that ran AFTER the filter. So `mddc_trustee_sale.csv` carried every MD/VA county:
+10-08 had 92 rows, 51 in the footprint, 32 outside (Charles 14, Calvert 3, Prince William,
+Manassas city...), 9 with no county; the full-text leg paid a 2Captcha solve on each new
+out-of-county notice. Fix: `filter_footprint_county` clips on (state, county) after the geocode
+(Montgomery and Frederick also exist in VA; "Fairfax city" is not Fairfax County), keeps
+no-county rows (snippet cut before the address), and writes the rest to `_dropped.csv` with a
+`drop_reason` column. Checked offline on the 10-08 file (60 kept = 51 + 9 blank, 32 dropped)
+and `test_fulltext_prior.py` passes.

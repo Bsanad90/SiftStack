@@ -13,11 +13,11 @@ Daily chain (automation/row_agent_review.ps1, Tue-Sat after the 9:15 address fil
            format with Property Address "Not Found (Claude)". Existing rows are never edited.
          * Drive "SiftStack Daily Pulls/<day>/": the agent review file + the manual list
          * popup to Basem with the counts
-    6. Mohammad's PC: `claude --agent row-manual-review` works the manual list, uploads his
+    6. Che's PC: `claude --agent row-manual-review` works the manual list, uploads his
        findings as a NEW file and renames OUR row_manual_review_<day>.csv to
        "... - REVIEWED.csv". That rename is the signal: drive.file can see a rename of a file
        this app created, so no wider Drive scope is needed.
-    7. THIS: watch (every 30 min) -> popup to Basem "Mohammad reviewed <day>".
+    7. THIS: watch (every 30 min) -> popup to Basem "Che reviewed <day>".
 Nothing here skip-traces, deep-prospects, uploads to DataSift or spends: those wait on Basem.
 
 Sheet writes use the Google token of the sheet's OWNER (eng.basem.sanad.2012, the Divorce
@@ -69,8 +69,8 @@ MANUAL_COLUMNS = [
     "key", "estate_number", "county", "decedent", "date_of_death", "date_of_filing",
     "estate_type", "personal_reps", "attorney", "why_manual", "agent_status", "agent_candidate",
     "agent_reason", "agent_evidence", "sdat_owner", "prior_lookup_reason", "in_pe2",
-    # Mohammad fills these:
-    "mohammad_status", "street", "city", "zip", "notes",
+    # Che fills these:
+    "che_status", "street", "city", "zip", "notes",
 ]
 
 
@@ -212,7 +212,7 @@ def manual_rows(day: str, estates: dict, sheet_ids: set[str]) -> list[dict]:
             "sdat_owner": rec.get("property_sdat_owner", ""),
             "prior_lookup_reason": rec.get("property_lookup_reason", "") if status != "FOUND" else "",
             "in_pe2": "yes" if number.strip().upper() in sheet_ids else "added today",
-            "mohammad_status": "", "street": "", "city": "", "zip": "", "notes": "",
+            "che_status": "", "street": "", "city": "", "zip": "", "notes": "",
         })
     return out
 
@@ -260,7 +260,7 @@ def finish(day: str, commit: bool) -> int:
     summary = (f"RoW agent review {day}: {len(reviewed)} estates reviewed\n"
                f"  agents found {found} (SDAT: {graded['HIGH']} HIGH, {graded['MEDIUM']} MEDIUM, {graded['LOW']} LOW)\n"
                f"  {len(unsettled)} not found / ambiguous; {len(appended)} added to Probate Extraction 2\n"
-               f"  {len(manual)} sent to Mohammad for manual review")
+               f"  {len(manual)} sent to Che for manual review")
     print(summary)
     if not commit:
         print("DRY RUN -- nothing uploaded, no popup.")
@@ -273,12 +273,12 @@ def finish(day: str, commit: bool) -> int:
     files = [p for p in (review, manual_path) if p.exists()]
     link = upload(dsvc, state, day, files)
     popup(summary + f"\n\nDrive: {link}\n\nNothing was skip-traced, uploaded or spent. "
-          "Mohammad's review comes next; you get another popup when he finishes.")
+          "Che's review comes next; you get another popup when he finishes.")
     return 0
 
 
 def watch() -> int:
-    """Popup once per day folder when Mohammad's agent renames our manual list to '... - REVIEWED'."""
+    """Popup once per day folder when Che's agent renames our manual list to '... - REVIEWED'."""
     state = drive.load_state()
     creds = drive.get_credentials(state, drive.DEFAULT_CLIENT, False)
     from googleapiclient.discovery import build
@@ -295,12 +295,12 @@ def watch() -> int:
         done = [f for f in files if "REVIEWED" in f["name"].upper()]
         if not done:
             continue
-        who = (done[0].get("lastModifyingUser") or {}).get("emailAddress", "Mohammad")
+        who = (done[0].get("lastModifyingUser") or {}).get("emailAddress", "Che")
         link = f"https://drive.google.com/drive/folders/{folder}"
-        popup(f"Mohammad finished the RoW manual review for {day} ({who}).\n\n"
+        popup(f"Che finished the RoW manual review for {day} ({who}).\n\n"
               f"His findings are in the Drive folder:\n{link}\n\n"
               "Next is yours: skip trace / deep prospect / dial-ready and the DataSift upload all wait "
-              "on your go. Ask Claude: \"take Mohammad's RoW review for " + day + "\".")
+              "on your go. Ask Claude: \"take Che's RoW review for " + day + "\".")
         seen[day] = {"notified": datetime.now().isoformat(timespec="seconds"), "file": done[0]["name"]}
         hits += 1
     NOTIFY_STATE.parent.mkdir(parents=True, exist_ok=True)
@@ -315,7 +315,7 @@ def main() -> int:
     fi = sub.add_parser("finish", help="manual list + PE2 rows + Drive upload + popup")
     fi.add_argument("--day", default=date.today().isoformat())
     fi.add_argument("--commit", action="store_true", help="write the sheet, upload, popup (default: dry run)")
-    sub.add_parser("watch", help="popup when Mohammad's review lands")
+    sub.add_parser("watch", help="popup when Che's review lands")
     pe = sub.add_parser("pe2-preview", help="print the PE2 rows for some ledger keys (no write)")
     pe.add_argument("keys", nargs="+")
     args = ap.parse_args()

@@ -937,6 +937,46 @@ def filter_footprint(rows: list) -> tuple:
     return kept, dropped
 
 
+# The 6-county footprint (2026-09-01), as (state, county) because Montgomery and
+# Frederick also exist in VA. filter_footprint above only checks the STATE (it predates
+# the narrowing) and the site's county checkboxes are inert, so until 2026-10-08 every
+# MD/VA county reached the CSV (10-08: 92 rows, 32 outside the footprint) and the
+# full-text leg paid a 2Captcha solve for each new one.
+FOOTPRINT_COUNTIES = {
+    ("DC", "DISTRICT OF COLUMBIA"), ("DC", "WASHINGTON DC"), ("DC", "WASHINGTON"),
+    ("MD", "MONTGOMERY"), ("MD", "ANNE ARUNDEL"), ("MD", "FREDERICK"),
+    ("VA", "FAIRFAX"), ("VA", "ARLINGTON"),
+}
+
+
+def _county_key(county: str) -> str:
+    c = re.sub(r"\s+", " ", (county or "").upper().replace(",", " ")).strip()
+    return re.sub(r" COUNTY$", "", c)
+
+
+def filter_footprint_county(rows: list) -> tuple:
+    """(kept, dropped): drop rows whose RESOLVED county is outside the 6.
+
+    Runs AFTER the ZIP geocode. A row with no county is KEPT: its snippet was cut
+    before any address, so it may be ours (the full-text leg usually finds it).
+    "Fairfax city" / "Manassas city" are independent cities, not the counties.
+    A blank state falls back to the county name alone.
+    """
+    names = {c for _, c in FOOTPRINT_COUNTIES}
+    kept, dropped = [], []
+    for r in rows:
+        county = _county_key(r.get("county", ""))
+        state = (r.get("state") or "").upper().strip()
+        if not county:
+            kept.append(r)
+        elif (state, county) in FOOTPRINT_COUNTIES or (not state and county in names):
+            kept.append(r)
+        else:
+            r["drop_reason"] = "outside our 6 counties"
+            dropped.append(r)
+    return kept, dropped
+
+
 def filter_notice_type(rows: list, keep: set = frozenset({"foreclosure"})) -> tuple:
     """Drop rows whose classified notice_type isn't one we're pulling.
 
@@ -1087,18 +1127,6 @@ def main():
     # Dropped rows go to a sidecar CSV, not the void: the order_nisi rule matches
     # "will be ratified" boilerplate that also appears in genuine trustee-sale ads, so a
     # misclassified lead must stay reviewable instead of vanishing into a count.
-    dropped_rows = out_of_footprint + off_type
-    if dropped_rows:
-        dropped_path = (ROOT / args.out).with_name(Path(args.out).stem + "_dropped.csv")
-        dropped_path.parent.mkdir(parents=True, exist_ok=True)
-        drop_fields = ["notice_id", "publication", "date_published", "notice_type", "street",
-                       "city", "state", "zip", "county", "loan_principal", "auction_date",
-                       "saved_search", "notice_text_snippet", "source_url"]
-        with dropped_path.open("w", newline="", encoding="utf-8") as f:
-            w = csv.DictWriter(f, fieldnames=drop_fields, extrasaction="ignore")
-            w.writeheader()
-            w.writerows(dropped_rows)
-        print(f"  wrote {len(dropped_rows)} dropped row(s) to {dropped_path} for review")
     print(f"{len(all_rows)} raw rows, {len(rows)} after footprint filter + notice-type filter + de-dup")
 
     zip_cache = _load_zip_county_cache()
@@ -1112,6 +1140,32 @@ def main():
     _save_zip_county_cache(zip_cache)
     if geocoded:
         print(f"  resolved county by ZIP geocode for {geocoded} row(s) that had no free-text county mention")
+
+    rows, out_of_county = filter_footprint_county(rows)
+    if out_of_county:
+        from collections import Counter
+        counts = Counter(r["county"] for r in out_of_county)
+        print(f"  dropped {len(out_of_county)} row(s) outside the 6 counties: {dict(counts.most_common())}")
+    no_county = sum(1 for r in rows if not r["county"])
+    if no_county:
+        print(f"  kept {no_county} row(s) with no county (address cut off in the snippet; full text decides)")
+    print(f"{len(rows)} row(s) in the footprint")
+    for r in out_of_footprint:
+        r["drop_reason"] = "state outside MD/DC/DE/VA"
+    for r in off_type:
+        r["drop_reason"] = f"not a foreclosure ({r['notice_type']})"
+    dropped_rows = out_of_footprint + off_type + out_of_county
+    if dropped_rows:
+        dropped_path = (ROOT / args.out).with_name(Path(args.out).stem + "_dropped.csv")
+        dropped_path.parent.mkdir(parents=True, exist_ok=True)
+        drop_fields = ["notice_id", "publication", "date_published", "notice_type", "street",
+                       "city", "state", "zip", "county", "loan_principal", "auction_date",
+                       "saved_search", "drop_reason", "notice_text_snippet", "source_url"]
+        with dropped_path.open("w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=drop_fields, extrasaction="ignore")
+            w.writeheader()
+            w.writerows(dropped_rows)
+        print(f"  wrote {len(dropped_rows)} dropped row(s) to {dropped_path} for review")
 
     out_path = ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)

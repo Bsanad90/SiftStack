@@ -10,7 +10,7 @@ out parallel logins (emailed access code), so the re-review is a fan-out of
 
     export  -> output/row_review/<day>/queue.csv (also row_needs_address.csv on Drive, --ready)
     agents  -> output/row_review/<day>/row_address_review_<day>.csv
-    merge   -> this script; then row_review_pipeline.py finish (sheet, Drive, Mohammad)
+    merge   -> this script; then row_review_pipeline.py finish (sheet, Drive, Che)
 
 A merged FOUND row is NOT trusted as-is: it is written with
 `property_needs_sdat_owner = True`, so the next fill pass runs the same SDAT

@@ -164,7 +164,7 @@ One line of state each; the reasoning and every number is in the linked file.
 - **TN FTM scrape / SMS agent / Apify** — Ty's, not ours. No Fly account here; `fly.toml` is
   inherited. Zero `sys_` tags on this account proves the SMS agent never touched it.
 - **MDDC Trustee's Sale** — default search `["43"]` (41 is gone; run `--list-searches` first).
-  County checkboxes are inert; footprint filter is post-hoc; use `--days 30`. Full text via the
+  County checkboxes are inert; footprint = (state, county) clip after the ZIP geocode; use `--days 30`. Full text via the
   browser script (Turnstile + 2Captcha); `--prior-auto` reuses yesterday's text by notice id.
   `BATCH_TAG` stamps `FTM`. → [mddc-va-md](docs/history/mddc-va-md.md)
 - **VA Public Notice** — one county per Firecrawl call, `--max-pages <= 8`, `--full-text` works
@@ -276,7 +276,7 @@ day it is found; its story goes to the history file.**
 - **Never click `Add Records to Account`, never enable auto-add, never push a pull, without an explicit go.** Keep "Do not replace owners" ON (protects the PR/DM mapping). → datasift-ui
 
 ### Pulls
-- **MDDC county checkboxes are INERT** (a DC-only search returned 18 counties, VA included). Footprint filtering is post-hoc on the parsed state; review `<out>_dropped.csv`. → mddc-va-md
+- **MDDC county checkboxes are INERT** (a DC-only search returned 18 counties, VA included). Footprint filtering is post-hoc: the state check, then (since 2026-10-08) a (state, county) clip AFTER the ZIP geocode (`filter_footprint_county`; before it every MD/VA county reached the CSV, 32 of 92 on 10-08); no-county rows are kept; review `<out>_dropped.csv` (`drop_reason`). → mddc-va-md
 - **"pagination did not advance" is usually END OF RESULTS** (the site publishes ~3-4 notices a day). Read the row counts before "fixing" it. A quiet DC week is chance: `--days 30`. → mddc-va-md
 - **The Firecrawl grid carries NO notice id** (0 of 94 rows); only the Playwright-settled grid does, and the first Details.aspx nav per session bounces back to Search.aspx — retry. → mddc-va-md
 - **The MDDC snippet parser has no deed-date guards** and emitted a deed recording date as the auction date; re-mine with the VA parser's guards. A republication carries a NEW id; a past sale date = skip. → mddc-va-md

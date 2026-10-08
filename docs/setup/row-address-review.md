@@ -1,4 +1,4 @@
-# RoW manual review: setup for Mohammad
+# RoW manual review: setup for Che
 
 **How the day runs (Tue-Sat):**
 
@@ -44,7 +44,7 @@ Probate Extraction 2 already says for each estate. Then just tell it what you fi
 - `look up the obituary for 55211`
 
 When finished: `done, upload it`. It uploads
-`row_manual_review_<date>_REVIEWED_by_mohammad.csv` and renames the list to
+`row_manual_review_<date>_REVIEWED_by_che.csv` and renames the list to
 `... - REVIEWED.csv`, which notifies Basem.
 
 ## Rules
