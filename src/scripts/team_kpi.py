@@ -396,17 +396,29 @@ def _write_hubstaff(f, t, rows, label, extra):
 
 
 CHAT_LINE = re.compile(r"^‎?\[(\d{1,2}/\d{1,2}/\d{2,4}), (\d{1,2}:\d{2}(?::\d{2})?\s?[AP]M)\] ([^:]+): (.*)$")
+# Android export: "06/01/2026, 22:23 - Moe Galal: text", 24-hour, day order set by the phone's locale
+CHAT_LINE_ANDROID = re.compile(r"^‎?(\d{1,2}/\d{1,2}/\d{2,4}), (\d{1,2}:\d{2}(?:\s?[AP]M)?) - ([^:]+): (.*)$")
 
 
 def parse_chat(txt: str) -> list[dict]:
+    lines = txt.splitlines()
+    # day-first when any Android date's first field is past 12 (this group's export is dd/mm/yyyy)
+    day_first = any(int(m.group(1).split("/")[0]) > 12
+                    for m in map(CHAT_LINE_ANDROID.match, lines) if m)
     msgs = []
-    for line in txt.splitlines():
+    for line in lines:
         m = CHAT_LINE.match(line)
-        if m:
-            d, tm, who, body = m.groups()
-            fmt_d = "%m/%d/%y" if len(d.split("/")[2]) == 2 else "%m/%d/%Y"
-            fmt_t = "%I:%M:%S %p" if tm.count(":") == 2 else "%I:%M %p"
-            ts = D.datetime.strptime(f"{d} {tm.replace(chr(0x202f), ' ')}", f"{fmt_d} {fmt_t}")
+        a = None if m else CHAT_LINE_ANDROID.match(line)
+        if m or a:
+            d, tm, who, body = (m or a).groups()
+            yy = "%y" if len(d.split("/")[2]) == 2 else "%Y"
+            fmt_d = f"%d/%m/{yy}" if a and day_first else f"%m/%d/{yy}"
+            tm = tm.replace(chr(0x202f), " ")
+            if "M" in tm:
+                fmt_t = "%I:%M:%S %p" if tm.count(":") == 2 else "%I:%M %p"
+            else:
+                fmt_t = "%H:%M"
+            ts = D.datetime.strptime(f"{d} {tm}", f"{fmt_d} {fmt_t}")
             msgs.append({"ts": ts.isoformat(), "sender": who.strip(), "text": body})
         elif msgs:
             msgs[-1]["text"] += "\n" + line
