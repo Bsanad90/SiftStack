@@ -73,6 +73,7 @@ python src/scripts/team_kpi.py find --month 2026-09     # which exports cover th
 python src/scripts/team_kpi.py report --month 2026-09   # after the 3 extractors -> output/team_kpi/
 python src/scripts/team_kpi.py daily                    # today -> HTML dashboard; task "SiftStack Team KPI Daily" 20:00
 python src/scripts/team_kpi.py weekly                   # last 7 days; task "SiftStack Team KPI Weekly" Sun 20:05
+python src/scripts/team_kpi.py monthly --month 2026-09 [--screens]   # a month; --screens = paid screenshot check (~$8 a month's first run)
 python src/scripts/data_manager_kpi.py --month 2026-09 --account   # Mohamed Hisham, Probate Extraction 2 (never Sheet26)
 # all reports: output/team_kpi/index.html (desktop shortcut "Team KPI Reports")
 
@@ -311,6 +312,10 @@ day it is found; its story goes to the history file.**
 
 ### Team KPI sources
 - **SmrtPhone `/api/v1/logs/segments` stops at 10,000 rows for ANY query and silently ignores every date parameter tried** (an unfiltered walk reaches ~3 weeks back on a 191k-segment account). `user_id` IS honoured: walk one caller at a time, newest first, to the period start (`src/smrtphone_segments.py`). → docs/api/smrtphone.md
+- **SmrtPhone stores some outbound calls with NO user (`user_id` null)** - a per-user walk never sees them (Bagoury's 4m20s Correct Number call behind the 10-04 Doyle lead; the legacy Call Logs page shows it as 0 s). Credit them by caller-ID number. About half of segments also return `contact = null`: match those by dialed number through the DataSift `search` (surname check). → docs/api/smrtphone.md
+- **Hubstaff activities / screenshots reject any range over 7 days** (HTTP 400 "Date range can not be more than 7 days"); ask week by week. → src/scripts/team_kpi_screens.py
+- **A Hubstaff slot can hold one screenshot PER MONITOR taken at the same instant** (Mostafa: 2560 main + 1080 portrait). Judging one monitor read ~31 h of "blank desktop" in September; judge every monitor (any work = work). → src/scripts/team_kpi_screens.py
+- **numpy's OpenBLAS dies at import when the Windows commit limit is nearly full** ("Memory allocation still failed after 10 retries", the 10-07 20:00 run; openpyxl and the shared DataSift helper import numpy). `OPENBLAS_NUM_THREADS=1` is set in the runner and the scripts. → tools/manual/team_kpi_daily.ps1
 - **A Hubstaff personal access token ROTATES on every exchange;** the `.env` seed dies on first use and the live token is in `hubstaff_state.json`. Cloudflare 403s (error 1010) Python's default User-Agent before the token is even read. → src/hubstaff_client.py
 
 ## DataSift API — the contract in brief

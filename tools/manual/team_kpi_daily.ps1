@@ -14,6 +14,10 @@ param([ValidateSet("daily", "weekly")][string]$Mode = "daily", [string]$Date = "
 $Repo   = "C:\Users\pc\Desktop\Galal Development\Sift Stack"
 $Python = "C:\Users\pc\AppData\Local\Programs\Python\Python314\python.exe"
 $env:PYTHONIOENCODING = "utf-8"
+# numpy's OpenBLAS reserves a buffer per CPU core at import; with the Windows commit limit nearly
+# full it fails ("Memory allocation still failed after 10 retries", 2026-10-07 20:00). One thread is plenty.
+$env:OPENBLAS_NUM_THREADS = "1"
+$env:OMP_NUM_THREADS = "1"
 
 Set-Location $Repo
 # Mohamed Hisham's sheet KPI first (it also takes the daily snapshot the progress line needs)

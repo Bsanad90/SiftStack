@@ -31,10 +31,18 @@ Definitions (fixed 2026-10-06 in the September review, keep them stable month to
   voicemail rate     "No Answer, Left VM" / (Left VM + No VM)
   no disposition     blank or "No Disposition" / dials
   active dial hours  sum of gaps <= gap_minutes between consecutive dials, + the last call
-  slack hours        per day max(paid - active - daily_allowance, 0), callers only; a
-                     data manager is never judged on dials
+  slack hours        per day max(paid x (1 - management_share) - active - daily_allowance, 0),
+                     callers only; a data manager is never judged on dials
+  management_share   per-person share of paid hours that is management (Bagoury 0.3): taken
+                     off dial hours, slack and cost-per-contact, never off the invoice
 """
 from __future__ import annotations
+
+import os
+# numpy (pulled in by openpyxl and the shared DataSift helper) must not reserve one OpenBLAS
+# buffer per core: on this PC the Windows commit limit runs near full (2026-10-07 20:00 failure)
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("OMP_NUM_THREADS", "1")
 
 import argparse
 import collections as C
@@ -194,7 +202,7 @@ def find_whatsapp(f: D.date, t: D.date, explicit: str | None = None) -> dict:
         in_period = sum(1 for m in msgs if str(f) <= m["ts"][:10] <= str(t))
         # exported after the period closed and holds messages inside it; a chat whose first
         # message is late in the period may be a trimmed export, so say so
-        ok = in_period > 0 and exported > t
+        ok = in_period > 0 and exported >= t
         seen.append({"file": str(p), "first_msg": lo, "last_msg": hi, "messages": len(msgs),
                      "in_period": in_period, "file_date": str(exported), "covers": ok,
                      "warning": ("first message is after the period start - confirm the export is "
@@ -229,8 +237,44 @@ def smrtphone_api_rows(f: D.date, t: D.date, cfg) -> tuple[list[dict], dict]:
                          "agent_number": digits(x.get("smrtphone_number")),
                          "duration": max(int(x.get("duration") or 0), 0),
                          "outcome": x.get("call_status") or "", "status": x.get("disposition_code") or "",
-                         "segment_id": x["id"]})
-    return rows, {"users": {str(k): v for k, v in users.items()}, "calls_per_user": per_user}
+                         "segment_id": x["id"], "contact_id": x.get("contact_id")})
+    # Outbound calls SmrtPhone stored with NO user (user_id null) never show up in a per-user
+    # walk: 2026-10-07, Bagoury's 4m20s Correct Number call that produced the Angela Doyle lead
+    # (10-04) was one. Walk outbound segments newest first to the period start and credit each
+    # unassigned one to the seat that owns its caller-ID number.
+    from zoneinfo import ZoneInfo
+    owner_of = {}
+    for num, n in C.Counter((r["agent_number"], r["agent"]) for r in rows if r["direction"] == "Outbound").most_common():
+        owner_of.setdefault(num[0], num[1])
+    start = D.datetime.combine(f, D.time.min, ZoneInfo("America/New_York"))
+    unassigned, reached = 0, False
+    for p in range(1, ss.WINDOW // ss.PAGE + 1):
+        items = ss._page({"segment_type": "outbound_call"}, p)
+        if not items:
+            reached = True
+            break
+        for x in items:
+            at = D.datetime.fromisoformat(x["interaction_at"]).astimezone(ZoneInfo("America/New_York"))
+            if at < start:
+                reached = True
+                break
+            if x.get("user_id") or at.date() > t:
+                continue
+            name = owner_of.get(digits(x.get("smrtphone_number")))
+            if not name:
+                continue
+            unassigned += 1
+            rows.append({"date": at.strftime("%Y-%m-%d"), "time": at.strftime("%H:%M"), "agent": name,
+                         "person": idx.get(name.strip().lower()), "direction": "Outbound",
+                         "participant": x.get("contact_name") or "", "participant_number": digits(x.get("phone_number")),
+                         "agent_number": digits(x.get("smrtphone_number")),
+                         "duration": max(int(x.get("duration") or 0), 0), "outcome": x.get("call_status") or "",
+                         "status": x.get("disposition_code") or "", "segment_id": x["id"],
+                         "contact_id": x.get("contact_id"), "attributed_by": "caller_id"})
+        if reached:
+            break
+    return rows, {"users": {str(k): v for k, v in users.items()}, "calls_per_user": per_user,
+                  "unassigned_outbound_credited": unassigned, "unassigned_walk_complete": reached}
 
 
 def cmd_smrtphone(a, cfg):
@@ -442,6 +486,9 @@ def cmd_report(a, cfg):
     people, daily = {}, {}
     for person, p in cfg["people"].items():
         role, rate = p["role"], p["rate"]
+        # share of paid time that is management, not dialing (Bagoury 0.3, Basem 2026-10-07):
+        # it comes off the hours the dial metrics and slack are judged on, never off the invoice
+        mshare = float(p.get("management_share") or 0)
         P, Cd = paid.get(person, {}), calls.get(person, {})
         hours = sum(P.values())
         dials = sum(len(v) for v in Cd.values())
@@ -461,7 +508,7 @@ def cmd_report(a, cfg):
                         act += g / 60
                 act += v[-1][1] / 3600 + 1 / 60
             pd = P.get(day, 0.0)
-            sl = max(pd - act - allow, 0.0) if (pd and role != "data_manager") else 0.0
+            sl = max(pd * (1 - mshare) - act - allow, 0.0) if (pd and role != "data_manager") else 0.0
             active += act
             slack += sl
             rows.append({"date": day, "paid": round(pd, 2), "dials": len(v),
@@ -470,13 +517,17 @@ def cmd_report(a, cfg):
                          "active": round(act, 2), "slack": round(sl, 2)})
         daily[person] = rows
         invoice = round(hours * rate, 2)
+        dial_hours = hours * (1 - mshare)
+        calling_cost = round(invoice * (1 - mshare), 2)
         vm_l, vm_n = st[person][VM_LEFT], st[person][VM_NONE]
         nod = sum(st[person][s] for s in NO_DISPO)
         people[person] = {
             "role": role, "rate": rate, "days": len(P), "hours": round(hours, 2), "invoice": invoice,
             "idle_hours": round(idle[person], 2),
             "activity_pct": round(actw[person] / hours, 1) if hours else None,
-            "dials": dials, "dials_per_paid_hour": round(dials / hours, 1) if hours and dials else None,
+            "management_share": mshare, "management_hours": round(hours * mshare, 2),
+            "dial_hours": round(dial_hours, 2), "calling_cost": calling_cost,
+            "dials": dials, "dials_per_paid_hour": round(dials / dial_hours, 1) if dial_hours and dials else None,
             "active_dial_hours": round(active, 2),
             "dials_per_active_hour": round(dials / active, 1) if active else None,
             "slack_hours": round(slack, 1) if role != "data_manager" else None,
@@ -486,8 +537,8 @@ def cmd_report(a, cfg):
             "vm_left_rate": round(vm_l / (vm_l + vm_n), 3) if (vm_l + vm_n) else None,
             "no_dispo_rate": round(nod / dials, 3) if dials else None,
             "paid_days_no_dials": sum(1 for d in P if not Cd.get(d)),
-            "cost_per_conversation": round(invoice / conv, 2) if conv else None,
-            "cost_per_rpc": round(invoice / rpc, 2) if rpc else None,
+            "cost_per_conversation": round(calling_cost / conv, 2) if conv else None,
+            "cost_per_rpc": round(calling_cost / rpc, 2) if rpc else None,
             "median_first_dial": _median_time([r["first"] for r in rows if r["first"]]),
             "statuses": dict(st[person].most_common()),
         }
@@ -526,22 +577,24 @@ def cmd_report(a, cfg):
             if p["role"] != "data_manager":
                 p.setdefault("leads", 0)
                 p.setdefault("workable_leads", 0)
-                p["cost_per_lead"] = round(p["invoice"] / p["leads"], 2) if p["leads"] else None
-                p["cost_per_workable_lead"] = (round(p["invoice"] / p["workable_leads"], 2)
+                p["cost_per_lead"] = round(p["calling_cost"] / p["leads"], 2) if p["leads"] else None
+                p["cost_per_workable_lead"] = (round(p["calling_cost"] / p["workable_leads"], 2)
                                                if p["workable_leads"] else None)
 
-    groups = C.defaultdict(lambda: {"people": [], "hours": 0.0, "invoice": 0.0, "conversations": 0,
+    groups = C.defaultdict(lambda: {"people": [], "hours": 0.0, "invoice": 0.0, "calling_cost": 0.0,
+                                    "management_hours": 0.0, "conversations": 0,
                                     "rpc": 0, "dials": 0, "leads": 0, "workable_leads": 0})
     for name, p in people.items():
         g = groups["data_managers" if p["role"] == "data_manager" else "calling_team"]
         g["people"].append(name)
-        for k in ("hours", "invoice", "conversations", "rpc", "dials", "leads", "workable_leads"):
+        for k in ("hours", "invoice", "calling_cost", "management_hours", "conversations", "rpc", "dials", "leads",
+                  "workable_leads"):
             g[k] = round(g[k] + (p.get(k) or 0), 2)
     ct = groups["calling_team"]
-    ct["cost_per_rpc"] = round(ct["invoice"] / ct["rpc"], 2) if ct["rpc"] else None
-    ct["cost_per_conversation"] = round(ct["invoice"] / ct["conversations"], 2) if ct["conversations"] else None
-    ct["cost_per_lead"] = round(ct["invoice"] / ct["leads"], 2) if ct["leads"] else None
-    ct["cost_per_workable_lead"] = round(ct["invoice"] / ct["workable_leads"], 2) if ct["workable_leads"] else None
+    ct["cost_per_rpc"] = round(ct["calling_cost"] / ct["rpc"], 2) if ct["rpc"] else None
+    ct["cost_per_conversation"] = round(ct["calling_cost"] / ct["conversations"], 2) if ct["conversations"] else None
+    ct["cost_per_lead"] = round(ct["calling_cost"] / ct["leads"], 2) if ct["leads"] else None
+    ct["cost_per_workable_lead"] = round(ct["calling_cost"] / ct["workable_leads"], 2) if ct["workable_leads"] else None
 
     res = {"period": [str(f), str(t)], "generated": D.datetime.now().isoformat(timespec="seconds"),
            "definitions": {"gap_minutes": gap_min, "daily_allowance_hours": allow,
@@ -624,6 +677,19 @@ def render(r: dict) -> str:
     return "\n".join(out) + "\n"
 
 
+FORCE_SCREENS = False      # set by --screens: run the screenshot check on a monthly report too
+LEADS_STORE = OUT_BASE / "leads" / "leads.json"
+
+
+def _period_leads(f: D.date, t: D.date, od: Path) -> None:
+    """Copy the WhatsApp leads posted in [f, t] from the running store into the period folder
+    (leads.json), so the report prices them. The store is filled from each chat export
+    (team-kpi-whatsapp / the monthly review); an empty period writes an empty list."""
+    store = json.loads(LEADS_STORE.read_text(encoding="utf-8")) if LEADS_STORE.exists() else []
+    rows = [L for L in store if str(f) <= (L.get("posted_at") or "")[:10] <= str(t)]
+    (od / "leads.json").write_text(json.dumps(rows, indent=1), encoding="utf-8")
+
+
 CACHE = OUT_BASE / "cache" / "smrtphone"
 WINDOW_DAYS = 28
 
@@ -661,7 +727,7 @@ def _run_span(kind: str, f: D.date, t: D.date, cfg) -> int:
     ns = argparse.Namespace(month=None, day_from=str(f), day_to=str(t), csv=None, zip=None, source="api")
     errors, log = [], io.StringIO()
     od = out_dir(f, t)
-    (od / "leads.json").unlink(missing_ok=True)
+    _period_leads(f, t, od)
     try:
         with contextlib.redirect_stdout(log):
             cmd_hubstaff(ns, cfg)
@@ -686,22 +752,86 @@ def _run_span(kind: str, f: D.date, t: D.date, cfg) -> int:
     if kind == "daily":
         text = render_daily(t, k, errors, cfg)
         title, sub, stem = f"Team KPI - {t:%A %b %d}", f"As of {D.datetime.now():%H:%M} ET", str(t)
+    elif kind == "monthly":
+        head = f"Team KPI month  {f:%B %Y}"
+        text = "\n".join([head, ""] + errors) + "\n" if errors else render_weekly(head, k, prows, cfg)
+        title, sub, stem = f"Team KPI - {f:%B %Y}", f"{f:%b %d} to {t:%b %d, %Y}", f"{f:%Y-%m}"
     else:
         head = f"Team KPI week  {f:%a %b %d} - {t:%a %b %d}"
         text = "\n".join([head, ""] + errors) + "\n" if errors else render_weekly(head, k, prows, cfg)
         title, sub, stem = f"Team KPI - week of {f:%b %d}", f"{f:%a %b %d} to {t:%a %b %d}", f"{f}_{t}"
     dmf = OUT_BASE / "data_manager" / f"{f}_{t}" / "kpi.json"
     dm = json.loads(dmf.read_text(encoding="utf-8")) if dmf.exists() else None
-    page = dash.render(kind, title, sub, k, prows, wrows, cfg, errors, HUMAN, RPC, dm)
+    lanes_html = ""
+    if k:
+        try:
+            import team_kpi_lanes as tl
+            callers = {n for n, p in k["people"].items() if p["role"] != "data_manager"}
+            ls = tl.lane_stats(prows, callers, HUMAN, RPC)
+            (od / "lanes.json").write_text(json.dumps(ls, indent=1), encoding="utf-8")
+            lanes_html = dash.lanes_card(ls, cfg)
+        except Exception as e:  # noqa: BLE001 - lanes are an extra; never block the report
+            lanes_html = f'<div class="err"><strong>Lanes unavailable:</strong> {dash.esc(str(e)[:200])}</div>'
+    prev = None
+    if kind == "weekly" and k:
+        prev = _prev_kpi(f - D.timedelta(days=7), t - D.timedelta(days=7), cfg, today, log)
+    screens = None
+    if k and (kind != "monthly" or FORCE_SCREENS):   # a month's first check costs ~$9: --screens on Basem's go
+        # off-dialer time judged from the Hubstaff screenshots (labels cached per screenshot)
+        try:
+            import team_kpi_screens as tsc
+            screens = tsc.off_dialer(f, t, prows, cfg)
+            (od / "screens.json").write_text(json.dumps(screens, indent=1), encoding="utf-8")
+        except Exception as e:  # noqa: BLE001 - an extra; never block the report
+            lanes_html += f'<div class="err"><strong>Screenshot check unavailable:</strong> {dash.esc(str(e)[:200])}</div>'
+    page = dash.render(kind, title, sub, k, prows, wrows, cfg, errors, HUMAN, RPC, dm, prev, lanes_html, screens)
     dd = OUT_BASE / kind
     dd.mkdir(parents=True, exist_ok=True)
     (dd / f"{stem}.txt").write_text(text, encoding="utf-8")
     (dd / f"{stem}.html").write_text(page, encoding="utf-8")
     (dd / f"{stem}.log").write_text(log.getvalue(), encoding="utf-8")
+    build_dialer_pages(cfg)
     write_index()
     print(text)
     print(f"HTML: {dd / f'{stem}.html'}")
     return 0
+
+
+def build_dialer_pages(cfg) -> list[Path]:
+    """output/team_kpi/dialers/<name>.html for every caller, from the daily folders on disk."""
+    import team_kpi_dash as dash
+    days = C.defaultdict(list)
+    for kf in OUT_BASE.glob("*_*/kpi.json"):
+        a_, _, b_ = kf.parent.name.partition("_")
+        if a_ != b_:
+            continue
+        k = json.loads(kf.read_text(encoding="utf-8"))
+        scr = json.loads((kf.parent / "screens.json").read_text(encoding="utf-8")) if (kf.parent / "screens.json").exists() else {}
+        ln = json.loads((kf.parent / "lanes.json").read_text(encoding="utf-8")) if (kf.parent / "lanes.json").exists() else {}
+        d = D.date.fromisoformat(a_)
+        for n, p in k["people"].items():
+            if p["role"] == "data_manager":
+                continue
+            pc = (ln.get("per_caller") or {}).get(n, {})
+            lanes = " / ".join(f"{pc[l]['records']}" for l in ("FTM", "Hottest", "Obituary") if l in pc) if pc else ""
+            days[n].append({"date": a_, "dow": f"{d:%a}", "hours": p["hours"], "active_dial_hours": p["active_dial_hours"],
+                            "slack_hours": p["slack_hours"], "dial_hours": p.get("dial_hours", p["hours"]),
+                            "dials": p["dials"], "conversations": p["conversations"], "rpc": p["rpc"],
+                            "leads": p.get("leads", 0), "lanes": lanes,
+                            "first": next((r["first"] for r in k["daily"].get(n, []) if r["first"]), ""),
+                            "screens": scr.get(n)})
+    store = json.loads(LEADS_STORE.read_text(encoding="utf-8")) if LEADS_STORE.exists() else []
+    out_dir_ = OUT_BASE / "dialers"
+    out_dir_.mkdir(parents=True, exist_ok=True)
+    written = []
+    for n, p in cfg["people"].items():
+        if p["role"] == "data_manager":
+            continue
+        page = dash.dialer_page(n, days.get(n, []), [L for L in store if L.get("poster") == n], cfg)
+        f = out_dir_ / f"{dash.slug(n)}.html"
+        f.write_text(page, encoding="utf-8")
+        written.append(f)
+    return written
 
 
 def write_index() -> Path:
@@ -716,6 +846,8 @@ def write_index() -> Path:
             try:
                 if kind == "daily":
                     label = f"{D.date.fromisoformat(p.stem):%a %b %d, %Y}"
+                elif kind == "monthly":
+                    label = f"{D.date.fromisoformat(p.stem + '-01'):%B %Y}"
                 else:
                     a_, b_ = p.stem.split("_")
                     label = f"{D.date.fromisoformat(a_):%b %d} - {D.date.fromisoformat(b_):%b %d, %Y}"
@@ -728,11 +860,33 @@ def write_index() -> Path:
             f"<title>Team KPI reports</title><style>{dash.CSS} ul{{margin:6px 0 0;padding-left:18px;columns:2}} li{{margin:4px 0}}"
             " a{color:var(--accent)}</style></head><body><main><h1>Team KPI reports</h1>"
             f"<p class=sub>Updated {D.datetime.now():%Y-%m-%d %H:%M}. Daily at 8 PM, weekly on Sunday.</p>"
+            f'<section class="card"><h2>Monthly</h2><ul>{links("monthly")}</ul></section>'
+            '<section class="card"><h2>Dialers</h2><ul>' + "".join(
+                f'<li><a href="dialers/{dash.slug(n)}.html">{dash.esc(n)}</a></li>'
+                for n, p in load_config()["people"].items() if p["role"] != "data_manager") + "</ul></section>"
             f'<div class="grid2"><section class="card"><h2>Weekly</h2><ul>{links("weekly")}</ul></section>'
             f'<section class="card"><h2>Daily</h2><ul>{links("daily")}</ul></section></div></main></body></html>')
     out = OUT_BASE / "index.html"
     out.write_text(page, encoding="utf-8")
     return out
+
+
+def _prev_kpi(f: D.date, t: D.date, cfg, today: D.date, log) -> dict | None:
+    """The comparison period's kpi.json (built quietly from the cache + Hubstaff if missing)."""
+    import contextlib
+    kf = out_dir(f, t) / "kpi.json"
+    _period_leads(f, t, out_dir(f, t))
+    if kf.exists():
+        return json.loads(kf.read_text(encoding="utf-8"))
+    ns = argparse.Namespace(month=None, day_from=str(f), day_to=str(t), csv=None, zip=None, source="api")
+    try:
+        with contextlib.redirect_stdout(log):
+            cmd_hubstaff(ns, cfg)
+            _write_smrtphone(f, t, smrtphone_window(f, t, cfg, today), "SmrtPhone API (cached per day)", {"source": "api"})
+            cmd_report(ns, cfg)
+        return json.loads(kf.read_text(encoding="utf-8"))
+    except BaseException:  # noqa: BLE001 - a missing comparison never blocks the report
+        return None
 
 
 def cmd_daily(a, cfg):
@@ -765,7 +919,7 @@ def render_daily(day: D.date, k: dict | None, errors: list[str], cfg: dict) -> s
         if p["hours"] >= 1 and not p["dials"]:
             flags.append(f"{short[n]} {p['hours']:.1f} h paid, 0 dials")
         elif (p["slack_hours"] or 0) >= 2:
-            flags.append(f"{short[n]} ~{p['slack_hours']:.1f} h off-dialer")
+            flags.append(f"{short[n]} {p['slack_hours']:.1f} h off-dialer of {p['hours']:.1f} h worked")
         if p["dials"] and not p["hours"]:
             flags.append(f"{short[n]} dialing, no Hubstaff time")
         if p["vm_left_rate"] is not None and p["dials"] >= 50 and p["vm_left_rate"] < 0.25:
@@ -793,6 +947,12 @@ def cmd_weekly(a, cfg):
     return _run_span("weekly", f, t, cfg)
 
 
+def cmd_monthly(a, cfg):
+    """A calendar month (--month YYYY-MM; default last month): the weekly page over the month."""
+    f, t = period(a)
+    return _run_span("monthly", f, t, cfg)
+
+
 def render_weekly(head: str, k: dict, sp: list[dict], cfg: dict) -> str:
     P = k["people"]
     short = {n: p.get("short") or n.split()[0] for n, p in cfg["people"].items()}
@@ -818,7 +978,7 @@ def render_weekly(head: str, k: dict, sp: list[dict], cfg: dict) -> str:
         if p["paid_days_no_dials"]:
             flags.append(f"{short[n]} {p['paid_days_no_dials']} paid day(s) with 0 dials")
         if (p["slack_hours"] or 0) >= 8:
-            flags.append(f"{short[n]} ~{p['slack_hours']:.0f} h off-dialer")
+            flags.append(f"{short[n]} {p['slack_hours']:.0f} h off-dialer of {p['hours']:.0f} h worked")
         if p["vm_left_rate"] is not None and p["dials"] >= 100 and p["vm_left_rate"] < 0.25:
             flags.append(f"{short[n]} VM {p['vm_left_rate'] * 100:.0f}%")
         if (p["no_dispo_rate"] or 0) > 0.08 and p["dials"] >= 100:
@@ -847,7 +1007,7 @@ def render_weekly(head: str, k: dict, sp: list[dict], cfg: dict) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("cmd", choices=["find", "smrtphone", "hubstaff", "whatsapp", "report", "daily", "weekly"])
+    ap.add_argument("cmd", choices=["find", "smrtphone", "hubstaff", "whatsapp", "report", "daily", "weekly", "monthly"])
     ap.add_argument("--date", help="daily / weekly: YYYY-MM-DD (default today, America/New_York)")
     ap.add_argument("--month", help="YYYY-MM")
     ap.add_argument("--from", dest="day_from")
@@ -856,12 +1016,16 @@ def main() -> int:
     ap.add_argument("--zip", help="explicit WhatsApp export zip")
     ap.add_argument("--source", choices=["auto", "api", "csv"], default="auto",
                     help="hubstaff / smrtphone: API first, CSV fallback (auto); or force one")
+    ap.add_argument("--screens", action="store_true",
+                    help="monthly: also run the Hubstaff screenshot check (paid, ~$9 for a month's first run)")
     a = ap.parse_args()
+    global FORCE_SCREENS
+    FORCE_SCREENS = a.screens
     sys.stdout.reconfigure(encoding="utf-8")
     cfg = load_config()
     return {"find": cmd_find, "smrtphone": cmd_smrtphone, "hubstaff": cmd_hubstaff,
             "whatsapp": cmd_whatsapp, "report": cmd_report, "daily": cmd_daily,
-            "weekly": cmd_weekly}[a.cmd](a, cfg)
+            "weekly": cmd_weekly, "monthly": cmd_monthly}[a.cmd](a, cfg)
 
 
 if __name__ == "__main__":

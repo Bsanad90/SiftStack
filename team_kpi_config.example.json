@@ -1,5 +1,5 @@
 {
-  "_comment": "team_kpi.py people + rates. Copy to team_kpi_config.json (gitignored) and fill in. role: caller | caller_manager | data_manager (a data manager is never judged on dials). hubstaff / smrtphone / whatsapp list the exact names each export uses for that person.",
+  "_comment": "team_kpi.py people + rates. Copy to team_kpi_config.json (gitignored) and fill in. role: caller | caller_manager | data_manager (a data manager is never judged on dials). hubstaff / smrtphone / whatsapp list the exact names each export uses for that person. Optional per person: management_share (0-1) = share of paid hours that is management, taken off dial metrics and slack, never off the invoice.",
   "gap_minutes": 15,
   "daily_allowance_hours": 1.0,
   "people": {

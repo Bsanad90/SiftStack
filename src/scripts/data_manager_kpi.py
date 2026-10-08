@@ -20,6 +20,12 @@ snapshots in output/team_kpi/data_manager/snapshots/<date>.json.
 """
 from __future__ import annotations
 
+import os
+# numpy (pulled in by openpyxl and the shared DataSift helper) must not reserve one OpenBLAS
+# buffer per core: on this PC the Windows commit limit runs near full (2026-10-07 20:00 failure)
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+
 import argparse
 import collections as C
 import csv
