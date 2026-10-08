@@ -129,3 +129,15 @@ Verbatim text as it stood on 2026-10-01 (second split of CLAUDE.md; the first wa
   `dpd_doctor` under-reports sequences and lists; a live status compared to `DEAD_STATUSES` must be
   normalised (`not_interested` vs "Not Interested"). With no `--counties` it sweeps the 6
   (`dpd.jurisdictions.FOOTPRINT`, 2026-09-30). → [history](docs/history/sold-suppression.md)
+
+## 2026-10-06 — the `Recently Sold` tag is excluded by the presets themselves
+
+Basem: "make sure this tag is excluded from all calling lanes, and mailing lanes." Until today the
+Records presets relied on the status chain alone (tag -> Sold Property Cleanup sequence -> status
+`Already Sold` -> `DEAD_STATUSES`). `preset_spec.SUPPRESS_TAGS_ALL = ["Recently Sold"]` now puts the
+tag in every preset's exclusion set and `dpd_presets_tag_exclude.py` wrote it to 82 presets over the
+API (one already had it by hand); 83 of 85 carry it, the two two-include-group presets (Deep 04
+Return Mail, Rehash 05 Rehash Ready) cannot. Reason for the second layer: the sequence is unproven
+on records SiftMap filter 11798 ("Recently Sold since January 2023", auto-add ON) drips in with the
+tag, and a hand-changed status drops the status exclusion while the tag stays. Story and numbers in
+[doors-per-deal.md](doors-per-deal.md).

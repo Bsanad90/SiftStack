@@ -697,3 +697,44 @@ and asked for SmartSkip + Trestle on those and Trestle on everything that was sk
   after a trace, but routing P1 auto-add records into a call lane is still the open decision from
   2026-09-08), and the 5 other phoneless records Basem did not tag (600 Tuckerman St NW, 3181 Porter St NW,
   1524 Allison St NW, 4620 B St SE, and the LLC at 5631 Macarthur Blvd NW).
+
+## 2221 Ridge Pl SE - the wizard trace loaded the TENANT onto the owner (2026-10-06)
+
+Basem asked who Marvin Turner and Jeremy Barksdale are on record 385c822d (DPD pull 2026-09-28,
+Lis Pendens + Senior, assigned Ahmed). The chain, from the record's `/logs/`:
+
+1. 09-28 17:01 SiftMap import created owner `Marvin Turner`, phones/emails empty, mailing = situs
+   (SiftMap's default; the record also landed on the `Owner Occupied` system list).
+2. 09-28 18:02 the bulk DataSift skip trace (`owner.sent.skiptrace`, tag `REISift Skipped 09/26`)
+   returned 2 mobiles + 3 emails (`jeremy9216@icloud.com`, `jbarksdale@bellevuewa.gov`,
+   `barksdalej_192@yahoo.com`) and age 34, and loaded ALL of it onto Turner's owner block. The
+   wizard exposes no matched name, so nothing flagged that the person traced was not the owner.
+3. 09-28 20:47 `score_push` (phone_intel) tiered 2027517363 `Dial First` (score 100) and
+   2028136544 `Drop` (10). phone_intel scores activity, never identity.
+4. 10-06 18:52 Ahmed dialed Dial First, reached "Jeremy Barksdale", status `Cold Lead`, board note.
+
+What the free sources say:
+- DC tax roll (ITSPE): owner TURNER, MARVIN on SSL 5624 0153 (bought 12/2014, $220,000) AND on
+  SSL 1125 2002 = 216 21st St NE Apt 2 (bought 11/2021, $415,000), where the roll mails him.
+  So he does not live at Ridge Pl; `Owner Occupied` is wrong for this record.
+- ROD index (`dc_rod_lookup.py`, TURNER MARVIN, 18 rows): 2020 DOT -> Servbank 12/2024 ->
+  Lakeview 02/2026; DC Water lien 04/2025; substitute trustee Pesachowitz 07/28/2025; Servbank
+  LIS PENDENS 09/09/2025; DC tax lien 04/2026. BARKSDALE JEREMY: no index hit at all.
+- MLS DCDC2224008: listed by Emmanuel A Nwude (Great American Real Estate) at $280,000, ~240
+  days, Pending/Under Contract, remarks "SHORT SALE, professional negotiator in progress, buyer's
+  loan fell through". SiftMap wrote the LISTING AGENT into `personal_representative`.
+- Trestle Real Contact (6 queries, `output/dp_2221_ridge_pl/real_contact_20261006.json`):
+  7363 -> Barksdale grade A `name_match` TRUE, Turner grade C `name_match` FALSE;
+  6544 -> Barksdale `name_match` TRUE (+ yahoo email name_match TRUE), Turner FALSE.
+  `address.name_match` TRUE for both names at Ridge Pl (owner of record + occupant) and for
+  Turner at 21st St NE. Litigator false on both.
+
+Verdict: Jeremy Barksdale is the occupant (tenant, or possibly the short-sale buyer); not an
+owner, heir or signer. Marvin Turner has never been traced by name; his numbers would come from
+a trace on "Marvin Turner, 216 21st St NE Apt 2". The decision-makers are Turner and the
+short-sale negotiator through the listing agent while the contract is live.
+
+Exposure: the same 09-28 trace loaded 3,226 numbers (2,842 non-Drop) on 1,226 records with
+mailing = situs. A Real Contact pass over the non-Drop numbers is ~$99 (@ $0.035). Cheaper tell:
+an owner `age` far from the Senior list, or a mailing address that the tax roll places elsewhere.
+Nothing was written to DataSift on 2026-10-06; board-note correction + re-trace wait on a go.

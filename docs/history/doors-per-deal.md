@@ -880,13 +880,108 @@ Full build narrative, including every panel trap and the inverted-preset post-mo
   tagged). **Panel trap:** a tag exclusion renders as a RED minus chip inside the "ALL TAGS (AND)"
   block whose dropdown still says "Include" -- read chip colour, not the dropdown. Measured effect
   with the obituary window lifted: Hottest Ready to Call 1,076 -> 912.
+- `src/scripts/dpd_presets_tag_exclude.py` — **`Recently Sold` excluded on every preset (Basem
+  2026-10-06: "make sure this tag is excluded from all calling lanes, and mailing lanes").** Spec:
+  `SUPPRESS_TAGS_ALL = ["Recently Sold"]` rides on EVERY channel (call, mail, deep, reactivation), so
+  the tag is now suppressed twice: directly by the preset and, once the Sold Property Cleanup sequence
+  has flipped it, by the `Already Sold` status. Why the second layer: the sequence fires on "Property
+  Tags Added" and nothing proves it fires for SiftMap filter 11798 ("Recently Sold since January
+  2023", auto-add ON since 10-05, which stamps the tag on records it adds), and a status a dialer
+  hand-changes later loses the status exclusion while the tag stays. The script generalises the
+  entity pass to all 85 presets: wanted names come from `allocate_tags` (budget-aware), uuids from
+  `GET tag/`, stored `must_not.any_tags + all_tags` merged with the wanted set and written under
+  `must_not.any_tags` (multi-value exclusion rule), every other key untouched; dry run / `--probe` /
+  `--commit` / `--undo`. Run 2026-10-06 16:19: 1 preset already held it (Hottest 02 Ready to Call,
+  hand-added), probe 1 + commit 81 = 82 patched, every PATCH read back equal; backups
+  `output/dpd_presets_tag_exclude_backup_20261006T161954.json` (probe) and `..._20261006T162010.json`
+  (commit). The tag's uuid is `47bf98ca-6349-4841-b305-e1fecd04baf1`. **Budget skips (2):** Deep 04
+  Return Mail and Rehash 05 Rehash Ready have two include groups and no tag block left, so they stay
+  on status suppression alone (`block_map.TAG_BUDGET_TRIMS`). Verifier afterwards: 85/85 present, the
+  4 known kept extras and nothing else (Deep 01 now carries `Obituaries` as a 5th include tag like
+  Deep 02; it was there before the write, see the probe backup). Side effect on the verifier: `Mail
+  Only` and `Entity Owner` no longer appear in any single-value group, so their uuids are not solved
+  by the algebra and the multi-value set check on CALL presets degrades to a count check.
 - `src/scripts/dpd_presets_verify.py` — **Phase 7 QA for presets.** Reads every stored definition over the internal API and checks counties, suppression, statuses, counters, params and tag-uuid algebra against `preset_spec`; lists extras. Exit 0 only when all 85 are present and defect-free (14 folders; fails a no-window CALL preset that carries the obituary block and any other preset that lacks it). **Currently exits 0.** Run it after any preset change.
 - `src/scripts/dpd_doctor.py` — `capture_presets` rewritten onto the builder's panel primitives (positional per-folder read, full scroll of `PresetsBelowBody`, no-toggle re-read for a folder that is open by default); writes `preset_items`, `preset_folders`, `preset_tree`. `--verify` diff is trustworthy again.
 - `src/scripts/dpd_playbook_extract.py`, `dpd_siftmap_manifest.py`, `dpd_siftmap_presets.py`, `dpd_qa_report.py` — the county-agnostic DC one-shot pipeline (see [docs/history/doors-per-deal.md](docs/history/doors-per-deal.md)). **Reworked 2026-09-24 for the Work Order export and the no-AI ladder; `dpd_siftmap_manifest.py --plan` is the check/rebuild/delete planner for the saved SiftMap filters** — see "Doors-per-deal data: the Work Order format" above.
 
 **Stated gaps (`block_map.GAPS`), re-checked 2026-09-30 against the relative-date finding of 2026-09-24/25:**
 - **Now expressible, not yet rebuilt:** the mail cadence's 30-day spacing and the four Reactivation status-age timers. Presets store RELATIVE dates (`["<n>-<days|weeks|months>", <anchor>]`, anchor today / yesterday / week / month / quarter / year; resolved by the app at load, so counts must use `resolved_window()`), and status age is stored as `last_updated_date: [{"field": "status", "options": [...]}]` (already live on `11. Not Interested Qrtrly`). The old "date blocks are absolute-only" reason is wrong. Read the PRIOR control's meaning off `main.min.js` before building either: `["30-days", "today"]` is the LAST 30 days, not "older than 30 days".
-- **Closed:** the recently-sold tag. `Recently Sold` exists and the Sold Property Cleanup sequence turns it into the `Already Sold` status, which every preset already excludes; no preset needs the tag.
+- **Closed twice:** the recently-sold tag. The Sold Property Cleanup sequence turns `Recently Sold` into the `Already Sold` status, which every preset excludes, AND since 2026-10-06 the tag itself is excluded on 83 of 85 presets (`dpd_presets_tag_exclude.py`; the two two-include-group presets have no block for it).
 - **Still a gap:** the single-family filter (it would drop the 2,892 blank-`structure_type` records; the buy box is applied at pull time instead).
 - **Still a gap in the PANEL:** the Property Status picker offers 19 of 38 statuses (`DNC` and `Opt-out` recovered through Params & Others; `Lost Deal`, `Close Out`, `Buyer`, `Buyer Found`, `Buyer Lost` not selectable). Presets are now written over the API, which may accept them; unprobed.
 - `block_map.GAPS` carries the same wording (updated 2026-09-30).
+
+### Geography split test — ZIP + neighbourhood exclusions on a Records preset (2026-10-06)
+
+Basem: *"build a preset that has all neighbourhoods and zipcode exclusions based on the market
+research for the footprint … a split test for calling one preset with exclusions and without to
+see if we can improve our hit rate."* Built by `src/scripts/dpd_split_test_presets.py`.
+
+**The panel has the blocks after all.** `preset_spec` had said since 08-26 that suppression #4
+(dead neighbourhoods) "is NOT a Records filter at all, the panel has no neighbourhood block".
+The vocabulary dump (`output/dpd_filter_blocks.json`) lists `Property ZIP Code` and `Property
+Neighborhood` under PROPERTY FILTERS; nobody had mapped them. Store shape read out of
+`output/_archive/reisift_main.min.js` (the `must` / `must_not` key registries and
+`getMustAndMustNotIds`, which returns the whole object list untouched when `isPreset`):
+
+| Block | Store (preset) | Query | Notes |
+|---|---|---|---|
+| Property ZIP Code | `must.any_zip5` = `[{uuid, title, isNegative}]`, uuid = title = the 5-digit string | `must_not.any_zip5` = bare strings | same "modern whole-object" form as `any_county`; `to_query` already does the split |
+| Property Neighborhood | `must.any_neighborhood` (include) / `must_not.any_neighborhood` (exclude), plain names | same | the bundle keys this one by `title`, not uuid; match is CASE-INSENSITIVE (`Orchard at New Market` = `Orchard At New Market` = 26) |
+
+Proven on the query endpoint before anything was written: a bogus key returned the 6-county
+baseline (18,447), `any_zip5 ["20019"]` 713, `any_neighborhood ["Linganore View"]` 38. About
+half the account's records carry a `neighborhood` value (13,178 of 26,645 in the hydration
+cache, 1,966 distinct names in Market Finder's vocabulary); 225 of the 285 dead names sit on
+1,288 records.
+
+**Which exclusion list.** `output/market_research/six_county_investor_exclusions_20260922.csv`
+(DEAD = ≤1 investor transaction / 6 months, the repo's `DEAD_MAX_INV_TRANS`; NOT A MARKET = no
+sales / no value; THIN 2-4), NOT the per-county strings in `_EXCLUDE_by_county.xlsx`. A Records
+preset carries ONE ZIP block across all six counties, and a per-county Market Finder table lists
+bordering ZIPs with zero data: 22101 (McLean) sits in Arlington's and Frederick's exclude strings
+and is Fairfax's busiest ZIP (82). The 09-22 file takes the MAX across county tables (the
+09-22 memory's trap 2), so it is the only list safe to apply account-wide. The workbook is a
+strict superset of it on the footprint (every 09-22 DEAD name is in the workbook; the workbook
+adds THIN + NOT A MARKET + the Phase 1 dead list). No name in the 09-22 file is dead in one
+county and live in another (checked; the script refuses to build if a re-score ever has one).
+DC has no neighbourhood data and no dead ZIPs: the exclusion is a no-op there.
+
+**Lane choice, measured read-only first** (bar dead / bar thin, 2026-10-06 16:30):
+
+| Lane | base | − ZIPs | − nbrs | − both | − both + THIN |
+|---|---|---|---|---|---|
+| Hottest - 02 Ready to Call | 764 | 761 | 694 | 691 | 570 |
+| FTM - 02 Ready to Call | 173 | 169 | 147 | 143 | 95 |
+| Obituary - 02 Ready to Call | 476 | 468 | 385 | 379 | 196 |
+| Strong / Tier 2 / Bulk - 02 | 1 / 0 / 1 | | | 0 | |
+
+The ZIP layer removes almost nothing (3 on Hottest; the 09-22 memory already said the lanes
+were ~93% KEEP by ZIP); the neighbourhood layer is the whole effect. Hottest is the lane with
+dialers on it, so the test runs there.
+
+**Built (folder `15 SPLIT TEST - CALL`, `POST filter-preset-folder/` + `POST filter-preset/`,
+each read back AND re-counted through `to_query` against the plan count):**
+
+| Preset | uuid | What | Count |
+|---|---|---|---|
+| Split A - Ready to Call | `b2458859-1b9f-4dab-b136-46e271eab470` | byte clone of Hottest - 02 (control) | 763 |
+| Split B - Ready Mkt Excl | `40dc1437-866c-4552-87b3-aa28bbf29aac` | clone + 191 ZIPs excluded + 285 neighbourhoods excluded | 690 |
+| Split C - Ready Dead Nbrs | `b2d0fa1b-58c4-445b-8cb8-5ca367a9d930` | clone restricted to the 285 dead neighbourhoods (include mode) | 70 |
+
+Folder `50075bff-c271-4738-b849-9f2f8671e100`; backup
+`output/dpd_split_test/presets_created_20261006T163859.json` (`--undo` deletes the three + the
+folder). A − B = 73; C holds 70 of them, the other 3 are dead-ZIP-only records in neither B
+nor C. **B and C are disjoint**, which is what makes the test readable: A against B alone would
+dilute the difference across the ~90% of records both hold. All three read the shared
+`predictivecall_attempts` counter, so a dial from any of them advances the record out of all
+three (no double-dial). The verifier is unaffected (it walks only the 14 spec folders: 85/85,
+the 4 known kept extras, 0 extras). The exclusion is NOT in `preset_spec` and not on the 85;
+it joins the stack only if the test shows a better hit rate, and then as a spec block applied
+by a pass, not by hand.
+
+**Not done:** a panel-render check of Split B (open it in Records, confirm the two geography
+chips show as exclusions and the count reads 690). The API read-back and the count are proven;
+the panel view is the one thing not looked at. `--bar thin`
+rebuilds the pair at the stricter bar (570 / 193) after an `--undo`.

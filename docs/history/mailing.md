@@ -52,3 +52,46 @@ to Drive) so the next fetch + `index` sees it. The obituary heir list itself has
 as of 2026-09-17.
 
 ---
+
+---
+
+## Heir mailing list, 2026-10-06 — obituary + Register of Wills, filed July 1 onward
+
+Basem: mail the obituary and Register of Wills records filed since July that were deep
+prospected (heirs known, signers certain) and never mailed; "John Smith becomes The Smiths"
+with the heirs underneath, one per line, heirs at one address on one envelope; three rules —
+never mailed, not on the Inheritance / Probate / Divorce lists, not in the Drive sent files.
+Tool: `src/scripts/heir_mail_build.py` (`index` / `pull` / `build --filed-since
+--include-unpushed` / `qa`), wrapping `obituary_mail_consolidate.py` by re-pointing its module
+globals at `output/heir_mail_20261006/`. Deliverable `heir_mailing_mail_ready.csv`; memory
+`project_heir_mail_20261006`.
+
+**What it adds to the 09-17 tool.** Cohort = Obituary list ∪ obituary tags ∪ `Register of Wills
+Probates` list (12,491) ∩ the DP index (1,598). Filing-date gate: obituary = the research DOD
+(SiftMap's `last_obituary_date` is the DRIP date and sat up to 16 years after the death on 23
+records); Register of Wills = our `md_row_ledger.json` / `dc_probate_ledger.json` by address, else
+the pull / verified-import / purchase-month tags — the CRM holds NO filing date on them
+(`Probate Open Date` empty on every record read). Certainty gate: verdict "owner did die" at
+high / court-record confidence, signer basis from labelled family, ≥1 ranked signer with a
+SmartSkip address, and none of the account tags `DP Death Unverified` / `DP Owner Presumed
+Alive` / `Owner Alive`. The 664 deep-prospected rows of the unpushed Sept / 0930 batches are
+synthesised from their run dirs with the ORIGIN list as `lists`, so the clerk's Inheritance /
+Probate rows drop as mailed (Basem: "its all clerk data ... those were mailed before"; and when
+one is pushed, stamp a direct-mail attempt in the same operation — unproven PATCH, prove on one).
+
+**Traps found (each has its CLAUDE.md line).** A backup copy of `ranked_records.json` out-scores
+the live file in the index (8 skipped); a research correction blanks `decedent_name`, so the
+"named beats unresolved" tie-break chose the stale finding (3112 Embrey Ct) — corrections first,
+then newest. The SmartSkip "Spouse" row on a surviving-spouse household is the decedent: 17
+envelopes were addressed to the dead owner before `decedent_rows_out` struck them (79 across the
+cohort). The property-query `search` misses a stored street whose unit is spelled differently
+(`#433` vs `Unit 433`): probe the unit-stripped street too and match on house key + unit. A
+month proxy must never outrank an exact earlier date. The base QA's name-only signer match
+reports a false "address drift" when one heir sits at two addresses (both envelopes kept,
+flagged `same_person_other_address`).
+
+Reviewed by `sift-report-verifier` (11 claims confirmed, 2 defects found and fixed) and
+`sift-code-reviewer` (2 blockers fixed: research tie-break, existence probe; warnings applied:
+proxy vs exact date, account verdict tags, unranked prep rows logged, phone column renamed
+`phone_unscored` — raw SmartSkip numbers, never a dial sheet). Footprint rows are kept and
+flagged (`footprint`), per Basem's "all obituary records on the account".

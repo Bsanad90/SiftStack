@@ -50,23 +50,41 @@ ENTRY = {
 # The six-part stack from the plan maps onto the Records panel as FIVE parts, and the
 # missing one is worth stating rather than quietly dropping:
 #   1  done/dead statuses      -> DEAD_STATUSES below
-#   2  recently-sold TAG       -> COVERED WITHOUT A PRESET CHANGE, via status. There is
-#                                 still no `Sold` tag among the property tags, and there
-#                                 must not be: `Sold` and `Already Sold` are STATUSES and
-#                                 a same-named tag would split suppression across two
-#                                 vocabularies. Instead `manage_sold_properties` (now
-#                                 pointed at all 14 jurisdictions) stamps
-#                                 datasift_uploader.RECENTLY_SOLD_TAG and the
-#                                 "Sold Property Cleanup" sequence maps that tag onto
-#                                 SOLD_STATUS ("Already Sold"), which part 1 already
-#                                 excludes. These presets therefore need no edit for
-#                                 part 2; what they need is the sweep to keep running.
-#                                 The per-month "Sold YYYY-MM" companion tag is an audit
-#                                 trail of WHEN each record sold, not a filter input.
+#   2  recently-sold TAG       -> SUPPRESS_TAGS_ALL below, on EVERY preset (Basem,
+#                                 2026-10-06: "make sure this tag is excluded from all
+#                                 calling lanes, and mailing lanes"). Until then this part
+#                                 rode on status alone: `manage_sold_properties` stamps
+#                                 datasift_uploader.RECENTLY_SOLD_TAG and the "Sold
+#                                 Property Cleanup" sequence maps the tag onto SOLD_STATUS
+#                                 ("Already Sold"), which part 1 excludes. That chain has
+#                                 two gaps the tag exclusion closes: the sequence fires on
+#                                 "Property Tags Added" and nothing proves it fires for a
+#                                 SiftMap drip (filter 11798 "Recently Sold since January
+#                                 2023", auto-add ON, stamps the tag on records it adds),
+#                                 and a record whose status is later hand-changed keeps
+#                                 the tag but loses the exclusion. There is still no `Sold`
+#                                 TAG and there must not be: `Sold` / `Already Sold` are
+#                                 STATUSES and a same-named tag would split suppression
+#                                 across two vocabularies. The per-month "Sold YYYY-MM"
+#                                 companion tag is an audit trail of WHEN, not a filter
+#                                 input. Budget exception: the two presets with TWO
+#                                 include groups (Deep 04 Return Mail, Reactivation 05
+#                                 Rehash Ready) cannot hold any tag exclusion
+#                                 (block_map.TAG_BUDGET_TRIMS) and stay on status alone.
 #   3  low / negative equity   -> SUPPRESS_LISTS below
-#   4  dead neighbourhoods     -> NOT a Records filter at all. The panel has no
-#                                 neighbourhood block; this is a PULL-side suppression and
-#                                 it is already applied in the SiftMap tier configs.
+#   4  dead neighbourhoods     -> applied at PULL time in the SiftMap tier configs, and NOT
+#                                 on the 85 presets. CORRECTED 2026-10-06: the earlier line
+#                                 here ("the panel has no neighbourhood block") was wrong --
+#                                 the panel's PROPERTY FILTERS section has `Property ZIP
+#                                 Code` (store `must.any_zip5`, {uuid,title,isNegative}
+#                                 objects like any_county) and `Property Neighborhood`
+#                                 (plain names, `must_not.any_neighborhood` to exclude), both
+#                                 proven to move the query count. They are deliberately NOT
+#                                 part of the spec: a Records-side exclusion is being SPLIT
+#                                 TESTED first (folder `15 SPLIT TEST - CALL`, built by
+#                                 dpd_split_test_presets.py off Hottest - 02 Ready to Call,
+#                                 73 of 763 records removed at the dead-market bar). It joins
+#                                 the stack only if the test shows a better hit rate.
 #   5  not single family       -> STRUCTURE below. Blank is UNKNOWN and is surfaced, never
 #                                 silently dropped: 2,892 records on this account carry a
 #                                 permanently blank structure_type (condo/apartment units
@@ -81,6 +99,11 @@ DEAD_STATUSES = [
     "Auction Date Passed", "Listed", "Buyer", "Buyer Found", "Buyer Lost",
 ]
 SUPPRESS_LISTS = ["Low Equity", "Negative Equity"]
+# 2026-10-06 (Basem): `Recently Sold` (datasift_uploader.RECENTLY_SOLD_TAG, stamped by the sold
+# sweep and by SiftMap filter 11798's drip) is excluded on EVERY channel -- call, mail, deep and
+# reactivation -- a sold door is nobody's lead. Applied to the store by
+# dpd_presets_tag_exclude.py; the verifier derives the wanted set from here.
+SUPPRESS_TAGS_ALL = ["Recently Sold"]
 SUPPRESS_TAGS_CALL = ["Mail Only"]
 # 2026-09-28 (Basem: "tag them out of the call lanes"): LLC / company / institution owners carry
 # `Entity Owner` (set by output/dpd_pull_20260928/tag_entities.py; trusts carry `Trust` and stay
@@ -317,8 +340,9 @@ def _suppression(channel: str, stage: dict) -> dict:
                                 "removed from the exclusion set")
     else:
         s["status_none"] = list(DEAD_STATUSES)
+    s["tags_none_extra"] = list(SUPPRESS_TAGS_ALL)
     if channel in ("call", "deep"):
-        s["tags_none_extra"] = list(SUPPRESS_TAGS_CALL)
+        s["tags_none_extra"] += list(SUPPRESS_TAGS_CALL)
     if channel == "call":
         s["tags_none_extra"] += list(SUPPRESS_TAGS_CALL_ONLY)
     return s
@@ -400,12 +424,16 @@ def main() -> int:
     print(f"\n  Suppression on every preset: {len(DEAD_STATUSES)} dead statuses, "
           f"lists {SUPPRESS_LISTS}, structure {STRUCTURE['prefer']} "
           f"(blank {STRUCTURE['blank']})")
-    print(f"  CALL and DEEP presets additionally exclude {SUPPRESS_TAGS_CALL}")
-    print("\n  OK: suppression part 2 (recently sold) is covered through STATUS, "
-          "not a preset edit: manage-sold stamps the `Recently Sold` tag and the "
-          "cleanup sequence sets status `Already Sold`, which part 1 excludes.")
-    print("  N/A: suppression part 4 (dead neighbourhoods) is not a Records filter. "
-          "It is applied at pull time in the SiftMap tier configs.")
+    print(f"  Every preset excludes the tags {SUPPRESS_TAGS_ALL} (budget exception: the two "
+          f"two-include-group presets, see block_map.TAG_BUDGET_TRIMS)")
+    print(f"  CALL and DEEP presets additionally exclude {SUPPRESS_TAGS_CALL}; "
+          f"CALL only {SUPPRESS_TAGS_CALL_ONLY}")
+    print(chr(10) + "  Suppression part 2 (recently sold) is belt and braces: the `Recently Sold` TAG "
+          "is excluded above AND the cleanup sequence maps it onto status `Already Sold`, "
+          "which part 1 excludes.")
+    print("  Suppression part 4 (dead neighbourhoods / ZIPs) is applied at pull time in the "
+          "SiftMap tier configs; on the Records side it is under SPLIT TEST only "
+          "(15 SPLIT TEST - CALL, dpd_split_test_presets.py), not on these 85.")
     return 0
 
 

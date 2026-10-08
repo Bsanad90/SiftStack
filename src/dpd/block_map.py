@@ -35,6 +35,14 @@ BLOCK = {
     "structure": "Structure Types",
     "last_mailed": "Last Direct Mailed",
     "county": "Property County",
+    # PROPERTY FILTERS geography, read out of the app bundle 2026-10-06 and proven on the
+    # query endpoint (dpd_split_test_presets.py). ZIP stores like county -- whole
+    # {uuid, title, isNegative} objects under `must.any_zip5`, uuid = title = the 5-digit
+    # string; neighbourhood stores plain names, `must.any_neighborhood` (include) or
+    # `must_not.any_neighborhood` (exclude), matched case-insensitively. Each single-instance,
+    # one direction at a time. Used by the split-test folder only, not by the 85.
+    "zip": "Property ZIP Code",
+    "neighborhood": "Property Neighborhood",
     # OWNER FILTERS section. Three controls: a Properties Owned range, "Show one property
     # per owner" / "All properties", and a tie-break criterion. Stored NESTED as
     # `must.ownerPropertiesOwned` (read out of the app bundle 2026-09-24); the live query
@@ -110,9 +118,13 @@ GAPS = {
         "SiftMap tier configs), so every record these folders can see is already single "
         "family by construction."),
     "sold_tag": (
-        "CLOSED 2026-09-30. The `Recently Sold` tag exists and the live Sold Property "
-        "Cleanup sequence turns it into the `Already Sold` status, which part 1 already "
-        "excludes, so no preset needs the tag itself."),
+        "CLOSED 2026-09-30 via status, then BUILT INTO THE PRESETS 2026-10-06 (Basem: exclude "
+        "the tag from every calling and mailing lane). `Recently Sold` is in "
+        "preset_spec.SUPPRESS_TAGS_ALL and excluded on 83 of 85 presets "
+        "(dpd_presets_tag_exclude.py); the live Sold Property Cleanup sequence still maps "
+        "the tag onto the `Already Sold` status, which part 1 excludes, so a sold record is "
+        "suppressed twice. The two presets with two include groups (TAG_BUDGET_TRIMS) have "
+        "no block left and ride on the status alone."),
 }
 
 
@@ -142,6 +154,11 @@ TAG_BUDGET_TRIMS = {
     # dpd_presets_create.allocate_tags for the measurements.
     "11 DEEP PROSPECTING/04 Return Mail": (
         "Two INCLUDE groups (the four-tag tier scope on OR, `Return Mail` on AND) spend "
-        "both tag blocks, so `Mail Only` is not excluded on this one preset. It costs "
-        "nothing today, since `Mail Only` is a Phase 4 tag not stamped on any record yet."),
+        "both tag blocks, so neither `Mail Only` nor `Recently Sold` (2026-10-06) is "
+        "excluded on this one preset. `Mail Only` costs nothing today (a Phase 4 tag not "
+        "stamped on any record yet); a `Recently Sold` record is still caught by the "
+        "`Already Sold` status exclusion once the cleanup sequence has run on it."),
+    "12 REACTIVATION/05 Rehash Ready": (
+        "Same shape (the four-tag scope on OR, `Rehash Ready` on AND): no block left for "
+        "`Recently Sold` (2026-10-06). Status suppression only."),
 }

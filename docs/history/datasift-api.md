@@ -416,3 +416,20 @@ Verbatim text as it stood on 2026-10-01 (second split of CLAUDE.md; the first wa
 - **Daily summary channel:** WhatsApp. Note: not currently a wired notification transport — only `SLACK_WEBHOOK_URL` (Slack or Discord-compatible webhook) exists in `notify_slack` today.
 - **Preferred run time:** 06:30 America/New_York.
 - **Dispositions:** type-based DataSift lists (the auto-created per-notice-type lists — Foreclosure, Probate, Tax Sale, etc. — rather than one consolidated dispo list).
+
+## 2026-10-07 — upload activity → its records, and the URL-query trap
+
+- Upload activities: `GET /api/internal/activity/?type=upload&ordering=-created` (the plain
+  `activity/` list mixes in every bulk job). A SiftMap auto-add drip shows as `upload_type:
+  sift_map`, `filter_id: <SiftMap filter>`, `meta.new` / `meta.updated`.
+- The records of one activity: `POST /api/internal/property/` (`x-http-method-override: GET`)
+  with `{"limit": 100, "offset": 0, "query": {"must": {"uploads": ["<activity uuid>"]}}}`. Read
+  off `main.min.js` (the Activity "view properties" link is `/records/properties?uploads={uuid}`).
+  Proven: activity aa7c4512 (filter 11798, "Auto Upload, 72 records") → count 72.
+- TRAP: the same POST to `/api/internal/property/?limit=1` returns 32,948 for EVERY body, real
+  keys included (`any_property_state: ["MD"]` read 32,948 with the query string, 20,049
+  without). Any probe written with a URL `?limit=` reads as "key silently dropped". Paging
+  belongs in the body.
+- Buyer of a sold record: DataSift keeps the OLD owner when the upload runs with replace_owners
+  false; the buyer is SiftMap `GET /properties/detail/{dataflik_id}/` → `sale_history[].buyer_name`
+  (+ `owner_info.total_properties`, `owner_mail_address`, `is_cash_sale`).

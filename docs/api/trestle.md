@@ -4,7 +4,9 @@ Scores a phone number so you know what to dial first, and flags the numbers you
 should not dial at all.
 
 - **Key:** `TRESTLE_API_KEY`
-- **Cost:** about $0.015 per number
+- **Cost:** $0.015 per number for Phone Validation, plus **$0.005 per number for the
+  mandatory `litigator_checks` add-on** (Trestle pricing page, confirmed by Basem 2026-10-05), so
+  **$0.020 per number all-in**
 - **Used by:** `phone-validator`, and the scoring pass at the end of every skip
   trace chain
 

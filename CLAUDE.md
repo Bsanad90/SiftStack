@@ -159,10 +159,16 @@ One line of state each; the reasoning and every number is in the linked file.
   (13 CALL / 14 MAIL, added 2026-09-30)** cloned from FTM with `any_tags = [Obituaries, Deceased
   Owner]`. Entry tags `FTM` / `Priority 1/2` / `Obituaries`. Obituary window
   `["360-months", "month"]` on every preset EXCEPT the Hottest + FTM CALL lanes; `Entity Owner`
-  excluded from all CALL presets; one-property-per-owner on the 24 dial lists. SiftMap saved
+  excluded from all CALL presets; **`Recently Sold` excluded on 83 of 85 presets since 2026-10-06**
+  (every CALL, MAIL, DEEP and REACTIVATION lane; the two two-include-group presets have no tag
+  block left); one-property-per-owner on the 24 dial lists. SiftMap saved
   filters follow the 09-24 Work Order plan (P1 rungs, 6 counties; 7 rungs pulled 09-28, 1,311
   records); **auto-add ON for all 30 current P1 rungs since 2026-10-05** (T2 ZIP, P2, stale OFF);
-  drip 11496 tags `Obituaries` only. Open: 10 old-label renames,
+  drip 11496 tags `Obituaries` only. **Split test (2026-10-06): folder `15 SPLIT TEST - CALL`,
+  3 presets off Hottest - 02 Ready to Call** — A control (763), B with the market-research
+  dead ZIPs (191) + dead neighbourhoods (285) excluded (690), C the dead-neighbourhood records
+  alone (70); outside the 85-preset spec and the verifier; `dpd_split_test_presets.py`
+  (`--undo`, `--bar thin` for the stricter 570). Open: 10 old-label renames,
   Obituary lane assignment across the 5 dialers. → [doors-per-deal](docs/history/doors-per-deal.md)
 - **DP batches** — FTM (25) and Obituary (618/619) batches live and QA-clean; signers-only
   re-push of 1,391 records done 09-17; 23 namesake false-positives repaired 09-18; 82 ghost REL
@@ -170,7 +176,9 @@ One line of state each; the reasoning and every number is in the linked file.
   → [prospecting](docs/history/prospecting.md)
 - **Sold suppression** — `manage-sold --sold-account-scope in` on the 6 counties is THE path; the
   live `Sold Property Cleanup` sequence turns `Recently Sold` into status `Already Sold`, which
-  every preset excludes. No live sweep has run yet (Montgomery dry run passed 08-31, 992 matched).
+  every preset excludes, and since 2026-10-06 the `Recently Sold` TAG itself is excluded on 83 of
+  85 presets (belt and braces: the sequence is unproven on SiftMap filter 11798's auto-add drip).
+  No live sweep has run yet (Montgomery dry run passed 08-31, 992 matched).
   → [sold-suppression](docs/history/sold-suppression.md)
 - **Lane hygiene** — Incomplete-record cleanup (FTM 8 approved rows wait on Basem's
   `--commit --group A-same --include-review`), Re-Skiptrace dial sheets, owner-grouped
@@ -204,6 +212,7 @@ day it is found; its story goes to the history file.**
 - **DataSift silently caps an owner at 30 phones** (200, echoes every number in `added`, stores 30), and a full owner silently refuses every new one — superseded numbers must come OFF first via `POST owner/{uuid}/remove-phones/`. `PATCH owner/ {"phones": ...}` replaces WHOLESALE: never. → prospecting
 - **The phone upsert SKIPPED numbers already on the owner,** so a re-push could never correct a tag; send the full list. → prospecting
 - **The upsert RESET a dialer's disposition:** a plan phone stamped `status: UNKNOWN` overwrote a live DEAD mark. Keep the live status whenever the plan's is UNKNOWN/blank. → prospecting
+- **The DataSift wizard skip trace is ADDRESS-anchored and returns the OCCUPANT when the owner's mailing is the situs but he lives elsewhere** (2221 Ridge Pl SE, 2026-10-06: SiftMap set mailing = situs, the trace loaded a 34-year-old tenant's 2 phones + 3 emails onto owner Marvin Turner, age 34 stamped on the owner block, phone_intel tiered them Dial First, the dialer reached the tenant). The wizard shows no matched name; `phone_intel` scores activity, never identity. Trestle Real Contact (`GET /2.0/real_contact`, $0.03 + litigator) returns `phone.name_match` / `address.name_match` per name: both numbers matched Barksdale, neither matched Turner. An owner age that contradicts the Senior list is the tell. → prospecting
 - **Phone tags fail to land on ~3.5% of first upserts;** a plain re-upsert fixes them, so the QA repair pass is not optional. Tier `Unknown` is never written as a tag — auditing for it reports correct behaviour as a defect. → prospecting
 - **An API phone upsert does NOT set `owner.skiptraced` / `skiptrace_attempts`,** and no skip-trace date field exists anywhere. Stamp the boolean AND the trace-date tag in the same operation (see My Defaults). → datasift-api
 - **A `Rel{n}.{m}` phone tag is NOT provenance** — RFD imports and probate pushes use it too; the tag-only guard stripped 18 foreign numbers. Remove only numbers OUR prior plan wrote (`push --prior-plan`). → datasift-api
@@ -217,6 +226,7 @@ day it is found; its story goes to the history file.**
 
 ### DataSift API — reads and queries
 - **`GET property/?lists=<uuid>` is silently IGNORED** and returns the whole account. Counts and membership come only from `POST property/` with `x-http-method-override: GET` and `{"query": {"must": {...}}}`. → datasift-api
+- **A query string on the `POST property/` override URL (`?limit=1`) makes DataSift IGNORE the whole body** and return the full account count (32,948); paging goes in the BODY (`limit` / `offset`). An upload activity's records = `must.uploads: [<activity uuid>]` (found 2026-10-07). → datasift-api
 - **Folder and preset listings default to 10 rows** (`?limit=999`); an exists-check without it lies and the re-create 400s on the unique title. → datasift-api
 - **An unknown query key beside real ones is SILENTLY DROPPED;** only a count that MOVES proves a key. A query of only unknown keys 400s. `assigned_to` is a bare uuid string (a list 400s). → datasift-api
 - **A stored preset's `filters` is NOT a valid query payload** (county objects, relative dates → 400 "wrong format"). Translate with `dpd_lane_assignee_report.to_query()`, which resolves the relative window. Every lane reader was dead for 3 days on this. → doors-per-deal
@@ -229,6 +239,7 @@ day it is found; its story goes to the history file.**
 - **`LiveApi._mint` has no retry** (a 502 at token mint killed a run at step zero); subclass with backoff. The Records UI shows no total — "of N" is PAGES of 10, and the Clean tab hides Incomplete records. → datasift-api
 - **The Api-Key writes on `/api/internal/`;** "every write 401s" is true of the OPEN surface only. The distinction is the surface, not the credential. → datasift-api
 - **Saved-filter and preset TITLES ARE NOT UNIQUE;** any reader that dedupes by name under-counts (two "District Of Columbia, DC" filters). → doors-per-deal
+- **The Records panel DOES filter on ZIP and neighbourhood** (`must.any_zip5` as `{uuid,title,isNegative}` objects, `must_not.any_neighborhood` as plain names, case-insensitive); preset_spec's "no neighbourhood block" line was wrong for six weeks. A geography exclusion for a preset that spans six counties must use the MAX-across-county-tables verdict (the 09-22 file), never a per-county Market Finder string: 22101 McLean reads dead in two tables and is Fairfax's busiest ZIP. → doors-per-deal
 
 ### Presets and SiftMap
 - **A key that moves the query count proves the QUERY vocabulary, not the STORE shape.** Read `toPropertiesFilters` in `app.reisift.io/main.min.js` before writing a new block; unknown stored keys pass through to the query INVISIBLY (the `[1,1]` owner range ran for an hour unseen). → doors-per-deal
@@ -298,6 +309,8 @@ day it is found; its story goes to the history file.**
 
 ### Mailing lists
 - **Fuzzy address matching must be UNIT-aware:** house-number + first-token matched 13 different condo units in one building. → mailing
+- **A BACKUP copy of `ranked_records.json` can out-score the live file.** The heir index keeps the copy with MORE signers, and a pre-repair `*_backup_*` / `*_correction_*` copy has more (the false ones were not yet removed); skip those paths (`heir_mail_build.BACKUP_PARTS`). Same for `stage_c_research.json`: a correction BLANKS `decedent_name`, so "named finding beats unresolved" picks the stale one -- corrections first, then newest. → mailing
+- **SmartSkip's "Spouse" row on a surviving-spouse household IS the dead owner,** and the ranker scores it as a signer (17 envelopes addressed to the decedent, 2026-10-06). Strike a spouse-type signer whose first+last is the decedent's. **SiftMap `last_obituary_date` is the DRIP date, not the death** (23 records: 2026-07..09 over a 2010-2025 DOD, 4 exactly one year off); date by the research DOD. A clerk-list row (Drive Inheritance / Probate) was MAILED even if never uploaded: its origin list is its `lists`. → mailing
 - **The CRM's `directmail_attempts` is not the mailed signal.** Inheritance / Divorce / Probate list = mailed regardless of counter; Register of Wills only WITH an attempt; the Drive SENT lists are authoritative (61 of 146 drops were found only there). `obituary_mail_consolidate.py build` refuses to run without the index. → mailing
 
 ### Wizard, UI automation, imports
@@ -421,11 +434,15 @@ Detail, every pass and its backups: [doors-per-deal.md](docs/history/doors-per-d
   13/14), `DEAD_STATUSES`, `SUPPRESS_TAGS_CALL_ONLY`, `OBIT_WINDOW_KEY/VALUE`,
   `NO_OBIT_WINDOW_FOLDERS`, `resolve_relative_date`. `block_map.py` — panel mapping + `GAPS`.
 - `dpd_presets_verify.py` — reads every stored preset and checks it against the spec; exit 0
-  only at 85/85. **Currently exits 0.** Run after ANY preset change. Known kept extras: FTM 02 +
-  Obituary 02 exclude `Re-Skiptrace`; Deep 02 carries a 5th tag.
+  only at 85/85. **Currently reports exactly the 4 known kept extras and nothing else** (2026-10-06):
+  FTM 02 + Obituary 02 exclude `Re-Skiptrace`; Deep 01 + Deep 02 carry `Obituaries` as a 5th
+  include tag (Deep 01's appeared between 10-01 and 10-06, hand-added). Run after ANY preset change.
 - Preset passes, each with backup + `--undo`: `dpd_presets_create.py` (builder),
   `dpd_presets_one_owner.py`, `dpd_presets_obit_window.py` (add OR remove per spec),
-  `dpd_presets_entity_exclude.py`, `obituary_lane_build.py` (`presets` / `retag`).
+  `dpd_presets_entity_exclude.py`, `dpd_presets_tag_exclude.py` (syncs EVERY preset's tag
+  exclusions to the spec, budget-aware; `SUPPRESS_TAGS_ALL` = `Recently Sold`),
+  `obituary_lane_build.py` (`presets` / `retag`), `dpd_split_test_presets.py` (folder 15, A/B/C
+  off Hottest - 02; plan / `--commit` / `--undo` / `--bar`).
 - SiftMap: `dpd_siftmap_filters_api.py` (GET + PATCH, backups), `dpd_siftmap_manifest.py --plan`
   (keep / stale / rename / missing planner, P1 only, `list_key` identity), `dpd_siftmap_presets.py`
   (management page: audit + gated delete), `dpd_playbook_extract.py` (Work Order export only).
