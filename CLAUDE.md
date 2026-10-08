@@ -18,8 +18,10 @@ sold suppression), and the 25-skill REI Skill Library distributed to the DataSif
 **Footprint — the ONLY jurisdictions in scope (6, narrowed 2026-09-01 from 14):** Washington DC;
 Montgomery, Anne Arundel and Frederick (MD); Fairfax and Arlington (VA). Everything here is built
 for these six. Code inherited from Ty's upstream (tnpublicnotice.com scraper, `SAVED_SEARCHES`,
-Knox Tax API, the Apify actor, the Fly deployments, the Columbus OH `soi_*` beta) still runs but
-is NOT this account's data source; read a TN example as the pattern and apply it to the footprint.
+Knox Tax API, the Apify actor, the Fly deployments, the Columbus OH `soi_*` beta) is NOT this
+account's data source. **NEVER RUN TN (Basem, 2026-10-08):** no `src/main.py daily` / `weekly`,
+no tnpublicnotice.com scrape, no Knox/Blount pull, no Knox Tax API call, no scheduled task for any
+of it. Read a TN example as the pattern only and apply it to the footprint.
 
 **Who is who:** Basem is the user and owns this fork (`basem/work`, origin Bsanad90). Ty is the
 upstream author, a different person, with his own account and Fly deployments. Nothing on Fly is
@@ -77,8 +79,7 @@ python src/scripts/team_kpi.py monthly --month 2026-09 [--screens]   # a month; 
 python src/scripts/data_manager_kpi.py --month 2026-09 --account   # Mohamed Hisham, Probate Extraction 2 (never Sheet26)
 # all reports: output/team_kpi/index.html (desktop shortcut "Team KPI Reports")
 
-# Upstream TN scraper (Knox/Blount) -- not this account's feed
-python src/main.py daily [--split] [--counties Knox] [--types foreclosure,probate] [-v]
+# Upstream TN scraper (Knox/Blount, `src/main.py daily`) -- NEVER RUN on this account (see Footprint)
 ```
 
 All source is in `src/`; imports assume `src/` is the working directory. Run from the project
