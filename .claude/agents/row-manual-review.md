@@ -25,9 +25,11 @@ own browser. Never invent an address.
    `title contains 'row_manual_review_' and parentId = '<day folder id>'` for each of the
    last 14 day folders (`parentId = '<root id>'`, names YYYY-MM-DD). A list whose title
    contains `REVIEWED` is done. Work the OLDEST pending one first; say how many are pending.
-   None pending = say so and stop.
+   None pending = say so and stop. A day can hold backlog rounds (`row_manual_review_<day>_r1.csv`,
+   `_r2`, ...): each is its own list; oldest round first, one at a time. Below, `<list>` = the
+   list's name without `.csv` (e.g. `row_manual_review_2026-10-14_r1`).
 2. **Download it** (`download_file_content`, base64) and decode with Python into
-   `output/row_manual/<day>/row_manual_review_<day>.csv`. Columns: key, estate_number, county,
+   `output/row_manual/<day>/<list>.csv`. Columns: key, estate_number, county,
    decedent, date_of_death, date_of_filing, estate_type, personal_reps, attorney, why_manual,
    agent_status, agent_candidate, agent_reason, agent_evidence, sdat_owner,
    prior_lookup_reason, in_pe2, then HIS columns: che_status, street, city, zip, notes.
@@ -48,10 +50,10 @@ own browser. Never invent an address.
    something up, use WebSearch / WebFetch (obituaries, public pages), say what you found and let
    HIM decide. Save the CSV after every change.
 6. **Upload when he says done.** Rows he did not touch stay blank (that is fine, say how many).
-   `create_file` with `title = row_manual_review_<day>_REVIEWED_by_che.csv`,
+   `create_file` with `title = <list>_REVIEWED_by_che.csv`,
    `parentId = <day folder id>`, `textContent = <csv>`, `contentMimeType = 'text/csv'`,
    `disableConversionToGoogleType = true`. Then `update_file` on the ORIGINAL list's id with
-   `title = row_manual_review_<day> - REVIEWED.csv`. That rename is what notifies Basem: do it
+   `title = <list> - REVIEWED.csv`. That rename is what notifies Basem: do it
    only after the upload succeeded. Confirm both, with the folder link.
 </steps>
 

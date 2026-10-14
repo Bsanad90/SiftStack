@@ -186,11 +186,11 @@ def append_pe2(keys: list[str], estates: dict, commit: bool) -> list[str]:
 
 
 # ---------------------------------------------------------------- manual list
-def manual_rows(day: str, estates: dict, sheet_ids: set[str]) -> list[dict]:
+def manual_rows(day: str, estates: dict, sheet_ids: set[str], only: set[str] | None = None) -> list[dict]:
     out = []
     for key, rec in estates.items():
         rev = rec.get("agent_review") or {}
-        if rev.get("date") != day:
+        if rev.get("date") != day or (only is not None and key not in only):
             continue
         status = rev.get("status", "")
         graded_low = (status == "FOUND" and rec.get("property_lookup_confidence") == "LOW")
@@ -230,11 +230,21 @@ def upload(svc, state: dict, day: str, paths: list[Path]) -> str:
     return f"https://drive.google.com/drive/folders/{state['day_folders'][day]}"
 
 
-def finish(day: str, commit: bool) -> int:
+def finish(day: str, commit: bool, round_no: int | None = None) -> int:
+    # round_no: backlog rounds (Basem 2026-10-14: send Che one round at a time, not the whole
+    # backlog). The round covers only the keys in row_address_review_<day>_pass<N>.csv and gets
+    # its own list, row_manual_review_<day>_r<N>.csv.
     day_dir = REVIEW_ROOT / day
-    review = day_dir / f"row_address_review_{day}.csv"
+    tag = f"_r{round_no}" if round_no else ""
+    review = day_dir / (f"row_address_review_{day}_pass{round_no}.csv" if round_no
+                        else f"row_address_review_{day}.csv")
     estates = rar.load_ledger().get("estates", {})
     reviewed = {k for k, r in estates.items() if (r.get("agent_review") or {}).get("date") == day}
+    only = None
+    if round_no:
+        with review.open(newline="", encoding="utf-8-sig") as fh:
+            only = {row["key"] for row in csv.DictReader(fh)}
+        reviewed &= only
     if not reviewed:
         print(f"NOTHING REVIEWED on {day}: the agent step wrote no merged results -- a failure, not a quiet day.")
         return 1
@@ -243,11 +253,11 @@ def finish(day: str, commit: bool) -> int:
                  if (estates[k].get("agent_review") or {}).get("status") in ("NOT_FOUND", "AMBIGUOUS")]
     appended = append_pe2(unsettled, estates, commit)
     ids, _, _ = pe2_existing(sheets_service())
-    manual = manual_rows(day, estates, ids)
+    manual = manual_rows(day, estates, ids, only)
     for m in manual:
         if m["key"] in appended:
             m["in_pe2"] = "added today"
-    manual_path = day_dir / f"row_manual_review_{day}.csv"
+    manual_path = day_dir / f"row_manual_review_{day}{tag}.csv"
     day_dir.mkdir(parents=True, exist_ok=True)
     with manual_path.open("w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=MANUAL_COLUMNS)
@@ -257,7 +267,7 @@ def finish(day: str, commit: bool) -> int:
     found = sum(1 for k in reviewed if estates[k]["agent_review"]["status"] == "FOUND")
     graded = {lv: sum(1 for k in reviewed if estates[k]["agent_review"]["status"] == "FOUND"
                       and estates[k].get("property_lookup_confidence") == lv) for lv in ("HIGH", "MEDIUM", "LOW")}
-    summary = (f"RoW agent review {day}: {len(reviewed)} estates reviewed\n"
+    summary = (f"RoW agent review {day}{tag}: {len(reviewed)} estates reviewed\n"
                f"  agents found {found} (SDAT: {graded['HIGH']} HIGH, {graded['MEDIUM']} MEDIUM, {graded['LOW']} LOW)\n"
                f"  {len(unsettled)} not found / ambiguous; {len(appended)} added to Probate Extraction 2\n"
                f"  {len(manual)} sent to Che for manual review")
@@ -287,21 +297,24 @@ def watch() -> int:
     cutoff = date.today() - timedelta(days=14)
     hits = 0
     for day, folder in sorted(state.get("day_folders", {}).items()):
-        if date.fromisoformat(day) < cutoff or day in seen:
+        if date.fromisoformat(day) < cutoff:
             continue
         files = svc.files().list(
             q=f"'{folder}' in parents and trashed = false and name contains 'row_manual_review_'",
             fields="files(id, name, modifiedTime, lastModifyingUser(emailAddress))").execute().get("files", [])
-        done = [f for f in files if "REVIEWED" in f["name"].upper()]
+        # one popup per REVIEWED list (a day can hold several backlog rounds), keyed by file id
+        done = [f for f in files if " - REVIEWED" in f["name"] and f["id"] not in seen]
         if not done:
             continue
         who = (done[0].get("lastModifyingUser") or {}).get("emailAddress", "Che")
         link = f"https://drive.google.com/drive/folders/{folder}"
-        popup(f"Che finished the RoW manual review for {day} ({who}).\n\n"
+        popup(f"Che finished the RoW manual review for {day} ({who}): {', '.join(f['name'] for f in done)}.\n\n"
               f"His findings are in the Drive folder:\n{link}\n\n"
               "Next is yours: skip trace / deep prospect / dial-ready and the DataSift upload all wait "
               "on your go. Ask Claude: \"take Che's RoW review for " + day + "\".")
-        seen[day] = {"notified": datetime.now().isoformat(timespec="seconds"), "file": done[0]["name"]}
+        for f in done:
+            seen[f["id"]] = {"day": day, "notified": datetime.now().isoformat(timespec="seconds"),
+                             "file": f["name"]}
         hits += 1
     NOTIFY_STATE.parent.mkdir(parents=True, exist_ok=True)
     NOTIFY_STATE.write_text(json.dumps(seen, indent=2), encoding="utf-8")
@@ -314,13 +327,14 @@ def main() -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     fi = sub.add_parser("finish", help="manual list + PE2 rows + Drive upload + popup")
     fi.add_argument("--day", default=date.today().isoformat())
+    fi.add_argument("--round", type=int, dest="round_no", help="backlog round N: only that pass's estates")
     fi.add_argument("--commit", action="store_true", help="write the sheet, upload, popup (default: dry run)")
     sub.add_parser("watch", help="popup when Che's review lands")
     pe = sub.add_parser("pe2-preview", help="print the PE2 rows for some ledger keys (no write)")
     pe.add_argument("keys", nargs="+")
     args = ap.parse_args()
     if args.cmd == "finish":
-        return finish(args.day, args.commit)
+        return finish(args.day, args.commit, args.round_no)
     if args.cmd == "watch":
         return watch()
     estates = rar.load_ledger()["estates"]
