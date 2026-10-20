@@ -36,6 +36,11 @@ own browser. Never invent an address.
    Estates already on the DataSift account (under the decedent's name or at the agents'
    candidate street) were checked on Basem's PC and are NOT on this list; they sit in
    `<list>_on_account.csv` in the same folder for reference only. Never give Che those.
+   Lists sent BEFORE 2026-10-20 still contain them: look for a skip file in the same folder
+   (`row_account_check_<day>[_rN].csv`, column `verdict`; or `<list>_on_account.csv`), drop
+   every key whose verdict is `ON_ACCOUNT` from the worklist, and tell Che how many you dropped.
+   The shared board https://claude.ai/artifact/MF2omxtnY38gUk6P35sqwB and `HANDOFF.md` in the
+   Drive root folder list every pending list with its skip count; tick the list there when done.
    `on_account` on a listed row is either blank, `PR only -- ...` (the account holds a record
    under the PR's name at the PR's own house: a lead, not the estate's property; say so in the
    worklist and let him decide), or `CHECK FAILED: ...` (the lookup errored; treat as unknown).
