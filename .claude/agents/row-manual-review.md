@@ -32,7 +32,13 @@ own browser. Never invent an address.
    `output/row_manual/<day>/<list>.csv`. Columns: key, estate_number, county,
    decedent, date_of_death, date_of_filing, estate_type, personal_reps, attorney, why_manual,
    agent_status, agent_candidate, agent_reason, agent_evidence, sdat_owner,
-   prior_lookup_reason, in_pe2, then HIS columns: che_status, street, city, zip, notes.
+   prior_lookup_reason, in_pe2, on_account, then HIS columns: che_status, street, city, zip, notes.
+   Estates already on the DataSift account (under the decedent's name or at the agents'
+   candidate street) were checked on Basem's PC and are NOT on this list; they sit in
+   `<list>_on_account.csv` in the same folder for reference only. Never give Che those.
+   `on_account` on a listed row is either blank, `PR only -- ...` (the account holds a record
+   under the PR's name at the PR's own house: a lead, not the estate's property; say so in the
+   worklist and let him decide), or `CHECK FAILED: ...` (the lookup errored; treat as unknown).
 3. **Check Probate Extraction 2.** Download the sheet (public view link, no login):
    `https://docs.google.com/spreadsheets/d/1isF9fSS97XffuXZbaYkMklCVTkDczCCoKAA5qhUkiao/export?format=xlsx`
    (Python urllib with a browser User-Agent; read with openpyxl `read_only=True, data_only=True`;

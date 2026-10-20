@@ -48,7 +48,10 @@ python src/scripts/daily_pull_drive_sync.py --date 2026-10-08 [--ready] [--dry-r
 # `claude -p --agent row-address-reviewer` (row-address-researcher x 10 estates, parallel,
 # dontAsk; Land Records/SDAT ONLY via landrec_agent_search.py = one login at a time + daily cap
 # ROW_AGENT_LANDREC_CAP, default 300; stops under 20k Firecrawl credits) -> merge --commit (single writer, never overwrites an address) -> SDAT grade
-# -> finish: still-not-found estates APPENDED to Probate Extraction 2 "Register of Wills" (32-col
+# -> finish: ACCOUNT CHECK first (row_account_check.py, read-only: decedent surname `search` +
+# names_match_loose in the estate's county, agents' candidate street variants, PR name = flag only;
+# Basem 2026-10-20) -> estates already on the account HELD BACK to row_manual_review_<day>_on_account.csv
+# -> still-not-found estates APPENDED to Probate Extraction 2 "Register of Wills" (32-col
 # format, "Not Found (Claude)", existing rows never edited, read back; log output/row_review/
 # pe2_appended.json) + row_manual_review_<day>.csv to Drive + popup. Mohammad works it with
 # `claude --agent row-manual-review` (docs/setup/row-address-review.md); his REVIEWED rename ->

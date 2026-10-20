@@ -6,6 +6,12 @@ Daily chain (automation/row_agent_review.ps1, Tue-Sat after the 9:15 address fil
     3. row_address_review.py merge --commit    -> ledger (single writer)
     4. md_register_of_wills_pull --fill-addresses-only --commit -> SDAT grades agent streets
     5. THIS: finish --commit
+         * account check (read-only, row_account_check.py): an estate that is ALREADY on the
+           DataSift account under the decedent's name, or at the agents' candidate street, is
+           HELD BACK from Che's list and from the PE2 append (Basem 2026-10-20: never let him
+           spend time on a record already on the account) -> row_manual_review_<day>_on_account.csv.
+           A hit under a PR's name only is flagged in `on_account`, not removed. A failed check
+           keeps every row and says so in the popup.
          * manual list = estates the agents could not settle (NOT_FOUND, AMBIGUOUS, or an
            agent street SDAT graded LOW) -> row_manual_review_<day>.csv
          * Probate Extraction 2 / "Register of Wills": every NOT_FOUND / AMBIGUOUS estate that
@@ -40,6 +46,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import daily_pull_drive_sync as drive  # noqa: E402
+import row_account_check as rac  # noqa: E402
 import row_address_review as rar  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
@@ -69,9 +76,13 @@ MANUAL_COLUMNS = [
     "key", "estate_number", "county", "decedent", "date_of_death", "date_of_filing",
     "estate_type", "personal_reps", "attorney", "why_manual", "agent_status", "agent_candidate",
     "agent_reason", "agent_evidence", "sdat_owner", "prior_lookup_reason", "in_pe2",
+    "on_account",   # '' / 'PR only -- ...' / 'CHECK FAILED: ...' (a decedent hit never reaches the list)
     # Che fills these:
     "che_status", "street", "city", "zip", "notes",
 ]
+CHE_COLUMNS = ["che_status", "street", "city", "zip", "notes"]
+# the held-back list: the manual row without Che's columns + where the account already has it
+HELD_COLUMNS = [c for c in MANUAL_COLUMNS if c not in CHE_COLUMNS] + [c for c in rac.RESULT_COLUMNS if c != "key"]
 
 
 def title(s: str) -> str:
@@ -212,9 +223,41 @@ def manual_rows(day: str, estates: dict, sheet_ids: set[str], only: set[str] | N
             "sdat_owner": rec.get("property_sdat_owner", ""),
             "prior_lookup_reason": rec.get("property_lookup_reason", "") if status != "FOUND" else "",
             "in_pe2": "yes" if number.strip().upper() in sheet_ids else "added today",
+            "on_account": "",
             "che_status": "", "street": "", "city": "", "zip": "", "notes": "",
         })
     return out
+
+
+def account_check(manual: list[dict], estates: dict) -> tuple[dict[str, dict], str]:
+    """READ-ONLY DataSift lookups for every prospective manual row. Returns (key -> result, note);
+    the note is non-empty only when the check could not run at all (then nothing is held back)."""
+    try:
+        from dpd_lane_phone_score import Api
+        search = rac.make_search(Api())
+        return rac.check_estates([(m["key"], estates[m["key"]]) for m in manual], search), ""
+    except Exception as exc:  # noqa: BLE001 -- never let a dead API turn into "not on the account"
+        return {}, f"ACCOUNT CHECK FAILED ({type(exc).__name__}: {str(exc)[:120]}) -- list sent UNFILTERED"
+
+
+def apply_account_check(manual: list[dict], results: dict[str, dict]) -> tuple[list[dict], list[dict]]:
+    """Split the manual rows into (kept, held). ON_ACCOUNT rows are held back with the account
+    columns attached; PR_ONLY and ERROR rows stay on the list with the `on_account` column set."""
+    kept, held = [], []
+    for m in manual:
+        res = results.get(m["key"])
+        v = res["verdict"] if res else rac.NO
+        if v == rac.ON_ACCOUNT:
+            row = {c: m.get(c, "") for c in HELD_COLUMNS}
+            row.update({k: val for k, val in rac.flat(m["key"], res).items() if k != "key"})
+            held.append(row)
+            continue
+        if v == rac.PR_ONLY:
+            m["on_account"] = "PR only -- " + rac.summary_text(m["key"], res)
+        elif v == rac.ERROR:
+            m["on_account"] = "CHECK FAILED: " + res.get("note", "")
+        kept.append(m)
+    return kept, held
 
 
 def popup(text: str) -> None:
@@ -230,7 +273,7 @@ def upload(svc, state: dict, day: str, paths: list[Path]) -> str:
     return f"https://drive.google.com/drive/folders/{state['day_folders'][day]}"
 
 
-def finish(day: str, commit: bool, round_no: int | None = None) -> int:
+def finish(day: str, commit: bool, round_no: int | None = None, skip_account_check: bool = False) -> int:
     # round_no: backlog rounds (Basem 2026-10-14: send Che one round at a time, not the whole
     # backlog). The round covers only the keys in row_address_review_<day>_pass<N>.csv and gets
     # its own list, row_manual_review_<day>_r<N>.csv.
@@ -249,27 +292,55 @@ def finish(day: str, commit: bool, round_no: int | None = None) -> int:
         print(f"NOTHING REVIEWED on {day}: the agent step wrote no merged results -- a failure, not a quiet day.")
         return 1
 
-    unsettled = [k for k in reviewed
-                 if (estates[k].get("agent_review") or {}).get("status") in ("NOT_FOUND", "AMBIGUOUS")]
-    appended = append_pe2(unsettled, estates, commit)
     ids, _, _ = pe2_existing(sheets_service())
     manual = manual_rows(day, estates, ids, only)
+
+    # Account check BEFORE anything leaves this PC (Basem 2026-10-20): an estate the account
+    # already holds under the decedent's name, or at the agents' candidate street, is held back
+    # from Che's list AND from the PE2 "Not Found" append. Read-only; an error holds nothing back.
+    held, acct_note, results = [], "", {}
+    if skip_account_check:
+        acct_note = "account check SKIPPED (--skip-account-check)"
+    else:
+        results, acct_note = account_check(manual, estates)
+        manual, held = apply_account_check(manual, results)
+    held_keys = {h["key"] for h in held}
+    unchecked = sum(1 for r in results.values() if r["verdict"] == rac.ERROR)
+    pr_only = sum(1 for r in results.values() if r["verdict"] == rac.PR_ONLY)
+
+    unsettled = [k for k in reviewed if k not in held_keys
+                 and (estates[k].get("agent_review") or {}).get("status") in ("NOT_FOUND", "AMBIGUOUS")]
+    appended = append_pe2(unsettled, estates, commit)
     for m in manual:
         if m["key"] in appended:
             m["in_pe2"] = "added today"
     manual_path = day_dir / f"row_manual_review_{day}{tag}.csv"
+    held_path = day_dir / f"row_manual_review_{day}{tag}_on_account.csv"
     day_dir.mkdir(parents=True, exist_ok=True)
     with manual_path.open("w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=MANUAL_COLUMNS)
         w.writeheader()
         w.writerows(manual)
+    if held:
+        with held_path.open("w", newline="", encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=HELD_COLUMNS)
+            w.writeheader()
+            w.writerows(held)
+    elif held_path.exists():
+        held_path.unlink()
 
     found = sum(1 for k in reviewed if estates[k]["agent_review"]["status"] == "FOUND")
     graded = {lv: sum(1 for k in reviewed if estates[k]["agent_review"]["status"] == "FOUND"
                       and estates[k].get("property_lookup_confidence") == lv) for lv in ("HIGH", "MEDIUM", "LOW")}
+    acct_line = (f"  {len(held)} already on the account -> held back from Che ({held_path.name})"
+                 + (f"; {pr_only} flagged PR-name-only" if pr_only else "")
+                 + (f"; {unchecked} could NOT be checked (on the list, see on_account)" if unchecked else ""))
+    if acct_note:
+        acct_line = f"  ** {acct_note} **"
     summary = (f"RoW agent review {day}{tag}: {len(reviewed)} estates reviewed\n"
                f"  agents found {found} (SDAT: {graded['HIGH']} HIGH, {graded['MEDIUM']} MEDIUM, {graded['LOW']} LOW)\n"
                f"  {len(unsettled)} not found / ambiguous; {len(appended)} added to Probate Extraction 2\n"
+               f"{acct_line}\n"
                f"  {len(manual)} sent to Che for manual review")
     print(summary)
     if not commit:
@@ -280,7 +351,7 @@ def finish(day: str, commit: bool, round_no: int | None = None) -> int:
     creds = drive.get_credentials(state, drive.DEFAULT_CLIENT, False)
     from googleapiclient.discovery import build
     dsvc = build("drive", "v3", credentials=creds, cache_discovery=False)
-    files = [p for p in (review, manual_path) if p.exists()]
+    files = [p for p in (review, manual_path, held_path) if p.exists()]
     link = upload(dsvc, state, day, files)
     popup(summary + f"\n\nDrive: {link}\n\nNothing was skip-traced, uploaded or spent. "
           "Che's review comes next; you get another popup when he finishes.")
@@ -329,12 +400,14 @@ def main() -> int:
     fi.add_argument("--day", default=date.today().isoformat())
     fi.add_argument("--round", type=int, dest="round_no", help="backlog round N: only that pass's estates")
     fi.add_argument("--commit", action="store_true", help="write the sheet, upload, popup (default: dry run)")
+    fi.add_argument("--skip-account-check", action="store_true",
+                    help="do not look the estates up on DataSift (emergency only: every row goes to Che)")
     sub.add_parser("watch", help="popup when Che's review lands")
     pe = sub.add_parser("pe2-preview", help="print the PE2 rows for some ledger keys (no write)")
     pe.add_argument("keys", nargs="+")
     args = ap.parse_args()
     if args.cmd == "finish":
-        return finish(args.day, args.commit, args.round_no)
+        return finish(args.day, args.commit, args.round_no, args.skip_account_check)
     if args.cmd == "watch":
         return watch()
     estates = rar.load_ledger()["estates"]

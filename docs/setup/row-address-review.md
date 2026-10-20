@@ -11,8 +11,13 @@
    forms, SDAT). Addresses they find are verified against SDAT.
    Estates still not found are **added to Probate Extraction 2 -> Register of Wills** as new
    rows with Property Address `Not Found (Claude)`.
-4. The estates the agents could not settle go to the day folder as
-   **`row_manual_review_<date>.csv`**. That is your list.
+4. Every estate the agents could not settle is first looked up on the DataSift account
+   (read-only). One already there under the decedent's name, or at the agents' candidate
+   street, is held back so you never redo it; it is listed in
+   `row_manual_review_<date>_on_account.csv` for reference. The rest go to the day folder as
+   **`row_manual_review_<date>.csv`**. That is your list. A row marked `PR only` in its
+   `on_account` column means the account holds a record under the PR's name at the PR's own
+   house (a lead, not the estate's property).
 5. You work it with your Claude, which uploads your findings and marks the list REVIEWED.
    Basem gets a notification and takes it from there (skip trace, deep prospecting, dialing,
    DataSift upload are all his call).
