@@ -98,6 +98,8 @@ python src/scripts/data_manager_kpi.py --month 2026-09 --account   # Mohamed His
 # all reports: output/team_kpi/index.html (desktop shortcut "Team KPI Reports"); every run also writes
 # output/team_kpi/team/ (no pay, no data-manager hours, no private sections) = the shared link
 # https://claude.ai/artifact/EgLz6qg82sLHaHamrKdj8M (org-shared; republish that folder, never the top one)
+# 8 PM nightly (task "SiftStack Team KPI Daily", once repointed): tools/manual/team_kpi_nightly.ps1 = claude agent team-kpi-nightly
+#   PULL (Chrome: Kixie export emailed -> Gmail -> Downloads; WhatsApp leads; overrides) + python + PUBLISH; by 8:30 PM
 
 # Upstream TN scraper (Knox/Blount, `src/main.py daily`) -- NEVER RUN on this account (see Footprint)
 ```
@@ -184,7 +186,7 @@ One line of state each; the reasoning and every number is in the linked file.
   (every CALL, MAIL, DEEP and REACTIVATION lane; the two two-include-group presets have no tag
   block left); one-property-per-owner on the 24 dial lists. SiftMap saved
   filters follow the 09-24 Work Order plan (P1 rungs, 6 counties; 7 rungs pulled 09-28, 1,311
-  records); **auto-add ON for all 30 current P1 rungs since 2026-10-05** (T2 ZIP, P2, stale OFF);
+  records); **auto-add ON for 26 P1 rungs** (all 30 since 2026-10-05; the 4 Fairfax Tax Delinquent rungs went OFF 2026-10-08 for the `is_recent_deliquent` key fix, re-enable on go; T2 ZIP, P2, stale OFF);
   drip 11496 tags `Obituaries` only. **Split test (2026-10-06): folder `15 SPLIT TEST - CALL`,
   3 presets off Hottest - 02 Ready to Call** — A control (763), B with the market-research
   dead ZIPs (191) + dead neighbourhoods (285) excluded (690), C the dead-neighbourhood records
@@ -221,6 +223,7 @@ day it is found; its story goes to the history file.**
 - **A select custom field takes the OPTION UUID, not the label** (`"LEN"` → "not a valid UUID"). → datasift-api
 - **Entity owners cannot have a blank `first_name`.** Send `company` and OMIT the person keys; `""` ≠ omitted. → datasift-api
 - **`notes` on the property payload returns 200 and is discarded.** Post a board message + pin instead. → datasift-api
+- **A custom-field uuid map built from the RECORD'S OWN `custom-field/` rows is EMPTY for every field the record never had,** so the update-values PATCH goes out with no body, answers 200 and stores nothing (hand-off 004/002 existing pass, 2026-10-23: PR fields missing on 2 records). Resolve labels through `_field_index` (the account's `custom-fields/?limit=999`), read back the values. → datasift-api
 - **`PATCH /property/{uuid}/ {"tags": [...]}` is MERGE-ONLY.** A dropped name returns 200 and stays; removal is `POST .../remove-tags/`. Same for `lists`. → datasift-api
 - **Pinning lies twice.** `POST message/ {"pinned": true}` stores false; `PATCH message/{id}/ {"pinned": true}` returns 200 and changes nothing; only `POST .../message/{id}/pin/` (204) pins. Verify by read-back. → prospecting
 - **`PATCH message/{id}/ {"message": text}` DOES store** (proven on 1,391 records), so a re-push edits its own note in place. Verify by read-back, never by status. → datasift-api
@@ -228,6 +231,7 @@ day it is found; its story goes to the history file.**
 - **Collection-level `remove-*` / `add-*` routes apply ACCOUNT-WIDE** whatever the body scopes (`remove-lists/` with one uuid emptied the `Probate` list, 30,766 records, 2026-09-16). Per-record routes only; a collection route is a WRITE, never a probe. `OPTIONS` 404 ≠ route absent. → datasift-api
 - **`POST /property/skip-trace/` traces the WHOLE ACCOUNT** (one uuid → 53,322 records, metered plans bill all of them). Read `activity/skiptrace/stats/` and the plan first; here it is the wizard. → datasift-api
 - **The `lists` body shape is disputed** (string vs array; the wrong one returns 201 and changes nothing). One list per call as a STRING, read back. → datasift-api
+- **`POST property/{uuid}/remove-lists/` takes list TITLES, not uuids:** `{"lists": ["<uuid>"]}` answers 200 `{"removed_lists": []}` and removes nothing; `{"lists": ["Absentee Owners"]}` removes it (3305 Edward E Cornwell Jr Dr SE, 2026-10-23). Read the record's `lists` back. → datasift-api
 - **The Open API `POST /property/` is dead (403 since 2026-09-01).** Create via `POST /api/internal/property/` (201, does NOT upsert; duplicate → 400 with the existing uuid; owner validated BEFORE the duplicate check). Create with address + owner only, attach the rest per record. → datasift-api
 - **The duplicate 400 is the ONLY reliable existence test** — it normalises (`Drive`=`Dr`, `21704`=`21704-7091`) and writes nothing. `search` is an EXACT match on the stored street string. DataSift rewrites the address and auto-attaches its own lists on create; assert on the stored form. → datasift-api
 - **DataSift silently caps an owner at 30 phones** (200, echoes every number in `added`, stores 30), and a full owner silently refuses every new one — superseded numbers must come OFF first via `POST owner/{uuid}/remove-phones/`. `PATCH owner/ {"phones": ...}` replaces WHOLESALE: never. → prospecting
@@ -235,10 +239,13 @@ day it is found; its story goes to the history file.**
 - **The upsert RESET a dialer's disposition:** a plan phone stamped `status: UNKNOWN` overwrote a live DEAD mark. Keep the live status whenever the plan's is UNKNOWN/blank. → prospecting
 - **The DataSift wizard skip trace is ADDRESS-anchored and returns the OCCUPANT when the owner's mailing is the situs but he lives elsewhere** (2221 Ridge Pl SE, 2026-10-06: SiftMap set mailing = situs, the trace loaded a 34-year-old tenant's 2 phones + 3 emails onto owner Marvin Turner, age 34 stamped on the owner block, phone_intel tiered them Dial First, the dialer reached the tenant). The wizard shows no matched name; `phone_intel` scores activity, never identity. Trestle Real Contact (`GET /2.0/real_contact`, $0.03 + litigator) returns `phone.name_match` / `address.name_match` per name: both numbers matched Barksdale, neither matched Turner. An owner age that contradicts the Senior list is the tell. → prospecting
 - **Phone tags fail to land on ~3.5% of first upserts;** a plain re-upsert fixes them, so the QA repair pass is not optional. Tier `Unknown` is never written as a tag — auditing for it reports correct behaviour as a defect. → prospecting
-- **An API phone upsert does NOT set `owner.skiptraced` / `skiptrace_attempts`,** and no skip-trace date field exists anywhere. Stamp the boolean AND the trace-date tag in the same operation (see My Defaults). → datasift-api
+- **An API phone upsert does NOT set `owner.skiptraced` / `skiptrace_attempts`.** Stamp the boolean AND the trace-date tag in the same operation (see My Defaults). The owner PATCH also writes `owner.last_skip_traced` = the date of the PATCH, NOT the trace (found 2026-10-20), so the tag stays the only record of the trace month. 673 DP-loaded call-lane records had neither stamp until the 10-20 backfill. → datasift-api
+- **Phones loaded on an OWNER show on EVERY property of that owner,** but the DP tag, verdict tag and pinned note land only on the record pushed: 32 call-lane records dialled DP relatives with no DP tag, no note and no stamp (10-20). Stamp the owner flag and check the sibling's note. → datasift-api
+- **A DataSift Enrich run with Swap Owners / replace_owner ON creates a NEW owner entity, copies phones + emails, and DROPS `skiptraced`** (2026-09-22 Enrich, 4,463 records: three wizard-traced records lost their trace record). Keep Enrich Owners / Swap Owners OFF. → datasift-api
 - **A `Rel{n}.{m}` phone tag is NOT provenance** — RFD imports and probate pushes use it too; the tag-only guard stripped 18 foreign numbers. Remove only numbers OUR prior plan wrote (`push --prior-plan`). → datasift-api
 - **The owner-block PATCH needs the FULL block including the mailing;** a name-only block re-binds to a stranger's entity. Name + mailing matching an ORPHAN entity absorbs its phones (same uuid, count UP); renaming the owner of a DUPLICATE property record collapses the duplicate (the twin 404s). Undo with `null` names, not `""`. → datasift-api
 - **DataSift has NO merge action; its dedupe fires on an ADDRESS PATCH and the record that RECEIVES the patch SURVIVES** (Schenkel 2026-10-02, twice: PATCH `{"address": {...}}` to the twin's exact street → the twin 404s within seconds). Lists and tags carry over; board notes, custom fields, status, assignee and estimate_value do NOT; phones pool only when the owner block is also patched to the same name + mailing (orphan-entity absorption). So: back up all copies, fold everything onto ONE, patch the OTHERS' addresses one at a time, then re-push the note/fields onto whichever uuid remains (`push --force` resolves by address). → prospecting
+- **A TAGS-ONLY PATCH can fire the dedupe too** (5630 Oak Pl 2026-10-20: tagging `1e120ec7` logged `property.merged` and absorbed a same-address duplicate `27c6d682` created 10-05; the survivor kept status, assignee, phones and note and picked up the twin's tags). Any PATCH on a record with a same-address twin may merge it; back up both before a bulk write. → datasift-api
 - **A 404 on a known uuid can be a MERGE** (`property.merged` in the survivor's `/logs/`) or a real deletion. Re-resolve by address before calling it either. → prospecting
 - **`task.completed` is READ-ONLY on PATCH** (200, stores nothing); complete via `POST task/{uuid}/complete/`. The task list overlaps pages without `ordering=`. → datasift-api
 - **A board note may only displace its OWN family** (`_note_family`: first line cut at " (", date stripped, equality). A non-DP plan pushed through the DP pusher deleted 21 DP boards. REL fields another plan wrote are not yours to blank unless their VALUE proves it. → prospecting
@@ -281,6 +288,7 @@ day it is found; its story goes to the history file.**
 ### Pulls
 - **MDDC county checkboxes are INERT** (a DC-only search returned 18 counties, VA included). Footprint filtering is post-hoc: the state check, then (since 2026-10-08) a (state, county) clip AFTER the ZIP geocode (`filter_footprint_county`; before it every MD/VA county reached the CSV, 32 of 92 on 10-08); no-county rows are kept; review `<out>_dropped.csv` (`drop_reason`). → mddc-va-md
 - **"pagination did not advance" is usually END OF RESULTS** (the site publishes ~3-4 notices a day). Read the row counts before "fixing" it. A quiet DC week is chance: `--days 30`. → mddc-va-md
+- **An EXPIRED mddcpublicnotices.com subscription still exits 0:** `--list-searches` lists one entry, `id=0 "Subscription or free trial expired"`, saved search 43 is gone, the grid serves page 1 ten times (`detected page numbers: [1, 1, ...]`), every row types `other`, and the full-text leg dies on a DISABLED saved-search dropdown (`select_option` timeout). 2026-10-19: 100 raw rows, 1 in footprint. Renewal is Basem's; until then the MDDC legs scrape nothing. → mddc-va-md
 - **The Firecrawl grid carries NO notice id** (0 of 94 rows); only the Playwright-settled grid does, and the first Details.aspx nav per session bounces back to Search.aspx — retry. → mddc-va-md
 - **The MDDC snippet parser has no deed-date guards** and emitted a deed recording date as the auction date; re-mine with the VA parser's guards. A republication carries a NEW id; a past sale date = skip. → mddc-va-md
 - **VA multi-county selection cancels its own postbacks** — one county per call; `--max-pages` past 8 misreads as a budget problem. Scrapfly QUOTA EXHAUSTION reports in `scrape_result["error"]` with empty content and was masked as `unknown_page_state`. → mddc-va-md
@@ -288,6 +296,7 @@ day it is found; its story goes to the history file.**
 - **An unbounded, unbanked slow pass in FRONT of the deliverable kills the leg** (MD RoW wrote nothing for 5 days). Write the CSV before the address pass; every pass takes `limit` + `save_cb`; queue least-recently-checked FIRST; drop rows with no `record_id` at build time. → mddc-va-md
 - **Two processes holding the RoW ledger write it back WHOLESALE** — the second silently discards the first's work. The fill job refuses while a Register of Wills process is alive; anything else needs the same guard. → mddc-va-md
 - **Estate Search pagination tops out ~12 pages** (Firecrawl 60s cap); split wide windows; `--max-pages` past 12 = 400. → mddc-va-md
+- **DWLR drops the connection for an outdated Chrome User-Agent** (`RemoteDisconnected`, not a 403): from 2026-10-10 the DC probate leg died 5 runs straight on `Chrome/126` while `Chrome/141` got 200. Looks like an outage; it isn't. Keep `dc_probate_pull.UA` current. → mddc-va-md
 - **`Property Address` can hold the literal `Not Found (Claude)`.** That is not an address. → mddc-va-md
 - **The ZIP→county cache stored a geocode FAILURE as a blank and served it forever.** The FCC Census Area API 400'd on every call 2026-10-06; 4 ZIPs were cached `""`, two Fairfax rows were dropped as "no county" and two MD rows went blank. A blank is never cached now and the Census Bureau geocoder is the fallback; a run that prints "resolved county by ZIP geocode" can still be serving the cache. → mddc-va-md
 - **A Montgomery ratification notice reads "Notice is hereby given this … by the Circuit Court of … that the sale", not "ORDERED",** and the grid snippet truncates before "RATIFIED", so it lands in `_dropped.csv` as type `other`, looking like a parser miss. It is a POST-SALE notice (price stated): never a lead, even with a `(DECEASED)` defendant. → mddc-va-md
@@ -332,7 +341,9 @@ day it is found; its story goes to the history file.**
 - **Fuzzy address matching must be UNIT-aware:** house-number + first-token matched 13 different condo units in one building. → mailing
 - **A BACKUP copy of `ranked_records.json` can out-score the live file.** The heir index keeps the copy with MORE signers, and a pre-repair `*_backup_*` / `*_correction_*` copy has more (the false ones were not yet removed); skip those paths (`heir_mail_build.BACKUP_PARTS`). Same for `stage_c_research.json`: a correction BLANKS `decedent_name`, so "named finding beats unresolved" picks the stale one -- corrections first, then newest. → mailing
 - **SmartSkip's "Spouse" row on a surviving-spouse household IS the dead owner,** and the ranker scores it as a signer (17 envelopes addressed to the decedent, 2026-10-06). Strike a spouse-type signer whose first+last is the decedent's. **SiftMap `last_obituary_date` is the DRIP date, not the death** (23 records: 2026-07..09 over a 2010-2025 DOD, 4 exactly one year off); date by the research DOD. A clerk-list row (Drive Inheritance / Probate) was MAILED even if never uploaded: its origin list is its `lists`. → mailing
+- **A Drive sent file named `Divorce 20261007 Mailings.xlsx` (space, no underscore) was INVISIBLE to the screen** (pattern `_Mailings`), and the tree snapshot was stale: two weeks of drops (10-07, 10-14) were unscreened and 10 heir-list properties had already been mailed. Pattern is now `(?:_|\d{8} )Mailings`; always fetch with `--relist`. → mailing
 - **The CRM's `directmail_attempts` is not the mailed signal.** Inheritance / Divorce / Probate list = mailed regardless of counter; Register of Wills only WITH an attempt; the Drive SENT lists are authoritative (61 of 146 drops were found only there). `obituary_mail_consolidate.py build` refuses to run without the index. → mailing
+- **`mailed_history.py check` matches the EXACT stored street and only falls back to fuzzy when there is NO exact hit:** a property already matched by one sent file is not re-tried against another spelled `Court`/`Road` instead of `Ct`/`Rd`, so a second mailing was reported for 8 of 14 doors (10-23). Normalise suffixes before keying, or screen with a suffix-normalised pass too. → mailing
 
 ### Wizard, UI automation, imports
 - **DataSift inserted an Enrichment step into the wizard** and every later locator ran one step off. Count steps on the live wizard before trusting the script. → datasift-ui
@@ -364,7 +375,9 @@ Full text and every measured route: [datasift-api.md](docs/history/datasift-api.
   for `tags` (merge), built-ins, `assigned_to`, `owner` block; `POST property/{uuid}/add-lists/`,
   `remove-lists/`, `remove-tags/`; `PATCH property/{uuid}/custom-field/update-values/`
   (`[{"field_uuid", "value"}]`, `""` blanks); `POST owner/{uuid}/upsert-phones/`,
-  `remove-phones/`; `PATCH owner/{uuid}/` (`skiptraced`, `skiptrace_attempts`); `POST
+  `remove-phones/`; `PATCH owner/{uuid}/` (`skiptraced`, `skiptrace_attempts`); `PATCH
+  property/{uuid}/` `{"directmail_attempts": n+1, "last_direct_mailed": "YYYY-MM-DD"}` (proven
+  2026-10-20, 217 records; DataSift sets `direct_mailed` itself); `POST
   property/{uuid}/message/` + `message/{id}/pin/`, `PATCH message/{id}/` (text); `GET
   property/{uuid}/logs/`; `GET task/?ordering=created`, `POST task/{uuid}/complete/`;
   `GET account/user/?limit=999` (uuid → name, filter `is_active`); `GET custom-fields/`,

@@ -77,7 +77,7 @@ FAMILIES = {
     # when. `mailed_history.py index` turns them into the mailed-history index that every
     # mailing CSV is screened against. The 2025 `Weekly Mailings_*` variants do not carry
     # this suffix and are out of scope on purpose (Basem, 2026-09-17: 2026 from April only).
-    "mailings": re.compile(r"_Mailings", re.I),
+    "mailings": re.compile(r"(?:_|\d{8} )Mailings", re.I),  # "Divorce 20261007 Mailings" (10-07+) has a space
 }
 DATE_IN_NAME = re.compile(r"(\d{8})")
 DATE_IN_PATH = re.compile(r"/(\d{4})/(\d{2})/(\d{4})(?:/|$)")

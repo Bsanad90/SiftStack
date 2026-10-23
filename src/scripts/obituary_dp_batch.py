@@ -3961,6 +3961,10 @@ def _lists_for_create(rec: dict | None) -> list[str]:
     except Virginia (2026-09-10: VA probate runs through the Circuit Court, no RoW).
     Existing list names only; this pipeline creates no lists."""
     lists = [x.strip() for x in ((rec or {}).get("lists") or "").split(",") if x.strip()]
+    # `probate_only` (Basem 2026-10-14, Martin's weekly list): a row NOT on the Probate
+    # Extraction 2 Register of Wills tab stays on Probate alone.
+    if (rec or {}).get("probate_only"):
+        return lists
     if "Probate" in lists and LIST_ROW not in lists and ((rec or {}).get("state") or "").upper() != "VA":
         lists.append(LIST_ROW)
     return lists
@@ -3994,7 +3998,7 @@ def _created_uuid(status, body) -> tuple[str, str]:
 
 
 def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool, prior: "set | None" = None,
-                  create: bool = False, lists: "list[str] | None" = None) -> dict:
+                  create: bool = False, lists: "list[str] | None" = None, trace_stamp: bool = True) -> dict:
     log = {"key": p["key"], "street": p["street"], "route": "api", "at": datetime.now().isoformat(timespec="seconds"),
            "commit": commit, "steps": {}}
     uuid, rec, why = _resolve_uuid(api, p)
@@ -4104,7 +4108,9 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool, prior: "se
     # A record that reads "never been skipped" with numbers on it is the precise incoherence
     # the rule exists to prevent, so this runs whether or not the trace returned phones.
     # attempts is max(existing, 1), never existing+1: a re-push must not inflate the count.
-    if owner_uuid and not owner.get("skiptraced"):
+    # `trace_stamp=False` (--no-trace-stamp, 2026-10-22): a create-only upload where NO trace ran
+    # (Che hand-off step 3) must not mark 400 never-traced owners as skipped.
+    if owner_uuid and trace_stamp and not owner.get("skiptraced"):
         st_sk, _ = api.write("PATCH", f"/api/internal/owner/{owner_uuid}/",
                              {"skiptraced": True,
                               "skiptrace_attempts": max(int(owner.get("skiptrace_attempts") or 0), 1)})
@@ -4188,7 +4194,10 @@ def _push_one_api(api: WriteApi, p: dict, fields: dict, commit: bool, prior: "se
         "phones_missing": [n for n in (ph["number"] for ph in p["phones"]) if n not in got_phones],
         "phone_tags_sample": {n: got_phones[n].get("tags") for n in list(got_phones)[:3]},
         "custom_fields_landed": {k: v for k, v in got_cf.items() if k in p["custom_fields"] and v},
-        "custom_fields_missing": [k for k in p["custom_fields"] if not got_cf.get(k)],
+        # A field the plan sends as "" (a blanked REL phone slot) reads back blank by design;
+        # only a NON-blank plan value that did not land is missing (2026-10-12: the tier-filtered
+        # Hottest plan logged every blanked slot as missing, ok=False, and the done set lost it).
+        "custom_fields_missing": [k for k, v in p["custom_fields"].items() if v and not got_cf.get(k)],
         "tags_missing": [t for t in p["tags"] if t not in
                          [x.get("name") if isinstance(x, dict) else str(x) for x in (after.get("tags") or [])]],
         # Only populated on a --create push: the lists attached to a record this push made.
@@ -4314,7 +4323,8 @@ def cmd_push(a) -> int:
                 prior = (None if prior_plan is None else
                          {_d10(ph["number"]) for ph in ((prior_plan.get(k) or {}).get("phones") or [])})
                 entry = _push_one_api(api, plan[k], fields, a.commit, prior=prior, create=create,
-                                      lists=_lists_for_create(records_src.get(k)) if create else None)
+                                      lists=_lists_for_create(records_src.get(k)) if create else None,
+                                      trace_stamp=not getattr(a, "no_trace_stamp", False))
                 lf.write(json.dumps(entry, ensure_ascii=False) + "\n")
                 lf.flush()
                 if entry.get("created"):
@@ -4525,6 +4535,8 @@ def main() -> int:
     s.add_argument("--keys-file", metavar="JSON",
                    help="ORDERED JSON list of plan keys: push exactly these, in this order "
                         "(e.g. keys_never_dialed.json from dp_strip_order.py)")
+    s.add_argument("--no-trace-stamp", action="store_true",
+                   help="do NOT set owner.skiptraced / skiptrace_attempts (an upload where no trace ran)")
     s.add_argument("--create", action="store_true",
                    help="CREATE records the exact-street search cannot find (POST /api/internal/property/, "
                         "address + owner, then lists/tags/fields/note by the per-record routes). Without "

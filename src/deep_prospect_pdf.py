@@ -210,7 +210,7 @@ def generate_pdf(md_path, pdf_path=None) -> str:
         canvas.setFont("Helvetica", 7)
         canvas.setFillColor(BRAND_MUTED)
         canvas.drawString(margin, 0.35 * inch,
-                          "SiftStack Deep Prospecting (V4) - grounded in API / county-record / obituary sources; confidential")
+                          "SiftStack Deep Prospecting (V5) - grounded in API / county-record / obituary sources; confidential")
         canvas.drawRightString(letter[0] - margin, 0.35 * inch, f"Page {d.page}")
         canvas.restoreState()
 

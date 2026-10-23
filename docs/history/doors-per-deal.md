@@ -985,3 +985,25 @@ by a pass, not by hand.
 chips show as exclusions and the count reads 690). The API read-back and the count are proven;
 the panel view is the one thing not looked at. `--bar thin`
 rebuilds the pair at the stricter bar (570 / 193) after an `--undo`.
+
+## Fairfax Tax Delinquent filters: the dead `preset_tax_lien` key (found 2026-10-05, fixed 2026-10-08)
+
+Five Fairfax SiftMap saved filters (10533, 10531, 12075, 12076, 12077) were built on
+`preset_tax_lien`, which is SiftMap's Tax LIEN preset and matches 0 parcels in Fairfax; the Work
+Order's "Tax Delinquent" is the distressor `is_recent_deliquent` (sic). Four of them had auto-add ON
+and dripped nothing for ten days. Fix on 2026-10-08 (Basem: "switch them off first, and fix the
+fairfax filter first"), script `output/fairfax_td_fix_parked/fix_fairfax_td.py`:
+
+1. `dpd_siftmap_filters_api.py --id <n> --auto-add off --commit` on 10531 / 12075 / 12076 / 12077
+   (backups `output/dpd_siftmap_filters_backup_20261008T1702*.json`), so the key fix could not drip.
+2. One PATCH per filter: pop `preset_tax_lien`, add `distressors_method: custom`,
+   `distressors_include: is_recent_deliquent`, `distressors_include_min_match: "1"`; 10533 renamed
+   `Fairfax P1-12 Tax Delinquent + Senior` with tags `Priority 1` + `Tax Delinquent + Senior`
+   (it had none); 10531 renamed `Fairfax P1-13 Free & Clear + Tax Delinquent`. Every PATCH 200 and
+   read back; `--commit all` refuses once any filter in the plan is already fixed (the assert on
+   `preset_tax_lien`), so run the rest by id.
+3. Live counts after the fix: 608 / 942 / 101 / 303 / 213 total, 574 / 895 / 98 / 288 / 204 not in
+   the account (Work Order list sizes 607 / 948 for the two ranked rungs).
+
+All five are auto-add OFF as of 2026-10-08. Re-enabling the four (~1,485 new Fairfax records) and
+whether 10533 ever goes ON are Basem's call.

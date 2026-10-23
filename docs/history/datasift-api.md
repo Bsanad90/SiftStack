@@ -433,3 +433,26 @@ Verbatim text as it stood on 2026-10-01 (second split of CLAUDE.md; the first wa
 - Buyer of a sold record: DataSift keeps the OLD owner when the upload runs with replace_owners
   false; the buyer is SiftMap `GET /properties/detail/{dataflik_id}/` → `sale_history[].buyer_name`
   (+ `owner_info.total_properties`, `owner_mail_address`, `is_cash_sale`).
+
+## Trace-stamp backfill and three traps (2026-10-20)
+
+- **Gap:** a read-only check of every CALL preset found 673 records with numbers but no
+  `owner.skiptraced` and no trace-date tag (671 in the Obituary lane). 638 carried a
+  `Deep Prospected` tag: the DP pusher upserts phones over the API, which sets neither stamp.
+  Backfill on Basem's go: `SS Traced 08/2026` x268 (dp_hottest_needs_skipped, SmartSkip orders
+  08-28/08-31; the 21 records with both 08 and 09 DP tags were re-pushed 09-01, not re-traced),
+  `SS Traced 09/2026` x367 (dp_obit_aug27, dp_ftm_needs_skipped_20260915,
+  dp_hottest_needs_batch2, dp_obit_new_20260908). Read-back 635/635; 3 held. Month = the SmartSkip
+  ORDER date, not the DP tag month (247 records tagged 09 were traced in 08).
+- **`last_skip_traced` exists:** `PATCH owner/{uuid}/ {"skiptraced": true}` writes
+  `owner.last_skip_traced` with the PATCH date. It is not a trace date; a backfill makes it lie.
+- **Shared-owner siblings:** 32 of the other 35 had DP numbers because they share an owner entity
+  with a DP'd property; tags and the pinned note were on the sibling only. Two FTM-lane records
+  were bound to an already-DP'd owner by the 09-23 RoW list upload.
+- **Enrich with Swap Owners ON:** the 2026-09-22 Enrich (activity 4f91022f, 4,463 records; also
+  19b72dee, 50da4190) ran with enrich_owner + replace_owner ON, created new owner entities, copied
+  phones and emails and dropped `skiptraced`; the OLD owner still reads true. Three wizard-traced
+  records (Apr/May 2026) lost their trace record this way.
+- **Tags-only PATCH merged a twin:** tagging 5630 Oak Pl `1e120ec7` logged `property.merged`,
+  absorbing `27c6d682` (same address, created 10-05, no status/assignee, same owner). Until now the
+  dedupe was only seen on an address PATCH.
