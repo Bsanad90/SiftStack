@@ -113,7 +113,9 @@ DWLR_STALE_DAYS = 16                  # rotation lag observed live; warn, never 
 DWLR_MIN_BODY = 20_000                # the 2-week page is large; tiny body = block/redesign
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+      "(KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36")
+# DWLR started dropping the connection (RemoteDisconnected) for Chrome/126 on 2026-10-10;
+# keep this a current Chrome version.
 
 # ── shared parsing helpers ─────────────────────────────────────────────────
 

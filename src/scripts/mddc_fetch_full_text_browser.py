@@ -258,7 +258,7 @@ def fetch_detail(page, notice_id: str, captcha_api_key: str) -> dict:
     if not landed:
         return {"ok": False, "error": "never_landed_on_details", "full_text": ""}
     time.sleep(2)
-    html = page.content()
+    html = _content_settled(page)
 
     if CHALLENGE_MARK_RE.search(html):
         token = _solve_turnstile(page.url, MDDC_TURNSTILE_SITEKEY, captcha_api_key)
@@ -283,7 +283,7 @@ def fetch_detail(page, notice_id: str, captcha_api_key: str) -> dict:
         except PWTimeout:
             return {"ok": False, "error": "view_notice_click_failed", "full_text": ""}
         time.sleep(2)
-        html = page.content()
+        html = _content_settled(page)
         if CHALLENGE_MARK_RE.search(html) and "complete the challenge" in html.lower():
             return {"ok": False, "error": "gate_not_cleared_after_solve", "full_text": ""}
 

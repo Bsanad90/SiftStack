@@ -483,3 +483,40 @@ out-of-county notice. Fix: `filter_footprint_county` clips on (state, county) af
 no-county rows (snippet cut before the address), and writes the rest to `_dropped.csv` with a
 `drop_reason` column. Checked offline on the 10-08 file (60 kept = 51 + 9 blank, 32 dropped)
 and `test_fulltext_prior.py` passes.
+
+## 2026-10-16 — DC probate DWLR dead 5 runs (User-Agent), MDDC full-text crash
+
+- **DC probate (`dc_probate_pull.py --source dwlr`)** failed every run 10-10, 10-13, 10-14, 10-15, 10-16
+  with `RemoteDisconnected('Remote end closed connection without response')` after 3 attempts.
+  The site was up: curl and a `Chrome/141` UA got 200 (~136 KB); the script's `Chrome/126` UA
+  was dropped every time (reproduced twice side by side). Fix: `UA` bumped to `Chrome/141`.
+  Re-run for 10-16: 41 rows, ledger 10 added / 31 changed. `dc_hoa_lien_pull.py` and
+  `permit_portal_pull.py` still send `Chrome/126` (different sites, not yet seen failing).
+- **MDDC full text (`mddc_fetch_full_text_browser.py`)** crashed 10-15 and 10-16 with
+  `Page.content: ... page is navigating` inside `fetch_detail` (a late redirect after landing on
+  Details.aspx); one exception killed the whole leg, no `_full.csv` written. Fix: both
+  `page.content()` calls in `fetch_detail` now go through the existing `_content_settled()`.
+  Re-run for 10-16: 0 failed, 97 fetched, 13 reused, 35 of 55 rows matched; the 20 unmatched are
+  10/13 notices past the 12-page / 120-notice grid cap (all 20 have text in the 10-14 file).
+- Re-runs must use the runner's Python (`Python314`); a shell with another venv on PATH has no
+  `twocaptcha` and dies at the first Turnstile.
+
+## 2026-10-19 — MDDC subscription expired; the pull exits 0 with 1 row
+
+- The 10-19 manual run (the Tue–Sat task had been blocked by the account gate since 10-17) got
+  100 raw rows but **1 in the footprint**: `detected page numbers: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]`
+  (the grid served page 1 ten times), 50 rows typed `other` with blank street/state, 4 real
+  foreclosures all Loudoun / Prince William. The full-text leg died with
+  `Page.select_option: Timeout 30000ms` because `ddlSavedSearches` was `disabled`.
+- `--list-searches` explains it: the site lists ONE saved search, `id=0 Subscription or free
+  trial expired`, and reports 43 ("Trustee's Sale") as configured but not on the site.
+- Timeline: 10-10 through 10-16 paged 1..10 and kept 55-69 rows, so the lapse happened between
+  10-16 06:00 and 10-19 10:00. The "no extractable notice_id" warning on every page is OLDER
+  (present on every day since at least 10-10) and is a separate, still-open parser issue.
+- Nothing in the code can fix this; Basem renews the subscription, then re-run with
+  `--list-searches` first to confirm 43 (or its replacement id) is back.
+- Renewed the same morning: at ~11:00 `--list-searches` listed 43 again and a manual re-run
+  (runner commands, Python314) got 57 footprint rows (DC 17, AA 9, Mont 6, Fred 4, Fairfax 2,
+  19 no-county) and the full-text leg matched 57 of 57 (20 fetched, 88 reused, 40 auction dates,
+  none in the past). Logs: `MDDC_rerun_stdout.log`, `MDDC-fulltext_rerun_stdout.log`.
+

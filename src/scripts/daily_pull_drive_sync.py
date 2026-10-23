@@ -50,7 +50,9 @@ STATE_PATH = REPO / "drive_sync_state.json"
 # The desktop OAuth client already on this PC (Divorce Cases project). Any
 # "installed" client works; only the token below is account-specific.
 DEFAULT_CLIENT = REPO.parent / "Divorce Cases" / "Divorce Cases" / "credentials.json"
-SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+# Full Drive scope since 2026-10-23 (Basem): drive.file saw only files this app created, so Che's
+# hand-off workbooks (his app, his folder inside ours) read as "file not found". Re-minted with --login.
+SCOPES = ["https://www.googleapis.com/auth/drive"]
 ROOT_NAME = "SiftStack Daily Pulls"
 # summary.txt (the runner's exit/rows log) stays local: it reads as noise to anyone but
 # the morning Claude session. The team gets README_NAME instead (Basem, 2026-10-08).
