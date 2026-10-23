@@ -98,8 +98,6 @@ python src/scripts/data_manager_kpi.py --month 2026-09 --account   # Mohamed His
 # all reports: output/team_kpi/index.html (desktop shortcut "Team KPI Reports"); every run also writes
 # output/team_kpi/team/ (no pay, no data-manager hours, no private sections) = the shared link
 # https://claude.ai/artifact/EgLz6qg82sLHaHamrKdj8M (org-shared; republish that folder, never the top one)
-# 8 PM nightly (task "SiftStack Team KPI Daily", once repointed): tools/manual/team_kpi_nightly.ps1 = claude agent team-kpi-nightly
-#   PULL (Chrome: Kixie export emailed -> Gmail -> Downloads; WhatsApp leads; overrides) + python + PUBLISH; by 8:30 PM
 
 # Upstream TN scraper (Knox/Blount, `src/main.py daily`) -- NEVER RUN on this account (see Footprint)
 ```
