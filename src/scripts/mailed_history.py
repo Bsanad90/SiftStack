@@ -52,7 +52,7 @@ VENDOR_FILES = ROOT / "output" / "vendor_lists" / "files"
 INDEX = ROOT / "output" / "vendor_lists" / "mailed_index.json"
 DEFAULT_SINCE = "2026-04-01"
 
-MAILINGS_RE = re.compile(r"_Mailings", re.I)
+MAILINGS_RE = re.compile(r"(?:_|\d{8} )Mailings", re.I)  # also "Divorce 20261007 Mailings"
 DATE_IN_NAME = re.compile(r"(\d{8})")
 DATE_IN_PATH = re.compile(r"[\\/](\d{4})[\\/](\d{2})[\\/](\d{4})(?:[\\/]|$)")
 STREET_LIKE_RE = re.compile(r"^\d+\s+\S+")

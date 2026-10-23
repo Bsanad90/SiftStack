@@ -95,3 +95,17 @@ Reviewed by `sift-report-verifier` (11 claims confirmed, 2 defects found and fix
 proxy vs exact date, account verdict tags, unranked prep rows logged, phone column renamed
 `phone_unscored` — raw SmartSkip numbers, never a dial sheet). Footprint rows are kept and
 flagged (`footprint`), per Basem's "all obituary records on the account".
+
+
+## 2026-10-23 — 10-16 drop re-check, twin fold, and the double-mail finding
+
+Re-check of vendor order 481750 (865 envelopes / 344 properties): 217 stamps intact, 68 records created since 10-20
+stamped 1 / 2026-10-16, 2 Potomac same-address twins folded (held13 recipe, kept the DP'd copy, retired the Register of
+Wills upload copy) and stamped. Scripts kept beside the log: `output/mail_drop_20261016/verify_stamp_20261023.py`,
+`fold_twins_20261023.py`.
+
+**Trap found:** `mailed_history.py check` reported 8 of 14 doors that were in BOTH our 10-16 PR build and Martin's
+`Probate With PR 20261021_Mailings`. The exact match is on the stored street string; once a property has one exact hit
+(our own 10-16 file) the fuzzy pass never runs, so `9434 Sunnyfield Court` (ours) never met `9434 Sunnyfield Ct`
+(Martin's). A suffix-normalised pass over `by_prop_key` found all 14. Cause of the double mailing: the court ledger
+(RoW first-seen 10/05..10/15) and Martin's weekly clerk list carry the same new filings about a week apart.

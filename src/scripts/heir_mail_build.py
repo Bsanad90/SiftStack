@@ -47,6 +47,7 @@ import argparse
 import csv
 import json
 import re
+import os
 import sys
 import threading
 import time
@@ -65,7 +66,7 @@ from dpd_lane_assignee_report import count  # noqa: E402
 from dpd_lane_phone_score import Api, jload, jsave, say  # noqa: E402
 from obituary_dp_batch import sift_key, zip5  # noqa: E402
 
-RUN = "20261006"
+RUN = os.environ.get("HEIR_MAIL_RUN", "20261006")   # a re-screen writes a new dir: HEIR_MAIL_RUN=YYYYMMDD
 OUT = ROOT / "output" / f"heir_mail_{RUN}"
 DP_INDEX = OUT / "dp_index.json"
 COHORT = OUT / "cohort_thin.json"
